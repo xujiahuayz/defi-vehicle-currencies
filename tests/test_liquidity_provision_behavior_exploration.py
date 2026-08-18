@@ -17,6 +17,8 @@ from scripts.analyze.run_liquidity_provision_behavior_exploration import (
     candidate_share_gap_panel,
     daily_leader_alignment,
     daily_capital_use_gaps,
+    load_v4_lp_actions,
+    lp_action_protocol_comparison,
     route_capital_gap_asymmetry,
     route_capital_gap_candidate_specific,
     route_capital_gap_closing,
@@ -46,6 +48,10 @@ from scripts.analyze.run_liquidity_provision_behavior_exploration import (
 from scripts.process.build_v3_lp_action_candidate_daily import (
     load_raw_uniswap_v3_lp_actions,
     v3_pool_candidate_links,
+)
+from scripts.process.build_v4_lp_action_candidate_daily import (
+    load_raw_uniswap_v4_lp_actions,
+    vehicle_candidate_map,
 )
 
 
@@ -754,6 +760,40 @@ def _write_v3_event(path: Path, *, pool: str, timestamp: int, origin: str) -> No
         handle.write(json.dumps(event) + "\n")
 
 
+def _write_v4_event(
+    path: Path,
+    *,
+    token0: str,
+    token0_symbol: str,
+    token1: str,
+    token1_symbol: str,
+    amount: str,
+    timestamp: int,
+    origin: str,
+    tick_lower: int = -100,
+    tick_upper: int = 100,
+) -> None:
+    event = {
+        "id": f"tx-{timestamp}-0",
+        "timestamp": str(timestamp),
+        "pool": {
+            "id": "pool-v4",
+            "token0": {"id": token0, "symbol": token0_symbol},
+            "token1": {"id": token1, "symbol": token1_symbol},
+        },
+        "origin": origin,
+        "sender": "position-manager",
+        "amount": amount,
+        "amount0": "1",
+        "amount1": "1",
+        "tickLower": str(tick_lower),
+        "tickUpper": str(tick_upper),
+        "logIndex": "0",
+    }
+    with gzip.open(path, "wt", encoding="utf-8") as handle:
+        handle.write(json.dumps(event) + "\n")
+
+
 def test_v3_lp_action_loader_counts_candidate_mint_and_burn_events() -> None:
     fee_rows = pd.DataFrame(
         [
@@ -802,6 +842,57 @@ def test_v3_lp_action_loader_counts_candidate_mint_and_burn_events() -> None:
     assert row["v3_burn_events"] == 1
     assert row["v3_mint_origin_count"] == 1
     assert support["matched_candidate_event_assignments"] == 2
+
+
+def test_v4_lp_action_loader_maps_native_eth_to_weth_candidate() -> None:
+    candidates = pd.DataFrame(
+        [
+            {"candidate_address": "usdc", "candidate_symbol": "USDC"},
+            {
+                "candidate_address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                "candidate_symbol": "WETH",
+            },
+        ]
+    )
+    with tempfile.TemporaryDirectory() as tmpdir:
+        root = Path(tmpdir)
+        event_dir = root / "events"
+        event_dir.mkdir()
+        candidate_path = root / "candidates.parquet"
+        candidates.to_parquet(candidate_path, index=False)
+        _write_v4_event(
+            event_dir / "uniswap_v4_modify_liquidities_20250124.jsonl.gz",
+            token0="0x0000000000000000000000000000000000000000",
+            token0_symbol="ETH",
+            token1="usdc",
+            token1_symbol="USDC",
+            amount="10",
+            timestamp=1_737_676_800,
+            origin="lp-1",
+            tick_lower=-887220,
+            tick_upper=887220,
+        )
+        mapping = vehicle_candidate_map(candidate_path)
+        actions, support = load_raw_uniswap_v4_lp_actions(
+            event_dir=event_dir,
+            candidate_map=mapping,
+        )
+    by_symbol = actions.set_index("candidate_symbol")
+    assert by_symbol.loc["USDC", "v4_add_events"] == 1
+    assert by_symbol.loc["WETH", "v4_add_events"] == 1
+    assert by_symbol.loc["WETH", "v4_full_range_events"] == 1
+    assert support["matched_candidate_event_assignments"] == 2
+    assert support["native_eth_to_weth_assignments"] == 1
+
+
+def test_v4_loader_validates_required_columns(tmp_path: Path) -> None:
+    path = tmp_path / "bad.parquet"
+    pd.DataFrame([{"origin_date": pd.Timestamp("2025-01-01")}]).to_parquet(
+        path,
+        index=False,
+    )
+    with pytest.raises(ValueError, match="V4 LP-action panel lacks columns"):
+        load_v4_lp_actions(path)
 
 
 def test_v3_lp_action_horizon_panel_sums_future_actions() -> None:
@@ -853,6 +944,85 @@ def test_v3_lp_action_horizon_panel_sums_future_actions() -> None:
     assert origin_row["origin_v3_total_lp_actions"] == 3
     assert origin_row["origin_v3_total_origin_count"] == 3
     assert origin_row["origin_log1p_v3_total_origin_count"] > 0
+
+
+def test_lp_action_protocol_comparison_reports_v4_stable_shift() -> None:
+    v3_actions = pd.DataFrame(
+        [
+            {
+                "origin_date": pd.Timestamp("2025-01-01"),
+                "candidate_address": "weth",
+                "candidate_symbol": "WETH",
+                "v3_mint_events": 8,
+                "v3_burn_events": 2,
+                "v3_total_lp_actions": 10,
+                "v3_net_mint_events": 6,
+                "v3_mint_origin_count": 8,
+                "v3_burn_origin_count": 2,
+            },
+            {
+                "origin_date": pd.Timestamp("2025-01-01"),
+                "candidate_address": "usdt",
+                "candidate_symbol": "USDT",
+                "v3_mint_events": 1,
+                "v3_burn_events": 1,
+                "v3_total_lp_actions": 2,
+                "v3_net_mint_events": 0,
+                "v3_mint_origin_count": 1,
+                "v3_burn_origin_count": 1,
+            },
+        ]
+    )
+    v4_actions = pd.DataFrame(
+        [
+            {
+                "origin_date": pd.Timestamp("2025-01-01"),
+                "candidate_address": "weth",
+                "candidate_symbol": "WETH",
+                "v4_add_events": 2,
+                "v4_remove_events": 1,
+                "v4_zero_liquidity_events": 0,
+                "v4_total_lp_actions": 3,
+                "v4_net_add_events": 1,
+                "v4_total_origin_count": 2,
+                "v4_sender_count": 1,
+                "v4_narrow_range_events": 1,
+                "v4_medium_range_events": 1,
+                "v4_wide_range_events": 1,
+                "v4_very_wide_range_events": 0,
+                "v4_full_range_events": 0,
+            },
+            {
+                "origin_date": pd.Timestamp("2025-01-01"),
+                "candidate_address": "usdt",
+                "candidate_symbol": "USDT",
+                "v4_add_events": 6,
+                "v4_remove_events": 2,
+                "v4_zero_liquidity_events": 1,
+                "v4_total_lp_actions": 9,
+                "v4_net_add_events": 4,
+                "v4_total_origin_count": 4,
+                "v4_sender_count": 1,
+                "v4_narrow_range_events": 5,
+                "v4_medium_range_events": 2,
+                "v4_wide_range_events": 1,
+                "v4_very_wide_range_events": 1,
+                "v4_full_range_events": 0,
+            },
+        ]
+    )
+    result = lp_action_protocol_comparison(v3_actions, v4_actions)
+    stable = result[
+        result["record_type"].eq("lp_action_protocol_comparison_group")
+        & result["candidate_group"].eq("stable_candidates")
+    ].iloc[0]
+    assert stable["v4_action_share"] > stable["v3_action_share"]
+    assert stable["v4_narrow_medium_share"] > 0.5
+    usdt = result[
+        result["record_type"].eq("lp_action_protocol_comparison")
+        & result["candidate_symbol"].eq("USDT")
+    ].iloc[0]
+    assert usdt["v4_action_share"] > usdt["v3_action_share"]
 
 
 def test_v3_lp_action_response_reports_stable_total() -> None:

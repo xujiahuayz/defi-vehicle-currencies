@@ -879,6 +879,56 @@ def test_liquidity_behavior_values_render_from_guarded_rows() -> None:
             "p_value": 0.40,
         },
     ]
+    rows.extend(
+        [
+            {
+                "analysis_status": "exploratory_descriptive",
+                "record_type": "lp_action_protocol_comparison_group",
+                "candidate_group": "stable_candidates",
+                "v3_action_assignments": 300.0,
+                "v4_action_assignments": 650.0,
+                "v3_action_share": 0.30,
+                "v4_action_share": 0.65,
+                "v4_add_share": 0.50,
+                "v4_remove_share": 0.35,
+                "v4_zero_liquidity_share": 0.15,
+                "v4_net_add_share": 0.15,
+                "v4_narrow_medium_share": 0.70,
+                "v4_full_range_share": 0.03,
+            },
+            {
+                "analysis_status": "exploratory_descriptive",
+                "record_type": "lp_action_protocol_comparison_group",
+                "candidate_group": "all_candidates",
+                "v3_action_assignments": 1_000.0,
+                "v4_action_assignments": 1_000_000.0,
+                "v3_action_share": 1.00,
+                "v4_action_share": 1.00,
+                "v4_add_share": 0.50,
+                "v4_remove_share": 0.35,
+                "v4_zero_liquidity_share": 0.15,
+                "v4_net_add_share": 0.15,
+                "v4_narrow_medium_share": 0.70,
+                "v4_full_range_share": 0.03,
+            },
+            {
+                "analysis_status": "exploratory_descriptive",
+                "record_type": "lp_action_protocol_comparison",
+                "candidate_symbol": "USDT",
+                "candidate_group": "stable_candidates",
+                "v3_action_assignments": 100.0,
+                "v4_action_assignments": 250.0,
+                "v3_action_share": 0.10,
+                "v4_action_share": 0.25,
+                "v4_add_share": 0.50,
+                "v4_remove_share": 0.35,
+                "v4_zero_liquidity_share": 0.15,
+                "v4_net_add_share": 0.15,
+                "v4_narrow_medium_share": 0.70,
+                "v4_full_range_share": 0.03,
+            },
+        ]
+    )
     rendered = render_liquidity_provision_behavior_deck_values(pd.DataFrame(rows))
     assert "\\LiqBehWethCapitalLeaderDays" in rendered
     assert "\\LiqBehStableRouteCapitalRatioEnd" in rendered
@@ -910,6 +960,8 @@ def test_liquidity_behavior_values_render_from_guarded_rows() -> None:
     assert "\\LiqBehUsdtVThreeBurnMonthCoef" in rendered
     assert "\\LiqBehUsdtVThreeNetMintMonthCoef" in rendered
     assert "\\LiqBehUsdtVThreeOriginMonthCoef" in rendered
+    assert "\\LiqBehVFourStableActionShare" in rendered
+    assert "\\LiqBehVFourNarrowMediumShare" in rendered
     assert "\\LiqBehUsdcGapCloseLongCoef" in rendered
     assert "\\LiqBehDaiGapCloseLongCoef" in rendered
     assert "\\LiqBehUsdtLogGapCloseLongCoef" in rendered

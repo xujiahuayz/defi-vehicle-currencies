@@ -33,6 +33,7 @@ EXACT_HORIZON_INPUT = REPO_ROOT / "data/processed/liquidity_capital_v2_exact_hor
 POOL_CANDIDATE_CAPITAL_INPUT = REPO_ROOT / "data/processed/pool_candidate_capital_daily.parquet"
 V3_POOL_DAY_FEES_INPUT = REPO_ROOT / "data/processed/v3_pool_day_fees.parquet"
 V3_LP_ACTION_INPUT = REPO_ROOT / "data/processed/v3_lp_action_candidate_daily.parquet"
+V4_LP_ACTION_INPUT = REPO_ROOT / "data/processed/v4_lp_action_candidate_daily.parquet"
 RESULT_OUTPUT = OUTPUT_DIR / "exhibits/liquidity_provision_behavior_exploration.jsonl"
 SUPPORT_OUTPUT = OUTPUT_DIR / "exhibits/liquidity_provision_behavior_support.jsonl"
 
@@ -46,6 +47,7 @@ INPUTS = [
     "data/processed/pool_candidate_capital_daily.parquet",
     "data/processed/v3_pool_day_fees.parquet",
     "data/processed/v3_lp_action_candidate_daily.parquet",
+    "data/processed/v4_lp_action_candidate_daily.parquet",
 ]
 STABLE_SYMBOLS = frozenset({"DAI", "USDC", "USDT"})
 WETH_SYMBOL = "WETH"
@@ -1798,6 +1800,262 @@ def load_v3_lp_actions(path: Path = V3_LP_ACTION_INPUT) -> pd.DataFrame:
     return frame
 
 
+def load_v4_lp_actions(path: Path = V4_LP_ACTION_INPUT) -> pd.DataFrame:
+    """Load the processed Uniswap V4 modify-liquidity action-count panel."""
+
+    frame = pd.read_parquet(path)
+    required = {
+        "origin_date",
+        "candidate_address",
+        "candidate_symbol",
+        "v4_add_events",
+        "v4_remove_events",
+        "v4_zero_liquidity_events",
+        "v4_total_lp_actions",
+        "v4_net_add_events",
+        "v4_total_origin_count",
+        "v4_sender_count",
+        "v4_narrow_range_events",
+        "v4_medium_range_events",
+        "v4_wide_range_events",
+        "v4_very_wide_range_events",
+        "v4_full_range_events",
+    }
+    missing = sorted(required - set(frame.columns))
+    if missing:
+        raise ValueError(f"V4 LP-action panel lacks columns: {missing}")
+    frame = frame.copy()
+    frame["origin_date"] = pd.to_datetime(frame["origin_date"]).dt.normalize()
+    frame["candidate_address"] = frame["candidate_address"].astype(str).str.lower()
+    frame["candidate_symbol"] = frame["candidate_symbol"].astype(str)
+    return frame
+
+
+def lp_action_protocol_comparison(
+    v3_actions: pd.DataFrame,
+    v4_actions: pd.DataFrame,
+) -> pd.DataFrame:
+    """Compare candidate-level LP action composition in V3 and V4.
+
+    V3 rows are mint/burn candidate-event assignments. V4 rows are
+    modify-liquidity candidate-event assignments, with native ETH mapped to the
+    WETH candidate family upstream. The comparison is descriptive because the two
+    protocols expose different settlement and position-management primitives.
+    """
+
+    v3_by_symbol = (
+        v3_actions.groupby("candidate_symbol", as_index=True)
+        .agg(
+            v3_total_lp_actions=("v3_total_lp_actions", "sum"),
+            v3_mint_events=("v3_mint_events", "sum"),
+            v3_burn_events=("v3_burn_events", "sum"),
+            v3_origin_days=("v3_mint_origin_count", "sum"),
+        )
+        .astype(float)
+    )
+    if "v3_burn_origin_count" in v3_actions.columns:
+        v3_by_symbol["v3_origin_days"] = (
+            v3_actions.groupby("candidate_symbol")["v3_mint_origin_count"].sum()
+            + v3_actions.groupby("candidate_symbol")["v3_burn_origin_count"].sum()
+        ).astype(float)
+    v4_by_symbol = (
+        v4_actions.groupby("candidate_symbol", as_index=True)
+        .agg(
+            v4_total_lp_actions=("v4_total_lp_actions", "sum"),
+            v4_add_events=("v4_add_events", "sum"),
+            v4_remove_events=("v4_remove_events", "sum"),
+            v4_zero_liquidity_events=("v4_zero_liquidity_events", "sum"),
+            v4_net_add_events=("v4_net_add_events", "sum"),
+            v4_total_origin_days=("v4_total_origin_count", "sum"),
+            v4_sender_days=("v4_sender_count", "sum"),
+            v4_narrow_range_events=("v4_narrow_range_events", "sum"),
+            v4_medium_range_events=("v4_medium_range_events", "sum"),
+            v4_wide_range_events=("v4_wide_range_events", "sum"),
+            v4_very_wide_range_events=("v4_very_wide_range_events", "sum"),
+            v4_full_range_events=("v4_full_range_events", "sum"),
+        )
+        .astype(float)
+    )
+    symbols = sorted(set(v3_by_symbol.index).union(set(v4_by_symbol.index)))
+    v3_total = float(v3_by_symbol["v3_total_lp_actions"].sum())
+    v4_total = float(v4_by_symbol["v4_total_lp_actions"].sum())
+    rows: list[dict[str, object]] = []
+    for symbol in symbols:
+        v3 = v3_by_symbol.loc[symbol] if symbol in v3_by_symbol.index else None
+        v4 = v4_by_symbol.loc[symbol] if symbol in v4_by_symbol.index else None
+        v3_actions_total = float(v3["v3_total_lp_actions"]) if v3 is not None else 0.0
+        v4_actions_total = float(v4["v4_total_lp_actions"]) if v4 is not None else 0.0
+        v4_range_total = (
+            float(v4["v4_narrow_range_events"])
+            + float(v4["v4_medium_range_events"])
+            + float(v4["v4_wide_range_events"])
+            + float(v4["v4_very_wide_range_events"])
+            + float(v4["v4_full_range_events"])
+            if v4 is not None
+            else 0.0
+        )
+        rows.append(
+            {
+                "analysis_status": "exploratory_descriptive",
+                "record_type": "lp_action_protocol_comparison",
+                "candidate_symbol": symbol,
+                "candidate_group": (
+                    "stable_candidates" if symbol in STABLE_SYMBOLS else "nonstable_candidates"
+                ),
+                "v3_action_assignments": v3_actions_total,
+                "v4_action_assignments": v4_actions_total,
+                "v3_action_share": v3_actions_total / v3_total if v3_total else np.nan,
+                "v4_action_share": v4_actions_total / v4_total if v4_total else np.nan,
+                "v4_add_share": (
+                    float(v4["v4_add_events"]) / v4_actions_total
+                    if v4 is not None and v4_actions_total
+                    else np.nan
+                ),
+                "v4_remove_share": (
+                    float(v4["v4_remove_events"]) / v4_actions_total
+                    if v4 is not None and v4_actions_total
+                    else np.nan
+                ),
+                "v4_zero_liquidity_share": (
+                    float(v4["v4_zero_liquidity_events"]) / v4_actions_total
+                    if v4 is not None and v4_actions_total
+                    else np.nan
+                ),
+                "v4_net_add_share": (
+                    float(v4["v4_net_add_events"]) / v4_actions_total
+                    if v4 is not None and v4_actions_total
+                    else np.nan
+                ),
+                "v4_narrow_medium_share": (
+                    (
+                        float(v4["v4_narrow_range_events"])
+                        + float(v4["v4_medium_range_events"])
+                    )
+                    / v4_range_total
+                    if v4 is not None and v4_range_total
+                    else np.nan
+                ),
+                "v4_full_range_share": (
+                    float(v4["v4_full_range_events"]) / v4_range_total
+                    if v4 is not None and v4_range_total
+                    else np.nan
+                ),
+                "v4_origin_day_assignments": (
+                    float(v4["v4_total_origin_days"]) if v4 is not None else 0.0
+                ),
+                "v4_sender_day_assignments": (
+                    float(v4["v4_sender_days"]) if v4 is not None else 0.0
+                ),
+                "event_source": (
+                    "v3_mint_burn_vs_v4_modify_liquidity_candidate_assignments"
+                ),
+                "native_eth_mapping": "native_eth_zero_address_to_weth_candidate_family",
+                "interpretation": (
+                    "descriptive protocol-composition comparison; V4 singleton "
+                    "netting changes settlement and position management, so this "
+                    "is not a dollar-valued provider-flow comparison"
+                ),
+            }
+        )
+    grouped = pd.DataFrame(rows)
+    for group_name, group_symbols in (
+        ("stable_candidates", STABLE_SYMBOLS),
+        ("nonstable_candidates", set(symbols) - set(STABLE_SYMBOLS)),
+        ("all_candidates", set(symbols)),
+    ):
+        group = grouped[grouped["candidate_symbol"].isin(group_symbols)]
+        if group.empty:
+            continue
+        group_symbol_index = v4_by_symbol.index.intersection(sorted(group_symbols))
+        v4_group_actions = float(group["v4_action_assignments"].sum())
+        v3_group_actions = float(group["v3_action_assignments"].sum())
+        v4_range_total = v4_group_actions
+        rows.append(
+            {
+                "analysis_status": "exploratory_descriptive",
+                "record_type": "lp_action_protocol_comparison_group",
+                "candidate_symbol": None,
+                "candidate_group": group_name,
+                "v3_action_assignments": v3_group_actions,
+                "v4_action_assignments": v4_group_actions,
+                "v3_action_share": v3_group_actions / v3_total if v3_total else np.nan,
+                "v4_action_share": v4_group_actions / v4_total if v4_total else np.nan,
+                "v4_add_share": (
+                    float(
+                        v4_by_symbol.loc[group_symbol_index, "v4_add_events"].sum()
+                    )
+                    / v4_group_actions
+                    if v4_group_actions
+                    else np.nan
+                ),
+                "v4_remove_share": (
+                    float(
+                        v4_by_symbol.loc[group_symbol_index, "v4_remove_events"].sum()
+                    )
+                    / v4_group_actions
+                    if v4_group_actions
+                    else np.nan
+                ),
+                "v4_zero_liquidity_share": (
+                    float(
+                        v4_by_symbol.loc[
+                            group_symbol_index,
+                            "v4_zero_liquidity_events",
+                        ].sum()
+                    )
+                    / v4_group_actions
+                    if v4_group_actions
+                    else np.nan
+                ),
+                "v4_net_add_share": (
+                    float(
+                        v4_by_symbol.loc[group_symbol_index, "v4_net_add_events"].sum()
+                    )
+                    / v4_group_actions
+                    if v4_group_actions
+                    else np.nan
+                ),
+                "v4_narrow_medium_share": (
+                    float(
+                        v4_by_symbol.loc[
+                            group_symbol_index,
+                            ["v4_narrow_range_events", "v4_medium_range_events"],
+                        ].sum().sum()
+                    )
+                    / v4_range_total
+                    if v4_range_total
+                    else np.nan
+                ),
+                "v4_full_range_share": (
+                    float(
+                        v4_by_symbol.loc[
+                            group_symbol_index, "v4_full_range_events"
+                        ].sum()
+                    )
+                    / v4_range_total
+                    if v4_range_total
+                    else np.nan
+                ),
+                "v4_origin_day_assignments": float(
+                    group["v4_origin_day_assignments"].sum()
+                ),
+                "v4_sender_day_assignments": float(
+                    group["v4_sender_day_assignments"].sum()
+                ),
+                "event_source": (
+                    "v3_mint_burn_vs_v4_modify_liquidity_candidate_assignments"
+                ),
+                "native_eth_mapping": "native_eth_zero_address_to_weth_candidate_family",
+                "interpretation": (
+                    "descriptive protocol-composition comparison; V4 singleton "
+                    "netting changes settlement and position management, so this "
+                    "is not a dollar-valued provider-flow comparison"
+                ),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
 def route_capital_gap_v3_lp_action_horizon_panel(
     share_gap_panel: pd.DataFrame,
     *,
@@ -3187,6 +3445,7 @@ def support_rows(
     sample: pd.DataFrame,
     *,
     v3_lp_actions: pd.DataFrame | None = None,
+    v4_lp_actions: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     rows: list[dict[str, object]] = [
         {
@@ -3203,6 +3462,9 @@ def support_rows(
             "v3_lp_action_candidate_input": str(
                 V3_LP_ACTION_INPUT.relative_to(REPO_ROOT)
             ),
+            "v4_lp_action_candidate_input": str(
+                V4_LP_ACTION_INPUT.relative_to(REPO_ROOT)
+            ),
             "candidate_day_rows": int(len(sample)),
             "days": int(sample["origin_date"].nunique()),
             "candidate_count": int(sample["candidate_symbol"].nunique()),
@@ -3211,7 +3473,8 @@ def support_rows(
             "stable_symbols": ",".join(sorted(STABLE_SYMBOLS)),
             "quantity": (
                 "V2 deposited-capital stock plus Uniswap V3 mint/burn event "
-                "counts; no dollar-valued provider flows"
+                "counts and Uniswap V4 modify-liquidity event counts; no "
+                "dollar-valued provider flows"
             ),
         }
     ]
@@ -3237,6 +3500,32 @@ def support_rows(
                 "quantity": (
                     "processed Uniswap V3 mint/burn event counts by vehicle "
                     "candidate and day, not dollar-valued provider flows"
+                ),
+            }
+        )
+    if v4_lp_actions is not None:
+        rows.append(
+            {
+                "record_type": "v4_lp_action_input_support",
+                "analysis_status": "exploratory_descriptive",
+                "input": str(V4_LP_ACTION_INPUT.relative_to(REPO_ROOT)),
+                "candidate_day_action_rows": int(len(v4_lp_actions)),
+                "days": int(v4_lp_actions["origin_date"].nunique())
+                if not v4_lp_actions.empty
+                else 0,
+                "candidate_count": int(v4_lp_actions["candidate_address"].nunique())
+                if not v4_lp_actions.empty
+                else 0,
+                "first_date": v4_lp_actions["origin_date"].min().strftime("%Y-%m-%d")
+                if not v4_lp_actions.empty
+                else None,
+                "last_date": v4_lp_actions["origin_date"].max().strftime("%Y-%m-%d")
+                if not v4_lp_actions.empty
+                else None,
+                "native_eth_mapping": "native_eth_zero_address_to_weth_candidate_family",
+                "quantity": (
+                    "processed Uniswap V4 modify-liquidity event counts by "
+                    "vehicle candidate and day, not dollar-valued provider flows"
                 ),
             }
         )
@@ -3270,6 +3559,7 @@ def run(
         share_gap_panel,
         actions=v3_lp_actions,
     )
+    v4_lp_actions = load_v4_lp_actions()
     result = pd.concat(
         [
             annual_stable_allocation(sample),
@@ -3293,11 +3583,16 @@ def run(
             route_capital_gap_v3_lp_action_response(v3_lp_action_panel),
             route_capital_gap_v3_lp_action_activity_control(v3_lp_action_panel),
             route_capital_gap_v3_lp_action_candidate_specific(v3_lp_action_panel),
+            lp_action_protocol_comparison(v3_lp_actions, v4_lp_actions),
         ],
         ignore_index=True,
     )
     write_exhibit(result, output_path, code_sources=CODE_SOURCES, inputs=INPUTS)
-    support = support_rows(sample, v3_lp_actions=v3_lp_actions)
+    support = support_rows(
+        sample,
+        v3_lp_actions=v3_lp_actions,
+        v4_lp_actions=v4_lp_actions,
+    )
     write_exhibit(
         support,
         support_path,

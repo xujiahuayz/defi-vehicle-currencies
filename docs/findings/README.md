@@ -101,7 +101,7 @@ route-minus-capital gap, stable-basket portfolio rebalancing, delayed/asymmetric
 LP rebalancing, LP stable-candidate response heterogeneity, venue-footprint and
 pool-count extensive-margin behavior, V2 pool-capital concentration and
 fragmentation, plus same-pool LP capital-chase rival screens, bounded V3
-fee/rent-incidence and TVL-normalized fee-yield screens, V3 mint/burn action-count, provider-day, and activity-controlled provider-day responses, and local
+fee/rent-incidence and TVL-normalized fee-yield screens, V3 mint/burn action-count, provider-day, activity-controlled provider-day responses, V4 modify-liquidity action composition, and local
 bridge-liquidity dominance, entry-date local bridge-depth choice screens, plus
 stable-specific dynamic local bridge-depth feedback. The deck
 also carries the traditional-FX route analogy as motivation. These layers
@@ -166,7 +166,7 @@ and the lock.
 
 The current branch compiles a 54-page paper and a 46-page deck after the
 provisional mechanism reruns. The paper and deck compile with zero undefined
-references. The repository passes 714 pytest tests, the findings gate, and every
+references. The repository passes 718 pytest tests, the findings gate, and every
 blocking conformance check. There is one manuscript under `paper/` and one
 presentation under `deck/`; Git history is the archive.
 
