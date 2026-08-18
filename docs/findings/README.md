@@ -5,7 +5,7 @@ target: Journal of Financial Economics
 submission_ready: false
 freeze_status: green
 prose_node: tiered
-meeting_edge: G/H baseline deliverables -> I JFE-strength expansion
+meeting_edge: G/H baseline deliverables -> I iterative result-search loop
 ---
 
 # Live workflow state
@@ -46,10 +46,16 @@ G baseline JFE paper                    DONE LOCALLY; CLEAN 47-PAGE PDF
   |
 H baseline presentation deck            DONE LOCALLY; CLEAN 36-PAGE PDF
   |
-I JFE-strength mechanism expansion      ACTIVE OPEN NODE
+I iterative result-search loop          ACTIVE
   |                                     dominance drivers, LP behavior, framing
+  |-- I1 propose mechanism and comparison set
+  |-- I2 find/build eligible inputs
+  |-- I3 run exploratory experiments
+  |-- I4 triage against JFE bar
+  |       weak or measurement-only  ---- back to I1
+  |       strong and defensible     ---- lock claim and rebuild
   |
-J revised paper and deck                PENDING EXPANDED RESULTS AND REWRITE
+J revised paper and deck                PENDING RESULTS THAT SURVIVE I4
   |
 P submission freeze                     NOT READY
 ```
@@ -63,12 +69,18 @@ P submission freeze                     NOT READY
 
 Both families have been rebuilt from their declared inputs after the lock, and
 the executable findings gate is green. That is a reproducibility statement, not
-a JFE submission decision. The live workflow is now at node I: mechanism and
-results expansion. The expansion targets are the making of vehicle dominance
-(features, drivers, adoption, reversal, persistence, and conditional choice) and
-liquidity-provision behavior (capital stocks, liquidity-supply flows, provider
-entry/exit, reallocation, and V3/V4 routing or netting behavior where inputs
-support it).
+a JFE submission decision. The live workflow is now at node I: an iterative
+result-search loop. If the current evidence is measurement-only or not
+economically interesting enough, the workflow stays inside the loop and keeps
+looking. It does not advance to revised deliverables or submission freeze.
+
+The loop targets the making of vehicle dominance (features, drivers, adoption,
+reversal, persistence, and conditional choice) and liquidity-provision behavior
+(capital stocks, liquidity-supply flows, provider entry/exit, reallocation, and
+V3/V4 routing or netting behavior where inputs support it). A candidate result
+can leave the loop only after it states the unit, conditioning set, economic
+magnitude, strongest rival explanation, literature contribution, and complete
+producer-to-deliverable path.
 
 Routing maturation, direct-cost dominance, the joint V2/V3 capital-flow family,
 rent incidence, and persistence/hysteresis are blocked, withheld, supporting, or
@@ -135,4 +147,5 @@ archive.
 These are baseline deliverables, not final submission deliverables. Before the
 submission freeze, the paper and deck need expanded mechanism results and a
 motivation rewrite built around concrete, down-to-earth vehicle-currency examples
-from traditional finance.
+from traditional finance. If that expansion does not reach the JFE bar, the
+correct action is more search, not freeze.

@@ -12,36 +12,42 @@ trade `A → B → C`, this project calls `A → C` the **ultimate trade** or
 **atomic pairs**. Code, tables, figures, paper, and slides should use those terms
 whenever the distinction matters.
 
-## Workflow graph and current position
+## Iterative workflow graph and current position
 
 The compact workflow graph lives here. The durable claim-state graph is in
 [`docs/findings/README.md`](docs/findings/README.md). The retired autonomous
 grind/watchdog machinery no longer owns workflow state; these repo files do.
 
 ```text
-question and literature                 done
-  → definitions and estimands           done
-  → retained raw data                   Studio is canonical owner; raw sync active
-  → cleaned and analysis-ready data     ready for the two active claim families
-  → registered baseline analysis        done; findings check green
-  → baseline paper and deck             build cleanly from registered claims
-  → JFE-strength expansion              active open node
-       ├─ making of dominance           features, drivers, adoption, reversal, persistence
-       ├─ liquidity provision behavior  capital stocks, flows, entry/exit, reallocation
-       └─ framing and motivation        concrete TradFi vehicle-currency analogies
-  → revised paper and deck              pending expanded results and rewrite
-  → submission freeze                   pending final conformance after expansion
+question and literature                  done
+  → definitions and estimands            done
+  → retained raw data                    Studio is canonical owner; raw sync active
+  → cleaned and analysis-ready data      ready for the two active claim families
+  → registered baseline analysis         done; findings check green
+  → baseline paper and deck              build cleanly from registered claims
+  → I result-search loop                 ACTIVE
+       1. propose mechanism/framing
+       2. find or build eligible inputs
+       3. run exploratory experiments
+       4. triage economic magnitude, rival explanations, and literature fit
+       5. if not JFE-substantial: revise mechanism/data/spec and keep looking
+       6. if JFE-substantial: lock claim, rebuild, and move into paper/deck
+       ↺ loops over making of dominance, liquidity provision, and motivation
+  → revised paper and deck               only after expanded results survive triage
+  → submission freeze                    only after final conformance and rewrite
 ```
 
 The detailed claim state is in [`docs/findings/`](docs/findings/README.md). The
 two active confirmatory families are the vehicle-role transition and V2
 deposited-capital predictability. They make the current paper measurable and
-reproducible, but not yet submission-ready. The current research node is to add
-substantive mechanism evidence around the making of vehicle dominance and
-liquidity-provision behavior, then rewrite the paper and slides around the
-strongest results. Routing maturation, direct-cost dominance, rent incidence,
-provider behavior, and persistence are supporting, withheld, or expansion work
-until each receives a complete producer-to-deliverable path.
+reproducible, but not yet submission-ready. The current research node is an
+iterative search loop: keep looking until the repository contains substantive
+mechanism evidence around the making of vehicle dominance and liquidity provision
+behavior. A result exits the loop only if it is economically material,
+distinguishes at least one serious rival story, fits the literature contribution,
+and has a complete producer-to-deliverable path. Routing maturation, direct-cost
+dominance, rent incidence, provider behavior, and persistence are supporting,
+withheld, or expansion work until they pass that bar.
 
 ## Scientific workflow
 

@@ -9,9 +9,10 @@ the present paper.
 ## Current expansion agenda
 
 The executable gate is green for the two registered baseline families, but the
-research target is now stronger than measurement. The open node is to find
-economically substantive mechanism evidence before treating the paper as
-JFE-ready.
+research target is now stronger than measurement. The open node is an iterative
+search loop: propose mechanisms, find or build eligible inputs, run exploratory
+experiments, triage the result against the JFE bar, and keep looking if the
+result is weak, merely measurable, or too close to existing literature.
 
 Priority experiments:
 
@@ -32,6 +33,12 @@ Priority experiments:
    as a dealer or treasurer routing a thin currency pair through a liquid vehicle
    currency because direct execution is expensive or unavailable. The analogy is
    motivation only; it should not substitute for the DEX evidence.
+
+Exit rule: a result leaves exploration only if it is economically material,
+survives a serious rival explanation, clarifies the contribution relative to the
+literature, and can be rebuilt into the paper and deck from declared inputs. If
+those conditions are not met, the workflow loops back to mechanism search and
+additional experiments rather than proceeding to submission freeze.
 
 ## Question and contribution
 
