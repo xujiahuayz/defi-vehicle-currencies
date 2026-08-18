@@ -1,0 +1,17 @@
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.88in}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X>{\centering\arraybackslash}p{0.82in}>{\raggedleft\arraybackslash}p{1.0in}@{}}
+\toprule
+Margin & Outcome & Scaled regressor & Effect (pp) & Obs. / clusters \\
+\midrule
+Turn-on & Stable appears & Baseline market routes (+1 log) & \begin{tabular}{@{}c@{}}$-2.7^{***}$\\$(0.4)$\end{tabular} & 94,260 / 181 \\
+Turn-on & Stable appears & Direct-route share (+1) & \begin{tabular}{@{}c@{}}$+27.1^{***}$\\$(6.4)$\end{tabular} & 94,260 / 181 \\
+Turn-on & Stable appears & Complex-route share (+1) & \begin{tabular}{@{}c@{}}$+20.3^{***}$\\$(5.1)$\end{tabular} & 94,260 / 181 \\
+Thin/direct & Stable appears & Direct share $\times$ thinness & \begin{tabular}{@{}c@{}}$+3.1^{***}$\\$(0.9)$\end{tabular} & 94,260 / 181 \\
+Leader switch & Stable becomes leader & Baseline market routes (+1 log) & \begin{tabular}{@{}c@{}}$-1.1^{***}$\\$(0.2)$\end{tabular} & 94,260 / 181 \\
+Rolling hazard & Stable appears within 30d & Origin market routes (+1 log) & \begin{tabular}{@{}c@{}}$+3.5^{***}$\\$(0.7)$\end{tabular} & 1,690,478 / 303 \\
+Rolling hazard & Stable appears within 30d & Pair age (+1 log) & \begin{tabular}{@{}c@{}}$+1.6^{***}$\\$(0.2)$\end{tabular} & 1,690,478 / 303 \\
+Mixed risk set & Candidate route share & Same-day reach (+1 log) & \begin{tabular}{@{}c@{}}$+9.4^{***}$\\$(2.9)$\end{tabular} & 27,852 / 363 \\
+Mixed risk set & Candidate route share & Prior-30d reach (+1 log) & \begin{tabular}{@{}c@{}}$+7.8^{***}$\\$(2.5)$\end{tabular} & 27,852 / 363 \\
+Issuer split & Candidate route share & USDC $\times$ 2026 & \begin{tabular}{@{}c@{}}$+53.0^{**}$\\$(22.5)$\end{tabular} & 27,852 / 363 \\
+Issuer split & Candidate route share & USDT $\times$ 2026 & \begin{tabular}{@{}c@{}}$+88.2^{***}$\\$(24.2)$\end{tabular} & 27,852 / 363 \\
+\bottomrule
+\end{tabularx}
