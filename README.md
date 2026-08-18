@@ -54,8 +54,10 @@ Current provisional layers cover vehicle birth, active-day birth-state
 hysteresis, non-WETH entry drivers, route-architecture entry interactions,
 large-entrant routing, thin-market turn-on with a direct-route by thinness
 interaction, rolling native-only-to-stable turn-on hazards, same-day and
-prior-30-day candidate-network reach inside observed mixed-risk-set rival checks, sticky incumbent vehicle regimes, USDC/USDT
-concentration at stable-entry, stable-candidate identity persistence, USDC/SVB
+prior-30-day candidate-network reach inside observed mixed-risk-set rival checks,
+endpoint claim-class formation splits, endpoint price-history formation screens,
+sticky incumbent vehicle regimes, USDC/USDT concentration at stable-entry,
+stable-candidate identity persistence, USDC/SVB
 stress-window identity persistence and LP capital non-chase,
 extra-hop gas economics and route-level fixed-toll feasibility, LP capital-use
 gaps, stable-basket portfolio rebalancing, delayed/asymmetric LP rebalancing,
