@@ -25,6 +25,7 @@ from ddvc.runtime import atomic_output
 
 PAIR_SUPPORT = DATA_DIR / "processed/endpoint_candidate_pair_support.parquet"
 CANDIDATE_CHOICES = DATA_DIR / "processed/endpoint_candidate_choices.parquet"
+TOKEN_PRICE_DAILY = DATA_DIR / "processed/token_price_daily.parquet"
 RESULT_OUTPUT = OUTPUT_DIR / "exhibits/vehicle_formation_exploration.jsonl"
 SUPPORT_OUTPUT = OUTPUT_DIR / "exhibits/vehicle_formation_support.jsonl"
 SAMPLE_END = pd.Timestamp("2026-06-30")
@@ -61,6 +62,17 @@ ENTRY_SECURE_VOLUME_PREDICTORS = (
     "complex_share",
     "is_2026_x_direct_share",
     "is_2026_x_complex_share",
+)
+ENTRY_ENDPOINT_HISTORY_PREDICTORS = (
+    "is_2026",
+    "log_entry_routes",
+    "direct_share",
+    "complex_share",
+    "is_2026_x_direct_share",
+    "is_2026_x_complex_share",
+    "no_prior_price_history_30",
+    "log_min_prior_price_obs_30",
+    "endpoint_log_price_sd_30",
 )
 
 
@@ -122,6 +134,101 @@ def endpoint_class(src: object, tgt: object) -> str:
     if "native" in types:
         return "other_native_endpoint"
     return "other_endpoint"
+
+
+def endpoint_claim_class(src: object, tgt: object) -> str:
+    """Classify endpoint pairs by the strongest non-WETH claim type present."""
+
+    src_symbol, src_type = classify(src)
+    tgt_symbol, tgt_type = classify(tgt)
+    symbols = {src_symbol, tgt_symbol}
+    types = {src_type, tgt_type}
+    if "WETH" in symbols:
+        return "weth_endpoint"
+    if "stable" in types:
+        return "stable_endpoint"
+    if "imported" in types:
+        return "imported_endpoint"
+    if "staked_native" in types:
+        return "staked_native_endpoint"
+    if "native" in types:
+        return "other_native_endpoint"
+    return "other_endpoint"
+
+
+def endpoint_claim_class_summaries(pair_support_path: Path = PAIR_SUPPORT) -> pd.DataFrame:
+    """Split active and entering route mass by endpoint claim class."""
+
+    path = _sql_path(pair_support_path)
+    years = ", ".join(str(year) for year in MAIN_ENTRY_YEARS)
+    panel = _read_sql(
+        f"""
+        SELECT
+            date,
+            src,
+            tgt,
+            year(date)::INTEGER AS year,
+            pair_entry_on_day,
+            primary_choice_route_count::DOUBLE AS primary_routes,
+            stable_choice_route_count::DOUBLE AS stable_routes,
+            native_choice_route_count::DOUBLE AS native_routes,
+            direct_route_count::DOUBLE AS direct_routes,
+            market_route_count::DOUBLE AS market_routes
+        FROM read_parquet('{path}')
+        WHERE primary_choice_route_count > 0
+          AND year(date) IN ({years})
+          AND strftime(date, '%m-%d') <= '06-30'
+        """
+    )
+    if panel.empty:
+        return pd.DataFrame()
+    unique_pairs = panel[["src", "tgt"]].drop_duplicates().copy()
+    unique_pairs["endpoint_claim_class"] = [
+        endpoint_claim_class(src, tgt)
+        for src, tgt in zip(unique_pairs["src"], unique_pairs["tgt"])
+    ]
+    panel = panel.merge(unique_pairs, on=["src", "tgt"], validate="many_to_one")
+    rows: list[dict[str, object]] = []
+    for sample_scope, sample in (
+        ("active_pair_days", panel),
+        ("entry_pair_days", panel[panel["pair_entry_on_day"]].copy()),
+    ):
+        if sample.empty:
+            continue
+        year_totals = sample.groupby("year")["primary_routes"].sum()
+        grouped = sample.groupby(["year", "endpoint_claim_class"], sort=True)
+        for (year, class_name), group in grouped:
+            primary_routes = float(group["primary_routes"].sum())
+            market_routes = float(group["market_routes"].sum())
+            if primary_routes <= 0:
+                continue
+            rows.append(
+                {
+                    "record_type": "endpoint_claim_class",
+                    "sample_scope": sample_scope,
+                    "year": int(year),
+                    "endpoint_claim_class": str(class_name),
+                    "pairs": int(
+                        group[["src", "tgt"]].drop_duplicates().shape[0]
+                    ),
+                    "pair_days": int(len(group)),
+                    "primary_routes": primary_routes,
+                    "stable_routes": float(group["stable_routes"].sum()),
+                    "native_routes": float(group["native_routes"].sum()),
+                    "route_mass_share": primary_routes / float(year_totals.loc[year]),
+                    "stable_share": float(group["stable_routes"].sum() / primary_routes),
+                    "native_share": float(group["native_routes"].sum() / primary_routes),
+                    "direct_route_share": (
+                        float(group["direct_routes"].sum() / market_routes)
+                        if market_routes > 0
+                        else np.nan
+                    ),
+                    "interpretation": (
+                        "exploratory_endpoint_claim_class_split_not_causal"
+                    ),
+                }
+            )
+    return pd.DataFrame(rows)
 
 
 def entry_endpoint_class_summary(pair_support_path: Path = PAIR_SUPPORT) -> pd.DataFrame:
@@ -671,6 +778,240 @@ def entry_secure_volume_regressions(
     return pd.DataFrame(rows)
 
 
+def entry_endpoint_history_panel(
+    panel: pd.DataFrame,
+    token_price_path: Path = TOKEN_PRICE_DAILY,
+) -> pd.DataFrame:
+    """Attach prior endpoint price-history support to non-WETH entrants.
+
+    The screen asks whether stable vehicles appear disproportionately when a
+    new ultimate pair has little recent price history at one endpoint. It uses
+    the canonical processed token-price panel only as a history/support measure.
+    Price levels are not interpreted, because token decimal conventions differ
+    across assets and sources.
+    """
+
+    required = {
+        "date",
+        "src",
+        "tgt",
+        "entry_year",
+        "endpoint_class",
+        "primary_routes",
+        "stable_share",
+        "stable_dominant_entry",
+        *ENTRY_ENDPOINT_HISTORY_PREDICTORS[:6],
+    }
+    missing = sorted(required - set(panel.columns))
+    if missing:
+        raise ValueError(f"entry driver panel lacks columns for endpoint history: {missing}")
+    if not token_price_path.is_file():
+        raise FileNotFoundError(token_price_path)
+    base = panel.copy()
+    base["date"] = pd.to_datetime(base["date"]).dt.normalize()
+    base["src_lower"] = base["src"].astype(str).str.lower()
+    base["tgt_lower"] = base["tgt"].astype(str).str.lower()
+    endpoint_keys = pd.concat(
+        [
+            base[["date", "src"]].rename(columns={"src": "token"}).assign(side="src"),
+            base[["date", "tgt"]].rename(columns={"tgt": "token"}).assign(side="tgt"),
+        ],
+        ignore_index=True,
+    ).drop_duplicates()
+    connection = duckdb.connect()
+    try:
+        connection.register("endpoint_keys", endpoint_keys)
+        price_path = _sql_path(token_price_path)
+        history = connection.execute(
+            f"""
+            WITH endpoints AS (
+                SELECT DISTINCT
+                    CAST(date AS DATE) AS date,
+                    lower(token) AS token,
+                    side
+                FROM endpoint_keys
+            ),
+            prices AS (
+                SELECT
+                    strptime(day, '%Y%m%d')::DATE AS price_date,
+                    lower(token) AS token,
+                    price_usd::DOUBLE AS price_usd,
+                    n_observations::DOUBLE AS n_obs
+                FROM read_parquet('{price_path}')
+                WHERE price_usd > 0
+                  AND validation_status = 'minimum_observations_and_price_consensus_passed'
+            )
+            SELECT
+                e.date,
+                e.token,
+                e.side,
+                count(DISTINCT p.price_date)::DOUBLE AS prior_price_days_30,
+                coalesce(sum(p.n_obs), 0)::DOUBLE AS prior_price_obs_30,
+                coalesce(avg(p.n_obs), 0)::DOUBLE AS mean_price_obs_day_30,
+                coalesce(stddev_samp(ln(p.price_usd)), 0)::DOUBLE AS log_price_sd_30
+            FROM endpoints e
+            LEFT JOIN prices p
+              ON p.token = e.token
+             AND p.price_date >= e.date - INTERVAL 30 DAY
+             AND p.price_date < e.date
+            GROUP BY 1, 2, 3
+            """
+        ).fetchdf()
+    finally:
+        connection.close()
+    source_history = history[history["side"].eq("src")].drop(columns="side").rename(
+        columns={
+            "token": "src_lower",
+            "prior_price_days_30": "src_prior_price_days_30",
+            "prior_price_obs_30": "src_prior_price_obs_30",
+            "mean_price_obs_day_30": "src_mean_price_obs_day_30",
+            "log_price_sd_30": "src_log_price_sd_30",
+        }
+    )
+    target_history = history[history["side"].eq("tgt")].drop(columns="side").rename(
+        columns={
+            "token": "tgt_lower",
+            "prior_price_days_30": "tgt_prior_price_days_30",
+            "prior_price_obs_30": "tgt_prior_price_obs_30",
+            "mean_price_obs_day_30": "tgt_mean_price_obs_day_30",
+            "log_price_sd_30": "tgt_log_price_sd_30",
+        }
+    )
+    out = base.merge(
+        source_history,
+        on=["date", "src_lower"],
+        how="left",
+        validate="many_to_one",
+    ).merge(
+        target_history,
+        on=["date", "tgt_lower"],
+        how="left",
+        validate="many_to_one",
+    )
+    if len(out) != len(base):
+        raise ValueError("endpoint-history merge changed entrant row count")
+    for side in ("src", "tgt"):
+        for suffix in (
+            "prior_price_days_30",
+            "prior_price_obs_30",
+            "mean_price_obs_day_30",
+            "log_price_sd_30",
+        ):
+            column = f"{side}_{suffix}"
+            out[column] = pd.to_numeric(out[column], errors="coerce").fillna(0.0)
+    out["min_prior_price_days_30"] = out[
+        ["src_prior_price_days_30", "tgt_prior_price_days_30"]
+    ].min(axis=1)
+    out["no_prior_price_history_30"] = out["min_prior_price_days_30"].eq(0).astype(float)
+    out["log_min_prior_price_obs_30"] = np.log1p(
+        out[["src_prior_price_obs_30", "tgt_prior_price_obs_30"]].min(axis=1)
+    )
+    out["endpoint_log_price_sd_30"] = out[
+        ["src_log_price_sd_30", "tgt_log_price_sd_30"]
+    ].max(axis=1)
+    if out["min_prior_price_days_30"].max() > 30:
+        raise ValueError("prior endpoint price-history count exceeds the 30-day window")
+    return out
+
+
+def entry_endpoint_history_summaries(panel: pd.DataFrame) -> pd.DataFrame:
+    """Summarise stable birth by endpoint price-history support."""
+
+    sample = panel[panel["endpoint_class"].eq("other_endpoint")].copy()
+    if sample.empty:
+        raise ValueError("endpoint-history summary has no other-endpoint entrants")
+    rows: list[dict[str, object]] = []
+    totals = sample.groupby("entry_year")["primary_routes"].sum()
+    for (year, no_history), group in sample.groupby(
+        ["entry_year", "no_prior_price_history_30"], sort=True
+    ):
+        primary_routes = float(group["primary_routes"].sum())
+        rows.append(
+            {
+                "record_type": "entry_endpoint_history_summary",
+                "sample": "other_endpoint",
+                "entry_year": int(year),
+                "no_prior_price_history_30": bool(no_history),
+                "pairs": int(len(group)),
+                "primary_routes": primary_routes,
+                "stable_routes": float(group["stable_routes"].sum()),
+                "native_routes": float(group["native_routes"].sum()),
+                "stable_share": float(group["stable_routes"].sum() / primary_routes),
+                "stable_dominant_pair_share": float(
+                    group["stable_dominant_entry"].astype(float).mean()
+                ),
+                "route_mass_share": primary_routes / float(totals.loc[year]),
+                "mean_min_prior_price_days_30": float(
+                    np.average(
+                        group["min_prior_price_days_30"].astype(float),
+                        weights=group["primary_routes"].astype(float),
+                    )
+                ),
+                "interpretation": (
+                    "exploratory_endpoint_price_history_entry_split_not_causal"
+                ),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def entry_endpoint_history_regressions(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 1000,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Fit entrant stable-birth screens using prior endpoint price history."""
+
+    rows: list[dict[str, object]] = []
+    sample = panel[panel["endpoint_class"].eq("other_endpoint")].copy()
+    if sample.empty:
+        raise ValueError("endpoint-history regression has no other-endpoint entrants")
+    for outcome in ("stable_share", "stable_dominant_entry"):
+        required = [outcome, "date", "primary_routes", *ENTRY_ENDPOINT_HISTORY_PREDICTORS]
+        data = sample.loc[:, required].replace([np.inf, -np.inf], np.nan).dropna()
+        fit = ols_clustered(
+            data[outcome],
+            data[list(ENTRY_ENDPOINT_HISTORY_PREDICTORS)],
+            data["date"],
+            weights=data["primary_routes"],
+            min_observations=min_observations,
+            min_clusters=min_clusters,
+        )
+        for name, beta, se, t_stat, p_value in zip(
+            ("constant", *ENTRY_ENDPOINT_HISTORY_PREDICTORS),
+            fit.beta,
+            fit.standard_errors,
+            fit.t_statistics,
+            fit.p_values,
+            strict=True,
+        ):
+            rows.append(
+                {
+                    "record_type": "entry_endpoint_history_regression",
+                    "sample": "other_endpoint",
+                    "entry_year": None,
+                    "outcome": outcome,
+                    "predictor": name,
+                    "coefficient": float(beta),
+                    "coefficient_pp": 100.0 * float(beta),
+                    "standard_error": float(se),
+                    "standard_error_pp": 100.0 * float(se),
+                    "t_statistic": float(t_stat),
+                    "p_value": float(p_value),
+                    "observations": int(fit.n_observations),
+                    "entry_date_clusters": int(fit.n_clusters),
+                    "weighted_by": "entry_primary_choice_routes",
+                    "covariance_id": "entry_date_cluster_cr1",
+                    "controls": ",".join(ENTRY_ENDPOINT_HISTORY_PREDICTORS),
+                    "interpretation": (
+                        "exploratory_endpoint_price_history_entry_driver_not_causal"
+                    ),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
 def entry_follow_panel(
     horizon_days: int,
     *,
@@ -939,6 +1280,7 @@ def support_records(
     *,
     pair_support_path: Path,
     candidate_choices_path: Path,
+    token_price_path: Path,
     result_rows: int,
     support_rows: int,
 ) -> pd.DataFrame:
@@ -953,6 +1295,11 @@ def support_records(
                 "record_type": "input",
                 "path": str(candidate_choices_path.relative_to(REPO_ROOT)),
                 "role": "released_endpoint_candidate_choices",
+            },
+            {
+                "record_type": "input",
+                "path": str(token_price_path.relative_to(REPO_ROOT)),
+                "role": "canonical_processed_token_price_history",
             },
             {
                 "record_type": "sample_contract",
@@ -976,12 +1323,16 @@ def support_records(
 def build_results(
     pair_support_path: Path = PAIR_SUPPORT,
     candidate_choices_path: Path = CANDIDATE_CHOICES,
+    token_price_path: Path = TOKEN_PRICE_DAILY,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     if not pair_support_path.is_file():
         raise FileNotFoundError(pair_support_path)
     if not candidate_choices_path.is_file():
         raise FileNotFoundError(candidate_choices_path)
+    if not token_price_path.is_file():
+        raise FileNotFoundError(token_price_path)
     cohorts = entry_cohorts(pair_support_path)
+    claim_classes = endpoint_claim_class_summaries(pair_support_path)
     endpoint_classes = entry_endpoint_class_summary(pair_support_path)
     secure_volume = entry_secure_volume_summary(pair_support_path)
     stable_candidates = entry_stable_candidate_summary(
@@ -992,6 +1343,14 @@ def build_results(
     driver_regressions = entry_driver_regressions(driver_panel)
     architecture_regressions = entry_route_architecture_regressions(driver_panel)
     secure_volume_regressions = entry_secure_volume_regressions(driver_panel)
+    endpoint_history_panel = entry_endpoint_history_panel(
+        driver_panel,
+        token_price_path=token_price_path,
+    )
+    endpoint_history_summaries = entry_endpoint_history_summaries(endpoint_history_panel)
+    endpoint_history_regressions = entry_endpoint_history_regressions(
+        endpoint_history_panel
+    )
     follow_panels = [
         entry_follow_panel(horizon, pair_support_path=pair_support_path)
         for horizon in HORIZONS
@@ -1013,6 +1372,7 @@ def build_results(
     result = pd.concat(
         [
             cohorts,
+            claim_classes,
             endpoint_classes,
             secure_volume,
             stable_candidates,
@@ -1020,6 +1380,8 @@ def build_results(
             driver_regressions,
             architecture_regressions,
             secure_volume_regressions,
+            endpoint_history_summaries,
+            endpoint_history_regressions,
             *summaries,
             *contrasts,
             *hysteresis,
@@ -1046,8 +1408,9 @@ def build_results(
     support = support_records(
         pair_support_path=pair_support_path,
         candidate_choices_path=candidate_choices_path,
+        token_price_path=token_price_path,
         result_rows=len(result),
-        support_rows=4,
+        support_rows=5,
     )
     return result, support
 
@@ -1056,12 +1419,14 @@ def run(
     *,
     pair_support_path: Path = PAIR_SUPPORT,
     candidate_choices_path: Path = CANDIDATE_CHOICES,
+    token_price_path: Path = TOKEN_PRICE_DAILY,
     result_output: Path = RESULT_OUTPUT,
     support_output: Path = SUPPORT_OUTPUT,
 ) -> int:
     result, support = build_results(
         pair_support_path=pair_support_path,
         candidate_choices_path=candidate_choices_path,
+        token_price_path=token_price_path,
     )
     result_output.parent.mkdir(parents=True, exist_ok=True)
     support_output.parent.mkdir(parents=True, exist_ok=True)
@@ -1091,12 +1456,14 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--pair-support", type=Path, default=PAIR_SUPPORT)
     parser.add_argument("--candidate-choices", type=Path, default=CANDIDATE_CHOICES)
+    parser.add_argument("--token-price", type=Path, default=TOKEN_PRICE_DAILY)
     parser.add_argument("--result-output", type=Path, default=RESULT_OUTPUT)
     parser.add_argument("--support-output", type=Path, default=SUPPORT_OUTPUT)
     args = parser.parse_args()
     return run(
         pair_support_path=args.pair_support,
         candidate_choices_path=args.candidate_choices,
+        token_price_path=args.token_price,
         result_output=args.result_output,
         support_output=args.support_output,
     )
