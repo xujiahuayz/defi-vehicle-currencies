@@ -125,6 +125,38 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
                 "observations": 900,
             },
             {
+                "record_type": "entry_path_dependence_direct_route_support",
+                "horizon_days": 120,
+                "sample": "non_weth_endpoint",
+                "direct_route_bucket": "no_direct_route",
+                "observations": 512000,
+                "entry_date_clusters": 243,
+                "entry_primary_routes": 653000,
+                "followup_primary_routes": 1950000,
+            },
+            {
+                "record_type": "entry_path_dependence_direct_route_support",
+                "horizon_days": 120,
+                "sample": "non_weth_endpoint",
+                "direct_route_bucket": "direct_route_present",
+                "observations": 181,
+                "entry_date_clusters": 80,
+                "entry_primary_routes": 8000,
+                "followup_primary_routes": 64000,
+            },
+            {
+                "record_type": "entry_path_dependence_direct_route_regression",
+                "horizon_days": 120,
+                "sample": "non_weth_endpoint",
+                "direct_route_bucket": "no_direct_route",
+                "outcome": "stable_share",
+                "predictor": "entry_stable_share",
+                "coefficient_per_10pp_entry_share": 0.089,
+                "standard_error_per_10pp_entry_share": 0.013,
+                "p_value": 0.001,
+                "observations": 512000,
+            },
+            {
                 "record_type": "entry_value_path_dependence_regression",
                 "horizon_days": 30,
                 "sample": "non_weth_endpoint_value_supported",
@@ -395,6 +427,8 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
     assert "\\FormationPathEntryShareThirtyCoef" in rendered
     assert "\\FormationPathEntryShareOneTwentyCoef" in rendered
     assert "\\FormationPathDominantOneTwentyCoef" in rendered
+    assert "\\FormationNoDirectPathEntryShareOneTwentyCoef" in rendered
+    assert "\\FormationDirectPresentPathRowsOneTwenty" in rendered
     assert "\\FormationValuePathEntryShareThirtyCoef" in rendered
     assert "\\FormationValuePathEntryShareOneTwentyCoef" in rendered
     assert "$+9.0$ pp" in rendered
