@@ -98,6 +98,27 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         outcome="route_share_five",
         regressor="log_global_route_count_day_leaveout",
     )
+    bottleneck_min = _single(
+        estimates,
+        record_type="bridge_liquidity_bottleneck_regression",
+        model_id="route_share_min_max_depth_reach_candidate_fe",
+        outcome="route_share_five",
+        regressor="log_bridge_min_capital",
+    )
+    bottleneck_max = _single(
+        estimates,
+        record_type="bridge_liquidity_bottleneck_regression",
+        model_id="route_share_min_max_depth_reach_candidate_fe",
+        outcome="route_share_five",
+        regressor="log_bridge_max_capital",
+    )
+    bridge_imbalance = _single(
+        estimates,
+        record_type="bridge_liquidity_bottleneck_regression",
+        model_id="route_share_geom_imbalance_reach_candidate_fe",
+        outcome="route_share_five",
+        regressor="log_bridge_imbalance",
+    )
     leave_one_depth = estimates[
         estimates["record_type"].eq("bridge_liquidity_leave_one_candidate_regression")
         & estimates["model_id"].eq("route_share_depth_global_reach_candidate_fe")
@@ -147,6 +168,11 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         and float(horse_depth["p_value"]) < 0.01
         and float(horse_global_day["coefficient"]) > 0
         and float(horse_global_day["p_value"]) < 0.01
+        and float(bottleneck_min["coefficient"]) > 0
+        and float(bottleneck_min["p_value"]) < 0.01
+        and float(bottleneck_max["p_value"]) > 0.05
+        and float(bridge_imbalance["coefficient"]) < 0
+        and float(bridge_imbalance["p_value"]) < 0.01
         and leave_one_depth["coefficient"].astype(float).gt(0).all()
         and leave_one_depth["p_value"].astype(float).lt(0.01).all()
         and float(stable_issuer_support["choice_groups"]) > 1000
@@ -179,6 +205,12 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         f"\\newcommand{{\\BridgeLiquidityHorseRaceDepthSE}}{{{_unsigned_pp(float(horse_depth['standard_error']))}}}",
         f"\\newcommand{{\\BridgeLiquidityHorseRaceGlobalDayCoef}}{{{_signed_pp(float(horse_global_day['coefficient']))}}}",
         f"\\newcommand{{\\BridgeLiquidityHorseRaceGlobalDaySE}}{{{_unsigned_pp(float(horse_global_day['standard_error']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityBottleneckMinCoef}}{{{_signed_pp(float(bottleneck_min['coefficient']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityBottleneckMinSE}}{{{_unsigned_pp(float(bottleneck_min['standard_error']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityBottleneckMaxCoef}}{{{_signed_pp(float(bottleneck_max['coefficient']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityBottleneckMaxSE}}{{{_unsigned_pp(float(bottleneck_max['standard_error']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityImbalanceCoef}}{{{_signed_pp(float(bridge_imbalance['coefficient']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityImbalanceSE}}{{{_unsigned_pp(float(bridge_imbalance['standard_error']))}}}",
         f"\\newcommand{{\\BridgeLiquidityLeaveOneCount}}{{{_integer(float(leave_one_depth['dropped_candidate_symbol'].nunique()))}}}",
         f"\\newcommand{{\\BridgeLiquidityLeaveOneMinCoef}}{{{_signed_pp(float(leave_one_min['coefficient']))}}}",
         f"\\newcommand{{\\BridgeLiquidityLeaveOneMinSE}}{{{_unsigned_pp(float(leave_one_min['standard_error']))}}}",

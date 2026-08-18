@@ -121,6 +121,30 @@ def test_liquidity_behavior_values_render_from_guarded_rows() -> None:
         },
         {
             "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_rank_transition",
+            "horizon_days": 120,
+            "outcome": "future_capital_rank_improvement",
+            "predictor": "stable_total_route_capital_gap_5",
+            "coefficient": 2.20,
+            "standard_error": 0.30,
+            "coefficient_per_10pp_gap": 0.220,
+            "standard_error_per_10pp_gap": 0.030,
+            "p_value": 0.001,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_rank_transition",
+            "horizon_days": 120,
+            "outcome": "future_route_rank_improvement",
+            "predictor": "stable_total_route_capital_gap_5",
+            "coefficient": -2.00,
+            "standard_error": 0.30,
+            "coefficient_per_10pp_gap": -0.200,
+            "standard_error_per_10pp_gap": 0.030,
+            "p_value": 0.001,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
             "record_type": "route_capital_gap_asymmetry",
             "horizon_days": 30,
             "outcome": "future_v2_five_candidate_capital_share_change",
@@ -733,6 +757,8 @@ def test_liquidity_behavior_values_render_from_guarded_rows() -> None:
     assert "\\LiqBehStableControlledGapCoef" in rendered
     assert "\\LiqBehGapCloseMonthCoef" in rendered
     assert "\\LiqBehStableGapCloseMonthCoef" in rendered
+    assert "\\LiqBehStableCapitalRankLongCoef" in rendered
+    assert "\\LiqBehStableRouteRankLongCoef" in rendered
     assert "\\LiqBehStableOverhangMonthCoef" in rendered
     assert "\\LiqBehStableVenueMonthCoef" in rendered
     assert "\\LiqBehStablePoolLongCoef" in rendered

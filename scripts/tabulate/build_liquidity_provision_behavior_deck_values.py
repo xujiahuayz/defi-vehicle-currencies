@@ -165,6 +165,20 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         outcome="future_v2_five_candidate_capital_share_change",
         predictor="stable_total_route_capital_gap_5",
     )
+    stable_capital_rank_long = _single(
+        estimates,
+        record_type="route_capital_gap_rank_transition",
+        horizon_days=120,
+        outcome="future_capital_rank_improvement",
+        predictor="stable_total_route_capital_gap_5",
+    )
+    stable_route_rank_long = _single(
+        estimates,
+        record_type="route_capital_gap_rank_transition",
+        horizon_days=120,
+        outcome="future_route_rank_improvement",
+        predictor="stable_total_route_capital_gap_5",
+    )
     stable_overhang_month = _single(
         estimates,
         record_type="route_capital_gap_asymmetry",
@@ -503,6 +517,13 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
     ):
         raise ValueError("stable-specific route-capital gap closing no longer holds")
     if not (
+        float(stable_capital_rank_long["coefficient"]) > 0
+        and float(stable_capital_rank_long["p_value"]) < 0.01
+        and float(stable_route_rank_long["coefficient"]) < 0
+        and float(stable_route_rank_long["p_value"]) < 0.01
+    ):
+        raise ValueError("stable rank-transition contrast no longer holds")
+    if not (
         float(stable_overhang_month["coefficient"]) > 0
         and float(stable_overhang_long["coefficient"]) > 0
         and float(stable_overhang_month["p_value"]) < 0.01
@@ -658,6 +679,10 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         f"\\newcommand{{\\LiqBehStableGapCloseMonthSE}}{{{_unsigned_pp(float(stable_gap_close_month['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehStableGapCloseLongCoef}}{{{_signed_pp(float(stable_gap_close_long['coefficient_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehStableGapCloseLongSE}}{{{_unsigned_pp(float(stable_gap_close_long['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableCapitalRankLongCoef}}{{{_signed_decimal(float(stable_capital_rank_long['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableCapitalRankLongSE}}{{{_unsigned_decimal(float(stable_capital_rank_long['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableRouteRankLongCoef}}{{{_signed_decimal(float(stable_route_rank_long['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableRouteRankLongSE}}{{{_unsigned_decimal(float(stable_route_rank_long['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehStableOverhangMonthCoef}}{{{_signed_pp(float(stable_overhang_month['effect_per_10pp_stable_overcapitalization']))}}}",
         f"\\newcommand{{\\LiqBehStableOverhangMonthSE}}{{{_unsigned_pp(float(stable_overhang_month['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehStableOverhangLongCoef}}{{{_signed_pp(float(stable_overhang_long['effect_per_10pp_stable_overcapitalization']))}}}",

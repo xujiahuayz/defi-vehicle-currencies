@@ -12,6 +12,7 @@ from scripts.analyze.run_vehicle_formation_exploration import (
     entry_endpoint_history_regressions,
     entry_endpoint_history_summaries,
     entry_follow_panel,
+    entry_path_dependence_regressions,
     entry_regime_hysteresis,
     entry_route_architecture_regressions,
     entry_secure_volume_regressions,
@@ -311,6 +312,86 @@ def test_entry_driver_panel_adds_comparison_year_flag(pair_support_path) -> None
     assert "is_2026_x_direct_share" in panel
     assert "is_2026_x_complex_share" in panel
     assert panel.loc[panel["entry_year"].eq(2026), "is_2026"].eq(1.0).all()
+
+
+def test_entry_path_dependence_regressions_publish_entry_state_driver() -> None:
+    follow_rows = []
+    driver_rows = []
+    for day in range(1, 61):
+        date = pd.Timestamp("2026-01-01") + pd.Timedelta(days=day - 1)
+        entry_shares = (
+            0.01 * (day % 4),
+            0.20 + 0.02 * (day % 5),
+            0.62 + 0.03 * (day % 6),
+        )
+        for index, entry_share in enumerate(entry_shares):
+            src = f"src-{day}-{index}"
+            tgt = f"tgt-{day}-{index}"
+            dominant = float(entry_share > 0.5)
+            stable_endpoint = float(index == 1)
+            direct_share = 0.05 * ((day + index) % 5)
+            complex_share = 0.04 * ((day + 2 * index) % 6)
+            is_2026 = float(day % 2 == 0)
+            follow_share = (
+                0.02
+                + 0.70 * entry_share
+                + 0.08 * dominant
+                + 0.01 * is_2026
+                + 0.02 * direct_share
+                - 0.01 * complex_share
+            )
+            follow_rows.append(
+                {
+                    "horizon_days": 120,
+                    "entry_date": date,
+                    "src": src,
+                    "tgt": tgt,
+                    "entry_primary_routes": 10.0 + day,
+                    "entry_stable_share": entry_share,
+                    "entry_type": (
+                        "stable_dominant_entry"
+                        if dominant
+                        else (
+                            "stable_present_entry"
+                            if entry_share > 0
+                            else "native_only_entry"
+                        )
+                    ),
+                    "stable_share": follow_share,
+                    "stable_dominant_followup": float(follow_share > 0.5),
+                }
+            )
+            driver_rows.append(
+                {
+                    "date": date,
+                    "src": src,
+                    "tgt": tgt,
+                    "stable_endpoint": stable_endpoint,
+                    "is_2026": is_2026,
+                    "log_entry_routes": np.log1p(10.0 + day),
+                    "direct_share": direct_share,
+                    "complex_share": complex_share,
+                }
+            )
+    result = entry_path_dependence_regressions(
+        pd.DataFrame(follow_rows),
+        pd.DataFrame(driver_rows),
+        min_observations=100,
+        min_clusters=20,
+    )
+    share_driver = result[
+        result["outcome"].eq("stable_share")
+        & result["predictor"].eq("entry_stable_share")
+    ].iloc[0]
+    dominant_driver = result[
+        result["outcome"].eq("stable_dominant_followup")
+        & result["predictor"].eq("entry_stable_dominant")
+    ].iloc[0]
+
+    assert result["record_type"].eq("entry_path_dependence_regression").all()
+    assert share_driver["coefficient"] > 0.6
+    assert dominant_driver["coefficient"] > 0
+    assert np.isfinite(share_driver["standard_error"])
 
 
 def test_entry_endpoint_history_panel_flags_missing_endpoint_price_history(

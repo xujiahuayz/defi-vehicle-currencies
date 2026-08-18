@@ -29,6 +29,8 @@ from scripts.analyze.run_liquidity_provision_behavior_exploration import (
     route_capital_gap_pool_entry_horizon_panel,
     route_capital_gap_pool_entry_response,
     route_capital_gap_pool_candidate_horizon_panel,
+    route_capital_gap_rank_transition,
+    route_capital_gap_rank_transition_panel,
     route_capital_gap_same_pool_reallocation,
     route_capital_gap_v3_fee_horizon_panel,
     route_capital_gap_v3_fee_incidence,
@@ -308,6 +310,58 @@ def test_route_capital_gap_closing_stable_interaction_reports_total_effect() -> 
     ].iloc[0]
     assert stable_total["coefficient"] > interaction["coefficient"]
     assert stable_total["coefficient_per_10pp_gap_pp"] > 0
+
+
+def test_rank_transition_reports_stable_capital_rank_catchup() -> None:
+    rows = []
+    symbols = ["WETH", "WBTC", "USDC", "USDT", "DAI"]
+    capital = {"WETH": 100, "WBTC": 30, "USDC": 20, "USDT": 15, "DAI": 10}
+    for day_index, day in enumerate(pd.date_range("2024-01-01", periods=220, freq="D")):
+        route_counts = {
+            "WETH": 30 + day_index % 3,
+            "WBTC": 15 + day_index % 5,
+            "USDC": 45 + day_index % 7,
+            "USDT": 35 + day_index % 11,
+            "DAI": 20 + day_index % 13,
+        }
+        for symbol in symbols:
+            is_stable = symbol in {"DAI", "USDC", "USDT"}
+            target_capital_share = (
+                0.45 + 0.001 * (day_index % 9)
+                if symbol == "WETH"
+                else 0.10 + 0.002 * (day_index % 7)
+            )
+            if is_stable:
+                target_capital_share += 0.03 * route_counts[symbol] / 100
+            rows.append(
+                {
+                    "origin_date": day,
+                    "candidate_address": symbol.lower(),
+                    "candidate_symbol": symbol,
+                    "horizon_days": 120,
+                    "route_exact_target_supported": True,
+                    "v2_exact_target_supported": True,
+                    "intermediate_route_count": route_counts[symbol],
+                    "endpoint_route_count": 10,
+                    "v2_deposited_capital_usd": capital[symbol],
+                    "v2_candidate_pool_count": 1,
+                    "v2_candidate_venue_count": 1,
+                    "target_intermediary_episode_share": route_counts[symbol] / 150,
+                    "target_v2_five_candidate_capital_share": target_capital_share,
+                }
+            )
+    panel = route_capital_gap_rank_transition_panel(pd.DataFrame(rows))
+    result = route_capital_gap_rank_transition(
+        panel,
+        min_observations=100,
+        min_clusters=20,
+    )
+    stable_total = result[
+        result["predictor"].eq("stable_total_route_capital_gap_5")
+        & result["outcome"].eq("future_capital_rank_improvement")
+    ].iloc[0]
+    assert stable_total["record_type"] == "route_capital_gap_rank_transition"
+    assert stable_total["coefficient"] > 0
 
 
 def test_route_capital_gap_candidate_specific_reports_symbol_slopes() -> None:

@@ -25,7 +25,7 @@ question and literature                    done
   → cleaned and analysis-ready data        ready for the two active claim families
   → registered baseline analysis           done; findings check green
   → repository cleanup and host sync        done; one checkout per host
-  → presentable paper/deck trunk            52/45 pages; rebuild after admitted changes
+  → presentable paper/deck trunk            53/46 pages; rebuild after admitted changes
         status labels                      provisional / registered / confirmed
         review snapshots                   versioned and shareable while work continues
 
@@ -51,7 +51,7 @@ reproducible, but not yet submission-ready. The current research mode is
 parallel: keep the paper and slides presentable, integrate provisional results
 with explicit status labels, and continue the scoped mechanism and review loops.
 Current provisional layers cover vehicle birth, active-day birth-state
-hysteresis, non-WETH entry drivers, route-architecture entry interactions,
+hysteresis, controlled entry-state path dependence, non-WETH entry drivers, route-architecture entry interactions,
 large-entrant routing, thin-market turn-on with a direct-route by thinness
 interaction, rolling native-only-to-stable turn-on hazards, same-day and
 prior-30-day candidate-network reach inside observed mixed-risk-set rival checks,

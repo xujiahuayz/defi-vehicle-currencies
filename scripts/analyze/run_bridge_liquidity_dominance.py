@@ -357,9 +357,23 @@ def load_bridge_liquidity_panel(
     frame["log_bridge_min_capital"] = np.log1p(
         frame["bridge_min_capital_usd"].astype(float)
     )
+    frame["log_bridge_max_capital"] = np.log1p(
+        np.maximum(
+            frame["leg1_capital_usd"].astype(float),
+            frame["leg2_capital_usd"].astype(float),
+        )
+    )
+    frame["log_bridge_sum_capital"] = np.log1p(
+        frame["leg1_capital_usd"].astype(float)
+        + frame["leg2_capital_usd"].astype(float)
+    )
     frame["log_bridge_geom_capital"] = np.log1p(
         frame["bridge_geom_capital_usd"].astype(float)
     )
+    frame["log_bridge_imbalance"] = (
+        np.log1p(frame["leg1_capital_usd"].astype(float))
+        - np.log1p(frame["leg2_capital_usd"].astype(float))
+    ).abs()
     frame["log_bridge_min_capital_x_stable"] = (
         frame["log_bridge_min_capital"] * frame["is_stable"].astype(float)
     )
@@ -376,7 +390,11 @@ def load_bridge_liquidity_panel(
         "five_route_total",
         "bridge_min_capital_usd",
         "log_bridge_min_capital",
+        "log_bridge_max_capital",
+        "log_bridge_sum_capital",
         "log_bridge_min_capital_x_stable",
+        "log_bridge_geom_capital",
+        "log_bridge_imbalance",
         "log_global_route_count_day_leaveout",
         "log_global_route_count_lag30",
         "log_global_pair_count_lag30",
@@ -566,6 +584,115 @@ def bridge_liquidity_horse_race_regressions(
                     ),
                     "interpretation": (
                         "local prior bridge-depth association conditional on "
+                        "candidate network reach; descriptive, not causal"
+                    ),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def bridge_liquidity_bottleneck_regressions(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 1000,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Test whether route share follows the weak bridge leg rather than bulk depth."""
+
+    specs = (
+        (
+            "route_share_min_max_depth_reach_candidate_fe",
+            (
+                "log_bridge_min_capital",
+                "log_bridge_max_capital",
+                "log_global_route_count_day_leaveout",
+                "log_global_route_count_lag30",
+                "log_global_pair_count_lag30",
+            ),
+            (
+                "Does the weaker local bridge leg matter after the stronger leg "
+                "and candidate reach are held fixed?"
+            ),
+        ),
+        (
+            "route_share_geom_imbalance_reach_candidate_fe",
+            (
+                "log_bridge_geom_capital",
+                "log_bridge_imbalance",
+                "log_global_route_count_day_leaveout",
+                "log_global_route_count_lag30",
+                "log_global_pair_count_lag30",
+            ),
+            (
+                "Does unbalanced two-leg liquidity reduce route share at a given "
+                "geometric bridge depth?"
+            ),
+        ),
+    )
+    rows: list[dict[str, object]] = []
+    for model_id, regressors, question in specs:
+        columns = [
+            "route_share_five",
+            *regressors,
+            "choice_group_id",
+            "candidate_address",
+            "origin_date",
+            "ordered_pair",
+            "five_route_total",
+        ]
+        data = (
+            panel.loc[:, columns]
+            .replace([np.inf, -np.inf], np.nan)
+            .dropna()
+            .copy()
+        )
+        residual = absorb_fixed_effects(
+            data[["route_share_five", *regressors]],
+            data["choice_group_id"],
+            data["candidate_address"],
+            weights=data["five_route_total"],
+        )
+        fit = ols_clustered(
+            residual["route_share_five"],
+            residual[list(regressors)],
+            data["ordered_pair"],
+            add_constant=False,
+            absorbed_groups=(data["choice_group_id"], data["candidate_address"]),
+            additional_clusters=(data["origin_date"],),
+            weights=data["five_route_total"],
+            min_observations=min_observations,
+            min_clusters=min_clusters,
+        )
+        for index, regressor in enumerate(regressors):
+            coefficient = float(fit.beta[index])
+            standard_error = float(fit.standard_errors[index])
+            rows.append(
+                {
+                    "claim_status": "provisional_exploratory",
+                    "record_type": "bridge_liquidity_bottleneck_regression",
+                    "model_id": model_id,
+                    "question": question,
+                    "outcome": "route_share_five",
+                    "regressor": regressor,
+                    "coefficient": coefficient,
+                    "standard_error": standard_error,
+                    "t_statistic": float(fit.t_statistics[index]),
+                    "p_value": float(fit.p_values[index]),
+                    "coefficient_pp_per_log_point": 100.0 * coefficient,
+                    "standard_error_pp_per_log_point": 100.0 * standard_error,
+                    "n_observations": int(fit.n_observations),
+                    "ordered_pair_clusters": int(fit.cluster_counts[0]),
+                    "date_clusters": int(fit.cluster_counts[1]),
+                    "fixed_effects": "ordered_ultimate_pair_date_scope+candidate",
+                    "covariance": "two_way_ordered_pair_date_cr1",
+                    "weight": "five_candidate_route_count",
+                    "capital_status": CAPITAL_STATUS,
+                    "candidate_reach_quantity": (
+                        "same-day leave-one-out and prior-30-day five-candidate "
+                        "route reach in endpoint_candidate_choices"
+                    ),
+                    "interpretation": (
+                        "local bridge-bottleneck association conditional on "
                         "candidate network reach; descriptive, not causal"
                     ),
                 }
@@ -1001,6 +1128,7 @@ def run(
             bridge_liquidity_top_rank_summaries(panel),
             bridge_liquidity_depth_regressions(panel),
             bridge_liquidity_horse_race_regressions(panel),
+            bridge_liquidity_bottleneck_regressions(panel),
             bridge_liquidity_leave_one_candidate_regressions(panel),
             bridge_liquidity_stable_issuer_regressions(panel),
         ],

@@ -1276,6 +1276,142 @@ def persistence_contrasts(follow: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def entry_path_dependence_regressions(
+    follow: pd.DataFrame,
+    driver_panel: pd.DataFrame,
+    *,
+    min_observations: int = 1000,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Fit controlled screens for whether entry vehicle state predicts follow-up state."""
+
+    required_follow = {
+        "horizon_days",
+        "entry_date",
+        "src",
+        "tgt",
+        "entry_primary_routes",
+        "entry_stable_share",
+        "entry_type",
+        "stable_share",
+        "stable_dominant_followup",
+    }
+    missing_follow = sorted(required_follow - set(follow.columns))
+    if missing_follow:
+        raise ValueError(f"entry follow panel lacks path-dependence columns: {missing_follow}")
+    required_driver = {
+        "date",
+        "src",
+        "tgt",
+        "stable_endpoint",
+        "is_2026",
+        "log_entry_routes",
+        "direct_share",
+        "complex_share",
+    }
+    missing_driver = sorted(required_driver - set(driver_panel.columns))
+    if missing_driver:
+        raise ValueError(f"entry driver panel lacks path-dependence columns: {missing_driver}")
+    controls = [
+        "entry_stable_share",
+        "entry_stable_dominant",
+        "is_2026",
+        "stable_endpoint",
+        "log_entry_routes",
+        "direct_share",
+        "complex_share",
+    ]
+    driver_columns = [
+        "date",
+        "src",
+        "tgt",
+        "stable_endpoint",
+        "is_2026",
+        "log_entry_routes",
+        "direct_share",
+        "complex_share",
+    ]
+    data = follow.merge(
+        driver_panel[driver_columns],
+        left_on=["entry_date", "src", "tgt"],
+        right_on=["date", "src", "tgt"],
+        how="inner",
+        validate="one_to_one",
+    ).copy()
+    if data.empty:
+        raise ValueError("entry path-dependence regression has no non-WETH entrants")
+    data["entry_stable_dominant"] = data["entry_type"].eq(
+        "stable_dominant_entry"
+    ).astype(float)
+    rows: list[dict[str, object]] = []
+    for outcome in ("stable_share", "stable_dominant_followup"):
+        sample = (
+            data[
+                [
+                    "horizon_days",
+                    "entry_date",
+                    "entry_primary_routes",
+                    outcome,
+                    *controls,
+                ]
+            ]
+            .replace([np.inf, -np.inf], np.nan)
+            .dropna()
+        )
+        fit = ols_clustered(
+            sample[outcome].astype(float),
+            sample[controls].astype(float),
+            sample["entry_date"],
+            weights=sample["entry_primary_routes"].astype(float),
+            min_observations=min_observations,
+            min_clusters=min_clusters,
+        )
+        for name, beta, se, t_stat, p_value in zip(
+            ("constant", *controls),
+            fit.beta,
+            fit.standard_errors,
+            fit.t_statistics,
+            fit.p_values,
+            strict=True,
+        ):
+            coefficient = float(beta)
+            standard_error = float(se)
+            rows.append(
+                {
+                    "record_type": "entry_path_dependence_regression",
+                    "horizon_days": int(sample["horizon_days"].iloc[0]),
+                    "sample": "non_weth_endpoint",
+                    "outcome": outcome,
+                    "predictor": name,
+                    "coefficient": coefficient,
+                    "coefficient_pp": 100.0 * coefficient,
+                    "coefficient_per_10pp_entry_share": (
+                        0.10 * coefficient
+                        if name == "entry_stable_share"
+                        else np.nan
+                    ),
+                    "standard_error": standard_error,
+                    "standard_error_pp": 100.0 * standard_error,
+                    "standard_error_per_10pp_entry_share": (
+                        0.10 * standard_error
+                        if name == "entry_stable_share"
+                        else np.nan
+                    ),
+                    "t_statistic": float(t_stat),
+                    "p_value": float(p_value),
+                    "observations": int(fit.n_observations),
+                    "entry_date_clusters": int(fit.n_clusters),
+                    "weighted_by": "entry_primary_choice_routes",
+                    "covariance_id": "entry_date_cluster_cr1",
+                    "controls": ",".join(controls),
+                    "interpretation": (
+                        "exploratory_entry_vehicle_state_persistence_not_causal"
+                    ),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
 def support_records(
     *,
     pair_support_path: Path,
@@ -1365,6 +1501,10 @@ def build_results(
     ]
     summaries = [persistence_summary(panel) for panel in follow_panels]
     contrasts = [persistence_contrasts(panel) for panel in follow_panels]
+    path_dependence = [
+        entry_path_dependence_regressions(panel, driver_panel)
+        for panel in follow_panels
+    ]
     hysteresis = [
         entry_regime_hysteresis(horizon, pair_support_path=pair_support_path)
         for horizon in HORIZONS
@@ -1384,6 +1524,7 @@ def build_results(
             endpoint_history_regressions,
             *summaries,
             *contrasts,
+            *path_dependence,
             *hysteresis,
         ],
         ignore_index=True,

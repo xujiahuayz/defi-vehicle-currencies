@@ -7,6 +7,7 @@ from pathlib import Path
 import pandas as pd
 
 from scripts.analyze.run_bridge_liquidity_dominance import (
+    bridge_liquidity_bottleneck_regressions,
     bridge_liquidity_depth_regressions,
     bridge_liquidity_horse_race_regressions,
     bridge_liquidity_leave_one_candidate_regressions,
@@ -266,6 +267,82 @@ def test_bridge_liquidity_horse_race_keeps_local_depth_slope() -> None:
     assert row["coefficient"] > 0
 
 
+def test_bridge_liquidity_bottleneck_penalizes_unbalanced_legs() -> None:
+    rows = []
+    candidates = [(WETH, 0.0), (USDC, 1.0), (DAI, 1.0)]
+    for group_index in range(190):
+        day = pd.Timestamp("2024-01-01") + pd.Timedelta(days=group_index)
+        group_effect = 0.0006 * group_index
+        for candidate_index, (candidate, is_stable) in enumerate(candidates):
+            log_min = (
+                4.4
+                + 0.45 * candidate_index
+                + math.sin(group_index / 10 + 0.7 * candidate_index)
+                + 0.02 * ((group_index * (candidate_index + 3)) % 7)
+            )
+            imbalance = (
+                0.2
+                + 0.08 * ((group_index + 2 * candidate_index) % 9)
+                + 0.15 * abs(math.cos(group_index / 15 + candidate_index))
+            )
+            log_max = log_min + imbalance
+            log_geom = 0.5 * (log_min + log_max)
+            global_reach = (
+                1.8
+                + 0.012 * group_index
+                + 0.4 * candidate_index
+                + math.cos(group_index / 12 + candidate_index)
+            )
+            lag_route_reach = (
+                1.2
+                + 0.02 * ((group_index * (candidate_index + 4)) % 17)
+                + 0.3 * math.sin(group_index / 18 + 0.4 * candidate_index)
+            )
+            lag_pair_reach = (
+                0.9
+                + 0.02 * ((group_index + candidate_index) % 13)
+                + 0.2 * math.cos(group_index / 20 + 0.5 * candidate_index)
+            )
+            rows.append(
+                {
+                    "choice_group_id": f"g{group_index}",
+                    "candidate_address": candidate,
+                    "origin_date": day,
+                    "ordered_pair": f"pair{group_index % 47}",
+                    "five_route_total": 18.0 + group_index % 5,
+                    "route_share_five": (
+                        0.060 * log_min
+                        - 0.025 * log_max
+                        + 0.018 * global_reach
+                        + group_effect
+                        + 0.008 * is_stable
+                    ),
+                    "log_bridge_min_capital": log_min,
+                    "log_bridge_max_capital": log_max,
+                    "log_bridge_geom_capital": log_geom,
+                    "log_bridge_imbalance": imbalance,
+                    "log_global_route_count_day_leaveout": global_reach,
+                    "log_global_route_count_lag30": lag_route_reach,
+                    "log_global_pair_count_lag30": lag_pair_reach,
+                }
+            )
+    result = bridge_liquidity_bottleneck_regressions(
+        pd.DataFrame(rows),
+        min_observations=100,
+        min_clusters=10,
+    )
+    weak_leg = result[
+        result["model_id"].eq("route_share_min_max_depth_reach_candidate_fe")
+        & result["regressor"].eq("log_bridge_min_capital")
+    ].iloc[0]
+    imbalance_penalty = result[
+        result["model_id"].eq("route_share_geom_imbalance_reach_candidate_fe")
+        & result["regressor"].eq("log_bridge_imbalance")
+    ].iloc[0]
+    assert weak_leg["coefficient"] > 0
+    assert imbalance_penalty["coefficient"] < 0
+
+
 def test_bridge_liquidity_leave_one_keeps_local_depth_slope() -> None:
     rows = []
     candidates = [
@@ -494,6 +571,36 @@ def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
                 "standard_error": 0.028,
                 "p_value": 0.004,
             },
+            {
+                "claim_status": "provisional_exploratory",
+                "record_type": "bridge_liquidity_bottleneck_regression",
+                "model_id": "route_share_min_max_depth_reach_candidate_fe",
+                "outcome": "route_share_five",
+                "regressor": "log_bridge_min_capital",
+                "coefficient": 0.065,
+                "standard_error": 0.012,
+                "p_value": 0.001,
+            },
+            {
+                "claim_status": "provisional_exploratory",
+                "record_type": "bridge_liquidity_bottleneck_regression",
+                "model_id": "route_share_min_max_depth_reach_candidate_fe",
+                "outcome": "route_share_five",
+                "regressor": "log_bridge_max_capital",
+                "coefficient": -0.038,
+                "standard_error": 0.022,
+                "p_value": 0.08,
+            },
+            {
+                "claim_status": "provisional_exploratory",
+                "record_type": "bridge_liquidity_bottleneck_regression",
+                "model_id": "route_share_geom_imbalance_reach_candidate_fe",
+                "outcome": "route_share_five",
+                "regressor": "log_bridge_imbalance",
+                "coefficient": -0.054,
+                "standard_error": 0.011,
+                "p_value": 0.001,
+            },
             *[
                 {
                     "claim_status": "provisional_exploratory",
@@ -557,5 +664,7 @@ def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
     assert "\\BridgeLiquidityTopShare" in rendered
     assert "\\BridgeLiquidityStableLogTotalCoef" in rendered
     assert "\\BridgeLiquidityHorseRaceDepthCoef" in rendered
+    assert "\\BridgeLiquidityBottleneckMinCoef" in rendered
+    assert "\\BridgeLiquidityImbalanceCoef" in rendered
     assert "\\BridgeLiquidityLeaveOneMinCoef" in rendered
     assert "\\BridgeLiquidityStableIssuerUsdtTwentySixCoef" in rendered

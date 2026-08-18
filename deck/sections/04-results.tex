@@ -222,9 +222,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.44cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.4}{9.4}\selectfont Among 2026 entrants, state is sticky: stable-born pairs stay at \FormationThirtyStableBirthStableShare{}, native-born pairs at \FormationThirtyNativeBirthStableShare{}. Secure volume shows up: stable-endpoint entrants route \FormationSecureStableEndpointShareEnd{} through stablecoins, versus \FormationSecureOtherEndpointShareEnd{} otherwise.\par}
+{\fontsize{8.4}{9.4}\selectfont Entrant state sticks: 2026 stable-born pairs stay at \FormationThirtyStableBirthStableShare{}, native-born at \FormationThirtyNativeBirthStableShare{}. With controls, +10 pp entry stable share predicts \FormationPathEntryShareOneTwentyCoef{} at 120 days. Stable endpoints route \FormationSecureStableEndpointShareEnd{} through stablecoins, versus \FormationSecureOtherEndpointShareEnd{} otherwise.\par}
 \end{minipage}}
-\decknote{Entrants are ordered ultimate pairs first observed in the matched January-June endpoint window with positive native-plus-stable route mass. WETH endpoints carry \FormationWethEntryRouteMassEnd{} of 2026 entrant mass; excluding them, entry stable share rises from \FormationNonWethEntryStableShareBase{} to \FormationNonWethEntryStableShareEnd{}. Stable endpoint entrants carry \FormationSecureStableEndpointMassEnd{} of non-WETH entrant mass; their gap expands by \FormationSecureGapChange{}, and the architecture-controlled 2026 term is \FormationSecureVolumeDriver{} with SE \FormationSecureVolumeDriverSE{}. USDC/USDT carry \FormationStableEntryTopTwoShareEnd{} of stable entry. Descriptive association only.}
+\decknote{Entrants are ordered pairs first observed in the matched January-June endpoint window with positive native-plus-stable route mass. WETH endpoints carry \FormationWethEntryRouteMassEnd{} of 2026 entrant mass. Path screen uses \FormationPathDependenceRows{} non-WETH entrants, entry size, year, endpoint, direct-share, and complex-share controls. Stable-endpoint gap expands by \FormationSecureGapChange{}. Descriptive association only.}
 \end{frame}
 
 % EVIDENCE-STATUS: exploratory stress-event identity and LP-capital screen
@@ -394,7 +394,7 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 % EVIDENCE-STATUS: provisional exploratory local-depth and candidate-reach mechanism screen
 % EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl; output/exhibits/bridge_liquidity_dominance_support.jsonl; output/exhibits/bridge_liquidity_deck_values.tex
 % SCIENTIFIC-BOUNDARY: prior-calendar deposited capital on the two atomic legs of A-candidate-C routes; not active concentrated-liquidity depth, executable quote size, provider returns, or causal liquidity supply
-% ESTIMAND-BOUNDARY: five-candidate endpoint-date-scope risk sets with at least two locally supported candidates; top-bridge rows rank candidates by the weaker of the two prior-capital legs; horse-race rows absorb endpoint-date-scope and candidate effects, control for same-day and prior-30-day route reach, and cluster by ordered pair and date; stable-issuer rows restrict to DAI/USDC/USDT supported opportunities with at least two stable candidates
+% ESTIMAND-BOUNDARY: five-candidate endpoint-date-scope risk sets with at least two locally supported candidates; top-bridge rows rank candidates by the weaker of the two prior-capital legs; horse-race and bottleneck rows absorb endpoint-date-scope and candidate effects, control for same-day and prior-30-day route reach, and cluster by ordered pair and date; stable-issuer rows restrict to DAI/USDC/USDT supported opportunities with at least two stable candidates
 % VISUAL-FUNCTION: local bridge depth | three-stat mechanism screen | show that route choices concentrate on corridor-specific depth after candidate-reach controls
 \begin{frame}{Routes follow local bridges, not only popular vehicles}
 \vspace{0.08cm}
@@ -417,9 +417,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.36cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.2}{9.2}\selectfont Deepest prior bridge carries most route mass. After reach controls, local depth remains \BridgeLiquidityHorseRaceDepthCoef{}. In stable-only cells, 2026 USDT adds \BridgeLiquidityStableIssuerUsdtTwentySixCoef{} versus DAI.\par}
+{\fontsize{8.2}{9.2}\selectfont Deepest prior bridge carries most route mass. After reach controls, weak-leg depth remains \BridgeLiquidityBottleneckMinCoef{} and leg imbalance predicts \BridgeLiquidityImbalanceCoef{}. In stable-only cells, 2026 USDT adds \BridgeLiquidityStableIssuerUsdtTwentySixCoef{} versus DAI.\par}
 \end{minipage}}
-\decknote{Five candidates; \BridgeLiquidityRows{} candidate rows, \BridgeLiquidityPairs{} pairs, \BridgeLiquidityDays{} days. Depth is the smaller prior-capital bridge leg. Reach uses same-day and prior-30-day routes. Stable-issuer rows use \BridgeLiquidityStableIssuerGroups{} DAI/USDC/USDT cells across \BridgeLiquidityStableIssuerPairs{} pairs. Association only.}
+\decknote{Five candidates; \BridgeLiquidityRows{} candidate rows, \BridgeLiquidityPairs{} pairs, \BridgeLiquidityDays{} days. Depth is the smaller prior-capital bridge leg. Bottleneck rows add stronger-leg or leg-imbalance controls. Reach uses same-day and prior-30-day routes. Stable-issuer rows use \BridgeLiquidityStableIssuerGroups{} DAI/USDC/USDT cells. Association only.}
 \end{frame}
 
 % EVIDENCE-STATUS: provisional exploratory dynamic local-bridge feedback screen
@@ -451,7 +451,7 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 % EVIDENCE-STATUS: exploratory descriptive allocation result
 % EVIDENCE-SOURCES: output/exhibits/liquidity_provision_behavior_exploration.jsonl; output/exhibits/liquidity_provision_behavior_support.jsonl; output/exhibits/liquidity_provision_behavior_deck_values.tex
 % SCIENTIFIC-BOUNDARY: V2 deposited-capital stock over five vehicle candidates plus Uniswap v3 mint/burn event counts; not provider inflow, active concentrated-liquidity depth, or executable quote size
-% ESTIMAND-BOUNDARY: daily five-candidate panel with route and V2 capital support; leader rows are same-day rankings, gap rows are within-day route-share minus capital-share associations, exact-horizon rows are future capital-share changes, stable-basket rows aggregate DAI/USDC/USDT and use 30-day calendar HAC with activity controls, same-pool rows follow pool-candidate capital, pool-entry rows split target V2 capital by pools active at origin versus newly active by the target date, fee rows follow processed V3 pool-day fees and volume, V3 LP-action rows follow raw mint/burn event counts through processed pool metadata, and FE rows are contemporaneous level associations
+% ESTIMAND-BOUNDARY: daily five-candidate panel with route and V2 capital support; leader rows are same-day rankings, gap rows are within-day route-share minus capital-share associations, exact-horizon rows are future capital-share and rank changes, stable-basket rows aggregate DAI/USDC/USDT and use 30-day calendar HAC with activity controls, same-pool rows follow pool-candidate capital, pool-entry rows split target V2 capital by pools active at origin versus newly active by the target date, fee rows follow processed V3 pool-day fees and volume, V3 LP-action rows follow raw mint/burn event counts through processed pool metadata, and FE rows are contemporaneous level associations
 % VISUAL-FUNCTION: capital-use split | three-stat allocation contrast | show that provider capital remains native-heavy while stablecoins carry excess vehicle use
 \begin{frame}{Provider capital stays native-heavy}
 \vspace{0.10cm}
@@ -474,9 +474,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.44cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.4}{9.4}\selectfont Stable route share rises while capital share falls. A 10 pp shortfall predicts \LiqBehStableBasketGapLongCoef{} stable capital, \LiqBehWethBasketGapLongCoef{} WETH capital, and \LiqBehStablePoolEntryIncumbentLongCoef{} incumbent-pool capital. USDT V3 actions rise, but net balance is \LiqBehUsdtVThreeNetMintMonthCoef{}.\par}
+{\fontsize{8.4}{9.4}\selectfont Stable route share rises while capital share falls. A 10 pp stable shortfall moves capital rank \LiqBehStableCapitalRankLongCoef{} by 120 days while route rank moves \LiqBehStableRouteRankLongCoef{}; incumbent-pool capital rises \LiqBehStablePoolEntryIncumbentLongCoef{}. USDT V3 actions rise, net balance \LiqBehUsdtVThreeNetMintMonthCoef{}.\par}
 \end{minipage}}
-\decknote{Five-candidate V2 deposited-capital panel. Stable-basket rows use activity controls/HAC. Pool split is candidate/date FE over exact-state V2 pool capital. Concentration compares stable and non-stable top-pool shares. V3 action screen: \LiqBehVThreeLpActionRows{} candidate-date rows, issuer-specific gap interactions, mint and burn counts, not dollar provider flow.}
+\decknote{Five-candidate V2 deposited-capital panel. Stable-basket rows use activity controls/HAC. Rank rows order the five candidates within origin day and exact target horizon; positive means closer to the top share. Pool split is candidate/date FE over exact-state V2 pool capital. V3 screen: \LiqBehVThreeLpActionRows{} candidate-date rows, mint and burn counts, not dollar provider flow.}
 \end{frame}
 
 % EVIDENCE-STATUS: current predictive mechanism result; the reciprocal rule records a non-pass

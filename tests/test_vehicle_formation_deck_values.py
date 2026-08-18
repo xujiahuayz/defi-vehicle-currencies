@@ -79,6 +79,52 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
                 "standard_error": 0.01,
             },
             {
+                "record_type": "entry_path_dependence_regression",
+                "horizon_days": 30,
+                "sample": "non_weth_endpoint",
+                "outcome": "stable_share",
+                "predictor": "entry_stable_share",
+                "entry_year": None,
+                "primary_routes": None,
+                "stable_share": None,
+                "coefficient": 0.80,
+                "standard_error": 0.05,
+                "coefficient_per_10pp_entry_share": 0.080,
+                "standard_error_per_10pp_entry_share": 0.005,
+                "p_value": 0.001,
+                "observations": 1000,
+            },
+            {
+                "record_type": "entry_path_dependence_regression",
+                "horizon_days": 120,
+                "sample": "non_weth_endpoint",
+                "outcome": "stable_share",
+                "predictor": "entry_stable_share",
+                "entry_year": None,
+                "primary_routes": None,
+                "stable_share": None,
+                "coefficient": 0.70,
+                "standard_error": 0.08,
+                "coefficient_per_10pp_entry_share": 0.070,
+                "standard_error_per_10pp_entry_share": 0.008,
+                "p_value": 0.001,
+                "observations": 900,
+            },
+            {
+                "record_type": "entry_path_dependence_regression",
+                "horizon_days": 120,
+                "sample": "non_weth_endpoint",
+                "outcome": "stable_dominant_followup",
+                "predictor": "entry_stable_dominant",
+                "entry_year": None,
+                "primary_routes": None,
+                "stable_share": None,
+                "coefficient": 0.60,
+                "standard_error": 0.10,
+                "p_value": 0.001,
+                "observations": 900,
+            },
+            {
                 "record_type": "entry_regime_hysteresis",
                 "horizon_days": 30,
                 "entry_year": 2026,
@@ -260,6 +306,9 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
     assert "5.0\\%" in rendered
     assert "$+97.0$ pp" in rendered
     assert "$+98.0$ pp" in rendered
+    assert "\\FormationPathEntryShareThirtyCoef" in rendered
+    assert "\\FormationPathEntryShareOneTwentyCoef" in rendered
+    assert "\\FormationPathDominantOneTwentyCoef" in rendered
     assert "\\FormationNonWethEntryStableShareEnd" in rendered
     assert "\\FormationStableEntryTopTwoShareEnd" in rendered
     assert "99.6\\%" in rendered

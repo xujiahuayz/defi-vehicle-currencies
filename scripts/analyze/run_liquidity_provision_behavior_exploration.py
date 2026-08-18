@@ -302,6 +302,212 @@ def route_capital_gap_horizon_panel(exact_horizons: pd.DataFrame) -> pd.DataFram
     return sample
 
 
+def route_capital_gap_rank_transition_panel(exact_horizons: pd.DataFrame) -> pd.DataFrame:
+    """Attach origin route-capital gaps to future route and capital rank changes."""
+
+    required = {
+        "origin_date",
+        "candidate_address",
+        "candidate_symbol",
+        "horizon_days",
+        "route_exact_target_supported",
+        "v2_exact_target_supported",
+        "intermediate_route_count",
+        "v2_deposited_capital_usd",
+        "target_intermediary_episode_share",
+        "target_v2_five_candidate_capital_share",
+    }
+    missing = sorted(required - set(exact_horizons.columns))
+    if missing:
+        raise ValueError(f"exact-horizon panel lacks rank-transition columns: {missing}")
+    sample = exact_horizons[
+        exact_horizons["route_exact_target_supported"].astype(bool)
+        & exact_horizons["v2_exact_target_supported"].astype(bool)
+    ].copy()
+    sample["origin_date"] = pd.to_datetime(sample["origin_date"], errors="raise")
+    sample["horizon_days"] = sample["horizon_days"].astype(int)
+    sample["is_stable"] = sample["candidate_symbol"].isin(STABLE_SYMBOLS).astype(float)
+    by_origin_horizon = sample.groupby(["origin_date", "horizon_days"], sort=True)
+    sample["route_total_5"] = by_origin_horizon["intermediate_route_count"].transform(
+        "sum"
+    ).astype(float)
+    sample["capital_total_5"] = by_origin_horizon["v2_deposited_capital_usd"].transform(
+        "sum"
+    ).astype(float)
+    sample = sample[
+        sample["route_total_5"].gt(0.0)
+        & sample["capital_total_5"].gt(0.0)
+    ].copy()
+    sample["route_share_5"] = (
+        sample["intermediate_route_count"].astype(float) / sample["route_total_5"]
+    )
+    sample["capital_share_5"] = (
+        sample["v2_deposited_capital_usd"].astype(float) / sample["capital_total_5"]
+    )
+    sample["route_capital_gap_5"] = sample["route_share_5"] - sample["capital_share_5"]
+    rank_group = sample.groupby(["origin_date", "horizon_days"], sort=True)
+    sample["origin_capital_rank"] = rank_group["capital_share_5"].rank(
+        ascending=False,
+        method="average",
+    )
+    sample["origin_route_rank"] = rank_group["route_share_5"].rank(
+        ascending=False,
+        method="average",
+    )
+    sample["future_capital_rank"] = rank_group[
+        "target_v2_five_candidate_capital_share"
+    ].rank(
+        ascending=False,
+        method="average",
+    )
+    sample["future_route_rank"] = rank_group["target_intermediary_episode_share"].rank(
+        ascending=False,
+        method="average",
+    )
+    sample["future_capital_rank_improvement"] = (
+        sample["origin_capital_rank"] - sample["future_capital_rank"]
+    )
+    sample["future_route_rank_improvement"] = (
+        sample["origin_route_rank"] - sample["future_route_rank"]
+    )
+    required_values = [
+        "route_capital_gap_5",
+        "future_capital_rank_improvement",
+        "future_route_rank_improvement",
+    ]
+    sample = sample.replace([np.inf, -np.inf], np.nan).dropna(subset=required_values)
+    if sample.empty:
+        raise ValueError("route-capital rank-transition panel is empty")
+    return sample
+
+
+def route_capital_gap_rank_transition(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 1000,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Test whether route-capital gaps forecast future capital and route ranks."""
+
+    rows: list[dict[str, object]] = []
+    outcomes = (
+        "future_capital_rank_improvement",
+        "future_route_rank_improvement",
+    )
+    for horizon, group in panel.groupby("horizon_days", sort=True):
+        for outcome in outcomes:
+            data = (
+                group[
+                    [
+                        "origin_date",
+                        "candidate_address",
+                        "is_stable",
+                        "route_capital_gap_5",
+                        outcome,
+                    ]
+                ]
+                .replace([np.inf, -np.inf], np.nan)
+                .dropna()
+                .copy()
+            )
+            data["route_capital_gap_5_x_stable"] = (
+                data["route_capital_gap_5"].astype(float)
+                * data["is_stable"].astype(float)
+            )
+            residual = absorb_fixed_effects(
+                data[
+                    [
+                        outcome,
+                        "route_capital_gap_5",
+                        "route_capital_gap_5_x_stable",
+                    ]
+                ],
+                data["candidate_address"],
+                data["origin_date"],
+            )
+            fit = ols_clustered(
+                residual[outcome],
+                residual[["route_capital_gap_5", "route_capital_gap_5_x_stable"]],
+                data["origin_date"],
+                add_constant=False,
+                absorbed_groups=(data["candidate_address"], data["origin_date"]),
+                min_observations=min_observations,
+                min_clusters=min_clusters,
+            )
+            for predictor, coefficient, standard_error, t_statistic, p_value in zip(
+                ("route_capital_gap_5", "route_capital_gap_5_x_stable"),
+                fit.beta,
+                fit.standard_errors,
+                fit.t_statistics,
+                fit.p_values,
+                strict=True,
+            ):
+                coefficient = float(coefficient)
+                standard_error = float(standard_error)
+                rows.append(
+                    {
+                        "analysis_status": "exploratory_descriptive",
+                        "record_type": "route_capital_gap_rank_transition",
+                        "horizon_days": int(horizon),
+                        "outcome": outcome,
+                        "predictor": predictor,
+                        "coefficient": coefficient,
+                        "standard_error": standard_error,
+                        "t_statistic": float(t_statistic),
+                        "p_value": float(p_value),
+                        "coefficient_per_10pp_gap": 0.10 * coefficient,
+                        "standard_error_per_10pp_gap": 0.10 * standard_error,
+                        "n_observations": int(fit.n_observations),
+                        "date_clusters": int(fit.n_clusters),
+                        "fixed_effects": "candidate_address+origin_date",
+                        "covariance": "origin_date_clustered",
+                        "rank_definition": (
+                            "one is the largest route or capital share among the five "
+                            "vehicle candidates; positive values mean moving closer to "
+                            "the top rank"
+                        ),
+                        "interpretation": (
+                            "temporally ordered candidate-rank association, not causal "
+                            "provider-flow timing"
+                        ),
+                    }
+                )
+            try:
+                stable_total = linear_contrast(fit, [1.0, 1.0])
+            except ValueError:
+                continue
+            rows.append(
+                {
+                    "analysis_status": "exploratory_descriptive",
+                    "record_type": "route_capital_gap_rank_transition",
+                    "horizon_days": int(horizon),
+                    "outcome": outcome,
+                    "predictor": "stable_total_route_capital_gap_5",
+                    "coefficient": stable_total.estimate,
+                    "standard_error": stable_total.standard_error,
+                    "t_statistic": stable_total.t_statistic,
+                    "p_value": stable_total.p_value,
+                    "coefficient_per_10pp_gap": 0.10 * stable_total.estimate,
+                    "standard_error_per_10pp_gap": 0.10
+                    * stable_total.standard_error,
+                    "n_observations": int(fit.n_observations),
+                    "date_clusters": int(fit.n_clusters),
+                    "fixed_effects": "candidate_address+origin_date",
+                    "covariance": "origin_date_clustered",
+                    "rank_definition": (
+                        "one is the largest route or capital share among the five "
+                        "vehicle candidates; positive values mean moving closer to "
+                        "the top rank"
+                    ),
+                    "interpretation": (
+                        "stable-candidate rank association, not causal provider-flow "
+                        "timing"
+                    ),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
 def route_capital_gap_extensive_margin_panel(
     sample: pd.DataFrame,
     *,
@@ -2821,7 +3027,9 @@ def run(
     support_path: Path = SUPPORT_OUTPUT,
 ) -> int:
     sample = supported_candidate_days(load_candidate_day(input_path))
-    exact_panel = route_capital_gap_horizon_panel(load_exact_horizons(exact_horizon_path))
+    exact_horizons = load_exact_horizons(exact_horizon_path)
+    exact_panel = route_capital_gap_horizon_panel(exact_horizons)
+    rank_transition_panel = route_capital_gap_rank_transition_panel(exact_horizons)
     daily_gaps = daily_capital_use_gaps(sample)
     share_gap_panel = candidate_share_gap_panel(sample)
     extensive_margin_panel = route_capital_gap_extensive_margin_panel(sample)
@@ -2850,6 +3058,7 @@ def run(
             route_capital_gap_closing_stable_interactions(exact_panel),
             route_capital_gap_candidate_specific(exact_panel),
             route_capital_gap_asymmetry(exact_panel),
+            route_capital_gap_rank_transition(rank_transition_panel),
             stable_basket_gap_portfolio_rebalancing(stable_basket_panel),
             route_capital_gap_extensive_margins(extensive_margin_panel),
             capital_concentration_summaries(concentration_panel),
