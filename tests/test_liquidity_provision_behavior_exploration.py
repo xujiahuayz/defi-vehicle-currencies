@@ -26,6 +26,8 @@ from scripts.analyze.run_liquidity_provision_behavior_exploration import (
     route_capital_gap_extensive_margin_panel,
     route_capital_gap_extensive_margins,
     route_capital_gap_horizon_panel,
+    route_capital_gap_pool_entry_horizon_panel,
+    route_capital_gap_pool_entry_response,
     route_capital_gap_pool_candidate_horizon_panel,
     route_capital_gap_same_pool_reallocation,
     route_capital_gap_v3_fee_horizon_panel,
@@ -459,6 +461,105 @@ def test_same_pool_reallocation_reports_stable_total() -> None:
     ].iloc[0]
     assert stable_total["record_type"] == "route_capital_gap_same_pool_reallocation"
     assert stable_total["coefficient"] > 0
+
+
+def test_pool_entry_horizon_panel_splits_incumbent_and_entrant_capital() -> None:
+    share_gap = pd.DataFrame(
+        [
+            {
+                "origin_date": pd.Timestamp("2024-01-01"),
+                "candidate_address": "usdc",
+                "candidate_symbol": "USDC",
+                "route_capital_gap_5": 0.25,
+                "is_stable": 1.0,
+            }
+        ]
+    )
+    pool_rows = pd.DataFrame(
+        [
+            {
+                "day": "20240101",
+                "candidate_address": "usdc",
+                "pool_candidate_id": "pool-a|usdc",
+                "candidate_capital_usd": 100.0,
+                "quantity_kind": "deposited_capital",
+                "capital_validation_status": "exact_state_current",
+            },
+            {
+                "day": "20240131",
+                "candidate_address": "usdc",
+                "pool_candidate_id": "pool-a|usdc",
+                "candidate_capital_usd": 150.0,
+                "quantity_kind": "deposited_capital",
+                "capital_validation_status": "exact_state_current",
+            },
+            {
+                "day": "20240131",
+                "candidate_address": "usdc",
+                "pool_candidate_id": "pool-b|usdc",
+                "candidate_capital_usd": 25.0,
+                "quantity_kind": "deposited_capital",
+                "capital_validation_status": "exact_state_current",
+            },
+        ]
+    )
+    with tempfile.TemporaryDirectory() as tmpdir:
+        path = Path(tmpdir) / "pool_candidates.parquet"
+        pool_rows.to_parquet(path, index=False)
+        panel = route_capital_gap_pool_entry_horizon_panel(
+            share_gap,
+            pool_candidate_path=path,
+            horizons=(30,),
+        )
+    row = panel.iloc[0]
+    assert row["future_incumbent_capital"] == pytest.approx(150.0)
+    assert row["future_entrant_capital"] == pytest.approx(25.0)
+    assert row["future_entrant_pools"] == pytest.approx(1.0)
+    assert row["future_log_total_capital_change"] == pytest.approx(
+        math.log10(1.0 + 175.0) - math.log10(1.0 + 100.0)
+    )
+
+
+def test_pool_entry_response_reports_stable_total() -> None:
+    rows = []
+    symbols = ("WETH", "USDC", "USDT")
+    for day_index, day in enumerate(pd.date_range("2024-01-01", periods=220, freq="D")):
+        for symbol_index, symbol in enumerate(symbols):
+            stable = float(symbol in {"USDC", "USDT"})
+            gap = 0.10 + 0.01 * (((day_index + 2 * symbol_index) % 7) - 3)
+            if symbol == "WETH":
+                incumbent = 0.60 * gap
+                entrant = 0.30 * gap
+                total = 0.70 * gap
+            else:
+                incumbent = -0.20 * gap
+                entrant = -0.30 * gap
+                total = -0.25 * gap
+            rows.append(
+                {
+                    "origin_date": day,
+                    "candidate_address": symbol.lower(),
+                    "candidate_symbol": symbol,
+                    "horizon_days": 120,
+                    "is_stable": stable,
+                    "route_capital_gap_5": gap,
+                    "future_log_incumbent_capital_change": incumbent,
+                    "future_log1p_entrant_capital": entrant,
+                    "future_log_total_capital_change": total,
+                    "future_entrant_capital_share": 0.05 + entrant,
+                }
+            )
+    result = route_capital_gap_pool_entry_response(
+        pd.DataFrame(rows),
+        min_observations=100,
+        min_clusters=20,
+    )
+    stable_total = result[
+        result["predictor"].eq("stable_total_route_capital_gap_5")
+        & result["outcome"].eq("future_log_total_capital_change")
+    ].iloc[0]
+    assert stable_total["record_type"] == "route_capital_gap_pool_entry_response"
+    assert stable_total["coefficient"] < 0
 
 
 def test_v3_fee_horizon_panel_joins_future_pool_day_fees() -> None:

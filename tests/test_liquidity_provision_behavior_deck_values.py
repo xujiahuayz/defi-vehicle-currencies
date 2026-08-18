@@ -279,6 +279,78 @@ def test_liquidity_behavior_values_render_from_guarded_rows() -> None:
         },
         {
             "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_pool_entry_response",
+            "horizon_days": 120,
+            "outcome": "future_log1p_entrant_capital",
+            "predictor": "route_capital_gap_5",
+            "coefficient": -0.90,
+            "standard_error": 0.10,
+            "coefficient_per_10pp_gap": -0.090,
+            "standard_error_per_10pp_gap": 0.010,
+            "p_value": 0.001,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_pool_entry_response",
+            "horizon_days": 120,
+            "outcome": "future_log_incumbent_capital_change",
+            "predictor": "stable_total_route_capital_gap_5",
+            "coefficient": 1.20,
+            "standard_error": 0.40,
+            "coefficient_per_10pp_gap": 0.120,
+            "standard_error_per_10pp_gap": 0.040,
+            "p_value": 0.02,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_pool_entry_response",
+            "horizon_days": 120,
+            "outcome": "future_log1p_entrant_capital",
+            "predictor": "stable_total_route_capital_gap_5",
+            "coefficient": 0.10,
+            "standard_error": 0.30,
+            "coefficient_per_10pp_gap": 0.010,
+            "standard_error_per_10pp_gap": 0.030,
+            "p_value": 0.70,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_pool_entry_response",
+            "horizon_days": 120,
+            "outcome": "future_log_total_capital_change",
+            "predictor": "stable_total_route_capital_gap_5",
+            "coefficient": 0.40,
+            "standard_error": 0.30,
+            "coefficient_per_10pp_gap": 0.040,
+            "standard_error_per_10pp_gap": 0.030,
+            "p_value": 0.18,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_pool_entry_response",
+            "horizon_days": 120,
+            "outcome": "future_entrant_capital_share",
+            "predictor": "route_capital_gap_5",
+            "coefficient": 0.08,
+            "standard_error": 0.03,
+            "coefficient_per_10pp_gap": 0.008,
+            "standard_error_per_10pp_gap": 0.003,
+            "p_value": 0.01,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_pool_entry_response",
+            "horizon_days": 120,
+            "outcome": "future_entrant_capital_share",
+            "predictor": "stable_total_route_capital_gap_5",
+            "coefficient": -0.10,
+            "standard_error": 0.08,
+            "coefficient_per_10pp_gap": -0.010,
+            "standard_error_per_10pp_gap": 0.008,
+            "p_value": 0.20,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
             "record_type": "route_capital_gap_v3_fee_incidence",
             "horizon_days": 120,
             "outcome": "future_log_fees_change",
@@ -666,6 +738,9 @@ def test_liquidity_behavior_values_render_from_guarded_rows() -> None:
     assert "\\LiqBehStablePoolLongCoef" in rendered
     assert "\\LiqBehSamePoolLongCoef" in rendered
     assert "\\LiqBehStableSamePoolLongCoef" in rendered
+    assert "\\LiqBehStablePoolEntryIncumbentLongCoef" in rendered
+    assert "\\LiqBehStablePoolEntryTotalLongCoef" in rendered
+    assert "\\LiqBehPoolEntryEntrantBaseLongCoef" in rendered
     assert "\\LiqBehStableBasketGapLongCoef" in rendered
     assert "\\LiqBehWethBasketGapLongCoef" in rendered
     assert "\\LiqBehStableFeeLongCoef" in rendered

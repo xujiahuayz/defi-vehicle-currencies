@@ -260,6 +260,48 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         outcome="future_log_pool_candidate_capital_change",
         predictor="stable_total_route_capital_gap_5",
     )
+    pool_entry_entrant_base_long = _single(
+        estimates,
+        record_type="route_capital_gap_pool_entry_response",
+        horizon_days=120,
+        outcome="future_log1p_entrant_capital",
+        predictor="route_capital_gap_5",
+    )
+    stable_pool_entry_incumbent_long = _single(
+        estimates,
+        record_type="route_capital_gap_pool_entry_response",
+        horizon_days=120,
+        outcome="future_log_incumbent_capital_change",
+        predictor="stable_total_route_capital_gap_5",
+    )
+    stable_pool_entry_entrant_long = _single(
+        estimates,
+        record_type="route_capital_gap_pool_entry_response",
+        horizon_days=120,
+        outcome="future_log1p_entrant_capital",
+        predictor="stable_total_route_capital_gap_5",
+    )
+    stable_pool_entry_total_long = _single(
+        estimates,
+        record_type="route_capital_gap_pool_entry_response",
+        horizon_days=120,
+        outcome="future_log_total_capital_change",
+        predictor="stable_total_route_capital_gap_5",
+    )
+    pool_entry_entrant_share_base_long = _single(
+        estimates,
+        record_type="route_capital_gap_pool_entry_response",
+        horizon_days=120,
+        outcome="future_entrant_capital_share",
+        predictor="route_capital_gap_5",
+    )
+    stable_pool_entry_entrant_share_long = _single(
+        estimates,
+        record_type="route_capital_gap_pool_entry_response",
+        horizon_days=120,
+        outcome="future_entrant_capital_share",
+        predictor="stable_total_route_capital_gap_5",
+    )
     basket_stable_month = _single(
         estimates,
         record_type="stable_basket_gap_portfolio_rebalancing",
@@ -500,6 +542,18 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
     ):
         raise ValueError("same-pool capital-chase contrast no longer holds")
     if not (
+        float(stable_pool_entry_incumbent_long["coefficient"]) > 0
+        and float(stable_pool_entry_incumbent_long["p_value"]) < 0.05
+        and float(stable_pool_entry_entrant_long["p_value"]) > 0.10
+        and float(stable_pool_entry_total_long["p_value"]) > 0.05
+        and float(pool_entry_entrant_base_long["coefficient"]) < 0
+        and float(pool_entry_entrant_base_long["p_value"]) < 0.01
+        and float(pool_entry_entrant_share_base_long["coefficient"]) > 0
+        and float(pool_entry_entrant_share_base_long["p_value"]) < 0.05
+        and float(stable_pool_entry_entrant_share_long["p_value"]) > 0.10
+    ):
+        raise ValueError("pool-entry capital split no longer supports the guarded read")
+    if not (
         float(basket_stable_month["coefficient"]) > 0
         and float(basket_stable_month["p_value"]) < 0.05
         and float(basket_stable_long["coefficient"]) > 0
@@ -629,6 +683,18 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         f"\\newcommand{{\\LiqBehSamePoolLongSE}}{{{_unsigned_percent(float(same_pool_long['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehStableSamePoolLongCoef}}{{{_signed_percent(float(stable_same_pool_long['coefficient_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehStableSamePoolLongSE}}{{{_unsigned_percent(float(stable_same_pool_long['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehPoolEntryEntrantBaseLongCoef}}{{{_signed_percent(float(pool_entry_entrant_base_long['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehPoolEntryEntrantBaseLongSE}}{{{_unsigned_percent(float(pool_entry_entrant_base_long['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStablePoolEntryIncumbentLongCoef}}{{{_signed_percent(float(stable_pool_entry_incumbent_long['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStablePoolEntryIncumbentLongSE}}{{{_unsigned_percent(float(stable_pool_entry_incumbent_long['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStablePoolEntryEntrantLongCoef}}{{{_signed_percent(float(stable_pool_entry_entrant_long['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStablePoolEntryEntrantLongSE}}{{{_unsigned_percent(float(stable_pool_entry_entrant_long['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStablePoolEntryTotalLongCoef}}{{{_signed_percent(float(stable_pool_entry_total_long['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStablePoolEntryTotalLongSE}}{{{_unsigned_percent(float(stable_pool_entry_total_long['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehPoolEntryEntrantShareBaseLongCoef}}{{{_signed_pp(float(pool_entry_entrant_share_base_long['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehPoolEntryEntrantShareBaseLongSE}}{{{_unsigned_pp(float(pool_entry_entrant_share_base_long['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStablePoolEntryEntrantShareLongCoef}}{{{_signed_pp(float(stable_pool_entry_entrant_share_long['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStablePoolEntryEntrantShareLongSE}}{{{_unsigned_pp(float(stable_pool_entry_entrant_share_long['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehStableBasketGapMonthCoef}}{{{_signed_pp(float(basket_stable_month['coefficient_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehStableBasketGapMonthSE}}{{{_unsigned_pp(float(basket_stable_month['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehStableBasketGapLongCoef}}{{{_signed_pp(float(basket_stable_long['coefficient_per_10pp_gap']))}}}",

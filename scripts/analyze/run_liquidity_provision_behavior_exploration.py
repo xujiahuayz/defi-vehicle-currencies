@@ -1029,6 +1029,288 @@ def route_capital_gap_same_pool_reallocation(
     return pd.DataFrame(rows)
 
 
+def route_capital_gap_pool_entry_horizon_panel(
+    share_gap_panel: pd.DataFrame,
+    *,
+    pool_candidate_path: Path = POOL_CANDIDATE_CAPITAL_INPUT,
+    horizons: tuple[int, ...] = (30, 120),
+) -> pd.DataFrame:
+    """Split future candidate capital into incumbent-pool and entrant-pool pieces."""
+
+    if not horizons:
+        raise ValueError("at least one pool-entry horizon is required")
+    required_columns = [
+        "origin_date",
+        "candidate_address",
+        "candidate_symbol",
+        "route_capital_gap_5",
+        "is_stable",
+    ]
+    missing = sorted(set(required_columns) - set(share_gap_panel.columns))
+    if missing:
+        raise ValueError(f"share-gap panel lacks pool-entry columns: {missing}")
+    gaps = share_gap_panel[required_columns].copy()
+    gaps["origin_date"] = pd.to_datetime(gaps["origin_date"]).dt.normalize()
+    gaps["candidate_address"] = gaps["candidate_address"].astype(str).str.lower()
+    connection = duckdb.connect()
+    try:
+        connection.execute("PRAGMA threads=8")
+        connection.register("candidate_gaps", gaps)
+        horizon_selects = []
+        for horizon in horizons:
+            horizon_selects.append(
+                f"""
+                SELECT
+                    i.origin_date,
+                    i.candidate_address,
+                    i.candidate_symbol,
+                    i.is_stable,
+                    i.route_capital_gap_5,
+                    {int(horizon)}::INTEGER AS horizon_days,
+                    i.origin_incumbent_capital,
+                    i.future_incumbent_capital,
+                    coalesce(e.future_entrant_capital, 0)::DOUBLE
+                        AS future_entrant_capital,
+                    coalesce(e.future_entrant_pools, 0)::DOUBLE
+                        AS future_entrant_pools,
+                    log(1 + i.future_incumbent_capital)
+                        - log(1 + i.origin_incumbent_capital)
+                        AS future_log_incumbent_capital_change,
+                    log(1 + coalesce(e.future_entrant_capital, 0))
+                        AS future_log1p_entrant_capital,
+                    log(
+                        1 + i.future_incumbent_capital
+                          + coalesce(e.future_entrant_capital, 0)
+                    ) - log(1 + i.origin_incumbent_capital)
+                        AS future_log_total_capital_change,
+                    coalesce(e.future_entrant_capital, 0)
+                        / nullif(
+                            i.future_incumbent_capital
+                            + coalesce(e.future_entrant_capital, 0),
+                            0
+                        ) AS future_entrant_capital_share
+                FROM incumbent_{int(horizon)} i
+                LEFT JOIN entrant_{int(horizon)} e
+                  ON e.origin_date = i.origin_date
+                 AND e.candidate_address = i.candidate_address
+                """
+            )
+        horizon_ctes = []
+        for horizon in horizons:
+            horizon_ctes.append(
+                f"""
+                origin_{int(horizon)} AS (
+                    SELECT
+                        g.origin_date,
+                        g.candidate_address,
+                        g.candidate_symbol,
+                        g.is_stable,
+                        g.route_capital_gap_5,
+                        p.pool_candidate_id,
+                        p.capital AS origin_capital
+                    FROM candidate_gaps g
+                    JOIN pool_candidates p
+                      ON p.origin_date = g.origin_date
+                     AND p.candidate_address = g.candidate_address
+                ),
+                target_{int(horizon)} AS (
+                    SELECT
+                        g.origin_date,
+                        g.candidate_address,
+                        p.pool_candidate_id,
+                        p.capital AS target_capital
+                    FROM candidate_gaps g
+                    JOIN pool_candidates p
+                      ON p.origin_date = g.origin_date + INTERVAL {int(horizon)} DAY
+                     AND p.candidate_address = g.candidate_address
+                ),
+                incumbent_{int(horizon)} AS (
+                    SELECT
+                        o.origin_date,
+                        o.candidate_address,
+                        o.candidate_symbol,
+                        o.is_stable,
+                        o.route_capital_gap_5,
+                        sum(o.origin_capital)::DOUBLE AS origin_incumbent_capital,
+                        sum(coalesce(t.target_capital, 0))::DOUBLE
+                            AS future_incumbent_capital
+                    FROM origin_{int(horizon)} o
+                    LEFT JOIN target_{int(horizon)} t
+                      ON t.origin_date = o.origin_date
+                     AND t.candidate_address = o.candidate_address
+                     AND t.pool_candidate_id = o.pool_candidate_id
+                    GROUP BY 1, 2, 3, 4, 5
+                ),
+                entrant_{int(horizon)} AS (
+                    SELECT
+                        t.origin_date,
+                        t.candidate_address,
+                        sum(t.target_capital)::DOUBLE AS future_entrant_capital,
+                        count(*)::DOUBLE AS future_entrant_pools
+                    FROM target_{int(horizon)} t
+                    LEFT JOIN origin_{int(horizon)} o
+                      ON o.origin_date = t.origin_date
+                     AND o.candidate_address = t.candidate_address
+                     AND o.pool_candidate_id = t.pool_candidate_id
+                    WHERE o.pool_candidate_id IS NULL
+                    GROUP BY 1, 2
+                )
+                """
+            )
+        query = f"""
+            WITH pool_candidates AS (
+                SELECT
+                    strptime(CAST(day AS VARCHAR), '%Y%m%d')::DATE AS origin_date,
+                    lower(candidate_address) AS candidate_address,
+                    pool_candidate_id,
+                    candidate_capital_usd::DOUBLE AS capital
+                FROM read_parquet(?)
+                WHERE quantity_kind = 'deposited_capital'
+                  AND capital_validation_status = 'exact_state_current'
+                  AND candidate_capital_usd IS NOT NULL
+                  AND candidate_capital_usd > 0
+            ),
+            {", ".join(horizon_ctes)}
+            {" UNION ALL ".join(horizon_selects)}
+        """
+        out = connection.execute(query, [str(pool_candidate_path)]).fetchdf()
+    finally:
+        connection.close()
+    if out.empty:
+        raise ValueError("route-capital pool-entry horizon panel is empty")
+    out["origin_date"] = pd.to_datetime(out["origin_date"])
+    out["candidate_address"] = out["candidate_address"].astype(str)
+    out["candidate_symbol"] = out["candidate_symbol"].astype(str)
+    out["is_stable"] = out["is_stable"].astype(float)
+    required = [
+        "route_capital_gap_5",
+        "future_log_incumbent_capital_change",
+        "future_log1p_entrant_capital",
+        "future_log_total_capital_change",
+        "future_entrant_capital_share",
+    ]
+    out = out.replace([np.inf, -np.inf], np.nan).dropna(subset=required)
+    if out.empty:
+        raise ValueError("route-capital pool-entry horizon panel lost all rows")
+    return out
+
+
+def route_capital_gap_pool_entry_response(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 1000,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Test whether route-capital gaps predict incumbent or entrant pool capital."""
+
+    rows: list[dict[str, object]] = []
+    outcomes = (
+        "future_log_incumbent_capital_change",
+        "future_log1p_entrant_capital",
+        "future_log_total_capital_change",
+        "future_entrant_capital_share",
+    )
+    for horizon, group in panel.groupby("horizon_days", sort=True):
+        for outcome in outcomes:
+            data = (
+                group[
+                    [
+                        "origin_date",
+                        "candidate_address",
+                        "is_stable",
+                        "route_capital_gap_5",
+                        outcome,
+                    ]
+                ]
+                .replace([np.inf, -np.inf], np.nan)
+                .dropna()
+                .copy()
+            )
+            data["route_capital_gap_5_x_stable"] = (
+                data["route_capital_gap_5"].astype(float)
+                * data["is_stable"].astype(float)
+            )
+            residual = absorb_fixed_effects(
+                data[
+                    [
+                        outcome,
+                        "route_capital_gap_5",
+                        "route_capital_gap_5_x_stable",
+                    ]
+                ],
+                data["candidate_address"],
+                data["origin_date"],
+            )
+            fit = ols_clustered(
+                residual[outcome],
+                residual[["route_capital_gap_5", "route_capital_gap_5_x_stable"]],
+                data["origin_date"],
+                add_constant=False,
+                absorbed_groups=(data["candidate_address"], data["origin_date"]),
+                min_observations=min_observations,
+                min_clusters=min_clusters,
+            )
+            for predictor, coefficient, standard_error, t_statistic, p_value in zip(
+                ("route_capital_gap_5", "route_capital_gap_5_x_stable"),
+                fit.beta,
+                fit.standard_errors,
+                fit.t_statistics,
+                fit.p_values,
+                strict=True,
+            ):
+                coefficient = float(coefficient)
+                standard_error = float(standard_error)
+                rows.append(
+                    {
+                        "analysis_status": "exploratory_descriptive",
+                        "record_type": "route_capital_gap_pool_entry_response",
+                        "horizon_days": int(horizon),
+                        "outcome": outcome,
+                        "predictor": predictor,
+                        "coefficient": coefficient,
+                        "standard_error": standard_error,
+                        "t_statistic": float(t_statistic),
+                        "p_value": float(p_value),
+                        "coefficient_per_10pp_gap": 0.10 * coefficient,
+                        "standard_error_per_10pp_gap": 0.10 * standard_error,
+                        "n_observations": int(fit.n_observations),
+                        "date_clusters": int(fit.n_clusters),
+                        "fixed_effects": "candidate_address+origin_date",
+                        "covariance": "origin_date_clustered",
+                        "interpretation": (
+                            "future exact-state incumbent or entrant pool-capital "
+                            "association, not causal provider-flow timing"
+                        ),
+                    }
+                )
+            stable_total = linear_contrast(fit, [1.0, 1.0])
+            rows.append(
+                {
+                    "analysis_status": "exploratory_descriptive",
+                    "record_type": "route_capital_gap_pool_entry_response",
+                    "horizon_days": int(horizon),
+                    "outcome": outcome,
+                    "predictor": "stable_total_route_capital_gap_5",
+                    "coefficient": stable_total.estimate,
+                    "standard_error": stable_total.standard_error,
+                    "t_statistic": stable_total.t_statistic,
+                    "p_value": stable_total.p_value,
+                    "coefficient_per_10pp_gap": 0.10 * stable_total.estimate,
+                    "standard_error_per_10pp_gap": 0.10
+                    * stable_total.standard_error,
+                    "n_observations": int(fit.n_observations),
+                    "date_clusters": int(fit.n_clusters),
+                    "fixed_effects": "candidate_address+origin_date",
+                    "covariance": "origin_date_clustered",
+                    "interpretation": (
+                        "stable-candidate total exact-state pool-capital response, "
+                        "not causal provider-flow timing"
+                    ),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
 def route_capital_gap_v3_fee_horizon_panel(
     share_gap_panel: pd.DataFrame,
     *,
@@ -2549,6 +2831,7 @@ def run(
     )
     stable_basket_panel = stable_basket_gap_horizon_panel(sample)
     same_pool_panel = route_capital_gap_pool_candidate_horizon_panel(share_gap_panel)
+    pool_entry_panel = route_capital_gap_pool_entry_horizon_panel(share_gap_panel)
     fee_incidence_panel = route_capital_gap_v3_fee_horizon_panel(share_gap_panel)
     v3_lp_actions = load_v3_lp_actions()
     v3_lp_action_panel = route_capital_gap_v3_lp_action_horizon_panel(
@@ -2572,6 +2855,7 @@ def run(
             capital_concentration_summaries(concentration_panel),
             route_capital_gap_concentration_response(concentration_horizon_panel),
             route_capital_gap_same_pool_reallocation(same_pool_panel),
+            route_capital_gap_pool_entry_response(pool_entry_panel),
             route_capital_gap_v3_fee_incidence(fee_incidence_panel),
             route_capital_gap_v3_lp_action_response(v3_lp_action_panel),
             route_capital_gap_v3_lp_action_candidate_specific(v3_lp_action_panel),
