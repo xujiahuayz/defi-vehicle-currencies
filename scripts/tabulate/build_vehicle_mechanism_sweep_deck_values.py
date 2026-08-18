@@ -252,6 +252,21 @@ def render_vehicle_mechanism_sweep_deck_values(
         model_id="mixed_native_stable_risk_set_lag30_reach_fe",
         regressor="is_stable",
     )
+    risk_set_issuer_stable_2026 = _risk_set_effect(
+        estimates,
+        model_id="mixed_native_stable_risk_set_issuer_reach_fe",
+        regressor="is_stable_x_2026",
+    )
+    risk_set_issuer_usdc_2026 = _risk_set_effect(
+        estimates,
+        model_id="mixed_native_stable_risk_set_issuer_reach_fe",
+        regressor="is_usdc_x_2026",
+    )
+    risk_set_issuer_usdt_2026 = _risk_set_effect(
+        estimates,
+        model_id="mixed_native_stable_risk_set_issuer_reach_fe",
+        regressor="is_usdt_x_2026",
+    )
     hazard_thick = _hazard_decile(estimates, regressor="log_market_routes")
     hazard_age = _hazard_decile(estimates, regressor="pair_age_log")
     hazard_log_market = _hazard_effect(
@@ -300,6 +315,13 @@ def render_vehicle_mechanism_sweep_deck_values(
         and float(risk_set_lagged_reach["coefficient"]) > 0
         and float(risk_set_lagged_reach["p_value"]) < 0.01
         and float(risk_set_lagged_reach_stable["coefficient"]) < 0
+        and float(risk_set_issuer_stable_2026["coefficient"]) < 0
+        and float(risk_set_issuer_stable_2026["p_value"]) < 0.05
+        and float(risk_set_issuer_usdc_2026["coefficient"]) > 0
+        and float(risk_set_issuer_usdc_2026["p_value"]) < 0.05
+        and float(risk_set_issuer_usdt_2026["coefficient"])
+        > float(risk_set_issuer_usdc_2026["coefficient"])
+        and float(risk_set_issuer_usdt_2026["p_value"]) < 0.01
         and float(hazard_thick["top_minus_bottom_pp"]) > 10
         and float(hazard_age["top_minus_bottom_pp"]) > 10
         and float(hazard_log_market["coefficient_pp"]) > 0
@@ -352,6 +374,12 @@ def render_vehicle_mechanism_sweep_deck_values(
         f"\\newcommand{{\\MechanismRiskSetLagReachSE}}{{{_unsigned_pp(float(risk_set_lagged_reach['standard_error_pp']))}}}",
         f"\\newcommand{{\\MechanismRiskSetLagReachStablePenalty}}{{{_signed_pp(float(risk_set_lagged_reach_stable['coefficient_pp']))}}}",
         f"\\newcommand{{\\MechanismRiskSetLagReachStablePenaltySE}}{{{_unsigned_pp(float(risk_set_lagged_reach_stable['standard_error_pp']))}}}",
+        f"\\newcommand{{\\MechanismRiskSetIssuerStableTwentySix}}{{{_signed_pp(float(risk_set_issuer_stable_2026['coefficient_pp']))}}}",
+        f"\\newcommand{{\\MechanismRiskSetIssuerStableTwentySixSE}}{{{_unsigned_pp(float(risk_set_issuer_stable_2026['standard_error_pp']))}}}",
+        f"\\newcommand{{\\MechanismRiskSetIssuerUsdcTwentySix}}{{{_signed_pp(float(risk_set_issuer_usdc_2026['coefficient_pp']))}}}",
+        f"\\newcommand{{\\MechanismRiskSetIssuerUsdcTwentySixSE}}{{{_unsigned_pp(float(risk_set_issuer_usdc_2026['standard_error_pp']))}}}",
+        f"\\newcommand{{\\MechanismRiskSetIssuerUsdtTwentySix}}{{{_signed_pp(float(risk_set_issuer_usdt_2026['coefficient_pp']))}}}",
+        f"\\newcommand{{\\MechanismRiskSetIssuerUsdtTwentySixSE}}{{{_unsigned_pp(float(risk_set_issuer_usdt_2026['standard_error_pp']))}}}",
         f"\\newcommand{{\\MechanismHazardThickBottom}}{{{_pct(float(hazard_thick['bottom_decile_turn_on_rate']))}}}",
         f"\\newcommand{{\\MechanismHazardThickTop}}{{{_pct(float(hazard_thick['top_decile_turn_on_rate']))}}}",
         f"\\newcommand{{\\MechanismHazardThickGap}}{{{_signed_pp(float(hazard_thick['top_minus_bottom_pp']))}}}",

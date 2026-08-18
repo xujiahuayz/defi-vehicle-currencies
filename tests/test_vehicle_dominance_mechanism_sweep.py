@@ -114,19 +114,12 @@ class VehicleDominanceMechanismSweepTests(unittest.TestCase):
                     for pair_index in range(1, 6):
                         src = f"0xsrc{pair_index:02x}"
                         tgt = f"0xtgt{pair_index:02x}"
-                        if pair_index <= 3:
-                            native = "WETH"
-                            stable = f"STABLE{pair_index}"
-                            native_routes = 24 + pair_index
-                            stable_routes = 6 + int(year == COMPARISON_YEAR)
-                        else:
-                            native = f"NATIVE{pair_index}"
-                            stable = "USDC"
-                            native_routes = 12 + pair_index
-                            stable_routes = 14 + int(year == COMPARISON_YEAR)
+                        native = "WETH" if pair_index <= 3 else f"NATIVE{pair_index}"
                         for candidate_type, candidate, route_count in (
-                            ("native", native, native_routes),
-                            ("stable", stable, stable_routes),
+                            ("native", native, 40 + pair_index),
+                            ("stable", f"STABLE{pair_index}", 6 + int(year == COMPARISON_YEAR)),
+                            ("stable", "USDC", 8 + 10 * int(year == COMPARISON_YEAR)),
+                            ("stable", "USDT", 7 + 18 * int(year == COMPARISON_YEAR)),
                         ):
                             rows.append(
                                 {
@@ -148,6 +141,8 @@ class VehicleDominanceMechanismSweepTests(unittest.TestCase):
             self.assertTrue(design["has_native"].eq(1).all())
             self.assertIn("log_leaveout_candidate_pair_scopes", design)
             self.assertIn("log_lag30_candidate_pair_scopes", design)
+            self.assertIn("is_usdc_x_2026", design)
+            self.assertIn("is_usdt_x_2026", design)
 
             results, support = estimate_candidate_risk_set_choice(
                 design, min_observations=20, min_clusters=2
@@ -172,6 +167,17 @@ class VehicleDominanceMechanismSweepTests(unittest.TestCase):
                 "mixed_native_stable_risk_set_lag30_reach_fe",
                 set(results["model_id"]),
             )
+            issuer_usdt = results[
+                results["model_id"].eq("mixed_native_stable_risk_set_issuer_reach_fe")
+                & results["min_total_routes"].eq(1)
+                & results["regressor"].eq("is_usdt_x_2026")
+            ].iloc[0]
+            issuer_usdc = results[
+                results["model_id"].eq("mixed_native_stable_risk_set_issuer_reach_fe")
+                & results["min_total_routes"].eq(1)
+                & results["regressor"].eq("is_usdc_x_2026")
+            ].iloc[0]
+            self.assertGreater(issuer_usdt["coefficient"], issuer_usdc["coefficient"])
             self.assertIn("candidate_route_share", set(support["metric"]))
 
     def test_stable_turn_on_hazard_reports_thick_market_contrast(self) -> None:

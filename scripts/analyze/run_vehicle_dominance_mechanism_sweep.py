@@ -71,6 +71,15 @@ RISK_SET_LAGGED_REACH_REGRESSORS = (
     "is_stable_x_2026",
     "log_lag30_candidate_pair_scopes",
 )
+RISK_SET_ISSUER_REACH_REGRESSORS = (
+    "is_stable",
+    "is_stable_x_2026",
+    "is_usdc",
+    "is_usdt",
+    "is_usdc_x_2026",
+    "is_usdt_x_2026",
+    "log_leaveout_candidate_pair_scopes",
+)
 STABLE_TURN_ON_HORIZON_DAYS = 30
 STABLE_TURN_ON_PREDICTORS = (
     "is_2026",
@@ -672,6 +681,10 @@ def build_candidate_risk_set_design(path: Path = CHOICES_INPUT) -> pd.DataFrame:
     frame["is_stable"] = frame["candidate_type"].eq("stable").astype(float)
     frame["is_2026"] = frame["year"].eq(COMPARISON_YEAR).astype(float)
     frame["is_stable_x_2026"] = frame["is_stable"] * frame["is_2026"]
+    frame["is_usdc"] = frame["candidate_symbol"].eq("USDC").astype(float)
+    frame["is_usdt"] = frame["candidate_symbol"].eq("USDT").astype(float)
+    frame["is_usdc_x_2026"] = frame["is_usdc"] * frame["is_2026"]
+    frame["is_usdt_x_2026"] = frame["is_usdt"] * frame["is_2026"]
     frame["leaveout_candidate_routes"] = (
         frame["candidate_day_routes"].astype(float) - frame["route_count"].astype(float)
     ).clip(lower=0.0)
@@ -1012,6 +1025,85 @@ def estimate_candidate_risk_set_choice(
                         "prior reach may proxy persistent endpoint demand, liquidity, "
                         "router defaults, venue coverage, or token attention rather "
                         "than an assigned hubness treatment"
+                    ),
+                }
+            )
+        issuer_reach_data = (
+            sample[
+                [
+                    "route_share",
+                    *RISK_SET_ISSUER_REACH_REGRESSORS,
+                    "risk_set_id",
+                    "ordered_pair_scope",
+                    "date",
+                    "total_routes",
+                ]
+            ]
+            .replace([np.inf, -np.inf], np.nan)
+            .dropna()
+            .copy()
+        )
+        issuer_reach_residual = absorb_fixed_effects(
+            issuer_reach_data[["route_share", *RISK_SET_ISSUER_REACH_REGRESSORS]],
+            issuer_reach_data["risk_set_id"],
+            weights=issuer_reach_data["total_routes"],
+        )
+        issuer_reach_fit = ols_clustered(
+            issuer_reach_residual["route_share"],
+            issuer_reach_residual[list(RISK_SET_ISSUER_REACH_REGRESSORS)],
+            issuer_reach_data["ordered_pair_scope"],
+            add_constant=False,
+            absorbed_groups=(issuer_reach_data["risk_set_id"],),
+            additional_clusters=(issuer_reach_data["date"],),
+            weights=issuer_reach_data["total_routes"],
+            min_observations=min_observations,
+            min_clusters=min_clusters,
+        )
+        for regressor, coefficient, standard_error, t_statistic, p_value in zip(
+            RISK_SET_ISSUER_REACH_REGRESSORS,
+            issuer_reach_fit.beta,
+            issuer_reach_fit.standard_errors,
+            issuer_reach_fit.t_statistics,
+            issuer_reach_fit.p_values,
+            strict=True,
+        ):
+            result_rows.append(
+                {
+                    "claim_status": "provisional_exploratory",
+                    "experiment_family": "vehicle_dominance_mechanism_sweep",
+                    "metric": "candidate_route_share",
+                    "model_id": "mixed_native_stable_risk_set_issuer_reach_fe",
+                    "question": (
+                        "Inside observed native-stable risk sets, are the two "
+                        "dominant fiat-reserve issuers different from a generic "
+                        "stable candidate after same-day reach controls?"
+                    ),
+                    "min_total_routes": int(threshold),
+                    "outcome": "candidate_route_share",
+                    "regressor": regressor,
+                    "coefficient": float(coefficient),
+                    "coefficient_pp": 100.0 * float(coefficient),
+                    "standard_error": float(standard_error),
+                    "standard_error_pp": 100.0 * float(standard_error),
+                    "t_statistic": float(t_statistic),
+                    "p_value": float(p_value),
+                    "observations": int(issuer_reach_fit.n_observations),
+                    "ordered_pair_clusters": int(issuer_reach_fit.cluster_counts[0]),
+                    "date_clusters": int(issuer_reach_fit.cluster_counts[1]),
+                    "fixed_effects": "pair_day_scope_risk_set",
+                    "covariance": "two_way_ordered_pair_scope_date_cr1",
+                    "weight": "risk_set_total_route_count",
+                    "centrality_measure": (
+                        "log one plus the candidate's same-day observed "
+                        "native/stable pair-scope count outside the current risk set"
+                    ),
+                    "interpretation": (
+                        "within_observed_risk_set_issuer_reach_screen_not_causal"
+                    ),
+                    "rival_story": (
+                        "the stable gain could be a generic stablecoin label effect; "
+                        "issuer interactions test whether USDC and USDT are the "
+                        "distinct operational vehicles inside mixed risk sets"
                     ),
                 }
             )

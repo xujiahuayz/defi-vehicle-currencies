@@ -282,9 +282,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.40cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.4}{9.4}\selectfont Thin/direct/complex corridors turn on. In mixed risk sets, reach predicts share: \MechanismRiskSetCentralityCoef{} same-day, \MechanismRiskSetLagReachCoef{} prior-30-day. Stable remains negative.\par}
+{\fontsize{8.4}{9.4}\selectfont Thin/direct/complex corridors turn on. In mixed risk sets, reach predicts share. Stable remains negative, but 2026 USDT gets a \MechanismRiskSetIssuerUsdtTwentySix{} issuer premium after reach controls.\par}
 \end{minipage}}
-\decknote{Transition screen uses pair-day-scope rows, month-day fixed effects, harmonic weights, and two-way CR1. Risk-set rows are observed native-stable candidate sets, not feasible alternatives; candidate reach is leave-one same-day pair-scope count or prior-30-day candidate pair-scope count. Market-size rows are descriptive realised route-count bins and first-day entrant size; driver screen only.}
+\decknote{Transition screen: pair-day-scope rows, month-day FE, harmonic weights, two-way CR1. Risk-set rows are observed native-stable candidate sets, not feasible alternatives; reach is leave-one same-day or prior-30-day pair-scope count. Issuer rows add USDC/USDT indicators to the same design. Market-size rows are descriptive; driver screen only.}
 \end{frame}
 
 % EVIDENCE-STATUS: exploratory descriptive rolling adoption result, not causal timing

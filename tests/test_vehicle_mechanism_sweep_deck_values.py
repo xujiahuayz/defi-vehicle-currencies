@@ -163,6 +163,42 @@ def test_vehicle_mechanism_sweep_values_render_guarded_headline() -> None:
             {
                 "claim_status": "provisional_exploratory",
                 "experiment_family": "vehicle_dominance_mechanism_sweep",
+                "metric": "candidate_route_share",
+                "model_id": "mixed_native_stable_risk_set_issuer_reach_fe",
+                "min_total_routes": 5,
+                "regressor": "is_stable_x_2026",
+                "coefficient": -0.40,
+                "coefficient_pp": -40.0,
+                "standard_error_pp": 4.0,
+                "p_value": 0.01,
+            },
+            {
+                "claim_status": "provisional_exploratory",
+                "experiment_family": "vehicle_dominance_mechanism_sweep",
+                "metric": "candidate_route_share",
+                "model_id": "mixed_native_stable_risk_set_issuer_reach_fe",
+                "min_total_routes": 5,
+                "regressor": "is_usdc_x_2026",
+                "coefficient": 0.53,
+                "coefficient_pp": 53.0,
+                "standard_error_pp": 12.0,
+                "p_value": 0.02,
+            },
+            {
+                "claim_status": "provisional_exploratory",
+                "experiment_family": "vehicle_dominance_mechanism_sweep",
+                "metric": "candidate_route_share",
+                "model_id": "mixed_native_stable_risk_set_issuer_reach_fe",
+                "min_total_routes": 5,
+                "regressor": "is_usdt_x_2026",
+                "coefficient": 0.88,
+                "coefficient_pp": 88.0,
+                "standard_error_pp": 12.0,
+                "p_value": 0.001,
+            },
+            {
+                "claim_status": "provisional_exploratory",
+                "experiment_family": "vehicle_dominance_mechanism_sweep",
                 "metric": "native_only_pair_day_stable_turn_on",
                 "model_id": "stable_turn_on_hazard_decile",
                 "outcome": "future_stable_turn_on",
@@ -253,5 +289,6 @@ def test_vehicle_mechanism_sweep_values_render_guarded_headline() -> None:
     assert "\\MechanismRiskSetStablePenalty" in rendered
     assert "\\MechanismRiskSetCentralityCoef" in rendered
     assert "\\MechanismRiskSetLagReachCoef" in rendered
+    assert "\\MechanismRiskSetIssuerUsdtTwentySix" in rendered
     assert "\\MechanismHazardThickGap" in rendered
     assert "\\MechanismHazardRows" in rendered
