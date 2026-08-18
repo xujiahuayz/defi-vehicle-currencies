@@ -95,6 +95,30 @@ def test_liquidity_behavior_values_render_from_guarded_rows() -> None:
             "standard_error_per_10pp_gap": 0.001,
             "p_value": 0.001,
         },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_closing_stable_interaction",
+            "horizon_days": 30,
+            "outcome": "future_v2_five_candidate_capital_share_change",
+            "predictor": "stable_total_route_capital_gap_5",
+            "coefficient": 0.10,
+            "standard_error": 0.01,
+            "coefficient_per_10pp_gap": 0.010,
+            "standard_error_per_10pp_gap": 0.001,
+            "p_value": 0.001,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_closing_stable_interaction",
+            "horizon_days": 120,
+            "outcome": "future_v2_five_candidate_capital_share_change",
+            "predictor": "stable_total_route_capital_gap_5",
+            "coefficient": 0.18,
+            "standard_error": 0.01,
+            "coefficient_per_10pp_gap": 0.018,
+            "standard_error_per_10pp_gap": 0.001,
+            "p_value": 0.001,
+        },
     ]
     rendered = render_liquidity_provision_behavior_deck_values(pd.DataFrame(rows))
     assert "\\LiqBehWethCapitalLeaderDays" in rendered
@@ -102,4 +126,5 @@ def test_liquidity_behavior_values_render_from_guarded_rows() -> None:
     assert "\\LiqBehStableGapChange" in rendered
     assert "\\LiqBehStableControlledGapCoef" in rendered
     assert "\\LiqBehGapCloseMonthCoef" in rendered
+    assert "\\LiqBehStableGapCloseMonthCoef" in rendered
     assert "5.0\\times" in rendered

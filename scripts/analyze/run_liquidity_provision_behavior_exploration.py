@@ -19,6 +19,7 @@ import pandas as pd
 from ddvc.analysis.regression import (
     absorb_fixed_effects,
     common_calendar_day_mask,
+    linear_contrast,
     ols_clustered,
     year_endpoint_change,
 )
@@ -49,6 +50,10 @@ WITHIN_DAY_GAP_PREDICTORS = (
     "endpoint_share_5",
     "v2_candidate_venue_count",
     "log_pool_count",
+)
+GAP_CLOSING_INTERACTION_PREDICTORS = (
+    "route_capital_gap_5",
+    "route_capital_gap_5_x_stable",
 )
 
 
@@ -404,6 +409,114 @@ def route_capital_gap_closing(
     return pd.DataFrame(rows)
 
 
+def route_capital_gap_closing_stable_interactions(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 1000,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Test whether route-capital gap closing is stronger for stable candidates."""
+
+    rows: list[dict[str, object]] = []
+    outcomes = (
+        "future_v2_five_candidate_capital_share_change",
+        "future_v2_log1p_deposited_capital_usd_change",
+    )
+    for horizon, group in panel.groupby("horizon_days", sort=True):
+        for outcome in outcomes:
+            data = (
+                group[
+                    [
+                        "origin_date",
+                        "candidate_address",
+                        "candidate_symbol",
+                        "route_capital_gap_5",
+                        outcome,
+                    ]
+                ]
+                .replace([np.inf, -np.inf], np.nan)
+                .dropna()
+                .copy()
+            )
+            data["route_capital_gap_5_x_stable"] = (
+                data["route_capital_gap_5"].astype(float)
+                * data["candidate_symbol"].isin(STABLE_SYMBOLS).astype(float)
+            )
+            residual = absorb_fixed_effects(
+                data[[outcome, *GAP_CLOSING_INTERACTION_PREDICTORS]],
+                data["candidate_address"],
+                data["origin_date"],
+            )
+            fit = ols_clustered(
+                residual[outcome],
+                residual[list(GAP_CLOSING_INTERACTION_PREDICTORS)],
+                data["origin_date"],
+                add_constant=False,
+                absorbed_groups=(data["candidate_address"], data["origin_date"]),
+                min_observations=min_observations,
+                min_clusters=min_clusters,
+            )
+            for predictor, coefficient, standard_error, t_statistic, p_value in zip(
+                GAP_CLOSING_INTERACTION_PREDICTORS,
+                fit.beta,
+                fit.standard_errors,
+                fit.t_statistics,
+                fit.p_values,
+                strict=True,
+            ):
+                coefficient = float(coefficient)
+                standard_error = float(standard_error)
+                rows.append(
+                    {
+                        "analysis_status": "exploratory_descriptive",
+                        "record_type": "route_capital_gap_closing_stable_interaction",
+                        "horizon_days": int(horizon),
+                        "outcome": outcome,
+                        "predictor": predictor,
+                        "coefficient": coefficient,
+                        "standard_error": standard_error,
+                        "t_statistic": float(t_statistic),
+                        "p_value": float(p_value),
+                        "coefficient_per_10pp_gap": 0.10 * coefficient,
+                        "standard_error_per_10pp_gap": 0.10 * standard_error,
+                        "coefficient_per_10pp_gap_pp": 10.0 * coefficient,
+                        "standard_error_per_10pp_gap_pp": 10.0 * standard_error,
+                        "n_observations": int(fit.n_observations),
+                        "date_clusters": int(fit.n_clusters),
+                        "fixed_effects": "candidate_address+origin_date",
+                        "covariance": "origin_date_clustered",
+                        "interpretation": "temporally ordered stable-specific gap-closing association, not causal provider-flow timing",
+                    }
+                )
+            try:
+                stable_total = linear_contrast(fit, [1.0, 1.0])
+            except ValueError:
+                continue
+            rows.append(
+                {
+                    "analysis_status": "exploratory_descriptive",
+                    "record_type": "route_capital_gap_closing_stable_interaction",
+                    "horizon_days": int(horizon),
+                    "outcome": outcome,
+                    "predictor": "stable_total_route_capital_gap_5",
+                    "coefficient": stable_total.estimate,
+                    "standard_error": stable_total.standard_error,
+                    "t_statistic": stable_total.t_statistic,
+                    "p_value": stable_total.p_value,
+                    "coefficient_per_10pp_gap": 0.10 * stable_total.estimate,
+                    "standard_error_per_10pp_gap": 0.10 * stable_total.standard_error,
+                    "coefficient_per_10pp_gap_pp": 10.0 * stable_total.estimate,
+                    "standard_error_per_10pp_gap_pp": 10.0 * stable_total.standard_error,
+                    "n_observations": int(fit.n_observations),
+                    "date_clusters": int(fit.n_clusters),
+                    "fixed_effects": "candidate_address+origin_date",
+                    "covariance": "origin_date_clustered",
+                    "interpretation": "temporally ordered stable-candidate total gap-closing association, not causal provider-flow timing",
+                }
+            )
+    return pd.DataFrame(rows)
+
+
 def capital_use_gap_summaries(daily: pd.DataFrame) -> pd.DataFrame:
     """Summarise and test route-minus-capital gaps on the endpoint calendar."""
 
@@ -640,6 +753,7 @@ def run(
             level_associations(sample),
             within_day_gap_associations(share_gap_panel),
             route_capital_gap_closing(exact_panel),
+            route_capital_gap_closing_stable_interactions(exact_panel),
         ],
         ignore_index=True,
     )
