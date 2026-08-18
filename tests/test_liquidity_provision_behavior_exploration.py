@@ -669,6 +669,8 @@ def test_v3_fee_horizon_panel_joins_future_pool_day_fees() -> None:
     assert row["horizon_days"] == 30
     assert row["future_log_fees_change"] > 0
     assert row["future_log_volume_change"] > 0
+    assert row["future_log_fee_yield_bps_change"] > 0
+    assert row["future_log_volume_turnover_change"] > 0
 
 
 def test_v3_fee_incidence_reports_stable_total() -> None:
@@ -703,6 +705,18 @@ def test_v3_fee_incidence_reports_stable_total() -> None:
                         "future_log_volume_change": (
                             0.03 * gap
                             + 0.05 * gap * is_stable
+                            + pool_effect
+                            + date_effect
+                        ),
+                        "future_log_fee_yield_bps_change": (
+                            0.02 * gap
+                            + 0.03 * gap * is_stable
+                            + pool_effect
+                            + date_effect
+                        ),
+                        "future_log_volume_turnover_change": (
+                            0.01 * gap
+                            + 0.02 * gap * is_stable
                             + pool_effect
                             + date_effect
                         ),

@@ -362,6 +362,20 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         outcome="future_log_volume_change",
         predictor="stable_total_route_capital_gap_5",
     )
+    stable_fee_yield_long = _single(
+        estimates,
+        record_type="route_capital_gap_v3_fee_incidence",
+        horizon_days=120,
+        outcome="future_log_fee_yield_bps_change",
+        predictor="stable_total_route_capital_gap_5",
+    )
+    stable_volume_turnover_long = _single(
+        estimates,
+        record_type="route_capital_gap_v3_fee_incidence",
+        horizon_days=120,
+        outcome="future_log_volume_turnover_change",
+        predictor="stable_total_route_capital_gap_5",
+    )
     stable_v3_lp_mint_month = _single(
         estimates,
         record_type="route_capital_gap_v3_lp_action",
@@ -588,10 +602,14 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
     if not (
         float(stable_fee_long["p_value"]) > 0.10
         and float(stable_volume_long["p_value"]) > 0.10
+        and float(stable_fee_yield_long["p_value"]) > 0.10
+        and float(stable_volume_turnover_long["p_value"]) > 0.10
         and abs(float(stable_fee_long["coefficient_per_10pp_gap"])) < 0.02
         and abs(float(stable_volume_long["coefficient_per_10pp_gap"])) < 0.03
+        and abs(float(stable_fee_yield_long["coefficient_per_10pp_gap"])) < 0.01
+        and abs(float(stable_volume_turnover_long["coefficient_per_10pp_gap"])) < 0.01
     ):
-        raise ValueError("stable V3 fee-incidence non-result no longer holds")
+        raise ValueError("stable V3 fee/yield-incidence non-result no longer holds")
     if not (
         float(stable_v3_lp_mint_month["coefficient"]) > 0
         and float(stable_v3_lp_burn_month["coefficient"]) > 0
@@ -734,6 +752,10 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         f"\\newcommand{{\\LiqBehStableFeeLongSE}}{{{_unsigned_percent(float(stable_fee_long['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehStableVolumeLongCoef}}{{{_signed_percent(float(stable_volume_long['coefficient_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehStableVolumeLongSE}}{{{_unsigned_percent(float(stable_volume_long['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableFeeYieldLongCoef}}{{{_signed_percent(float(stable_fee_yield_long['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableFeeYieldLongSE}}{{{_unsigned_percent(float(stable_fee_yield_long['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVolumeTurnoverLongCoef}}{{{_signed_percent(float(stable_volume_turnover_long['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVolumeTurnoverLongSE}}{{{_unsigned_percent(float(stable_volume_turnover_long['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehVThreeLpActionRows}}{{{_integer(int(stable_v3_lp_mint_month['n_observations']))}}}",
         f"\\newcommand{{\\LiqBehVThreeLpActionDays}}{{{_integer(int(stable_v3_lp_mint_month['date_clusters']))}}}",
         f"\\newcommand{{\\LiqBehStableVThreeMintMonthCoef}}{{{_signed_percent(float(stable_v3_lp_mint_month['coefficient_per_10pp_gap']))}}}",

@@ -1555,7 +1555,11 @@ def route_capital_gap_v3_fee_horizon_panel(
                 j.route_capital_gap_5,
                 {int(horizon)}::INTEGER AS horizon_days,
                 t.log_fees_usd - j.log_fees_usd AS future_log_fees_change,
-                t.log_volume_usd - j.log_volume_usd AS future_log_volume_change
+                t.log_volume_usd - j.log_volume_usd AS future_log_volume_change,
+                t.log_fee_yield_bps - j.log_fee_yield_bps
+                    AS future_log_fee_yield_bps_change,
+                t.log_volume_turnover - j.log_volume_turnover
+                    AS future_log_volume_turnover_change
             FROM joined j
             JOIN joined t
               ON t.pool = j.pool
@@ -1579,10 +1583,22 @@ def route_capital_gap_v3_fee_horizon_panel(
               AND volume_usd IS NOT NULL
         ),
         pool_candidates AS (
-            SELECT origin_date, pool, token0 AS candidate_address, fees_usd, volume_usd
+            SELECT
+                origin_date,
+                pool,
+                token0 AS candidate_address,
+                fees_usd,
+                volume_usd,
+                tvl_usd
             FROM fee_rows
             UNION ALL
-            SELECT origin_date, pool, token1 AS candidate_address, fees_usd, volume_usd
+            SELECT
+                origin_date,
+                pool,
+                token1 AS candidate_address,
+                fees_usd,
+                volume_usd,
+                tvl_usd
             FROM fee_rows
         ),
         joined AS (
@@ -1594,7 +1610,11 @@ def route_capital_gap_v3_fee_horizon_panel(
                 g.is_stable,
                 g.route_capital_gap_5,
                 log(1 + p.fees_usd) AS log_fees_usd,
-                log(1 + p.volume_usd) AS log_volume_usd
+                log(1 + p.volume_usd) AS log_volume_usd,
+                log(1 + 10000.0 * p.fees_usd / nullif(p.tvl_usd, 0))
+                    AS log_fee_yield_bps,
+                log(1 + p.volume_usd / nullif(p.tvl_usd, 0))
+                    AS log_volume_turnover
             FROM pool_candidates p
             JOIN candidate_gaps g
               ON g.origin_date = p.origin_date
@@ -1623,6 +1643,8 @@ def route_capital_gap_v3_fee_horizon_panel(
             "route_capital_gap_5",
             "future_log_fees_change",
             "future_log_volume_change",
+            "future_log_fee_yield_bps_change",
+            "future_log_volume_turnover_change",
         ]
     )
 
@@ -1633,10 +1655,15 @@ def route_capital_gap_v3_fee_incidence(
     min_observations: int = 1000,
     min_clusters: int = 30,
 ) -> pd.DataFrame:
-    """Test whether route-capital gaps forecast same-pool V3 fees or volume."""
+    """Test whether route-capital gaps forecast same-pool V3 fees or turnover."""
 
     rows: list[dict[str, object]] = []
-    outcomes = ("future_log_fees_change", "future_log_volume_change")
+    outcomes = (
+        "future_log_fees_change",
+        "future_log_volume_change",
+        "future_log_fee_yield_bps_change",
+        "future_log_volume_turnover_change",
+    )
     for horizon, group in panel.groupby("horizon_days", sort=True):
         for outcome in outcomes:
             data = (
@@ -1708,8 +1735,8 @@ def route_capital_gap_v3_fee_incidence(
                         "fixed_effects": "pool+origin_date",
                         "covariance": "origin_date_clustered",
                         "interpretation": (
-                            "same-pool V3 fee and volume association, not causal "
-                            "rent incidence"
+                            "same-pool V3 fee, volume, fee-yield, and turnover "
+                            "association; not causal rent incidence or LP returns"
                         ),
                     }
                 )
@@ -1737,8 +1764,9 @@ def route_capital_gap_v3_fee_incidence(
                     "fixed_effects": "pool+origin_date",
                     "covariance": "origin_date_clustered",
                     "interpretation": (
-                        "stable-candidate same-pool V3 fee and volume association, "
-                        "not causal rent incidence"
+                        "stable-candidate same-pool V3 fee, volume, fee-yield, "
+                        "and turnover association; not causal rent incidence or "
+                        "LP returns"
                     ),
                 }
             )
