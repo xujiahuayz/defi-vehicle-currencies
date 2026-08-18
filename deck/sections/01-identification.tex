@@ -1,6 +1,36 @@
 % VISUAL-MANAGED-FILE
 % Framing and institutional setting. Sources: Krugman (1980); Flandreau and Jobst (2009); project route-release audit.
 
+% EVIDENCE-STATUS: conceptual motivation from vehicle-currency theory and FX reporting limits; no empirical estimate is displayed.
+% SOURCE: Krugman (1980), vehicle currency theory; Somogyi (2026), dollar dominance inference from pair-level FX volumes; BIS Triennial reporting guidelines, pair-level turnover.
+% VISUAL-FUNCTION: traditional-FX route analogy | two-leg schematic plus measurement contrast | motivate why transaction-level route reconstruction matters
+\begin{frame}{Vehicle currencies are routes}
+\begin{columns}[T,totalwidth=\textwidth]
+\begin{column}{0.47\textwidth}
+\evidencekicker{FX analogy}
+\vspace{0.10cm}
+{\large Yen--euro may trade through dollars.\par}
+\vspace{0.24cm}
+{\small Pair data see two legs, not the customer route.\par}
+\end{column}
+\begin{column}{0.49\textwidth}
+\centering
+\begin{tikzpicture}[x=1cm,y=1cm]
+\node[nodepoint,minimum size=42pt,font=\small\bfseries] (jpy) at (0.2,2.45) {JPY};
+\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=42pt,font=\small\bfseries] (usd) at (2.55,2.45) {USD};
+\node[nodepoint,minimum size=42pt,font=\small\bfseries] (eur) at (4.9,2.45) {EUR};
+\draw[route,draw=ucldark,line width=1.7pt] (jpy)--(usd);
+\draw[route,draw=ucldark,line width=1.7pt] (usd)--(eur);
+\node[font=\scriptsize\bfseries,text=white,fill=ucldark,rounded corners=2pt,inner sep=4pt] at (2.55,1.45) {vehicle};
+\node[softbox,text width=5.30cm,align=center] at (2.55,0.42) {\small Pool logs reveal the path.};
+\end{tikzpicture}
+\end{column}
+\end{columns}
+\vspace{0.22cm}
+{\small DEX data make the hidden route observable.\par}
+\decknote{Traditional pair-level FX records show turnover in each bilateral pair, but not whether two legs belong to one customer route. The DEX setting preserves the transaction-level pool path, so the intermediary asset is observed directly.}
+\end{frame}
+
 % EVIDENCE-STATUS: authentic transaction and route-component trace; exact same-state alternative remains outside this exhibit
 % EVIDENCE-SOURCES: output/exhibits/route_replay.json; data/unified/20260110.parquet; https://eth.blockscout.com/tx/0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9?tab=token_transfers (retrieved 2026-08-14)
 % EVIDENCE-CASE: transaction 0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9, component 0.

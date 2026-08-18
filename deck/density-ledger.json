@@ -4,168 +4,168 @@
   "budget_words": 55,
   "hard_ceiling_words": 70,
   "core_frame_limit": 13,
-  "core_frame_allowance": 22,
-  "appendix_first_page": 23,
+  "core_frame_allowance": 23,
+  "appendix_first_page": 24,
   "appendix_title": "Appendix map",
   "page_allowances": [
     {
-      "page": 3,
+      "page": 4,
       "title": "Inside the pools, USDT links USDC to USDe",
       "words": 56,
       "note_words": 17
     },
     {
-      "page": 4,
+      "page": 5,
       "title": "Vehicle dominance is the share of indirect trade carried by",
       "words": 70,
       "note_words": 0
     },
     {
-      "page": 5,
+      "page": 6,
       "title": "Architecture changes routing opportunities",
       "words": 111,
       "note_words": 0
     },
     {
-      "page": 6,
+      "page": 7,
       "title": "The route sample and architecture supplement answer",
       "words": 79,
       "note_words": 0
     },
     {
-      "page": 8,
+      "page": 9,
       "title": "Native-asset pairing persists after it becomes optional",
       "words": 71,
       "note_words": 35
     },
     {
-      "page": 9,
+      "page": 10,
       "title": "Stablecoins regain the lead in routed value",
       "words": 88,
       "note_words": 90
     },
     {
-      "page": 12,
+      "page": 13,
       "title": "WETH-linked ultimate pairs account for most of the count",
       "words": 112,
       "note_words": 51
     },
     {
-      "page": 13,
+      "page": 14,
       "title": "The routed-value rotation extends beyond WETH-linked",
       "words": 102,
       "note_words": 52
     },
     {
-      "page": 14,
+      "page": 15,
       "title": "Three margins move an aggregate vehicle share",
       "words": 111,
       "note_words": 46
     },
     {
-      "page": 15,
+      "page": 16,
       "title": "Vehicle choice is sticky from market birth",
       "words": 42,
       "note_words": 64
     },
     {
-      "page": 17,
+      "page": 18,
       "title": "Extra-hop execution became cheap enough",
       "words": 58,
       "note_words": 43
     },
     {
-      "page": 18,
+      "page": 19,
       "title": "Stablecoin use rises within each venue scope",
       "words": 96,
       "note_words": 26
     },
     {
-      "page": 20,
+      "page": 21,
       "title": "Deposited capital neither leads vehicle use nor follows it",
       "words": 122,
       "note_words": 62
     },
     {
-      "page": 21,
+      "page": 22,
       "title": "The same arithmetic governs any aggregate currency share",
       "words": 122,
       "note_words": 46
     },
     {
-      "page": 22,
+      "page": 23,
       "title": "The market changed, not the trade",
       "words": 101,
       "note_words": 0
     },
     {
-      "page": 23,
+      "page": 24,
       "title": "Appendix map",
       "words": 65,
       "note_words": 0
     },
     {
-      "page": 25,
+      "page": 26,
       "title": "How we reconstruct a route from one transaction",
       "words": 60,
       "note_words": 0
     },
     {
-      "page": 27,
+      "page": 28,
       "title": "A3. One route universe supports two measurements",
       "words": 89,
       "note_words": 0
     },
     {
-      "page": 28,
+      "page": 29,
       "title": "A4. State is reconstructed immediately before execution",
       "words": 60,
       "note_words": 0
     },
     {
-      "page": 29,
+      "page": 30,
       "title": "A5. Each AMM family has a different state vector",
       "words": 59,
       "note_words": 0
     },
     {
-      "page": 30,
+      "page": 31,
       "title": "Protocol design changes markets, depth, and settlement",
       "words": 168,
       "note_words": 0
     },
     {
-      "page": 32,
+      "page": 33,
       "title": "A7. Daily and weekly frequencies answer different questions",
       "words": 93,
       "note_words": 0
     },
     {
-      "page": 34,
+      "page": 35,
       "title": "Vehicle dominance aggregates realised intermediary choices",
       "words": 96,
       "note_words": 0
     },
     {
-      "page": 35,
+      "page": 36,
       "title": "A9. Intermediary and route-endpoint use are separate",
       "words": 82,
       "note_words": 32
     },
     {
-      "page": 36,
+      "page": 37,
       "title": "A10. Capital, inventory, and depth are different objects",
       "words": 84,
       "note_words": 0
     },
     {
-      "page": 38,
+      "page": 39,
       "title": "A11b. Venue scope and vehicle type differ in 2026",
       "words": 56,
       "note_words": 16
     },
     {
-      "page": 40,
+      "page": 41,
       "title": "A13. References: decentralised exchange design",
       "words": 59,
       "note_words": 0
