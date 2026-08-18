@@ -99,7 +99,8 @@ route-minus-capital gap, stable-basket portfolio rebalancing, delayed/asymmetric
 LP rebalancing, LP stable-candidate response heterogeneity, venue-footprint and
 pool-count extensive-margin behavior, V2 pool-capital concentration and
 fragmentation, plus same-pool LP capital-chase rival screens, bounded V3
-fee/rent-incidence screens, and V3 mint/burn action-count responses. The deck
+fee/rent-incidence screens, V3 mint/burn action-count responses, and local
+bridge-liquidity dominance. The deck
 also carries the traditional-FX route analogy as motivation. These layers
 strengthen the
 mechanism story but do not change the registered confirmatory claim set.
