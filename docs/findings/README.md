@@ -42,9 +42,9 @@ E1 confirmatory specification lock      DONE
   |
 F registered confirmatory rebuilds      DONE; FINDINGS GATE GREEN
   |
-G baseline JFE paper                    DONE; CLEAN 47-PAGE PDF
+G baseline JFE paper                    DONE; CLEAN 49-PAGE PDF
   |
-H baseline presentation deck           DONE; CLEAN 36-PAGE PDF
+H baseline presentation deck           DONE; CLEAN 40-PAGE PDF
   |
 I parallel result-search loops          ACTIVE
   |                                     dominance drivers, LP behavior, framing
@@ -86,16 +86,20 @@ complete producer-to-deliverable path. Provisional results may enter the paper
 and deck only when explicitly labelled and reproducible enough for review.
 
 The active provisional result stack now includes vehicle formation at market
-birth, non-WETH entry-driver controls, 30-day and 120-day birth-state
-persistence, stable turn-on in thin baseline markets, the direct-route by
-thinness interaction, sticky incumbent vehicle regimes, USDC/USDT concentration
-at stable-entry, stable-candidate identity persistence, the V2 liquidity
-route-minus-capital gap, and delayed LP gap-closing. These layers strengthen the
-mechanism story but do not change the registered confirmatory claim set.
+birth, 30-day and 120-day birth-state persistence, active-day birth-regime
+hysteresis, non-WETH entry-driver controls, route-architecture entry
+interactions, stable turn-on in thin baseline markets, the direct-route by
+thinness interaction, observed mixed native-stable risk-set checks, sticky
+incumbent vehicle regimes, USDC/USDT concentration at stable-entry,
+stable-candidate identity persistence, extra-hop gas economics, the V2
+liquidity route-minus-capital gap, and delayed/asymmetric LP rebalancing. These
+layers strengthen the mechanism story but do not change the registered
+confirmatory claim set.
 
-Routing maturation, direct-cost dominance, the joint V2/V3 capital-flow family,
-rent incidence, and persistence/hysteresis are blocked, withheld, supporting, or
-outside the executable perimeter until they receive a complete
+Routing maturation, full same-state direct-cost dominance, the joint V2/V3
+capital-flow family, rent incidence, provider-flow measurement, and V4
+settlement/netting claims are blocked, withheld, supporting, or outside the
+executable perimeter until they receive a complete
 producer-to-deliverable path. They must not be presented as established findings.
 
 ## Current blockers
@@ -148,12 +152,11 @@ and the lock.
 
 ## Deliverable state
 
-The current branch compiles a 48-page paper and a 39-page deck after the
+The current branch compiles a 49-page paper and a 40-page deck after the
 provisional mechanism reruns. The paper and deck compile with zero undefined
-references. The repository passes 645 pytest tests plus 445 subtests, 332
-unittest tests, the findings gate, and every blocking conformance check. There
-is one manuscript under `paper/` and one presentation under `deck/`; Git history
-is the archive.
+references. The repository passes 658 pytest tests, the findings gate, and every
+blocking conformance check. There is one manuscript under `paper/` and one
+presentation under `deck/`; Git history is the archive.
 
 These are rolling deliverables, not final submission deliverables. The paper and
 deck remain presentable throughout the research process. Before submission
