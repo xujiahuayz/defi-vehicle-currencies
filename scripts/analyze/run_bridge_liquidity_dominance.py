@@ -572,6 +572,104 @@ def bridge_liquidity_horse_race_regressions(
     return pd.DataFrame(rows)
 
 
+def bridge_liquidity_leave_one_candidate_regressions(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 1000,
+    min_clusters: int = 30,
+    min_supported_candidates: int = MIN_SUPPORTED_CANDIDATES,
+) -> pd.DataFrame:
+    """Re-run the bridge-depth horse race after dropping each headline candidate."""
+
+    regressors = (
+        "log_bridge_min_capital",
+        "log_global_route_count_day_leaveout",
+        "log_global_route_count_lag30",
+        "log_global_pair_count_lag30",
+    )
+    fixed_effects = ("choice_group_id", "candidate_address")
+    rows: list[dict[str, object]] = []
+    for candidate_symbol in sorted(panel["candidate_symbol"].dropna().unique()):
+        subset = panel[~panel["candidate_symbol"].eq(candidate_symbol)].copy()
+        remaining_candidates = subset.groupby("choice_group_id")[
+            "candidate_address"
+        ].transform("nunique")
+        subset = subset[remaining_candidates >= min_supported_candidates].copy()
+        columns = [
+            "route_share_five",
+            *regressors,
+            *fixed_effects,
+            "origin_date",
+            "ordered_pair",
+            "five_route_total",
+        ]
+        data = (
+            subset.loc[:, columns]
+            .replace([np.inf, -np.inf], np.nan)
+            .dropna()
+            .copy()
+        )
+        residual = absorb_fixed_effects(
+            data[["route_share_five", *regressors]],
+            *(data[column] for column in fixed_effects),
+            weights=data["five_route_total"],
+        )
+        fit = ols_clustered(
+            residual["route_share_five"],
+            residual[list(regressors)],
+            data["ordered_pair"],
+            add_constant=False,
+            absorbed_groups=tuple(data[column] for column in fixed_effects),
+            additional_clusters=(data["origin_date"],),
+            weights=data["five_route_total"],
+            min_observations=min_observations,
+            min_clusters=min_clusters,
+        )
+        for index, regressor in enumerate(regressors):
+            coefficient = float(fit.beta[index])
+            standard_error = float(fit.standard_errors[index])
+            rows.append(
+                {
+                    "claim_status": "provisional_exploratory",
+                    "record_type": "bridge_liquidity_leave_one_candidate_regression",
+                    "model_id": "route_share_depth_global_reach_candidate_fe",
+                    "dropped_candidate_symbol": str(candidate_symbol),
+                    "outcome": "route_share_five",
+                    "regressor": regressor,
+                    "coefficient": coefficient,
+                    "standard_error": standard_error,
+                    "t_statistic": float(fit.t_statistics[index]),
+                    "p_value": float(fit.p_values[index]),
+                    "coefficient_pp_per_log_point": 100.0 * coefficient,
+                    "standard_error_pp_per_log_point": 100.0 * standard_error,
+                    "n_observations": int(fit.n_observations),
+                    "choice_groups": int(data["choice_group_id"].nunique()),
+                    "remaining_candidate_count": int(
+                        subset["candidate_address"].nunique()
+                    ),
+                    "ordered_pair_clusters": int(fit.cluster_counts[0]),
+                    "date_clusters": int(fit.cluster_counts[1]),
+                    "fixed_effects": "ordered_ultimate_pair_date_scope+candidate",
+                    "covariance": "two_way_ordered_pair_date_cr1",
+                    "weight": "five_candidate_route_count",
+                    "capital_status": CAPITAL_STATUS,
+                    "candidate_reach_quantity": (
+                        "same-day leave-one-out and prior-30-day five-candidate "
+                        "route reach in endpoint_candidate_choices"
+                    ),
+                    "outcome_denominator": (
+                        "original five-candidate route total retained after "
+                        "dropping one candidate"
+                    ),
+                    "interpretation": (
+                        "leave-one-candidate robustness for the local prior "
+                        "bridge-depth association conditional on candidate reach"
+                    ),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
 def bridge_liquidity_depth_regressions(
     panel: pd.DataFrame,
     *,
@@ -742,6 +840,7 @@ def run(
             bridge_liquidity_top_rank_summaries(panel),
             bridge_liquidity_depth_regressions(panel),
             bridge_liquidity_horse_race_regressions(panel),
+            bridge_liquidity_leave_one_candidate_regressions(panel),
         ],
         ignore_index=True,
     )

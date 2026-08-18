@@ -98,6 +98,17 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         outcome="route_share_five",
         regressor="log_global_route_count_day_leaveout",
     )
+    leave_one_depth = estimates[
+        estimates["record_type"].eq("bridge_liquidity_leave_one_candidate_regression")
+        & estimates["model_id"].eq("route_share_depth_global_reach_candidate_fe")
+        & estimates["outcome"].eq("route_share_five")
+        & estimates["regressor"].eq("log_bridge_min_capital")
+    ].copy()
+    if leave_one_depth["dropped_candidate_symbol"].nunique() < 5:
+        raise ValueError("bridge-liquidity leave-one screen is incomplete")
+    leave_one_min = leave_one_depth.loc[
+        leave_one_depth["coefficient"].astype(float).idxmin()
+    ]
     if not (
         float(pooled["top_bridge_route_share"]) > 0.75
         and float(end["top_bridge_route_share"]) > float(base["top_bridge_route_share"])
@@ -110,6 +121,8 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         and float(horse_depth["p_value"]) < 0.01
         and float(horse_global_day["coefficient"]) > 0
         and float(horse_global_day["p_value"]) < 0.01
+        and leave_one_depth["coefficient"].astype(float).gt(0).all()
+        and leave_one_depth["p_value"].astype(float).lt(0.01).all()
     ):
         raise ValueError("bridge-liquidity dominance pattern no longer holds")
     lines = [
@@ -133,6 +146,9 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         f"\\newcommand{{\\BridgeLiquidityHorseRaceDepthSE}}{{{_unsigned_pp(float(horse_depth['standard_error']))}}}",
         f"\\newcommand{{\\BridgeLiquidityHorseRaceGlobalDayCoef}}{{{_signed_pp(float(horse_global_day['coefficient']))}}}",
         f"\\newcommand{{\\BridgeLiquidityHorseRaceGlobalDaySE}}{{{_unsigned_pp(float(horse_global_day['standard_error']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityLeaveOneCount}}{{{_integer(float(leave_one_depth['dropped_candidate_symbol'].nunique()))}}}",
+        f"\\newcommand{{\\BridgeLiquidityLeaveOneMinCoef}}{{{_signed_pp(float(leave_one_min['coefficient']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityLeaveOneMinSE}}{{{_unsigned_pp(float(leave_one_min['standard_error']))}}}",
     ]
     return "\n".join(lines) + "\n"
 

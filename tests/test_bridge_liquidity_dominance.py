@@ -9,6 +9,7 @@ import pandas as pd
 from scripts.analyze.run_bridge_liquidity_dominance import (
     bridge_liquidity_depth_regressions,
     bridge_liquidity_horse_race_regressions,
+    bridge_liquidity_leave_one_candidate_regressions,
     bridge_liquidity_top_rank_summaries,
     load_bridge_liquidity_panel,
 )
@@ -264,6 +265,80 @@ def test_bridge_liquidity_horse_race_keeps_local_depth_slope() -> None:
     assert row["coefficient"] > 0
 
 
+def test_bridge_liquidity_leave_one_keeps_local_depth_slope() -> None:
+    rows = []
+    candidates = [
+        ("WETH", WETH, 0.0),
+        ("USDC", USDC, 1.0),
+        ("DAI", DAI, 1.0),
+        ("WBTC", WBTC, 0.0),
+    ]
+    for group_index in range(220):
+        day = pd.Timestamp("2024-01-01") + pd.Timedelta(days=group_index)
+        group_effect = 0.0005 * group_index
+        for candidate_index, (symbol, candidate, is_stable) in enumerate(candidates):
+            log_depth = (
+                4.2
+                + 0.35 * candidate_index
+                + math.sin(group_index / 12 + 0.6 * candidate_index)
+                + 0.02 * ((group_index * (candidate_index + 4)) % 9)
+            )
+            global_reach = (
+                2.1
+                + 0.008 * group_index
+                + 0.35 * candidate_index
+                + math.cos(group_index / 15 + candidate_index)
+            )
+            lag_route_reach = (
+                1.4
+                + 0.025 * ((group_index * (candidate_index + 5)) % 19)
+                + 0.35 * math.sin(group_index / 18 + 0.4 * candidate_index)
+            )
+            lag_pair_reach = (
+                1.0
+                + 0.02 * ((group_index + 3 * candidate_index) % 11)
+                + 0.25 * math.cos(group_index / 20 + 0.5 * candidate_index)
+            )
+            rows.append(
+                {
+                    "choice_group_id": f"g{group_index}",
+                    "candidate_symbol": symbol,
+                    "candidate_address": candidate,
+                    "origin_date": day,
+                    "ordered_pair": f"pair{group_index % 55}",
+                    "five_route_total": 25.0 + group_index % 5,
+                    "route_share_five": (
+                        0.06 * log_depth
+                        + 0.012 * global_reach
+                        + 0.008 * lag_route_reach
+                        + group_effect
+                        + 0.006 * candidate_index
+                    ),
+                    "is_stable": is_stable,
+                    "log_bridge_min_capital": log_depth,
+                    "log_global_route_count_day_leaveout": global_reach,
+                    "log_global_route_count_lag30": lag_route_reach,
+                    "log_global_pair_count_lag30": lag_pair_reach,
+                }
+            )
+    result = bridge_liquidity_leave_one_candidate_regressions(
+        pd.DataFrame(rows),
+        min_observations=100,
+        min_clusters=10,
+    )
+    depth = result[
+        result["regressor"].eq("log_bridge_min_capital")
+        & result["model_id"].eq("route_share_depth_global_reach_candidate_fe")
+    ]
+    assert sorted(depth["dropped_candidate_symbol"].unique()) == [
+        "DAI",
+        "USDC",
+        "WBTC",
+        "WETH",
+    ]
+    assert depth["coefficient"].gt(0).all()
+
+
 def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
     estimates = pd.DataFrame(
         [
@@ -341,9 +416,30 @@ def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
                 "standard_error": 0.028,
                 "p_value": 0.004,
             },
+            *[
+                {
+                    "claim_status": "provisional_exploratory",
+                    "record_type": "bridge_liquidity_leave_one_candidate_regression",
+                    "model_id": "route_share_depth_global_reach_candidate_fe",
+                    "dropped_candidate_symbol": symbol,
+                    "outcome": "route_share_five",
+                    "regressor": "log_bridge_min_capital",
+                    "coefficient": coefficient,
+                    "standard_error": 0.013,
+                    "p_value": 0.001,
+                }
+                for symbol, coefficient in [
+                    ("WETH", 0.061),
+                    ("USDC", 0.058),
+                    ("USDT", 0.064),
+                    ("DAI", 0.056),
+                    ("WBTC", 0.060),
+                ]
+            ],
         ]
     )
     rendered = render_bridge_liquidity_deck_values(estimates)
     assert "\\BridgeLiquidityTopShare" in rendered
     assert "\\BridgeLiquidityStableLogTotalCoef" in rendered
     assert "\\BridgeLiquidityHorseRaceDepthCoef" in rendered
+    assert "\\BridgeLiquidityLeaveOneMinCoef" in rendered
