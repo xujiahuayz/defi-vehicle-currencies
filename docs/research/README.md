@@ -7,6 +7,9 @@ scientific contracts.
   outcomes, comparison sets, and empirical designs.
 - [`router-identification.md`](router-identification.md) records what on-chain
   executor identities can and cannot identify about the party choosing a route.
+- [`writing-and-rhetoric.md`](writing-and-rhetoric.md) is the live entry point
+  for paper prose, slide language, finding-selling, visual rhetoric, and the
+  paper/deck conformance checks.
 
 Definitions that affect all stages—including ultimate versus atomic pairs,
 vehicle dominance, topology, support, and liquidity quantities—remain in the

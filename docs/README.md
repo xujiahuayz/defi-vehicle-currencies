@@ -7,7 +7,7 @@ and progress ledgers live in Git history rather than beside current authority.
 | Path | Purpose |
 |---|---|
 | [`findings/`](findings/README.md) | Live workflow position and current claim families; detailed notes for the vehicle transition, V1 mandate evidence, and venue coverage. |
-| [`research/`](research/README.md) | Empirical design and the bounded router-identification question. |
+| [`research/`](research/README.md) | Empirical design, bounded router identification, and the writing/rhetoric contract for paper and slides. |
 | [`specifications/`](specifications/README.md) | The single machine-readable confirmatory specification. |
 | [`acquisition/`](acquisition/README.md) | Concise map from acquisition commands to source and schema definitions. |
 | [`repository-data-map.md`](repository-data-map.md) | Detailed cross-host data ownership, retention, and cleanup rules. |

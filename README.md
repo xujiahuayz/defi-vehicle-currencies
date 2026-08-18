@@ -98,6 +98,11 @@ Reproducibility here means direct script-owned paths, declared schemas, row and
 coverage checks, tests, and successful rebuilds. Git records source history and
 the current READMEs record scientific decisions.
 
+Paper and slide language rules are consolidated in
+[`docs/research/writing-and-rhetoric.md`](docs/research/writing-and-rhetoric.md).
+Read that guide before editing audience-facing prose, captions, exhibit notes,
+slide titles, or result framing.
+
 ## Scientific contracts
 
 - Directed token flow defines ultimate endpoints, atomic legs, intermediaries,

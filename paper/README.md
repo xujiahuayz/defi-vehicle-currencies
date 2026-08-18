@@ -4,6 +4,9 @@ This folder contains the single canonical manuscript. `main.tex` owns document a
 
 The paper remains downstream of the analysis in [`../README.md`](../README.md).
 A compiled PDF is a review artifact, not evidence that its inputs are current.
+The paper-writing and rhetoric rules live in
+[`../docs/research/writing-and-rhetoric.md`](../docs/research/writing-and-rhetoric.md);
+this README only owns manuscript folder structure and build handoff.
 
 Build from this directory with `latexmk -pdf -interaction=nonstopmode main.tex`, then run the repository conformance and findings gates before treating the result as a handoff.
 

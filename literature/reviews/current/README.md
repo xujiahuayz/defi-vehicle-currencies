@@ -6,6 +6,12 @@ Current review routes:
 - `deck-visual-composition.md` is the living visual owner; `deck-visual-experiments.md` records current experiments; `deck-visual-salvage.md` is the bounded migration audit that preserves the reasoning behind retained and rejected visual ideas. None is a disposable generated artifact.
 - The dated files below are individual specialist cards indexed for the literature audit. `literature/audit.md`, not any single card, owns the reconciled current claim boundary.
 
+The consolidated authoring entry point for paper prose, slide language, visual
+rhetoric, and conformance checks is
+[`../../../docs/research/writing-and-rhetoric.md`](../../../docs/research/writing-and-rhetoric.md).
+The files in this folder are source calibration records, not the first file an
+agent should read before editing `paper/` or `deck/`.
+
 Independent specialist reviews, newest first.
 
 - 2026-08-09T13:32:01+08:00 — **full-text-reader** · jfe (independent source reader) on `1979-Krugman1979VehicleCurrenciesWorkingPaper-working-paper-vehicle-currencies-and-the-structure-of-international-exchange.pdf` → `1979-Krugman1979VehicleCurrenciesWorkingPaper-working-paper-vehicle-currencies-and-the-structure-of-international-exchange--full-text-reader--jfe--20260809133201.md`

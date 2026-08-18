@@ -13,3 +13,5 @@ layers.
 | `validate_curve_quoter.py`, `validate_v4_quoter.py`, `validate_weighted_quoter.py` | validate quote implementations and write the appendix-facing diagnostics |
 The repository test suite supplies schema and economic-identity checks. The
 commands above are named, direct consumers of any diagnostic output they write.
+The human-facing writing and rhetoric rules that these checks partially enforce
+live in [`../../docs/research/writing-and-rhetoric.md`](../../docs/research/writing-and-rhetoric.md).
