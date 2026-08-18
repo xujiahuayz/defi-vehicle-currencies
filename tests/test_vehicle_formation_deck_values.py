@@ -70,6 +70,15 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
                 "stable_share": 0.99,
             },
             {
+                "record_type": "entry_persistence_contrast",
+                "horizon_days": 120,
+                "entry_year": 2026,
+                "primary_routes": 200,
+                "stable_share": None,
+                "coefficient": 0.98,
+                "standard_error": 0.01,
+            },
+            {
                 "record_type": "entry_endpoint_class",
                 "entry_year": 2024,
                 "endpoint_class": "non_weth_endpoint",
@@ -119,5 +128,6 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
     assert "\\FormationEntryStableShareBase" in rendered
     assert "5.0\\%" in rendered
     assert "$+97.0$ pp" in rendered
+    assert "$+98.0$ pp" in rendered
     assert "\\FormationNonWethEntryStableShareEnd" in rendered
     assert "\\FormationNonWethYearDriver" in rendered

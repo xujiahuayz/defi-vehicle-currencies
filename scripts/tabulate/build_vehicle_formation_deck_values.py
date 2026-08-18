@@ -88,6 +88,12 @@ def render_vehicle_formation_deck_values(estimates: pd.DataFrame) -> str:
         entry_year=2026,
         entry_type="stable_dominant_entry",
     )
+    contrast_2026_120 = _one(
+        estimates,
+        record_type="entry_persistence_contrast",
+        horizon_days=120,
+        entry_year=2026,
+    )
     non_weth_2024 = _one(
         estimates,
         record_type="entry_endpoint_class",
@@ -129,6 +135,8 @@ def render_vehicle_formation_deck_values(estimates: pd.DataFrame) -> str:
         float(contrast_2026_30["standard_error"]),
         float(stable_2024_120["stable_share"]),
         float(stable_2026_120["stable_share"]),
+        float(contrast_2026_120["coefficient"]),
+        float(contrast_2026_120["standard_error"]),
         float(non_weth_2024["stable_share"]),
         float(non_weth_2026["stable_share"]),
         float(weth_2026["route_mass_share"]),
@@ -156,6 +164,8 @@ def render_vehicle_formation_deck_values(estimates: pd.DataFrame) -> str:
         f"\\newcommand{{\\FormationThirtyPersistenceSE}}{{{_unsigned_pp(float(contrast_2026_30['standard_error']))}}}",
         f"\\newcommand{{\\FormationStableBirthShareOneTwentyBase}}{{{_pct(float(stable_2024_120['stable_share']))}}}",
         f"\\newcommand{{\\FormationStableBirthShareOneTwentyEnd}}{{{_pct(float(stable_2026_120['stable_share']))}}}",
+        f"\\newcommand{{\\FormationOneTwentyPersistenceGap}}{{{_signed_pp(float(contrast_2026_120['coefficient']))}}}",
+        f"\\newcommand{{\\FormationOneTwentyPersistenceSE}}{{{_unsigned_pp(float(contrast_2026_120['standard_error']))}}}",
         f"\\newcommand{{\\FormationNonWethEntryStableShareBase}}{{{_pct(float(non_weth_2024['stable_share']))}}}",
         f"\\newcommand{{\\FormationNonWethEntryStableShareEnd}}{{{_pct(float(non_weth_2026['stable_share']))}}}",
         f"\\newcommand{{\\FormationWethEntryRouteMassEnd}}{{{_pct(float(weth_2026['route_mass_share']))}}}",
