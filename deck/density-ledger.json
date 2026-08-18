@@ -4,8 +4,8 @@
   "budget_words": 55,
   "hard_ceiling_words": 70,
   "core_frame_limit": 13,
-  "core_frame_allowance": 18,
-  "appendix_first_page": 19,
+  "core_frame_allowance": 19,
+  "appendix_first_page": 20,
   "appendix_title": "Appendix map",
   "page_allowances": [
     {
@@ -17,7 +17,7 @@
     {
       "page": 4,
       "title": "Vehicle dominance is the share of indirect trade carried by",
-      "words": 68,
+      "words": 70,
       "note_words": 0
     },
     {
@@ -63,97 +63,97 @@
       "note_words": 46
     },
     {
-      "page": 15,
+      "page": 16,
       "title": "Stablecoin use rises within each venue scope",
       "words": 96,
       "note_words": 26
     },
     {
-      "page": 16,
+      "page": 17,
       "title": "Deposited capital neither leads vehicle use nor follows it",
-      "words": 117,
+      "words": 122,
       "note_words": 62
     },
     {
-      "page": 17,
+      "page": 18,
       "title": "The same arithmetic governs any aggregate currency share",
       "words": 122,
       "note_words": 46
     },
     {
-      "page": 18,
+      "page": 19,
       "title": "The market changed, not the trade",
       "words": 101,
       "note_words": 0
     },
     {
-      "page": 19,
+      "page": 20,
       "title": "Appendix map",
       "words": 65,
       "note_words": 0
     },
     {
-      "page": 21,
+      "page": 22,
       "title": "How we reconstruct a route from one transaction",
       "words": 60,
       "note_words": 0
     },
     {
-      "page": 23,
+      "page": 24,
       "title": "A3. One route universe supports two measurements",
       "words": 89,
       "note_words": 0
     },
     {
-      "page": 24,
+      "page": 25,
       "title": "A4. State is reconstructed immediately before execution",
       "words": 60,
       "note_words": 0
     },
     {
-      "page": 25,
+      "page": 26,
       "title": "A5. Each AMM family has a different state vector",
       "words": 59,
       "note_words": 0
     },
     {
-      "page": 26,
+      "page": 27,
       "title": "Protocol design changes markets, depth, and settlement",
       "words": 168,
       "note_words": 0
     },
     {
-      "page": 28,
+      "page": 29,
       "title": "A7. Daily and weekly frequencies answer different questions",
       "words": 93,
       "note_words": 0
     },
     {
-      "page": 30,
-      "title": "Vehicle dominance aggregates realised intermediary choices",
-      "words": 94,
-      "note_words": 0
-    },
-    {
       "page": 31,
-      "title": "A9. Intermediary and route-endpoint use are separate",
-      "words": 78,
-      "note_words": 32
+      "title": "Vehicle dominance aggregates realised intermediary choices",
+      "words": 96,
+      "note_words": 0
     },
     {
       "page": 32,
+      "title": "A9. Intermediary and route-endpoint use are separate",
+      "words": 82,
+      "note_words": 32
+    },
+    {
+      "page": 33,
       "title": "A10. Capital, inventory, and depth are different objects",
-      "words": 80,
+      "words": 84,
       "note_words": 0
     },
     {
-      "page": 34,
+      "page": 35,
       "title": "A11b. Venue scope and vehicle type differ in 2026",
       "words": 56,
       "note_words": 16
     },
     {
-      "page": 36,
+      "page": 37,
       "title": "A13. References: decentralised exchange design",
       "words": 59,
       "note_words": 0

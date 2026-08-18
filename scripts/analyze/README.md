@@ -10,6 +10,7 @@ belongs in `../plot/` or `../tabulate/`.
 | `run_excess_use_date_fe_ladder.py` | date-FE ladder and screens; paper/deck and figure inputs |
 | `run_integration_date_fe_ladder.py` | integration ladder; paper/deck values |
 | `run_liquidity_capital_v2_predictability.py` | V2 predictability results, support, and table; paper/deck |
+| `run_mechanism_expansion_exploration.py` | provisional JFE-expansion mechanism regressions and formation summaries |
 | `run_route_heterogeneity.py` | WETH-eligibility and route-scope results plus deck values |
 | `run_usdt_integration_decomposition_e0.py` | USDT transition decomposition; pair-decomposition values |
 | `run_v1_forced_vehicle_tests.py` | aggregate V1 mandate-removal exhibits and research report |
@@ -17,6 +18,7 @@ belongs in `../plot/` or `../tabulate/`.
 | `run_vehicle_rotation_composition_e0.py` | pair panel, contribution ledger, decomposition, support, and fixed effects |
 | `run_vehicle_transition_e0.py` | backing-regime and fixed-opportunity result/support families |
 | `run_vehicle_transition_exploration.py` | umbrella command for the two vehicle-transition owners above |
+| `run_vehicle_dominance_mechanism_sweep.py` | provisional driver screen for stable-vehicle gains, turn-ons, and leader switches |
 | `run_venue_coverage_bounds.py` | venue-coverage and excluded-source bounds; appendix and findings |
 | `run_venue_technology_rival.py` | venue-technology comparison; paper/deck and generated table |
 

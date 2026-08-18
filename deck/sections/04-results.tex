@@ -13,6 +13,9 @@
 \IfFileExists{../output/exhibits/liquidity_capital_v2_deck_values.tex}{%
 \input{../output/exhibits/liquidity_capital_v2_deck_values.tex}%
 }{\PackageError{dvc-deck}{Missing generated V2 capital-predictability values}{Run scripts/tabulate/build_liquidity_capital_v2_deck_values.py.}}
+\IfFileExists{../output/exhibits/vehicle_formation_deck_values.tex}{%
+\input{../output/exhibits/vehicle_formation_deck_values.tex}%
+}{\PackageError{dvc-deck}{Missing generated vehicle-formation values}{Run scripts/analyze/run_vehicle_formation_exploration.py then scripts/tabulate/build_vehicle_formation_deck_values.py.}}
 \IfFileExists{../output/exhibits/excess_use_date_fe_deck_values.tex}{%
 \input{../output/exhibits/excess_use_date_fe_deck_values.tex}%
 }{\PackageError{dvc-deck}{Missing generated within-day excess-use values}{Run scripts/analyze/run_excess_use_date_fe_ladder.py then scripts/tabulate/build_excess_use_date_fe_deck_values.py.}}
@@ -171,6 +174,36 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 % choice-live split of the second. Both were on the slide until the density
 % budget in deck/density-ledger.json; neither was deleted.
 \note{The arrivals route \CohortEnterShare{} through a stablecoin against \CohortExitShare{} for the corridors they replaced, but \ReplaceCompositionShare{} of that gap is what the arrivals are rather than how they route: \ReplaceLockedEnterWeight{} of arriving activity is wrapped-ether-paired against \ReplaceLockedExitWeight{} of departing. Corridors with no vehicle to choose carry \LockedReweightShare{} of the second margin by count but \LockedValueReweightShare{} by value, and by value most of both runs through corridors with a dollar at an endpoint.}
+\end{frame}
+
+% EVIDENCE-STATUS: exploratory descriptive formation result
+% EVIDENCE-SOURCES: output/exhibits/vehicle_formation_exploration.jsonl; output/exhibits/vehicle_formation_support.jsonl; output/exhibits/vehicle_formation_deck_values.tex
+% ESTIMAND-BOUNDARY: ordered source-destination pair at first observation; matched January-June endpoint windows; complete follow-up windows only; descriptive persistence, not a treatment effect
+% VISUAL-FUNCTION: market-entry vehicle state | three-stat persistence strip | show that new markets arrive with durable vehicle regimes
+\begin{frame}{Vehicle choice is sticky from market birth}
+\vspace{0.10cm}
+\begin{columns}[T,totalwidth=\textwidth]
+\begin{column}{0.31\textwidth}
+{\fontsize{26}{28}\selectfont\bfseries\color{ucldark}\FormationEntryStableShareBase}\par
+\vspace{0.16cm}
+{\small stable share at entry,\par 2024\par}
+\end{column}
+\begin{column}{0.31\textwidth}
+{\fontsize{26}{28}\selectfont\bfseries\color{ucldark}\FormationEntryStableShareEnd}\par
+\vspace{0.16cm}
+{\small stable share at entry,\par 2026\par}
+\end{column}
+\begin{column}{0.31\textwidth}
+{\fontsize{26}{28}\selectfont\bfseries\color{ucldark}\mbox{\FormationThirtyPersistenceGap}}\par
+\vspace{0.16cm}
+{\small 30-day stable-born gap\par}
+\end{column}
+\end{columns}
+\vspace{0.44cm}
+\fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
+{\fontsize{8.4}{9.4}\selectfont Among \FormationEntryPairsEnd{} ordered pairs first observed in 2026, the first vehicle state predicts the next month: stable-born pairs stay at \FormationThirtyStableBirthStableShare{} stable share, while native-born pairs stay at \FormationThirtyNativeBirthStableShare{}.\par}
+\end{minipage}}
+\decknote{Entrants are ordered ultimate pairs first observed in the matched January-through-June endpoint window with positive native-plus-stable primary-choice route mass. Follow-up requires a complete 30-day window. Standard error for \FormationThirtyPersistenceGap{} clusters by calendar-day position. Descriptive association only.}
 \end{frame}
 
 % EVIDENCE-STATUS: current descriptive result; integration remains a selected route stratum
