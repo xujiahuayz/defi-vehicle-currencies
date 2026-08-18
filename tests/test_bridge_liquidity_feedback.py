@@ -28,6 +28,7 @@ def test_bridge_liquidity_feedback_panel_uses_exact_future_horizon() -> None:
                 "selected_five": 1.0,
                 "log_bridge_min_capital": log_depth,
                 "bridge_min_capital_usd": math.exp(log_depth) - 1.0,
+                "is_stable": 1.0,
                 "five_route_total": 10.0,
                 "choice_group_id": f"g{offset}",
                 "ordered_pair": "src|tgt",
@@ -48,6 +49,7 @@ def test_bridge_liquidity_feedback_regression_reports_positive_links() -> None:
     for day_index in range(180):
         day = pd.Timestamp("2024-01-01") + pd.Timedelta(days=day_index)
         for candidate_index, candidate in enumerate(candidates):
+            stable_candidate = float(candidate != "weth")
             depth = (
                 5.0
                 + 0.35 * candidate_index
@@ -70,6 +72,13 @@ def test_bridge_liquidity_feedback_regression_reports_positive_links() -> None:
                     "five_route_total": 20.0 + day_index % 4,
                     "route_share_five": route_share,
                     "log_bridge_min_capital": depth,
+                    "stable_candidate": stable_candidate,
+                    "route_share_x_stable_candidate": (
+                        route_share * stable_candidate
+                    ),
+                    "log_bridge_min_capital_x_stable_candidate": (
+                        depth * stable_candidate
+                    ),
                     "future_delta_log_bridge_min_capital": (
                         0.18 * route_share - 0.01 * depth + 0.0005 * day_index
                     ),
@@ -156,8 +165,31 @@ def test_bridge_liquidity_feedback_values_render_guarded_macros() -> None:
                 "standard_error": 0.003,
                 "p_value": 0.001,
             },
+            {
+                "claim_status": "provisional_exploratory",
+                "record_type": "bridge_liquidity_feedback_regression",
+                "model_id": "future_bridge_depth_growth_stable_candidate",
+                "horizon_days": 120,
+                "outcome": "future_delta_log_bridge_min_capital",
+                "regressor": "stable_total_route_share_five",
+                "coefficient": 1.15,
+                "standard_error": 0.2,
+                "p_value": 0.001,
+            },
+            {
+                "claim_status": "provisional_exploratory",
+                "record_type": "bridge_liquidity_feedback_regression",
+                "model_id": "future_route_share_growth_stable_candidate",
+                "horizon_days": 120,
+                "outcome": "future_delta_route_share_five",
+                "regressor": "stable_total_log_bridge_min_capital",
+                "coefficient": 0.025,
+                "standard_error": 0.004,
+                "p_value": 0.001,
+            },
         ]
     )
     rendered = render_bridge_liquidity_feedback_deck_values(estimates)
     assert "\\BridgeFeedbackRouteToDepthLongLog" in rendered
     assert "\\BridgeFeedbackDepthToRouteMonthCoef" in rendered
+    assert "\\BridgeFeedbackStableRouteToDepthLongLog" in rendered

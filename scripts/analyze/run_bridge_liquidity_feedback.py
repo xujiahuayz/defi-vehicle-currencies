@@ -22,7 +22,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered
+from ddvc.analysis.regression import absorb_fixed_effects, linear_contrast, ols_clustered
 from ddvc.paths import OUTPUT_DIR
 from ddvc.tables import write_exhibit
 from scripts.analyze.run_bridge_liquidity_dominance import (
@@ -104,6 +104,14 @@ def build_bridge_liquidity_feedback_panel(
     if not frames:
         raise ValueError("bridge-liquidity feedback panel is empty")
     result = pd.concat(frames, ignore_index=True)
+    result["stable_candidate"] = result["is_stable"].astype(float)
+    result["route_share_x_stable_candidate"] = (
+        result["route_share_five"].astype(float) * result["stable_candidate"]
+    )
+    result["log_bridge_min_capital_x_stable_candidate"] = (
+        result["log_bridge_min_capital"].astype(float)
+        * result["stable_candidate"]
+    )
     numeric = [
         "route_share_five",
         "log_bridge_min_capital",
@@ -161,6 +169,26 @@ def bridge_liquidity_feedback_regressions(
             "future_delta_route_share_five",
             ("log_bridge_min_capital", "route_share_five"),
             "Does current local bridge depth predict later route-share growth?",
+        ),
+        (
+            "future_bridge_depth_growth_stable_candidate",
+            "future_delta_log_bridge_min_capital",
+            (
+                "route_share_five",
+                "route_share_x_stable_candidate",
+                "log_bridge_min_capital",
+            ),
+            "Does route-share to bridge-depth feedback differ for stable candidates?",
+        ),
+        (
+            "future_route_share_growth_stable_candidate",
+            "future_delta_route_share_five",
+            (
+                "log_bridge_min_capital",
+                "log_bridge_min_capital_x_stable_candidate",
+                "route_share_five",
+            ),
+            "Does bridge-depth to route-share feedback differ for stable candidates?",
         ),
     )
     rows: list[dict[str, object]] = []
@@ -231,6 +259,64 @@ def bridge_liquidity_feedback_regressions(
                         "interpretation": (
                             "same-bridge predictive association; not provider-flow "
                             "causality or executable depth"
+                        ),
+                    }
+                )
+            if model_id == "future_bridge_depth_growth_stable_candidate":
+                stable_total = linear_contrast(fit, [1.0, 1.0, 0.0])
+                rows.append(
+                    {
+                        "claim_status": "provisional_exploratory",
+                        "record_type": "bridge_liquidity_feedback_regression",
+                        "model_id": model_id,
+                        "question": question,
+                        "horizon_days": int(horizon),
+                        "outcome": outcome,
+                        "regressor": "stable_total_route_share_five",
+                        "coefficient": stable_total.estimate,
+                        "standard_error": stable_total.standard_error,
+                        "t_statistic": stable_total.t_statistic,
+                        "p_value": stable_total.p_value,
+                        "effect_for_10pp_route_share": 0.1 * stable_total.estimate,
+                        "effect_pp_per_log_point": None,
+                        "n_observations": int(fit.n_observations),
+                        "ordered_pair_clusters": int(fit.cluster_counts[0]),
+                        "date_clusters": int(fit.cluster_counts[1]),
+                        "fixed_effects": "candidate+origin_date",
+                        "covariance": "two_way_ordered_pair_date_cr1",
+                        "weight": "five_candidate_route_count",
+                        "interpretation": (
+                            "stable-candidate same-bridge feedback total; not "
+                            "provider-flow causality or executable depth"
+                        ),
+                    }
+                )
+            if model_id == "future_route_share_growth_stable_candidate":
+                stable_total = linear_contrast(fit, [1.0, 1.0, 0.0])
+                rows.append(
+                    {
+                        "claim_status": "provisional_exploratory",
+                        "record_type": "bridge_liquidity_feedback_regression",
+                        "model_id": model_id,
+                        "question": question,
+                        "horizon_days": int(horizon),
+                        "outcome": outcome,
+                        "regressor": "stable_total_log_bridge_min_capital",
+                        "coefficient": stable_total.estimate,
+                        "standard_error": stable_total.standard_error,
+                        "t_statistic": stable_total.t_statistic,
+                        "p_value": stable_total.p_value,
+                        "effect_for_10pp_route_share": None,
+                        "effect_pp_per_log_point": 100.0 * stable_total.estimate,
+                        "n_observations": int(fit.n_observations),
+                        "ordered_pair_clusters": int(fit.cluster_counts[0]),
+                        "date_clusters": int(fit.cluster_counts[1]),
+                        "fixed_effects": "candidate+origin_date",
+                        "covariance": "two_way_ordered_pair_date_cr1",
+                        "weight": "five_candidate_route_count",
+                        "interpretation": (
+                            "stable-candidate same-bridge feedback total; not "
+                            "provider-flow causality or executable depth"
                         ),
                     }
                 )

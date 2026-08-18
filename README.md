@@ -64,8 +64,8 @@ gaps, stable-basket portfolio rebalancing, delayed/asymmetric LP rebalancing,
 stable-candidate LP response heterogeneity, LP extensive-margin behavior, V2
 pool-capital concentration/fragmentation, same-pool capital-chase screens,
 bounded V3 fee/rent-incidence screens, V3 mint/burn action-count responses,
-local bridge-liquidity dominance, dynamic local bridge-depth feedback, and V2
-capital predictability. A
+local bridge-liquidity dominance, stable-specific dynamic local bridge-depth
+feedback, and V2 capital predictability. A
 result becomes headline evidence only if it is economically material,
 distinguishes at least one serious rival story, fits the literature contribution,
 and has a complete producer-to-deliverable path.

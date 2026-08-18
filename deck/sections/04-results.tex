@@ -427,25 +427,25 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 % SCIENTIFIC-BOUNDARY: exact future calendar observations of the same source-candidate-target bridge; deposited-capital stock and realised route share only, not provider flows or active executable depth
 % ESTIMAND-BOUNDARY: same local bridge observed at the horizon; regressions absorb candidate and origin-date effects and cluster by ordered pair and date
 % VISUAL-FUNCTION: dynamic feedback | two-direction mechanism screen | show route use and local bridge depth predicting each other over time
-\begin{frame}{Vehicle markets show feedback, not only levels}
+\begin{frame}{Stable vehicle markets show feedback}
 \vspace{0.10cm}
 \begin{columns}[T,totalwidth=\textwidth]
 \begin{column}{0.45\textwidth}
-{\fontsize{26}{28}\selectfont\bfseries\color{ucldark}\BridgeFeedbackRouteToDepthLongLog}\par
+{\fontsize{26}{28}\selectfont\bfseries\color{ucldark}\BridgeFeedbackStableRouteToDepthLongLog}\par
 \vspace{0.10cm}
-{\small later log bridge-depth growth from a 10 pp higher current route share, 120 days\par}
+{\small later stable bridge-depth growth from a 10 pp higher current route share, 120 days\par}
 \end{column}
 \begin{column}{0.45\textwidth}
-{\fontsize{26}{28}\selectfont\bfseries\color{ucldark}\BridgeFeedbackDepthToRouteMonthCoef}\par
+{\fontsize{26}{28}\selectfont\bfseries\color{ucldark}\BridgeFeedbackStableDepthToRouteLongCoef}\par
 \vspace{0.10cm}
-{\small later route-share growth per log point of current local depth, 30 days\par}
+{\small later stable route-share growth per log point of current local depth, 120 days\par}
 \end{column}
 \end{columns}
 \vspace{0.35cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.92\textwidth}
-{\fontsize{8.2}{9.2}\selectfont Route use predicts later bridge deepening, and depth predicts later route-share gains, on the same local source-candidate-target bridge. The long-horizon depth-growth screen uses \BridgeFeedbackLongRows{} rows across \BridgeFeedbackLongPairs{} ordered pairs.\par}
+{\fontsize{8.2}{9.2}\selectfont Route use predicts later bridge deepening, and depth predicts later route-share gains, on the same local source-candidate-target bridge. The feedback margin is stronger for stable candidates than for the pooled five-candidate set.\par}
 \end{minipage}}
-\decknote{Provisional feedback screen. The 120-day coefficient is a log-depth change from a 10 percentage point route-share difference, with SE \BridgeFeedbackRouteToDepthLongLogSE{}. The 30-day route-share coefficient has SE \BridgeFeedbackDepthToRouteMonthSE{}. Regressions control for current depth or current route share, absorb candidate and origin-date effects, weight by five-candidate route count, and cluster by ordered pair and date. Association only, not provider-flow causality.}
+\decknote{Provisional feedback screen over \BridgeFeedbackLongRows{} 120-day rows and \BridgeFeedbackLongPairs{} ordered pairs. The stable 120-day log-depth coefficient is a 10 percentage point route-share effect, with SE \BridgeFeedbackStableRouteToDepthLongLogSE{}. The stable 120-day route-share coefficient has SE \BridgeFeedbackStableDepthToRouteLongSE{}. Regressions control for current depth or current route share, absorb candidate and origin-date effects, weight by five-candidate route count, and cluster by ordered pair and date. Association only, not provider-flow causality.}
 \end{frame}
 
 % EVIDENCE-STATUS: exploratory descriptive allocation result
