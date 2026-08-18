@@ -28,8 +28,19 @@ RESULT_OUTPUT = OUTPUT_DIR / "exhibits/vehicle_formation_exploration.jsonl"
 SUPPORT_OUTPUT = OUTPUT_DIR / "exhibits/vehicle_formation_support.jsonl"
 SAMPLE_END = pd.Timestamp("2026-06-30")
 MAIN_ENTRY_YEARS = (2024, 2026)
+BASELINE_YEAR = MAIN_ENTRY_YEARS[0]
+COMPARISON_YEAR = MAIN_ENTRY_YEARS[1]
 HORIZONS = (30, 120)
 ENTRY_TYPES = ("native_only_entry", "stable_present_entry", "stable_dominant_entry")
+ENTRY_DRIVER_PREDICTORS = (
+    "is_2026",
+    "stable_endpoint",
+    "is_2026_x_stable_endpoint",
+    "log_entry_routes",
+    "direct_available",
+    "direct_share",
+    "complex_share",
+)
 
 
 def _sql_path(path: Path) -> str:
@@ -145,6 +156,101 @@ def entry_endpoint_class_summary(pair_support_path: Path = PAIR_SUPPORT) -> pd.D
                 "interpretation": "exploratory_endpoint_class_split_not_causal",
             }
         )
+    return pd.DataFrame(rows)
+
+
+def entry_driver_panel(pair_support_path: Path = PAIR_SUPPORT) -> pd.DataFrame:
+    """Return non-WETH entrant rows used by the birth-driver regression."""
+
+    path = _sql_path(pair_support_path)
+    years = ", ".join(str(year) for year in MAIN_ENTRY_YEARS)
+    panel = _read_sql(
+        f"""
+        SELECT
+            date,
+            src,
+            tgt,
+            year(date)::INTEGER AS entry_year,
+            primary_choice_route_count::DOUBLE AS primary_routes,
+            stable_choice_route_count::DOUBLE AS stable_routes,
+            native_choice_route_count::DOUBLE AS native_routes,
+            direct_route_count::DOUBLE AS direct_routes,
+            (
+                multiple_intermediary_route_count
+                + split_or_join_route_count
+                + nonsequential_two_leg_route_count
+            )::DOUBLE AS complex_routes,
+            market_route_count::DOUBLE AS market_routes
+        FROM read_parquet('{path}')
+        WHERE pair_entry_on_day
+          AND primary_choice_route_count > 0
+          AND year(date) IN ({years})
+          AND strftime(date, '%m-%d') <= '06-30'
+        """
+    )
+    panel["endpoint_class"] = [
+        endpoint_class(src, tgt) for src, tgt in zip(panel["src"], panel["tgt"])
+    ]
+    panel = panel[~panel["endpoint_class"].eq("weth_endpoint")].copy()
+    panel["stable_share"] = panel["stable_routes"] / panel["primary_routes"]
+    panel["stable_dominant_entry"] = (
+        panel["stable_routes"] > panel["native_routes"]
+    ).astype(float)
+    panel["is_2026"] = panel["entry_year"].eq(COMPARISON_YEAR).astype(float)
+    panel["stable_endpoint"] = panel["endpoint_class"].eq("stable_endpoint").astype(float)
+    panel["is_2026_x_stable_endpoint"] = panel["is_2026"] * panel["stable_endpoint"]
+    panel["log_entry_routes"] = np.log1p(panel["primary_routes"])
+    panel["direct_available"] = panel["direct_routes"].gt(0).astype(float)
+    market_routes = panel["market_routes"].replace(0, np.nan)
+    panel["direct_share"] = (panel["direct_routes"] / market_routes).fillna(0.0).clip(0.0, 1.0)
+    panel["complex_share"] = (panel["complex_routes"] / market_routes).fillna(0.0).clip(0.0, 1.0)
+    return panel
+
+
+def entry_driver_regressions(panel: pd.DataFrame) -> pd.DataFrame:
+    """Fit non-WETH entrant driver screens for stable birth."""
+
+    rows: list[dict[str, object]] = []
+    for outcome in ("stable_share", "stable_dominant_entry"):
+        required = [outcome, "date", "primary_routes", *ENTRY_DRIVER_PREDICTORS]
+        data = panel.loc[:, required].replace([np.inf, -np.inf], np.nan).dropna()
+        fit = ols_clustered(
+            data[outcome],
+            data[list(ENTRY_DRIVER_PREDICTORS)],
+            data["date"],
+            weights=data["primary_routes"],
+            min_observations=1000,
+            min_clusters=30,
+        )
+        for name, beta, se, t_stat, p_value in zip(
+            ("constant", *ENTRY_DRIVER_PREDICTORS),
+            fit.beta,
+            fit.standard_errors,
+            fit.t_statistics,
+            fit.p_values,
+            strict=True,
+        ):
+            rows.append(
+                {
+                    "record_type": "entry_driver_regression",
+                    "entry_year": None,
+                    "endpoint_class": "non_weth_endpoint",
+                    "outcome": outcome,
+                    "predictor": name,
+                    "coefficient": float(beta),
+                    "coefficient_pp": 100.0 * float(beta),
+                    "standard_error": float(se),
+                    "standard_error_pp": 100.0 * float(se),
+                    "t_statistic": float(t_stat),
+                    "p_value": float(p_value),
+                    "observations": int(fit.n_observations),
+                    "entry_date_clusters": int(fit.n_clusters),
+                    "weighted_by": "entry_primary_choice_routes",
+                    "covariance_id": "entry_date_cluster_cr1",
+                    "controls": ",".join(ENTRY_DRIVER_PREDICTORS),
+                    "interpretation": "exploratory_non_weth_entry_driver_not_causal",
+                }
+            )
     return pd.DataFrame(rows)
 
 
@@ -359,6 +465,8 @@ def build_results(pair_support_path: Path = PAIR_SUPPORT) -> tuple[pd.DataFrame,
         raise FileNotFoundError(pair_support_path)
     cohorts = entry_cohorts(pair_support_path)
     endpoint_classes = entry_endpoint_class_summary(pair_support_path)
+    driver_panel = entry_driver_panel(pair_support_path)
+    driver_regressions = entry_driver_regressions(driver_panel)
     follow_panels = [
         entry_follow_panel(horizon, pair_support_path=pair_support_path)
         for horizon in HORIZONS
@@ -366,7 +474,7 @@ def build_results(pair_support_path: Path = PAIR_SUPPORT) -> tuple[pd.DataFrame,
     summaries = [persistence_summary(panel) for panel in follow_panels]
     contrasts = [persistence_contrasts(panel) for panel in follow_panels]
     result = pd.concat(
-        [cohorts, endpoint_classes, *summaries, *contrasts],
+        [cohorts, endpoint_classes, driver_regressions, *summaries, *contrasts],
         ignore_index=True,
         sort=False,
     )

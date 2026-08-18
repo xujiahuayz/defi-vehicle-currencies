@@ -93,6 +93,26 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
                 "stable_share": 1.0,
                 "route_mass_share": 0.20,
             },
+            {
+                "record_type": "entry_driver_regression",
+                "endpoint_class": "non_weth_endpoint",
+                "outcome": "stable_share",
+                "predictor": "is_2026",
+                "coefficient": 0.043,
+                "standard_error": 0.004,
+                "primary_routes": None,
+                "stable_share": None,
+            },
+            {
+                "record_type": "entry_driver_regression",
+                "endpoint_class": "non_weth_endpoint",
+                "outcome": "stable_share",
+                "predictor": "is_2026_x_stable_endpoint",
+                "coefficient": 0.057,
+                "standard_error": 0.013,
+                "primary_routes": None,
+                "stable_share": None,
+            },
         ]
     )
     rendered = render_vehicle_formation_deck_values(estimates)
@@ -100,3 +120,4 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
     assert "5.0\\%" in rendered
     assert "$+97.0$ pp" in rendered
     assert "\\FormationNonWethEntryStableShareEnd" in rendered
+    assert "\\FormationNonWethYearDriver" in rendered

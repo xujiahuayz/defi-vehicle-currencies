@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 from scripts.analyze.run_vehicle_formation_exploration import (
+    entry_driver_panel,
     entry_follow_panel,
     endpoint_class,
     persistence_contrasts,
@@ -30,6 +31,9 @@ def _row(
         "stable_choice_route_count": stable,
         "native_choice_route_count": native,
         "direct_route_count": 0,
+        "multiple_intermediary_route_count": 0,
+        "split_or_join_route_count": 0,
+        "nonsequential_two_leg_route_count": 0,
         "pair_entry_on_day": entry,
     }
 
@@ -45,6 +49,7 @@ def pair_support_path(tmp_path):
             _row("2026-01-15", "c", "d", entry=False, stable=7, native=3),
             _row("2026-01-31", "c", "d", entry=False, stable=7, native=3),
             _row("2026-06-20", "e", "f", entry=True, stable=10, native=0),
+            _row("2024-01-01", "g", "h", entry=True, stable=0, native=10),
         ]
     )
     path = tmp_path / "pair_support.parquet"
@@ -58,7 +63,7 @@ def test_entry_follow_panel_requires_complete_horizon(pair_support_path) -> None
         pair_support_path=pair_support_path,
         sample_end=pd.Timestamp("2026-06-30"),
     )
-    assert set(follow["src"]) == {"a", "c"}
+    assert set(follow["src"]) == {"a", "c", "g"}
     assert follow["horizon_days"].eq(30).all()
 
 
@@ -102,3 +107,10 @@ def test_endpoint_class_separates_weth_from_other_stable_endpoints() -> None:
         )
         == "stable_endpoint"
     )
+
+
+def test_entry_driver_panel_adds_comparison_year_flag(pair_support_path) -> None:
+    panel = entry_driver_panel(pair_support_path)
+    assert set(panel["entry_year"]) == {2024, 2026}
+    assert "is_2026" in panel
+    assert panel.loc[panel["entry_year"].eq(2026), "is_2026"].eq(1.0).all()
