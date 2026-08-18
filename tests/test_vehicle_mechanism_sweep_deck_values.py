@@ -46,6 +46,48 @@ def test_vehicle_mechanism_sweep_values_render_guarded_headline() -> None:
             _persistence_row("single_venue", "native_majority", 0.95),
             _persistence_row("cross_venue", "stable_majority", 0.92),
             _persistence_row("cross_venue", "native_majority", 0.96),
+            {
+                "claim_status": "provisional_exploratory",
+                "experiment_family": "vehicle_dominance_mechanism_sweep",
+                "metric": "candidate_route_share",
+                "model_id": "mixed_native_stable_risk_set_summary",
+                "min_total_routes": 5,
+                "year": 2024,
+                "stable_route_share": 0.24,
+            },
+            {
+                "claim_status": "provisional_exploratory",
+                "experiment_family": "vehicle_dominance_mechanism_sweep",
+                "metric": "candidate_route_share",
+                "model_id": "mixed_native_stable_risk_set_summary",
+                "min_total_routes": 5,
+                "year": 2026,
+                "stable_route_share": 0.28,
+            },
+            {
+                "claim_status": "provisional_exploratory",
+                "experiment_family": "vehicle_dominance_mechanism_sweep",
+                "metric": "candidate_route_share",
+                "model_id": "mixed_native_stable_risk_set_fe",
+                "min_total_routes": 5,
+                "regressor": "is_stable",
+                "coefficient": -0.52,
+                "coefficient_pp": -52.0,
+                "standard_error_pp": 6.0,
+                "p_value": 0.001,
+            },
+            {
+                "claim_status": "provisional_exploratory",
+                "experiment_family": "vehicle_dominance_mechanism_sweep",
+                "metric": "candidate_route_share",
+                "model_id": "mixed_native_stable_risk_set_fe",
+                "min_total_routes": 5,
+                "regressor": "is_stable_x_2026",
+                "coefficient": 0.04,
+                "coefficient_pp": 4.0,
+                "standard_error_pp": 13.0,
+                "p_value": 0.75,
+            },
         ]
     )
     support = pd.DataFrame(
@@ -66,3 +108,4 @@ def test_vehicle_mechanism_sweep_values_render_guarded_headline() -> None:
     assert "\\MechanismSingleStableRegimePersistence" in rendered
     assert "$-2.6$ pp" in rendered
     assert "\\MechanismScreenRows" in rendered
+    assert "\\MechanismRiskSetStablePenalty" in rendered

@@ -217,7 +217,7 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 
 % EVIDENCE-STATUS: exploratory descriptive mechanism screen, not causal treatment evidence
 % EVIDENCE-SOURCES: output/exhibits/vehicle_dominance_mechanism_sweep.jsonl; output/exhibits/vehicle_dominance_mechanism_support.jsonl; output/exhibits/vehicle_mechanism_sweep_deck_values.tex
-% ESTIMAND-BOUNDARY: pair-month-day-scope transition rows on the count-share metric; month-day fixed effects, two-way CR1 by ordered pair and month-day, harmonic endpoint denominator weights
+% ESTIMAND-BOUNDARY: pair-month-day-scope transition rows on the count-share metric; month-day fixed effects, two-way CR1 by ordered pair and month-day, harmonic endpoint denominator weights; risk-set rows are observed mixed native-stable candidate sets, not feasible untraded alternatives
 % VISUAL-FUNCTION: formation driver screen | three transition coefficients | locate stable-vehicle creation at thin-market edge
 \begin{frame}{Stable vehicles turn on at the market edge}
 \vspace{0.10cm}
@@ -240,9 +240,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.40cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.4}{9.4}\selectfont Continuing regimes are sticky: single-venue stable-majority cells persist at \MechanismSingleStableRegimePersistence{}, and native-majority cells at \MechanismSingleNativeRegimePersistence{}. Turn-on sits at the edge: the direct-share by one-log-point-thinner interaction is \MechanismTurnOnDirectThinCoef{} (SE \MechanismTurnOnDirectThinSE{}).\par}
+{\fontsize{8.4}{9.4}\selectfont Regimes are sticky. Stable turn-on sits at thin, direct, and complex edges, not same-set conquest: mixed risk sets show a \MechanismRiskSetStablePenalty{} stable penalty.\par}
 \end{minipage}}
-\decknote{Count-share transition screen: \MechanismScreenPairs{} ordered pairs, \MechanismScreenDays{} common month-days, month-day fixed effects, harmonic weights, two-way CR1. Entry analogues are positive: direct-route share \FormationRouteArchDirectShareDriver{} (SE \FormationRouteArchDirectShareDriverSE{}) and complex-route share \FormationRouteArchComplexShareDriver{} (SE \FormationRouteArchComplexShareDriverSE{}). Driver screen only.}
+\decknote{Transition screen uses pair-day-scope rows, month-day fixed effects, harmonic weights, and two-way CR1. Risk-set rows are observed native-stable candidate sets, not feasible alternatives. Driver screen only.}
 \end{frame}
 
 % EVIDENCE-STATUS: exploratory descriptive execution-friction result
@@ -345,9 +345,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.44cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.4}{9.4}\selectfont Stablecoins' route share rises from \LiqBehStableRouteShareBase{} to \LiqBehStableRouteShareEnd{} while their capital share falls from \LiqBehStableCapitalShareBase{} to \LiqBehStableCapitalShareEnd{}. LPs chase slowly: a 10 pp stable gap predicts \LiqBehStableGapCloseMonthCoef{} capital-share catch-up after 30 days.\par}
+{\fontsize{8.4}{9.4}\selectfont Stablecoins' route share rises from \LiqBehStableRouteShareBase{} to \LiqBehStableRouteShareEnd{} while capital share falls from \LiqBehStableCapitalShareBase{} to \LiqBehStableCapitalShareEnd{}. Adjustment is asymmetric: a 10 pp capital overhang predicts \LiqBehStableOverhangMonthCoef{} capital-share change at 30 days.\par}
 \end{minipage}}
-\decknote{Daily five-candidate V2 panel over \LiqBehPanelDays{} route-and-capital-supported days. Capital is deposited-capital stock in candidate-linked V2 pools. Excess use is intermediary share divided by route-endpoint share. The stable within-day route-minus-capital premium after endpoint-share, venue-count, and pool-count controls is \LiqBehStableControlledGapCoef{} with SE \LiqBehStableControlledGapSE{}. Gap-closing rows absorb candidate and origin-date effects; stable total 120-day catch-up is \LiqBehStableGapCloseLongCoef{}. Descriptive associations only.}
+\decknote{Daily five-candidate V2 panel over \LiqBehPanelDays{} route-and-capital-supported days. Capital is deposited-capital stock in candidate-linked V2 pools. Excess use is intermediary share divided by endpoint share. Stable within-day route-minus-capital premium after controls is \LiqBehStableControlledGapCoef{} with SE \LiqBehStableControlledGapSE{}. Gap-closing and overhang rows absorb candidate and date effects; overhang means capital share exceeds route share. Descriptive only.}
 \end{frame}
 
 % EVIDENCE-STATUS: current predictive mechanism result; the reciprocal rule records a non-pass

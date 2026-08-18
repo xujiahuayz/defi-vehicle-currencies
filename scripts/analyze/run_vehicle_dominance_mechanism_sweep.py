@@ -24,6 +24,7 @@ from ddvc.runtime import atomic_output
 
 PAIR_PANEL_INPUT = OUTPUT_DIR / "exhibits/vehicle_transition_pair_panel.parquet"
 PAIR_SUPPORT_INPUT = REPO_ROOT / "data/processed/endpoint_candidate_pair_support.parquet"
+CHOICES_INPUT = REPO_ROOT / "data/processed/endpoint_candidate_choices.parquet"
 RESULT_OUTPUT = OUTPUT_DIR / "exhibits/vehicle_dominance_mechanism_sweep.jsonl"
 SUPPORT_OUTPUT = OUTPUT_DIR / "exhibits/vehicle_dominance_mechanism_support.jsonl"
 
@@ -57,6 +58,7 @@ DIRECT_THIN_RHS = (
     "cross_venue",
 )
 REGIME_THRESHOLD = 0.5
+RISK_SET_MIN_TOTAL_ROUTES = (1, 5, 20)
 MODEL_SPECS = (
     (
         "share_change_baseline_state",
@@ -95,6 +97,7 @@ MODEL_SPECS = (
 class SweepInputs:
     pair_panel: Path = PAIR_PANEL_INPUT
     pair_support: Path = PAIR_SUPPORT_INPUT
+    candidate_choices: Path = CHOICES_INPUT
     results: Path = RESULT_OUTPUT
     support: Path = SUPPORT_OUTPUT
 
@@ -526,6 +529,240 @@ def _regime_persistence_rows(
     return rows
 
 
+def build_candidate_risk_set_design(path: Path = CHOICES_INPUT) -> pd.DataFrame:
+    """Return observed mixed native-stable candidate risk sets.
+
+    The unit is a candidate inside an observed pair-day-route-scope set. The
+    design deliberately keeps only risk sets where both native and stable
+    candidates appear, so the coefficient is not a disguised entry-margin or
+    availability comparison.
+    """
+
+    connection = duckdb.connect()
+    try:
+        connection.execute("PRAGMA threads=8")
+        frame = connection.execute(
+            """
+            WITH candidate_rows AS (
+                SELECT
+                    CAST(date AS DATE) AS date,
+                    src,
+                    tgt,
+                    integration_scope,
+                    candidate_address,
+                    candidate_symbol,
+                    candidate_type,
+                    sum(route_count)::DOUBLE AS route_count
+                FROM read_parquet(?)
+                WHERE year(date) IN (?, ?)
+                  AND month(date) <= 6
+                  AND candidate_type IN ('stable', 'native')
+                GROUP BY 1, 2, 3, 4, 5, 6, 7
+            ),
+            risk_sets AS (
+                SELECT
+                    *,
+                    sum(route_count) OVER (
+                        PARTITION BY date, src, tgt, integration_scope
+                    ) AS total_routes,
+                    count(*) OVER (
+                        PARTITION BY date, src, tgt, integration_scope
+                    ) AS candidate_rows,
+                    max((candidate_type = 'stable')::INTEGER) OVER (
+                        PARTITION BY date, src, tgt, integration_scope
+                    ) AS has_stable,
+                    max((candidate_type = 'native')::INTEGER) OVER (
+                        PARTITION BY date, src, tgt, integration_scope
+                    ) AS has_native
+                FROM candidate_rows
+            )
+            SELECT *
+            FROM risk_sets
+            WHERE total_routes > 0
+              AND candidate_rows >= 2
+              AND has_stable = 1
+              AND has_native = 1
+            """,
+            [str(path), BASELINE_YEAR, COMPARISON_YEAR],
+        ).fetchdf()
+    finally:
+        connection.close()
+    if frame.empty:
+        raise ValueError("candidate risk-set design is empty")
+    frame["date"] = pd.to_datetime(frame["date"], errors="raise").dt.normalize()
+    frame["year"] = frame["date"].dt.year.astype(int)
+    frame["month_day"] = frame["date"].dt.strftime("%m-%d")
+    frame["route_share"] = frame["route_count"].astype(float) / frame[
+        "total_routes"
+    ].astype(float)
+    frame["is_stable"] = frame["candidate_type"].eq("stable").astype(float)
+    frame["is_2026"] = frame["year"].eq(COMPARISON_YEAR).astype(float)
+    frame["is_stable_x_2026"] = frame["is_stable"] * frame["is_2026"]
+    frame["risk_set_id"] = (
+        frame["date"].astype(str)
+        + "|"
+        + frame["src"].astype(str)
+        + ">"
+        + frame["tgt"].astype(str)
+        + "|"
+        + frame["integration_scope"].astype(str)
+    )
+    frame["ordered_pair_scope"] = (
+        frame["src"].astype(str)
+        + ">"
+        + frame["tgt"].astype(str)
+        + "|"
+        + frame["integration_scope"].astype(str)
+    )
+    return frame
+
+
+def estimate_candidate_risk_set_choice(
+    design: pd.DataFrame,
+    *,
+    min_observations: int = 1000,
+    min_clusters: int = 30,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Test stable-candidate route share within mixed native-stable risk sets."""
+
+    required = {
+        "date",
+        "year",
+        "route_count",
+        "total_routes",
+        "route_share",
+        "candidate_type",
+        "is_stable",
+        "is_stable_x_2026",
+        "risk_set_id",
+        "ordered_pair_scope",
+    }
+    missing = sorted(required - set(design.columns))
+    if missing:
+        raise ValueError(f"candidate risk-set design lacks columns: {missing}")
+    result_rows: list[dict[str, object]] = []
+    support_rows: list[dict[str, object]] = []
+    for threshold in RISK_SET_MIN_TOTAL_ROUTES:
+        sample = design[design["total_routes"].ge(threshold)].copy()
+        if sample.empty:
+            continue
+        support_rows.append(
+            {
+                "experiment_family": "vehicle_dominance_mechanism_sweep",
+                "metric": "candidate_route_share",
+                "model_id": "mixed_native_stable_risk_set",
+                "min_total_routes": int(threshold),
+                "rows": int(len(sample)),
+                "ordered_pairs": int(
+                    sample[["src", "tgt"]].drop_duplicates().shape[0]
+                ),
+                "risk_sets": int(sample["risk_set_id"].nunique()),
+                "month_days": int(sample["month_day"].nunique()),
+                "claim_status": "provisional_exploratory",
+            }
+        )
+        for year, group in sample.groupby("year", sort=True):
+            result_rows.append(
+                {
+                    "claim_status": "provisional_exploratory",
+                    "experiment_family": "vehicle_dominance_mechanism_sweep",
+                    "metric": "candidate_route_share",
+                    "model_id": "mixed_native_stable_risk_set_summary",
+                    "min_total_routes": int(threshold),
+                    "year": int(year),
+                    "candidate_rows": int(len(group)),
+                    "risk_sets": int(group["risk_set_id"].nunique()),
+                    "routes": float(group["route_count"].sum()),
+                    "stable_candidate_row_share": float(
+                        group["is_stable"].astype(float).mean()
+                    ),
+                    "stable_route_share": float(
+                        group.loc[group["candidate_type"].eq("stable"), "route_count"].sum()
+                        / group["route_count"].sum()
+                    ),
+                    "native_route_share": float(
+                        group.loc[group["candidate_type"].eq("native"), "route_count"].sum()
+                        / group["route_count"].sum()
+                    ),
+                    "interpretation": "mixed_native_stable_observed_risk_set_summary_not_feasible_set",
+                }
+            )
+        data = (
+            sample[
+                [
+                    "route_share",
+                    "is_stable",
+                    "is_stable_x_2026",
+                    "risk_set_id",
+                    "ordered_pair_scope",
+                    "date",
+                    "total_routes",
+                ]
+            ]
+            .replace([np.inf, -np.inf], np.nan)
+            .dropna()
+            .copy()
+        )
+        residual = absorb_fixed_effects(
+            data[["route_share", "is_stable", "is_stable_x_2026"]],
+            data["risk_set_id"],
+            weights=data["total_routes"],
+        )
+        fit = ols_clustered(
+            residual["route_share"],
+            residual[["is_stable", "is_stable_x_2026"]],
+            data["ordered_pair_scope"],
+            add_constant=False,
+            absorbed_groups=(data["risk_set_id"],),
+            additional_clusters=(data["date"],),
+            weights=data["total_routes"],
+            min_observations=min_observations,
+            min_clusters=min_clusters,
+        )
+        for regressor, coefficient, standard_error, t_statistic, p_value in zip(
+            ("is_stable", "is_stable_x_2026"),
+            fit.beta,
+            fit.standard_errors,
+            fit.t_statistics,
+            fit.p_values,
+            strict=True,
+        ):
+            result_rows.append(
+                {
+                    "claim_status": "provisional_exploratory",
+                    "experiment_family": "vehicle_dominance_mechanism_sweep",
+                    "metric": "candidate_route_share",
+                    "model_id": "mixed_native_stable_risk_set_fe",
+                    "question": (
+                        "Do stable candidates win more route share inside the same "
+                        "observed native-stable pair-day-scope risk set?"
+                    ),
+                    "min_total_routes": int(threshold),
+                    "outcome": "candidate_route_share",
+                    "regressor": regressor,
+                    "coefficient": float(coefficient),
+                    "coefficient_pp": 100.0 * float(coefficient),
+                    "standard_error": float(standard_error),
+                    "standard_error_pp": 100.0 * float(standard_error),
+                    "t_statistic": float(t_statistic),
+                    "p_value": float(p_value),
+                    "observations": int(fit.n_observations),
+                    "ordered_pair_clusters": int(fit.cluster_counts[0]),
+                    "date_clusters": int(fit.cluster_counts[1]),
+                    "fixed_effects": "pair_day_scope_risk_set",
+                    "covariance": "two_way_ordered_pair_scope_date_cr1",
+                    "weight": "risk_set_total_route_count",
+                    "interpretation": "within_observed_risk_set_choice_screen_not_causal",
+                    "rival_story": (
+                        "stable dominance could arise because stable candidates win "
+                        "inside already-mixed risk sets; this screen tests that rival "
+                        "against the entry and persistence margins"
+                    ),
+                }
+            )
+    return pd.DataFrame(result_rows), pd.DataFrame(support_rows)
+
+
 def estimate_mechanism_sweep(
     design: pd.DataFrame,
     *,
@@ -610,11 +847,15 @@ def _write_jsonl(frame: pd.DataFrame, path: Path) -> None:
 
 
 def run(inputs: SweepInputs = SweepInputs()) -> int:
-    for path in (inputs.pair_panel, inputs.pair_support):
+    for path in (inputs.pair_panel, inputs.pair_support, inputs.candidate_choices):
         if not path.is_file():
             raise FileNotFoundError(path)
     design = build_transition_design(inputs.pair_panel, inputs.pair_support)
     results, support = estimate_mechanism_sweep(design)
+    risk_design = build_candidate_risk_set_design(inputs.candidate_choices)
+    risk_results, risk_support = estimate_candidate_risk_set_choice(risk_design)
+    results = pd.concat([results, risk_results], ignore_index=True, sort=False)
+    support = pd.concat([support, risk_support], ignore_index=True, sort=False)
     _write_jsonl(results, inputs.results)
     _write_jsonl(support, inputs.support)
     print(

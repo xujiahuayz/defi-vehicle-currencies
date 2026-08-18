@@ -61,6 +61,40 @@ def _effect(
     )
 
 
+def _risk_set_summary(
+    estimates: pd.DataFrame,
+    *,
+    year: int,
+    min_total_routes: int = 5,
+) -> pd.Series:
+    return _single(
+        estimates,
+        claim_status="provisional_exploratory",
+        experiment_family="vehicle_dominance_mechanism_sweep",
+        metric="candidate_route_share",
+        model_id="mixed_native_stable_risk_set_summary",
+        min_total_routes=min_total_routes,
+        year=year,
+    )
+
+
+def _risk_set_effect(
+    estimates: pd.DataFrame,
+    *,
+    regressor: str,
+    min_total_routes: int = 5,
+) -> pd.Series:
+    return _single(
+        estimates,
+        claim_status="provisional_exploratory",
+        experiment_family="vehicle_dominance_mechanism_sweep",
+        metric="candidate_route_share",
+        model_id="mixed_native_stable_risk_set_fe",
+        min_total_routes=min_total_routes,
+        regressor=regressor,
+    )
+
+
 def render_vehicle_mechanism_sweep_deck_values(
     estimates: pd.DataFrame, support: pd.DataFrame
 ) -> str:
@@ -133,6 +167,12 @@ def render_vehicle_mechanism_sweep_deck_values(
         integration_scope="cross_venue",
         baseline_regime="native_majority",
     )
+    risk_set_base = _risk_set_summary(estimates, year=2024)
+    risk_set_end = _risk_set_summary(estimates, year=2026)
+    risk_set_stable_penalty = _risk_set_effect(estimates, regressor="is_stable")
+    risk_set_stable_2026 = _risk_set_effect(
+        estimates, regressor="is_stable_x_2026"
+    )
     if not (
         float(turn_on_thin["coefficient_pp"]) < 0
         and float(leader_thin["coefficient_pp"]) < 0
@@ -146,6 +186,12 @@ def render_vehicle_mechanism_sweep_deck_values(
         and float(turn_on_thin["p_value"]) < 0.01
         and float(leader_thin["p_value"]) < 0.01
         and float(turn_on_direct_x_thin["p_value"]) < 0.01
+        and float(risk_set_base["stable_route_share"]) < float(
+            risk_set_end["stable_route_share"]
+        )
+        and float(risk_set_end["stable_route_share"]) < 0.5
+        and float(risk_set_stable_penalty["coefficient"]) < 0
+        and float(risk_set_stable_penalty["p_value"]) < 0.01
     ):
         raise ValueError("vehicle mechanism-sweep headline no longer holds")
     lines = [
@@ -171,6 +217,12 @@ def render_vehicle_mechanism_sweep_deck_values(
         f"\\newcommand{{\\MechanismSingleNativeRegimePersistenceSE}}{{{_unsigned_pp(float(single_native_persistence['standard_error_pp']))}}}",
         f"\\newcommand{{\\MechanismCrossStableRegimePersistence}}{{{_pct(float(cross_stable_persistence['coefficient']))}}}",
         f"\\newcommand{{\\MechanismCrossNativeRegimePersistence}}{{{_pct(float(cross_native_persistence['coefficient']))}}}",
+        f"\\newcommand{{\\MechanismRiskSetStableRouteShareBase}}{{{_pct(float(risk_set_base['stable_route_share']))}}}",
+        f"\\newcommand{{\\MechanismRiskSetStableRouteShareEnd}}{{{_pct(float(risk_set_end['stable_route_share']))}}}",
+        f"\\newcommand{{\\MechanismRiskSetStablePenalty}}{{{_signed_pp(float(risk_set_stable_penalty['coefficient_pp']))}}}",
+        f"\\newcommand{{\\MechanismRiskSetStablePenaltySE}}{{{_unsigned_pp(float(risk_set_stable_penalty['standard_error_pp']))}}}",
+        f"\\newcommand{{\\MechanismRiskSetStableChange}}{{{_signed_pp(float(risk_set_stable_2026['coefficient_pp']))}}}",
+        f"\\newcommand{{\\MechanismRiskSetStableChangeSE}}{{{_unsigned_pp(float(risk_set_stable_2026['standard_error_pp']))}}}",
     ]
     return "\n".join(lines) + "\n"
 

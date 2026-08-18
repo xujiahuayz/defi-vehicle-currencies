@@ -9,7 +9,9 @@ import pandas as pd
 from scripts.analyze.run_vehicle_dominance_mechanism_sweep import (
     BASELINE_YEAR,
     COMPARISON_YEAR,
+    build_candidate_risk_set_design,
     build_transition_design,
+    estimate_candidate_risk_set_choice,
     estimate_mechanism_sweep,
 )
 
@@ -100,6 +102,55 @@ class VehicleDominanceMechanismSweepTests(unittest.TestCase):
                 "regime_persistence",
                 set(results["model_id"]),
             )
+
+    def test_candidate_risk_set_choice_reports_within_set_effect(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            rows = []
+            for year in (BASELINE_YEAR, COMPARISON_YEAR):
+                for day in range(1, 8):
+                    for pair_index in range(1, 6):
+                        src = f"0xsrc{pair_index:02x}"
+                        tgt = f"0xtgt{pair_index:02x}"
+                        native_routes = 20 + pair_index
+                        stable_routes = 5 + int(year == COMPARISON_YEAR)
+                        for candidate_type, candidate, route_count in (
+                            ("native", "WETH", native_routes),
+                            ("stable", "USDC", stable_routes),
+                        ):
+                            rows.append(
+                                {
+                                    "date": pd.Timestamp(year=year, month=1, day=day),
+                                    "src": src,
+                                    "tgt": tgt,
+                                    "integration_scope": "single_venue",
+                                    "candidate_address": candidate.lower(),
+                                    "candidate_symbol": candidate,
+                                    "candidate_type": candidate_type,
+                                    "route_count": route_count,
+                                }
+                            )
+            choices_path = root / "choices.parquet"
+            pd.DataFrame(rows).to_parquet(choices_path, index=False)
+
+            design = build_candidate_risk_set_design(choices_path)
+            self.assertTrue(design["has_stable"].eq(1).all())
+            self.assertTrue(design["has_native"].eq(1).all())
+
+            results, support = estimate_candidate_risk_set_choice(
+                design, min_observations=20, min_clusters=2
+            )
+            self.assertIn(
+                "mixed_native_stable_risk_set_fe",
+                set(results["model_id"]),
+            )
+            penalty = results[
+                results["model_id"].eq("mixed_native_stable_risk_set_fe")
+                & results["min_total_routes"].eq(1)
+                & results["regressor"].eq("is_stable")
+            ].iloc[0]
+            self.assertLess(penalty["coefficient"], 0)
+            self.assertIn("candidate_route_share", set(support["metric"]))
 
 
 if __name__ == "__main__":

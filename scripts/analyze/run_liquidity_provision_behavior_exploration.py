@@ -55,6 +55,12 @@ GAP_CLOSING_INTERACTION_PREDICTORS = (
     "route_capital_gap_5",
     "route_capital_gap_5_x_stable",
 )
+GAP_ASYMMETRY_PREDICTORS = (
+    "positive_route_capital_gap_5",
+    "negative_route_capital_gap_5",
+    "positive_route_capital_gap_5_x_stable",
+    "negative_route_capital_gap_5_x_stable",
+)
 
 
 def load_candidate_day(path: Path = CANDIDATE_DAY_INPUT) -> pd.DataFrame:
@@ -517,6 +523,148 @@ def route_capital_gap_closing_stable_interactions(
     return pd.DataFrame(rows)
 
 
+def route_capital_gap_asymmetry(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 1000,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Test whether capital adjustment differs for shortages and overhangs."""
+
+    rows: list[dict[str, object]] = []
+    outcomes = (
+        "future_v2_five_candidate_capital_share_change",
+        "future_v2_log1p_deposited_capital_usd_change",
+    )
+    for horizon, group in panel.groupby("horizon_days", sort=True):
+        for outcome in outcomes:
+            data = (
+                group[
+                    [
+                        "origin_date",
+                        "candidate_address",
+                        "candidate_symbol",
+                        "route_capital_gap_5",
+                        outcome,
+                    ]
+                ]
+                .replace([np.inf, -np.inf], np.nan)
+                .dropna()
+                .copy()
+            )
+            stable = data["candidate_symbol"].isin(STABLE_SYMBOLS).astype(float)
+            data["positive_route_capital_gap_5"] = data[
+                "route_capital_gap_5"
+            ].clip(lower=0.0)
+            data["negative_route_capital_gap_5"] = data[
+                "route_capital_gap_5"
+            ].clip(upper=0.0)
+            data["positive_route_capital_gap_5_x_stable"] = (
+                data["positive_route_capital_gap_5"] * stable
+            )
+            data["negative_route_capital_gap_5_x_stable"] = (
+                data["negative_route_capital_gap_5"] * stable
+            )
+            residual = absorb_fixed_effects(
+                data[[outcome, *GAP_ASYMMETRY_PREDICTORS]],
+                data["candidate_address"],
+                data["origin_date"],
+            )
+            fit = ols_clustered(
+                residual[outcome],
+                residual[list(GAP_ASYMMETRY_PREDICTORS)],
+                data["origin_date"],
+                add_constant=False,
+                absorbed_groups=(data["candidate_address"], data["origin_date"]),
+                min_observations=min_observations,
+                min_clusters=min_clusters,
+            )
+            for predictor, coefficient, standard_error, t_statistic, p_value in zip(
+                GAP_ASYMMETRY_PREDICTORS,
+                fit.beta,
+                fit.standard_errors,
+                fit.t_statistics,
+                fit.p_values,
+                strict=True,
+            ):
+                coefficient = float(coefficient)
+                standard_error = float(standard_error)
+                rows.append(
+                    {
+                        "analysis_status": "exploratory_descriptive",
+                        "record_type": "route_capital_gap_asymmetry",
+                        "horizon_days": int(horizon),
+                        "outcome": outcome,
+                        "predictor": predictor,
+                        "coefficient": coefficient,
+                        "standard_error": standard_error,
+                        "t_statistic": float(t_statistic),
+                        "p_value": float(p_value),
+                        "coefficient_per_10pp_gap": 0.10 * coefficient,
+                        "standard_error_per_10pp_gap": 0.10 * standard_error,
+                        "coefficient_per_10pp_gap_pp": 10.0 * coefficient,
+                        "standard_error_per_10pp_gap_pp": 10.0 * standard_error,
+                        "n_observations": int(fit.n_observations),
+                        "date_clusters": int(fit.n_clusters),
+                        "fixed_effects": "candidate_address+origin_date",
+                        "covariance": "origin_date_clustered",
+                        "interpretation": (
+                            "piecewise temporally ordered gap-adjustment association, "
+                            "not causal provider-flow timing"
+                        ),
+                    }
+                )
+            contrasts = {
+                "stable_total_positive_route_capital_gap_5": [1.0, 0.0, 1.0, 0.0],
+                "stable_total_negative_route_capital_gap_5": [0.0, 1.0, 0.0, 1.0],
+            }
+            for predictor, weights in contrasts.items():
+                try:
+                    contrast = linear_contrast(fit, weights)
+                except ValueError:
+                    continue
+                rows.append(
+                    {
+                        "analysis_status": "exploratory_descriptive",
+                        "record_type": "route_capital_gap_asymmetry",
+                        "horizon_days": int(horizon),
+                        "outcome": outcome,
+                        "predictor": predictor,
+                        "coefficient": contrast.estimate,
+                        "standard_error": contrast.standard_error,
+                        "t_statistic": contrast.t_statistic,
+                        "p_value": contrast.p_value,
+                        "coefficient_per_10pp_gap": 0.10 * contrast.estimate,
+                        "standard_error_per_10pp_gap": 0.10
+                        * contrast.standard_error,
+                        "coefficient_per_10pp_gap_pp": 10.0 * contrast.estimate,
+                        "standard_error_per_10pp_gap_pp": 10.0
+                        * contrast.standard_error,
+                        "effect_per_10pp_stable_overcapitalization": (
+                            -0.10 * contrast.estimate
+                            if predictor
+                            == "stable_total_negative_route_capital_gap_5"
+                            else np.nan
+                        ),
+                        "effect_per_10pp_stable_overcapitalization_pp": (
+                            -10.0 * contrast.estimate
+                            if predictor
+                            == "stable_total_negative_route_capital_gap_5"
+                            else np.nan
+                        ),
+                        "n_observations": int(fit.n_observations),
+                        "date_clusters": int(fit.n_clusters),
+                        "fixed_effects": "candidate_address+origin_date",
+                        "covariance": "origin_date_clustered",
+                        "interpretation": (
+                            "stable-candidate piecewise gap-adjustment total, "
+                            "not causal provider-flow timing"
+                        ),
+                    }
+                )
+    return pd.DataFrame(rows)
+
+
 def capital_use_gap_summaries(daily: pd.DataFrame) -> pd.DataFrame:
     """Summarise and test route-minus-capital gaps on the endpoint calendar."""
 
@@ -754,6 +902,7 @@ def run(
             within_day_gap_associations(share_gap_panel),
             route_capital_gap_closing(exact_panel),
             route_capital_gap_closing_stable_interactions(exact_panel),
+            route_capital_gap_asymmetry(exact_panel),
         ],
         ignore_index=True,
     )
