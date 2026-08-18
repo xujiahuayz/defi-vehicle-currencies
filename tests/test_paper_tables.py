@@ -36,6 +36,7 @@ def test_table_lineage_readme_covers_every_active_manuscript_table() -> None:
     sections = (
         root / "paper" / "sections" / "02-setting.tex",
         root / "paper" / "sections" / "03-dominance.tex",
+        root / "paper" / "sections" / "05-rivals.tex",
         root / "paper" / "sections" / "08-appendix.tex",
     )
     labels = []
@@ -43,7 +44,7 @@ def test_table_lineage_readme_covers_every_active_manuscript_table() -> None:
         for line in path.read_text(encoding="utf-8").splitlines():
             if line.startswith(r"\label{tab:"):
                 labels.append(line.removeprefix(r"\label{").removesuffix("}"))
-    assert len(labels) == 12
+    assert len(labels) == 15
     assert all(f"`{label}`" in readme for label in labels)
 
 

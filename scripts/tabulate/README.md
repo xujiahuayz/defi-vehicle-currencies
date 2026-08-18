@@ -11,8 +11,9 @@ Captions, labels, placement, and interpretation stay in the paper/deck source.
 | `render_pair_composition.py` | `pair_composition.tex/.pdf` | `tab:pair-composition` |
 | `render_usdt_transition.py` | `usdt_transition.tex/.pdf` | `tab:usdt-transition` |
 | `render_within_day_ladder.py` | `within_day_ladder.tex/.pdf` | `tab:within-day-ladder` |
-| `render_routing_technology_windows.py` | `routing_technology_windows.tex/.pdf` | deck/supporting output |
-| `render_venue_technology_rival.py` | `venue_technology_rival.tex/.pdf` | deck/supporting output |
+| `render_routing_technology_windows.py` | `routing_technology_windows.tex/.pdf` | `tab:router-windows` |
+| `render_venue_technology_rival.py` | `venue_technology_rival.tex/.pdf` | `tab:venue-technology` |
+| `render_v4_flash_lp_mechanism.py` | `v4_flash_lp_mechanism.tex/.pdf` | `tab:v4-flash-lp` |
 | `render_venue_coverage.py` | `venue_coverage.tex/.pdf` | `tab:app:venues` |
 
 The remaining active manuscript tables are intentionally inline because each is
