@@ -38,6 +38,7 @@ COMPARISON_YEAR = 2026
 ENDPOINT_CUTOFF = "06-30"
 CAPITAL_STATUS = "exact_state_prior_calendar"
 MIN_SUPPORTED_CANDIDATES = 2
+STABLE_ISSUER_CANDIDATES = ("DAI", "USDC", "USDT")
 CODE_SOURCES = ["scripts/analyze/run_bridge_liquidity_dominance.py"]
 INPUTS = [
     "data/processed/endpoint_candidate_choices.parquet",
@@ -670,6 +671,166 @@ def bridge_liquidity_leave_one_candidate_regressions(
     return pd.DataFrame(rows)
 
 
+def bridge_liquidity_stable_issuer_regressions(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 1000,
+    min_clusters: int = 30,
+    min_supported_stable_candidates: int = 2,
+) -> pd.DataFrame:
+    """Compare DAI, USDC, and USDT inside stable-only bridge risk sets."""
+
+    stable = panel[panel["candidate_symbol"].isin(STABLE_ISSUER_CANDIDATES)].copy()
+    stable["stable_supported_count"] = stable.groupby("choice_group_id")[
+        "candidate_address"
+    ].transform("nunique")
+    stable = stable[
+        stable["stable_supported_count"].ge(min_supported_stable_candidates)
+    ].copy()
+    stable["stable_supported_total_routes"] = stable.groupby("choice_group_id")[
+        "route_count"
+    ].transform("sum")
+    stable = stable[stable["stable_supported_total_routes"].gt(0)].copy()
+    if stable.empty:
+        raise ValueError("stable-issuer bridge risk set is empty")
+    stable["route_share_stable_supported"] = stable["route_count"].astype(
+        float
+    ) / stable["stable_supported_total_routes"].astype(float)
+    stable["is_usdc"] = stable["candidate_symbol"].eq("USDC").astype(float)
+    stable["is_usdt"] = stable["candidate_symbol"].eq("USDT").astype(float)
+    stable["is_2026"] = stable["year"].eq(COMPARISON_YEAR).astype(float)
+    stable["is_usdc_x_2026"] = stable["is_usdc"] * stable["is_2026"]
+    stable["is_usdt_x_2026"] = stable["is_usdt"] * stable["is_2026"]
+
+    rows: list[dict[str, object]] = [
+        {
+            "claim_status": "provisional_exploratory",
+            "record_type": "bridge_liquidity_stable_issuer_support",
+            "model_id": "stable_issuer_bridge_race_support",
+            "candidate_rows": int(len(stable)),
+            "choice_groups": int(stable["choice_group_id"].nunique()),
+            "ordered_pairs": int(stable["ordered_pair"].nunique()),
+            "days": int(stable["origin_date"].nunique()),
+            "stable_issuer_candidates": ",".join(STABLE_ISSUER_CANDIDATES),
+            "min_supported_stable_candidates": int(min_supported_stable_candidates),
+            "route_count": float(
+                stable.drop_duplicates("choice_group_id")[
+                    "stable_supported_total_routes"
+                ].sum()
+            ),
+            "outcome": "route_share_stable_supported",
+            "outcome_denominator": "supported DAI/USDC/USDT route mass in the same opportunity",
+            "interpretation": (
+                "stable-issuer race inside supported stable-candidate bridge "
+                "opportunities; descriptive, not causal"
+            ),
+        }
+    ]
+    specs = (
+        (
+            "stable_issuer_identity_fe",
+            ("is_usdc", "is_usdt"),
+            "issuer identity inside stable-supported opportunities",
+        ),
+        (
+            "stable_issuer_depth_reach_fe",
+            (
+                "is_usdc",
+                "is_usdt",
+                "log_bridge_min_capital",
+                "log_global_route_count_day_leaveout",
+                "log_global_route_count_lag30",
+                "log_global_pair_count_lag30",
+            ),
+            "issuer identity with local depth and candidate reach controls",
+        ),
+        (
+            "stable_issuer_2026_depth_reach_fe",
+            (
+                "is_usdc",
+                "is_usdt",
+                "is_usdc_x_2026",
+                "is_usdt_x_2026",
+                "log_bridge_min_capital",
+                "log_global_route_count_day_leaveout",
+                "log_global_route_count_lag30",
+                "log_global_pair_count_lag30",
+            ),
+            "issuer identity, 2026 interactions, local depth, and candidate reach controls",
+        ),
+    )
+    for model_id, regressors, question in specs:
+        columns = [
+            "route_share_stable_supported",
+            *regressors,
+            "choice_group_id",
+            "origin_date",
+            "ordered_pair",
+            "stable_supported_total_routes",
+        ]
+        data = (
+            stable.loc[:, columns]
+            .replace([np.inf, -np.inf], np.nan)
+            .dropna()
+            .copy()
+        )
+        residual = absorb_fixed_effects(
+            data[["route_share_stable_supported", *regressors]],
+            data["choice_group_id"],
+            weights=data["stable_supported_total_routes"],
+        )
+        fit = ols_clustered(
+            residual["route_share_stable_supported"],
+            residual[list(regressors)],
+            data["ordered_pair"],
+            add_constant=False,
+            absorbed_groups=(data["choice_group_id"],),
+            additional_clusters=(data["origin_date"],),
+            weights=data["stable_supported_total_routes"],
+            min_observations=min_observations,
+            min_clusters=min_clusters,
+        )
+        for index, regressor in enumerate(regressors):
+            coefficient = float(fit.beta[index])
+            standard_error = float(fit.standard_errors[index])
+            rows.append(
+                {
+                    "claim_status": "provisional_exploratory",
+                    "record_type": "bridge_liquidity_stable_issuer_regression",
+                    "model_id": model_id,
+                    "question": question,
+                    "outcome": "route_share_stable_supported",
+                    "regressor": regressor,
+                    "coefficient": coefficient,
+                    "standard_error": standard_error,
+                    "t_statistic": float(fit.t_statistics[index]),
+                    "p_value": float(fit.p_values[index]),
+                    "coefficient_pp": 100.0 * coefficient,
+                    "standard_error_pp": 100.0 * standard_error,
+                    "n_observations": int(fit.n_observations),
+                    "ordered_pair_clusters": int(fit.cluster_counts[0]),
+                    "date_clusters": int(fit.cluster_counts[1]),
+                    "fixed_effects": "ordered_ultimate_pair_date_scope",
+                    "covariance": "two_way_ordered_pair_date_cr1",
+                    "weight": "supported_stable_route_count",
+                    "capital_status": CAPITAL_STATUS,
+                    "omitted_candidate": "DAI",
+                    "candidate_reach_quantity": (
+                        "same-day leave-one-out and prior-30-day five-candidate "
+                        "route reach in endpoint_candidate_choices"
+                    ),
+                    "outcome_denominator": (
+                        "supported DAI/USDC/USDT route mass in the same opportunity"
+                    ),
+                    "interpretation": (
+                        "stable issuer identity and local depth association inside "
+                        "the supported stable-candidate risk set; descriptive, not causal"
+                    ),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
 def bridge_liquidity_depth_regressions(
     panel: pd.DataFrame,
     *,
@@ -841,6 +1002,7 @@ def run(
             bridge_liquidity_depth_regressions(panel),
             bridge_liquidity_horse_race_regressions(panel),
             bridge_liquidity_leave_one_candidate_regressions(panel),
+            bridge_liquidity_stable_issuer_regressions(panel),
         ],
         ignore_index=True,
     )

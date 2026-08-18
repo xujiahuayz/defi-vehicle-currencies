@@ -391,7 +391,7 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 % EVIDENCE-STATUS: provisional exploratory local-depth and candidate-reach mechanism screen
 % EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl; output/exhibits/bridge_liquidity_dominance_support.jsonl; output/exhibits/bridge_liquidity_deck_values.tex
 % SCIENTIFIC-BOUNDARY: prior-calendar deposited capital on the two atomic legs of A-candidate-C routes; not active concentrated-liquidity depth, executable quote size, provider returns, or causal liquidity supply
-% ESTIMAND-BOUNDARY: five-candidate endpoint-date-scope risk sets with at least two locally supported candidates; top-bridge rows rank candidates by the weaker of the two prior-capital legs; horse-race rows absorb endpoint-date-scope and candidate effects, control for same-day and prior-30-day route reach, and cluster by ordered pair and date
+% ESTIMAND-BOUNDARY: five-candidate endpoint-date-scope risk sets with at least two locally supported candidates; top-bridge rows rank candidates by the weaker of the two prior-capital legs; horse-race rows absorb endpoint-date-scope and candidate effects, control for same-day and prior-30-day route reach, and cluster by ordered pair and date; stable-issuer rows restrict to DAI/USDC/USDT supported opportunities with at least two stable candidates
 % VISUAL-FUNCTION: local bridge depth | three-stat mechanism screen | show that route choices concentrate on corridor-specific depth after candidate-reach controls
 \begin{frame}{Routes follow local bridges, not only popular vehicles}
 \vspace{0.08cm}
@@ -414,9 +414,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.36cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.2}{9.2}\selectfont Across \BridgeLiquidityGroups{} cells, the deepest prior two-leg bridge carries most five-candidate route mass. With candidate effects and same-day/prior-30-day reach controls, local depth remains \BridgeLiquidityHorseRaceDepthCoef{}; same-day global reach is \BridgeLiquidityHorseRaceGlobalDayCoef{}.\par}
+{\fontsize{8.2}{9.2}\selectfont Deepest prior bridge carries most route mass. After reach controls, local depth remains \BridgeLiquidityHorseRaceDepthCoef{}. In stable-only cells, 2026 USDT adds \BridgeLiquidityStableIssuerUsdtTwentySixCoef{} versus DAI.\par}
 \end{minipage}}
-\decknote{Five candidates; \BridgeLiquidityRows{} candidate rows; \BridgeLiquidityPairs{} ordered pairs; \BridgeLiquidityDays{} days. Bridge depth is the smaller exact-state V2 prior-capital leg on source-candidate and candidate-target pairs. Reach uses same-day leave-one-out and prior-30-day endpoint-candidate routes. Fixed effects: endpoint-date-scope and candidate; SEs cluster by pair and date. Association only.}
+\decknote{Five candidates; \BridgeLiquidityRows{} candidate rows, \BridgeLiquidityPairs{} pairs, \BridgeLiquidityDays{} days. Depth is the smaller prior-capital bridge leg. Reach uses same-day and prior-30-day routes. Stable-issuer rows use \BridgeLiquidityStableIssuerGroups{} DAI/USDC/USDT cells across \BridgeLiquidityStableIssuerPairs{} pairs. Association only.}
 \end{frame}
 
 % EVIDENCE-STATUS: exploratory descriptive allocation result

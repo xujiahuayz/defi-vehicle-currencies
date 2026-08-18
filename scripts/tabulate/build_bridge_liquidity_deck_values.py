@@ -109,6 +109,32 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
     leave_one_min = leave_one_depth.loc[
         leave_one_depth["coefficient"].astype(float).idxmin()
     ]
+    stable_issuer_support = _single(
+        estimates,
+        record_type="bridge_liquidity_stable_issuer_support",
+        model_id="stable_issuer_bridge_race_support",
+    )
+    stable_issuer_usdc_2026 = _single(
+        estimates,
+        record_type="bridge_liquidity_stable_issuer_regression",
+        model_id="stable_issuer_2026_depth_reach_fe",
+        outcome="route_share_stable_supported",
+        regressor="is_usdc_x_2026",
+    )
+    stable_issuer_usdt_2026 = _single(
+        estimates,
+        record_type="bridge_liquidity_stable_issuer_regression",
+        model_id="stable_issuer_2026_depth_reach_fe",
+        outcome="route_share_stable_supported",
+        regressor="is_usdt_x_2026",
+    )
+    stable_issuer_depth = _single(
+        estimates,
+        record_type="bridge_liquidity_stable_issuer_regression",
+        model_id="stable_issuer_2026_depth_reach_fe",
+        outcome="route_share_stable_supported",
+        regressor="log_bridge_min_capital",
+    )
     if not (
         float(pooled["top_bridge_route_share"]) > 0.75
         and float(end["top_bridge_route_share"]) > float(base["top_bridge_route_share"])
@@ -123,6 +149,13 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         and float(horse_global_day["p_value"]) < 0.01
         and leave_one_depth["coefficient"].astype(float).gt(0).all()
         and leave_one_depth["p_value"].astype(float).lt(0.01).all()
+        and float(stable_issuer_support["choice_groups"]) > 1000
+        and float(stable_issuer_usdc_2026["coefficient"]) > 0
+        and float(stable_issuer_usdc_2026["p_value"]) < 0.05
+        and float(stable_issuer_usdt_2026["coefficient"]) > 0
+        and float(stable_issuer_usdt_2026["p_value"]) < 0.01
+        and float(stable_issuer_depth["coefficient"]) > 0
+        and float(stable_issuer_depth["p_value"]) < 0.01
     ):
         raise ValueError("bridge-liquidity dominance pattern no longer holds")
     lines = [
@@ -149,6 +182,14 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         f"\\newcommand{{\\BridgeLiquidityLeaveOneCount}}{{{_integer(float(leave_one_depth['dropped_candidate_symbol'].nunique()))}}}",
         f"\\newcommand{{\\BridgeLiquidityLeaveOneMinCoef}}{{{_signed_pp(float(leave_one_min['coefficient']))}}}",
         f"\\newcommand{{\\BridgeLiquidityLeaveOneMinSE}}{{{_unsigned_pp(float(leave_one_min['standard_error']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityStableIssuerGroups}}{{{_integer(float(stable_issuer_support['choice_groups']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityStableIssuerPairs}}{{{_integer(float(stable_issuer_support['ordered_pairs']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityStableIssuerUsdcTwentySixCoef}}{{{_signed_pp(float(stable_issuer_usdc_2026['coefficient']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityStableIssuerUsdcTwentySixSE}}{{{_unsigned_pp(float(stable_issuer_usdc_2026['standard_error']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityStableIssuerUsdtTwentySixCoef}}{{{_signed_pp(float(stable_issuer_usdt_2026['coefficient']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityStableIssuerUsdtTwentySixSE}}{{{_unsigned_pp(float(stable_issuer_usdt_2026['standard_error']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityStableIssuerDepthCoef}}{{{_signed_pp(float(stable_issuer_depth['coefficient']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityStableIssuerDepthSE}}{{{_unsigned_pp(float(stable_issuer_depth['standard_error']))}}}",
     ]
     return "\n".join(lines) + "\n"
 

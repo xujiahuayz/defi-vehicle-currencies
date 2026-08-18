@@ -10,6 +10,7 @@ from scripts.analyze.run_bridge_liquidity_dominance import (
     bridge_liquidity_depth_regressions,
     bridge_liquidity_horse_race_regressions,
     bridge_liquidity_leave_one_candidate_regressions,
+    bridge_liquidity_stable_issuer_regressions,
     bridge_liquidity_top_rank_summaries,
     load_bridge_liquidity_panel,
 )
@@ -339,6 +340,83 @@ def test_bridge_liquidity_leave_one_keeps_local_depth_slope() -> None:
     assert depth["coefficient"].gt(0).all()
 
 
+def test_bridge_liquidity_stable_issuer_race_reports_2026_premia() -> None:
+    rows = []
+    candidates = [
+        ("DAI", DAI),
+        ("USDC", USDC),
+        ("USDT", USDT),
+    ]
+    for group_index in range(220):
+        year = 2024 if group_index < 110 else 2026
+        day = pd.Timestamp(year=year, month=1, day=1) + pd.Timedelta(
+            days=group_index % 110
+        )
+        for candidate_index, (symbol, candidate) in enumerate(candidates):
+            is_usdc = float(symbol == "USDC")
+            is_usdt = float(symbol == "USDT")
+            is_2026 = float(year == 2026)
+            log_depth = (
+                3.8
+                + 0.3 * candidate_index
+                + math.sin(group_index / 10 + 0.5 * candidate_index)
+                + 0.01 * ((group_index * (candidate_index + 2)) % 7)
+            )
+            global_reach = (
+                2.0
+                + 0.006 * group_index
+                + 0.2 * candidate_index
+                + math.cos(group_index / 16 + candidate_index)
+            )
+            lag_route_reach = (
+                1.3
+                + 0.02 * ((group_index * (candidate_index + 3)) % 13)
+                + 0.25 * math.sin(group_index / 18 + 0.4 * candidate_index)
+            )
+            lag_pair_reach = (
+                0.8
+                + 0.02 * ((group_index + candidate_index) % 9)
+                + 0.2 * math.cos(group_index / 19 + 0.5 * candidate_index)
+            )
+            rows.append(
+                {
+                    "choice_group_id": f"g{group_index}",
+                    "candidate_symbol": symbol,
+                    "candidate_address": candidate,
+                    "year": year,
+                    "origin_date": day,
+                    "ordered_pair": f"pair{group_index % 50}",
+                    "route_count": max(
+                        0.1,
+                        12
+                        + 3.5 * log_depth
+                        + 20 * is_usdc * is_2026
+                        + 28 * is_usdt * is_2026,
+                    ),
+                    "log_bridge_min_capital": log_depth,
+                    "log_global_route_count_day_leaveout": global_reach,
+                    "log_global_route_count_lag30": lag_route_reach,
+                    "log_global_pair_count_lag30": lag_pair_reach,
+                }
+            )
+    result = bridge_liquidity_stable_issuer_regressions(
+        pd.DataFrame(rows),
+        min_observations=100,
+        min_clusters=10,
+    )
+    assert "bridge_liquidity_stable_issuer_support" in set(result["record_type"])
+    usdt = result[
+        result["model_id"].eq("stable_issuer_2026_depth_reach_fe")
+        & result["regressor"].eq("is_usdt_x_2026")
+    ].iloc[0]
+    depth = result[
+        result["model_id"].eq("stable_issuer_2026_depth_reach_fe")
+        & result["regressor"].eq("log_bridge_min_capital")
+    ].iloc[0]
+    assert usdt["coefficient"] > 0
+    assert depth["coefficient"] > 0
+
+
 def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
     estimates = pd.DataFrame(
         [
@@ -436,6 +514,43 @@ def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
                     ("WBTC", 0.060),
                 ]
             ],
+            {
+                "claim_status": "provisional_exploratory",
+                "record_type": "bridge_liquidity_stable_issuer_support",
+                "model_id": "stable_issuer_bridge_race_support",
+                "choice_groups": 2000,
+                "ordered_pairs": 300,
+            },
+            {
+                "claim_status": "provisional_exploratory",
+                "record_type": "bridge_liquidity_stable_issuer_regression",
+                "model_id": "stable_issuer_2026_depth_reach_fe",
+                "outcome": "route_share_stable_supported",
+                "regressor": "is_usdc_x_2026",
+                "coefficient": 0.35,
+                "standard_error": 0.17,
+                "p_value": 0.04,
+            },
+            {
+                "claim_status": "provisional_exploratory",
+                "record_type": "bridge_liquidity_stable_issuer_regression",
+                "model_id": "stable_issuer_2026_depth_reach_fe",
+                "outcome": "route_share_stable_supported",
+                "regressor": "is_usdt_x_2026",
+                "coefficient": 0.55,
+                "standard_error": 0.13,
+                "p_value": 0.001,
+            },
+            {
+                "claim_status": "provisional_exploratory",
+                "record_type": "bridge_liquidity_stable_issuer_regression",
+                "model_id": "stable_issuer_2026_depth_reach_fe",
+                "outcome": "route_share_stable_supported",
+                "regressor": "log_bridge_min_capital",
+                "coefficient": 0.06,
+                "standard_error": 0.02,
+                "p_value": 0.001,
+            },
         ]
     )
     rendered = render_bridge_liquidity_deck_values(estimates)
@@ -443,3 +558,4 @@ def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
     assert "\\BridgeLiquidityStableLogTotalCoef" in rendered
     assert "\\BridgeLiquidityHorseRaceDepthCoef" in rendered
     assert "\\BridgeLiquidityLeaveOneMinCoef" in rendered
+    assert "\\BridgeLiquidityStableIssuerUsdtTwentySixCoef" in rendered
