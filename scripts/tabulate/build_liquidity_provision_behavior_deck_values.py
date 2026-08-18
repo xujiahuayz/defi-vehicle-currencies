@@ -313,6 +313,13 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         outcome="future_log1p_v3_mint_events",
         predictor="stable_total_route_capital_gap_5",
     )
+    stable_v3_lp_burn_month = _single(
+        estimates,
+        record_type="route_capital_gap_v3_lp_action",
+        horizon_days=30,
+        outcome="future_log1p_v3_burn_events",
+        predictor="stable_total_route_capital_gap_5",
+    )
     stable_v3_lp_total_month = _single(
         estimates,
         record_type="route_capital_gap_v3_lp_action",
@@ -428,11 +435,17 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         raise ValueError("stable V3 fee-incidence non-result no longer holds")
     if not (
         float(stable_v3_lp_mint_month["coefficient"]) > 0
+        and float(stable_v3_lp_burn_month["coefficient"]) > 0
         and float(stable_v3_lp_total_month["coefficient"]) > 0
         and float(stable_v3_lp_net_month["coefficient"]) > 0
         and float(stable_v3_lp_mint_month["p_value"]) < 0.01
+        and float(stable_v3_lp_burn_month["p_value"]) < 0.01
         and float(stable_v3_lp_total_month["p_value"]) < 0.01
         and float(stable_v3_lp_net_month["p_value"]) < 0.01
+        and float(stable_v3_lp_net_month["coefficient_per_10pp_gap"])
+        < float(stable_v3_lp_mint_month["coefficient_per_10pp_gap"])
+        and float(stable_v3_lp_net_month["coefficient_per_10pp_gap"])
+        < float(stable_v3_lp_burn_month["coefficient_per_10pp_gap"])
     ):
         raise ValueError("stable V3 LP-action response no longer holds")
     if not (
@@ -517,6 +530,8 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         f"\\newcommand{{\\LiqBehVThreeLpActionDays}}{{{_integer(int(stable_v3_lp_mint_month['date_clusters']))}}}",
         f"\\newcommand{{\\LiqBehStableVThreeMintMonthCoef}}{{{_signed_percent(float(stable_v3_lp_mint_month['coefficient_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehStableVThreeMintMonthSE}}{{{_unsigned_percent(float(stable_v3_lp_mint_month['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVThreeBurnMonthCoef}}{{{_signed_percent(float(stable_v3_lp_burn_month['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVThreeBurnMonthSE}}{{{_unsigned_percent(float(stable_v3_lp_burn_month['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehStableVThreeActionMonthCoef}}{{{_signed_percent(float(stable_v3_lp_total_month['coefficient_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehStableVThreeActionMonthSE}}{{{_unsigned_percent(float(stable_v3_lp_total_month['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehStableVThreeNetMintMonthCoef}}{{{_signed_pp(float(stable_v3_lp_net_month['coefficient_per_10pp_gap']))}}}",

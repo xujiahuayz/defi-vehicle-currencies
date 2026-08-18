@@ -399,12 +399,12 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \begin{column}{0.31\textwidth}
 {\fontsize{28}{30}\selectfont\bfseries\color{ucldark}\BridgeLiquidityTopShare}\par
 \vspace{0.12cm}
-{\small route share captured by the deepest supported bridge\par}
+{\small route share captured by deepest bridge\par}
 \end{column}
 \begin{column}{0.31\textwidth}
 {\fontsize{28}{30}\selectfont\bfseries\color{ucldark}\BridgeLiquidityTopShareBase{} $\rightarrow$ \BridgeLiquidityTopShareEnd}\par
 \vspace{0.12cm}
-{\small 2024 to 2026 top-bridge share\par}
+{\small top-bridge share, 2024 to 2026\par}
 \end{column}
 \begin{column}{0.31\textwidth}
 {\fontsize{28}{30}\selectfont\bfseries\color{ucldark}\BridgeLiquidityHorseRaceDepthCoef}\par
@@ -414,9 +414,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.36cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.2}{9.2}\selectfont In \BridgeLiquidityGroups{} opportunity cells, the candidate with the deepest prior two-leg bridge carries most five-candidate route mass. Local depth remains \BridgeLiquidityHorseRaceDepthCoef{} with candidate effects and same-day plus prior-30-day route-reach controls; same-day global route reach contributes \BridgeLiquidityHorseRaceGlobalDayCoef{}.\par}
+{\fontsize{8.2}{9.2}\selectfont Across \BridgeLiquidityGroups{} cells, the deepest prior two-leg bridge carries most five-candidate route mass. With candidate effects and same-day/prior-30-day reach controls, local depth remains \BridgeLiquidityHorseRaceDepthCoef{}; same-day global reach is \BridgeLiquidityHorseRaceGlobalDayCoef{}.\par}
 \end{minipage}}
-\decknote{Five headline candidates, \BridgeLiquidityRows{} candidate rows, \BridgeLiquidityPairs{} ordered pairs, and \BridgeLiquidityDays{} days. Bridge depth is the smaller prior-calendar deposited-capital stock on the source-candidate and candidate-target atomic pairs, exact-state V2 only. Candidate reach is measured from same-day leave-one-out and prior-30-day observed routes in the endpoint-candidate ledger. Fixed effects: endpoint-date-scope and candidate; standard errors cluster by pair and date. Local-depth association only, not causal supply or executable quote comparison.}
+\decknote{Five candidates; \BridgeLiquidityRows{} candidate rows; \BridgeLiquidityPairs{} ordered pairs; \BridgeLiquidityDays{} days. Bridge depth is the smaller exact-state V2 prior-capital leg on source-candidate and candidate-target pairs. Reach uses same-day leave-one-out and prior-30-day endpoint-candidate routes. Fixed effects: endpoint-date-scope and candidate; SEs cluster by pair and date. Association only.}
 \end{frame}
 
 % EVIDENCE-STATUS: exploratory descriptive allocation result
@@ -445,9 +445,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.44cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.4}{9.4}\selectfont Route share rises while stable capital share falls. A 10 pp stable shortfall predicts \LiqBehStableBasketGapLongCoef{} stable capital, \LiqBehWethBasketGapLongCoef{} WETH capital, and \LiqBehStableVThreeMintMonthCoef{} future V3 mint events.\par}
+{\fontsize{8.4}{9.4}\selectfont Route share rises while stable capital share falls. A 10 pp stable shortfall predicts \LiqBehStableBasketGapLongCoef{} stable capital and \LiqBehWethBasketGapLongCoef{} WETH capital. In V3 it predicts both mints (\LiqBehStableVThreeMintMonthCoef{}) and burns (\LiqBehStableVThreeBurnMonthCoef{}), with only \LiqBehStableVThreeNetMintMonthCoef{} net mints.\par}
 \end{minipage}}
-\decknote{Five-candidate V2 deposited-capital panel. Stable route share rises \LiqBehStableRouteShareBase{} to \LiqBehStableRouteShareEnd{} while capital share falls \LiqBehStableCapitalShareBase{} to \LiqBehStableCapitalShareEnd{}. Stable-basket rows use activity controls/HAC. Concentration: top-pool share \LiqBehStableTopPoolShareEnd{} vs \LiqBehNonstableTopPoolShareEnd{}. V3 action screen: \LiqBehVThreeLpActionRows{} candidate-date rows, candidate/date FE, event counts not dollar provider flow.}
+\decknote{Five-candidate V2 deposited-capital panel. Stable route share rises \LiqBehStableRouteShareBase{} to \LiqBehStableRouteShareEnd{} while capital share falls \LiqBehStableCapitalShareBase{} to \LiqBehStableCapitalShareEnd{}. Stable-basket rows use activity controls/HAC. Concentration: top-pool share \LiqBehStableTopPoolShareEnd{} vs \LiqBehNonstableTopPoolShareEnd{}. V3 action screen: \LiqBehVThreeLpActionRows{} candidate-date rows, candidate/date FE, mint and burn event counts rather than dollar provider flow.}
 \end{frame}
 
 % EVIDENCE-STATUS: current predictive mechanism result; the reciprocal rule records a non-pass

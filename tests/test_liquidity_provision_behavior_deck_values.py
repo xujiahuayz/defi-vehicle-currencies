@@ -323,6 +323,20 @@ def test_liquidity_behavior_values_render_from_guarded_rows() -> None:
             "analysis_status": "exploratory_descriptive",
             "record_type": "route_capital_gap_v3_lp_action",
             "horizon_days": 30,
+            "outcome": "future_log1p_v3_burn_events",
+            "predictor": "stable_total_route_capital_gap_5",
+            "coefficient": 5.9,
+            "standard_error": 0.4,
+            "coefficient_per_10pp_gap": 0.59,
+            "standard_error_per_10pp_gap": 0.04,
+            "p_value": 0.001,
+            "n_observations": 2000,
+            "date_clusters": 400,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_v3_lp_action",
+            "horizon_days": 30,
             "outcome": "future_log1p_v3_total_lp_actions",
             "predictor": "stable_total_route_capital_gap_5",
             "coefficient": 5.8,
@@ -477,6 +491,7 @@ def test_liquidity_behavior_values_render_from_guarded_rows() -> None:
     assert "\\LiqBehStableFeeLongCoef" in rendered
     assert "\\LiqBehStableVolumeLongCoef" in rendered
     assert "\\LiqBehStableVThreeMintMonthCoef" in rendered
+    assert "\\LiqBehStableVThreeBurnMonthCoef" in rendered
     assert "\\LiqBehStableVThreeNetMintMonthCoef" in rendered
     assert "\\LiqBehUsdcGapCloseLongCoef" in rendered
     assert "\\LiqBehDaiGapCloseLongCoef" in rendered
