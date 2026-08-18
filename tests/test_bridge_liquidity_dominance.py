@@ -9,6 +9,8 @@ import pandas as pd
 from scripts.analyze.run_bridge_liquidity_dominance import (
     bridge_liquidity_bottleneck_regressions,
     bridge_liquidity_depth_regressions,
+    bridge_liquidity_entry_birth_panel,
+    bridge_liquidity_entry_birth_regressions,
     bridge_liquidity_horse_race_regressions,
     bridge_liquidity_leave_one_candidate_regressions,
     bridge_liquidity_stable_issuer_regressions,
@@ -113,6 +115,105 @@ def test_bridge_liquidity_panel_uses_prior_two_leg_capital() -> None:
     assert panel["supported_candidates"].min() == 2
     assert "log_global_route_count_day_leaveout" in panel.columns
     assert "log_global_route_count_lag30" in panel.columns
+
+
+def test_bridge_liquidity_panel_can_keep_zero_bridge_candidates() -> None:
+    choices = pd.DataFrame(
+        [
+            {
+                "date": pd.Timestamp("2024-01-02"),
+                "src": "src",
+                "tgt": "tgt",
+                "candidate_address": WETH,
+                "candidate_symbol": "WETH",
+                "integration_scope": "single_venue",
+                "route_count": 8,
+            },
+            {
+                "date": pd.Timestamp("2024-01-02"),
+                "src": "src",
+                "tgt": "tgt",
+                "candidate_address": USDC,
+                "candidate_symbol": "USDC",
+                "integration_scope": "single_venue",
+                "route_count": 2,
+            },
+            {
+                "date": pd.Timestamp("2024-01-02"),
+                "src": "src",
+                "tgt": "tgt",
+                "candidate_address": DAI,
+                "candidate_symbol": "DAI",
+                "integration_scope": "single_venue",
+                "route_count": 1,
+            },
+        ]
+    )
+    pool = pd.DataFrame(
+        [
+            {
+                "day": 20240102,
+                "token0_address": "src",
+                "token1_address": WETH,
+                "pool": "src-weth",
+                "venue": "uniswap_v2",
+                "capital_usd": 100.0,
+                "quantity_kind": "deposited_capital",
+                "capital_validation_status": "exact_state_prior_calendar",
+            },
+            {
+                "day": 20240102,
+                "token0_address": WETH,
+                "token1_address": "tgt",
+                "pool": "weth-tgt",
+                "venue": "uniswap_v2",
+                "capital_usd": 25.0,
+                "quantity_kind": "deposited_capital",
+                "capital_validation_status": "exact_state_prior_calendar",
+            },
+            {
+                "day": 20240102,
+                "token0_address": "src",
+                "token1_address": USDC,
+                "pool": "src-usdc",
+                "venue": "uniswap_v2",
+                "capital_usd": 9.0,
+                "quantity_kind": "deposited_capital",
+                "capital_validation_status": "exact_state_prior_calendar",
+            },
+            {
+                "day": 20240102,
+                "token0_address": USDC,
+                "token1_address": "tgt",
+                "pool": "usdc-tgt",
+                "venue": "uniswap_v2",
+                "capital_usd": 16.0,
+                "quantity_kind": "deposited_capital",
+                "capital_validation_status": "exact_state_prior_calendar",
+            },
+        ]
+    )
+    with tempfile.TemporaryDirectory() as tmpdir:
+        root = Path(tmpdir)
+        choices_path = root / "choices.parquet"
+        pool_path = root / "pool.parquet"
+        choices.to_parquet(choices_path, index=False)
+        pool.to_parquet(pool_path, index=False)
+        supported = load_bridge_liquidity_panel(
+            choices_path=choices_path,
+            pool_capital_path=pool_path,
+        )
+        broad = load_bridge_liquidity_panel(
+            choices_path=choices_path,
+            pool_capital_path=pool_path,
+            include_zero_bridge_candidates=True,
+        )
+    assert len(supported) == 2
+    assert len(broad) == 5
+    dai = broad[broad["candidate_address"].eq(DAI)].iloc[0]
+    assert dai["bridge_min_capital_usd"] == 0
+    assert dai["log_bridge_min_capital"] == 0
+    assert dai["supported_candidates"] == 2
 
 
 def test_bridge_liquidity_rank_summary_names_top_candidate_share() -> None:
@@ -265,6 +366,115 @@ def test_bridge_liquidity_horse_race_keeps_local_depth_slope() -> None:
         & result["regressor"].eq("log_bridge_min_capital")
     ].iloc[0]
     assert row["coefficient"] > 0
+
+
+def test_bridge_liquidity_entry_birth_panel_filters_first_observed_pairs() -> None:
+    panel = pd.DataFrame(
+        [
+            {
+                "origin_date": pd.Timestamp("2024-01-02"),
+                "src": "src",
+                "tgt": "tgt",
+                "choice_group_id": "g1",
+                "ordered_pair": "src|tgt",
+                "candidate_address": WETH,
+            },
+            {
+                "origin_date": pd.Timestamp("2024-01-03"),
+                "src": "src2",
+                "tgt": "tgt2",
+                "choice_group_id": "g2",
+                "ordered_pair": "src2|tgt2",
+                "candidate_address": USDC,
+            },
+        ]
+    )
+    support = pd.DataFrame(
+        [
+            {
+                "date": pd.Timestamp("2024-01-02"),
+                "src": "src",
+                "tgt": "tgt",
+                "pair_entry_on_day": True,
+                "primary_choice_route_count": 1,
+            },
+            {
+                "date": pd.Timestamp("2024-01-03"),
+                "src": "src2",
+                "tgt": "tgt2",
+                "pair_entry_on_day": False,
+                "primary_choice_route_count": 1,
+            },
+        ]
+    )
+    with tempfile.TemporaryDirectory() as tmpdir:
+        path = Path(tmpdir) / "pair_support.parquet"
+        support.to_parquet(path, index=False)
+        entry = bridge_liquidity_entry_birth_panel(panel, pair_support_path=path)
+    assert entry["choice_group_id"].tolist() == ["g1"]
+
+
+def test_bridge_liquidity_entry_birth_regression_reports_depth_slope() -> None:
+    rows = []
+    candidates = [(WETH, 0.0), (USDC, 1.0), (DAI, 1.0)]
+    for group_index in range(140):
+        day = pd.Timestamp("2024-01-01") + pd.Timedelta(days=group_index)
+        group_effect = 0.0005 * group_index
+        for candidate_index, (candidate, is_stable) in enumerate(candidates):
+            log_depth = (
+                0.4 * candidate_index
+                + math.sin(group_index / 12 + 0.7 * candidate_index)
+                + 0.03 * ((group_index * (candidate_index + 2)) % 5)
+            )
+            if candidate_index == 0 and group_index % 3 == 0:
+                log_depth = 0.0
+            lag_route_reach = (
+                1.4
+                + 0.02 * ((group_index * (candidate_index + 3)) % 17)
+                + 0.3 * math.sin(group_index / 17 + 0.3 * candidate_index)
+            )
+            lag_pair_reach = (
+                1.0
+                + 0.02 * ((group_index + 2 * candidate_index) % 13)
+                + 0.2 * math.cos(group_index / 19 + 0.5 * candidate_index)
+            )
+            rows.append(
+                {
+                    "choice_group_id": f"g{group_index}",
+                    "candidate_address": candidate,
+                    "origin_date": day,
+                    "ordered_pair": f"pair{group_index % 35}",
+                    "five_route_total": 12.0 + group_index % 4,
+                    "route_share_five": (
+                        0.060 * log_depth
+                        + 0.012 * lag_route_reach
+                        + group_effect
+                        + 0.010 * is_stable
+                    ),
+                    "selected_five": float(
+                        log_depth + 0.1 * lag_route_reach + 0.1 * is_stable > 0.6
+                    ),
+                    "is_stable": is_stable,
+                    "log_bridge_min_capital": log_depth,
+                    "log_global_route_count_lag30": lag_route_reach,
+                    "log_global_pair_count_lag30": lag_pair_reach,
+                }
+            )
+    result = bridge_liquidity_entry_birth_regressions(
+        pd.DataFrame(rows),
+        min_observations=100,
+        min_clusters=10,
+    )
+    route_depth = result[
+        result["model_id"].eq("entry_route_share_depth_reach_candidate_fe")
+        & result["regressor"].eq("log_bridge_min_capital")
+    ].iloc[0]
+    selection_depth = result[
+        result["model_id"].eq("entry_selection_depth_reach_candidate_fe")
+        & result["regressor"].eq("log_bridge_min_capital")
+    ].iloc[0]
+    assert route_depth["coefficient"] > 0
+    assert selection_depth["coefficient"] > 0
 
 
 def test_bridge_liquidity_bottleneck_penalizes_unbalanced_legs() -> None:
@@ -573,6 +783,42 @@ def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
             },
             {
                 "claim_status": "provisional_exploratory",
+                "record_type": "bridge_liquidity_entry_birth_regression",
+                "model_id": "entry_route_share_depth_reach_candidate_fe",
+                "outcome": "route_share_five",
+                "regressor": "log_bridge_min_capital",
+                "coefficient": 0.054,
+                "standard_error": 0.005,
+                "p_value": 0.001,
+                "n_observations": 835,
+                "choice_groups": 167,
+            },
+            {
+                "claim_status": "provisional_exploratory",
+                "record_type": "bridge_liquidity_entry_birth_regression",
+                "model_id": "entry_selection_depth_reach_candidate_fe",
+                "outcome": "selected_five",
+                "regressor": "log_bridge_min_capital",
+                "coefficient": 0.053,
+                "standard_error": 0.006,
+                "p_value": 0.001,
+                "n_observations": 835,
+                "choice_groups": 167,
+            },
+            {
+                "claim_status": "provisional_exploratory",
+                "record_type": "bridge_liquidity_entry_birth_regression",
+                "model_id": "entry_route_share_depth_reach_candidate_fe",
+                "outcome": "route_share_five",
+                "regressor": "log_global_route_count_lag30",
+                "coefficient": 0.094,
+                "standard_error": 0.058,
+                "p_value": 0.11,
+                "n_observations": 835,
+                "choice_groups": 167,
+            },
+            {
+                "claim_status": "provisional_exploratory",
                 "record_type": "bridge_liquidity_bottleneck_regression",
                 "model_id": "route_share_min_max_depth_reach_candidate_fe",
                 "outcome": "route_share_five",
@@ -664,6 +910,8 @@ def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
     assert "\\BridgeLiquidityTopShare" in rendered
     assert "\\BridgeLiquidityStableLogTotalCoef" in rendered
     assert "\\BridgeLiquidityHorseRaceDepthCoef" in rendered
+    assert "\\BridgeLiquidityEntryBirthDepthCoef" in rendered
+    assert "\\BridgeLiquidityEntryBirthRows" in rendered
     assert "\\BridgeLiquidityBottleneckMinCoef" in rendered
     assert "\\BridgeLiquidityImbalanceCoef" in rendered
     assert "\\BridgeLiquidityLeaveOneMinCoef" in rendered

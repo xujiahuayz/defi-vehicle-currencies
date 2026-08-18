@@ -98,6 +98,27 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         outcome="route_share_five",
         regressor="log_global_route_count_day_leaveout",
     )
+    entry_birth_depth = _single(
+        estimates,
+        record_type="bridge_liquidity_entry_birth_regression",
+        model_id="entry_route_share_depth_reach_candidate_fe",
+        outcome="route_share_five",
+        regressor="log_bridge_min_capital",
+    )
+    entry_birth_selection = _single(
+        estimates,
+        record_type="bridge_liquidity_entry_birth_regression",
+        model_id="entry_selection_depth_reach_candidate_fe",
+        outcome="selected_five",
+        regressor="log_bridge_min_capital",
+    )
+    entry_birth_lag_route_reach = _single(
+        estimates,
+        record_type="bridge_liquidity_entry_birth_regression",
+        model_id="entry_route_share_depth_reach_candidate_fe",
+        outcome="route_share_five",
+        regressor="log_global_route_count_lag30",
+    )
     bottleneck_min = _single(
         estimates,
         record_type="bridge_liquidity_bottleneck_regression",
@@ -168,6 +189,11 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         and float(horse_depth["p_value"]) < 0.01
         and float(horse_global_day["coefficient"]) > 0
         and float(horse_global_day["p_value"]) < 0.01
+        and float(entry_birth_depth["coefficient"]) > 0
+        and float(entry_birth_depth["p_value"]) < 0.01
+        and float(entry_birth_depth["n_observations"]) > 500
+        and float(entry_birth_selection["coefficient"]) > 0
+        and float(entry_birth_selection["p_value"]) < 0.01
         and float(bottleneck_min["coefficient"]) > 0
         and float(bottleneck_min["p_value"]) < 0.01
         and float(bottleneck_max["p_value"]) > 0.05
@@ -205,6 +231,14 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         f"\\newcommand{{\\BridgeLiquidityHorseRaceDepthSE}}{{{_unsigned_pp(float(horse_depth['standard_error']))}}}",
         f"\\newcommand{{\\BridgeLiquidityHorseRaceGlobalDayCoef}}{{{_signed_pp(float(horse_global_day['coefficient']))}}}",
         f"\\newcommand{{\\BridgeLiquidityHorseRaceGlobalDaySE}}{{{_unsigned_pp(float(horse_global_day['standard_error']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityEntryBirthRows}}{{{_integer(float(entry_birth_depth['n_observations']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityEntryBirthGroups}}{{{_integer(float(entry_birth_depth['choice_groups']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityEntryBirthDepthCoef}}{{{_signed_pp(float(entry_birth_depth['coefficient']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityEntryBirthDepthSE}}{{{_unsigned_pp(float(entry_birth_depth['standard_error']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityEntryBirthSelectionCoef}}{{{_signed_pp(float(entry_birth_selection['coefficient']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityEntryBirthSelectionSE}}{{{_unsigned_pp(float(entry_birth_selection['standard_error']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityEntryBirthLagReachCoef}}{{{_signed_pp(float(entry_birth_lag_route_reach['coefficient']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityEntryBirthLagReachSE}}{{{_unsigned_pp(float(entry_birth_lag_route_reach['standard_error']))}}}",
         f"\\newcommand{{\\BridgeLiquidityBottleneckMinCoef}}{{{_signed_pp(float(bottleneck_min['coefficient']))}}}",
         f"\\newcommand{{\\BridgeLiquidityBottleneckMinSE}}{{{_unsigned_pp(float(bottleneck_min['standard_error']))}}}",
         f"\\newcommand{{\\BridgeLiquidityBottleneckMaxCoef}}{{{_signed_pp(float(bottleneck_max['coefficient']))}}}",

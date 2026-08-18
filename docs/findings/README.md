@@ -102,8 +102,8 @@ LP rebalancing, LP stable-candidate response heterogeneity, venue-footprint and
 pool-count extensive-margin behavior, V2 pool-capital concentration and
 fragmentation, plus same-pool LP capital-chase rival screens, bounded V3
 fee/rent-incidence and TVL-normalized fee-yield screens, V3 mint/burn action-count, provider-day, and activity-controlled provider-day responses, and local
-bridge-liquidity dominance plus stable-specific dynamic local bridge-depth
-feedback. The deck
+bridge-liquidity dominance, entry-date local bridge-depth choice screens, plus
+stable-specific dynamic local bridge-depth feedback. The deck
 also carries the traditional-FX route analogy as motivation. These layers
 strengthen the
 mechanism story but do not change the registered confirmatory claim set.

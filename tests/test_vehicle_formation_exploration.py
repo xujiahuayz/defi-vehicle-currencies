@@ -12,6 +12,9 @@ from scripts.analyze.run_vehicle_formation_exploration import (
     entry_endpoint_history_regressions,
     entry_endpoint_history_summaries,
     entry_follow_panel,
+    entry_future_activity_panel,
+    entry_future_activity_regressions,
+    entry_path_dependence_direct_route_regressions,
     entry_path_dependence_regressions,
     entry_regime_hysteresis,
     entry_route_architecture_regressions,
@@ -235,6 +238,69 @@ def test_entry_follow_panel_requires_complete_horizon(pair_support_path) -> None
     )
     assert set(follow["src"]) == {"a", "c", "g"}
     assert follow["horizon_days"].eq(30).all()
+
+
+def test_entry_future_activity_panel_excludes_entry_day(pair_support_path) -> None:
+    activity = entry_future_activity_panel(
+        30,
+        pair_support_path=pair_support_path,
+        sample_end=pd.Timestamp("2026-06-30"),
+    )
+    stable = activity[activity["src"].eq("c")].iloc[0]
+    dormant = activity[activity["src"].eq("g")].iloc[0]
+
+    assert stable["future_primary_routes"] == pytest.approx(20.0)
+    assert stable["future_active_days"] == pytest.approx(2.0)
+    assert stable["future_retrade"] == pytest.approx(1.0)
+    assert dormant["future_primary_routes"] == pytest.approx(0.0)
+    assert dormant["future_retrade"] == pytest.approx(0.0)
+
+
+def test_entry_future_activity_regressions_publish_market_development_screen() -> None:
+    rows = []
+    for day in range(1, 81):
+        date = pd.Timestamp("2026-01-01") + pd.Timedelta(days=day - 1)
+        for index, stable_present in enumerate((0.0, 1.0, 1.0)):
+            stable_dominant = float(index == 2)
+            log_entry = np.log1p(10.0 + day + index)
+            direct_share = 0.02 * ((day + index) % 5)
+            complex_share = 0.03 * ((day + 2 * index) % 5)
+            log_future = (
+                0.20
+                + 0.18 * stable_present
+                + 0.04 * stable_dominant
+                + 0.03 * log_entry
+                + 0.01 * direct_share
+                - 0.02 * complex_share
+            )
+            rows.append(
+                {
+                    "horizon_days": 120,
+                    "entry_date": date,
+                    "log_future_primary_routes": log_future,
+                    "future_retrade": 0.20 + 0.10 * stable_present,
+                    "future_active_day_share": 0.05 + 0.02 * stable_present,
+                    "entry_stable_present": stable_present,
+                    "entry_stable_dominant": stable_dominant,
+                    "is_2026": float(day % 2 == 0),
+                    "stable_endpoint": float(index == 1),
+                    "log_entry_routes": log_entry,
+                    "direct_share": direct_share,
+                    "complex_share": complex_share,
+                }
+            )
+    result = entry_future_activity_regressions(
+        pd.DataFrame(rows), min_observations=100, min_clusters=30
+    )
+    driver = result[
+        result["specification"].eq("entry_stable_present")
+        & result["outcome"].eq("log_future_primary_routes")
+        & result["predictor"].eq("entry_stable_present")
+    ].iloc[0]
+
+    assert result["record_type"].eq("entry_future_activity_regression").all()
+    assert driver["coefficient_pct"] > 10
+    assert driver["weighted_by"] == "unweighted_pair"
 
 
 def test_entry_value_follow_panel_uses_within_band_value_support(
@@ -467,6 +533,108 @@ def test_entry_path_dependence_regressions_publish_entry_state_driver() -> None:
     assert share_driver["coefficient"] > 0.6
     assert dominant_driver["coefficient"] > 0
     assert np.isfinite(share_driver["standard_error"])
+
+
+def test_entry_path_dependence_direct_route_split_reports_support_and_fit() -> None:
+    follow_rows = []
+    driver_rows = []
+    for day in range(1, 61):
+        date = pd.Timestamp("2026-01-01") + pd.Timedelta(days=day - 1)
+        for index, base_entry_share in enumerate((0.10, 0.35, 0.70)):
+            entry_share = base_entry_share + 0.001 * (day % 7)
+            src = f"nodirect-src-{day}-{index}"
+            tgt = f"nodirect-tgt-{day}-{index}"
+            dominant = float(entry_share > 0.5)
+            follow_share = (
+                0.04
+                + 0.72 * entry_share
+                + 0.03 * dominant
+                + 0.002 * (day % 3)
+            )
+            follow_rows.append(
+                {
+                    "horizon_days": 120,
+                    "entry_date": date,
+                    "src": src,
+                    "tgt": tgt,
+                    "entry_primary_routes": 10.0 + day,
+                    "entry_stable_share": entry_share,
+                    "entry_type": (
+                        "stable_dominant_entry"
+                        if dominant
+                        else "stable_present_entry"
+                    ),
+                    "stable_share": follow_share,
+                    "stable_dominant_followup": float(follow_share > 0.5),
+                    "primary_routes": 20.0 + day,
+                }
+            )
+            driver_rows.append(
+                {
+                    "date": date,
+                    "src": src,
+                    "tgt": tgt,
+                    "stable_endpoint": float((day + index) % 2 == 0),
+                    "is_2026": float(day % 2 == 0),
+                    "log_entry_routes": np.log1p(10.0 + day),
+                    "direct_share": 0.0,
+                    "complex_share": 0.01 * (day % 4),
+                }
+            )
+    for day in range(1, 11):
+        date = pd.Timestamp("2026-03-01") + pd.Timedelta(days=day - 1)
+        src = f"direct-src-{day}"
+        tgt = f"direct-tgt-{day}"
+        follow_rows.append(
+            {
+                "horizon_days": 120,
+                "entry_date": date,
+                "src": src,
+                "tgt": tgt,
+                "entry_primary_routes": 5.0,
+                "entry_stable_share": 0.5,
+                "entry_type": "stable_present_entry",
+                "stable_share": 0.5,
+                "stable_dominant_followup": 0.0,
+                "primary_routes": 7.0,
+            }
+        )
+        driver_rows.append(
+            {
+                "date": date,
+                "src": src,
+                "tgt": tgt,
+                "stable_endpoint": 0.0,
+                "is_2026": 1.0,
+                "log_entry_routes": np.log1p(5.0),
+                "direct_share": 0.25,
+                "complex_share": 0.0,
+            }
+        )
+    result = entry_path_dependence_direct_route_regressions(
+        pd.DataFrame(follow_rows),
+        pd.DataFrame(driver_rows),
+        min_observations=100,
+        min_clusters=20,
+    )
+    support = result[
+        result["record_type"].eq("entry_path_dependence_direct_route_support")
+    ]
+    regression = result[
+        result["record_type"].eq("entry_path_dependence_direct_route_regression")
+    ]
+    no_direct = regression[
+        regression["direct_route_bucket"].eq("no_direct_route")
+        & regression["outcome"].eq("stable_share")
+        & regression["predictor"].eq("entry_stable_share")
+    ].iloc[0]
+
+    assert set(support["direct_route_bucket"]) == {
+        "direct_route_present",
+        "no_direct_route",
+    }
+    assert set(regression["direct_route_bucket"]) == {"no_direct_route"}
+    assert no_direct["coefficient"] > 0.65
 
 
 def test_entry_value_path_dependence_regressions_publish_value_driver() -> None:

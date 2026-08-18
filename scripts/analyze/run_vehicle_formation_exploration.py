@@ -1365,6 +1365,204 @@ def entry_follow_panel(
     )
 
 
+def entry_future_activity_panel(
+    horizon_days: int,
+    *,
+    pair_support_path: Path = PAIR_SUPPORT,
+    sample_end: pd.Timestamp = SAMPLE_END,
+) -> pd.DataFrame:
+    """Return entrant rows with future activity excluding the entry day."""
+
+    if horizon_days <= 0:
+        raise ValueError("horizon_days must be positive")
+    path = _sql_path(pair_support_path)
+    years = ", ".join(str(year) for year in MAIN_ENTRY_YEARS)
+    sample_end_text = pd.Timestamp(sample_end).strftime("%Y-%m-%d")
+    panel = _read_sql(
+        f"""
+        WITH entries AS (
+            SELECT
+                date AS entry_date,
+                src,
+                tgt,
+                year(date)::INTEGER AS entry_year,
+                primary_choice_route_count::DOUBLE AS entry_primary_routes,
+                stable_choice_route_count::DOUBLE AS entry_stable_routes,
+                native_choice_route_count::DOUBLE AS entry_native_routes,
+                direct_route_count::DOUBLE AS entry_direct_routes,
+                (
+                    multiple_intermediary_route_count
+                    + split_or_join_route_count
+                    + nonsequential_two_leg_route_count
+                )::DOUBLE AS entry_complex_routes,
+                market_route_count::DOUBLE AS entry_market_routes
+            FROM read_parquet('{path}')
+            WHERE pair_entry_on_day
+              AND primary_choice_route_count > 0
+              AND year(date) IN ({years})
+              AND strftime(date, '%m-%d') <= '06-30'
+              AND date + INTERVAL {int(horizon_days)} DAY <= DATE '{sample_end_text}'
+        ),
+        follow AS (
+            SELECT
+                e.entry_date,
+                e.src,
+                e.tgt,
+                sum(p.primary_choice_route_count)::DOUBLE AS future_primary_routes,
+                count(*) FILTER (
+                    WHERE p.primary_choice_route_count > 0
+                )::DOUBLE AS future_active_days
+            FROM entries e
+            JOIN read_parquet('{path}') p
+              ON p.src = e.src
+             AND p.tgt = e.tgt
+             AND p.date > e.entry_date
+             AND p.date <= e.entry_date + INTERVAL {int(horizon_days)} DAY
+            GROUP BY 1, 2, 3
+        )
+        SELECT
+            {int(horizon_days)}::INTEGER AS horizon_days,
+            e.*,
+            coalesce(f.future_primary_routes, 0)::DOUBLE AS future_primary_routes,
+            coalesce(f.future_active_days, 0)::DOUBLE AS future_active_days
+        FROM entries e
+        LEFT JOIN follow f USING (entry_date, src, tgt)
+        """
+    )
+    if panel.empty:
+        raise ValueError("entry future activity panel is empty")
+    panel["entry_date"] = pd.to_datetime(panel["entry_date"])
+    panel["endpoint_class"] = [
+        endpoint_class(src, tgt) for src, tgt in zip(panel["src"], panel["tgt"])
+    ]
+    panel = panel[~panel["endpoint_class"].eq("weth_endpoint")].copy()
+    panel["entry_stable_share"] = (
+        panel["entry_stable_routes"] / panel["entry_primary_routes"]
+    )
+    panel["entry_stable_present"] = panel["entry_stable_routes"].gt(0).astype(float)
+    panel["entry_stable_dominant"] = (
+        panel["entry_stable_routes"] > panel["entry_native_routes"]
+    ).astype(float)
+    panel["is_2026"] = panel["entry_year"].eq(COMPARISON_YEAR).astype(float)
+    panel["stable_endpoint"] = (
+        panel["endpoint_class"].eq("stable_endpoint").astype(float)
+    )
+    panel["log_entry_routes"] = np.log1p(panel["entry_primary_routes"])
+    market_routes = panel["entry_market_routes"].replace(0, np.nan)
+    panel["direct_share"] = (
+        panel["entry_direct_routes"] / market_routes
+    ).fillna(0.0).clip(0.0, 1.0)
+    panel["complex_share"] = (
+        panel["entry_complex_routes"] / market_routes
+    ).fillna(0.0).clip(0.0, 1.0)
+    panel["log_future_primary_routes"] = np.log1p(panel["future_primary_routes"])
+    panel["future_retrade"] = panel["future_active_days"].gt(0).astype(float)
+    panel["future_active_day_share"] = panel["future_active_days"] / float(
+        horizon_days
+    )
+    return panel
+
+
+def entry_future_activity_regressions(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 1000,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Fit non-WETH market-development screens after entry."""
+
+    controls = [
+        "is_2026",
+        "stable_endpoint",
+        "log_entry_routes",
+        "direct_share",
+        "complex_share",
+    ]
+    outcomes = [
+        "log_future_primary_routes",
+        "future_retrade",
+        "future_active_day_share",
+    ]
+    main_predictors = ["entry_stable_present", "entry_stable_dominant"]
+    required = {
+        "horizon_days",
+        "entry_date",
+        *outcomes,
+        *main_predictors,
+        *controls,
+    }
+    missing = sorted(required - set(panel.columns))
+    if missing:
+        raise ValueError(f"entry future activity panel lacks columns: {missing}")
+    rows: list[dict[str, object]] = []
+    for main_predictor in main_predictors:
+        predictors = [main_predictor, *controls]
+        for outcome in outcomes:
+            data = (
+                panel[["horizon_days", "entry_date", outcome, *predictors]]
+                .replace([np.inf, -np.inf], np.nan)
+                .dropna()
+            )
+            fit = ols_clustered(
+                data[outcome].astype(float),
+                data[predictors].astype(float),
+                data["entry_date"],
+                min_observations=min_observations,
+                min_clusters=min_clusters,
+            )
+            for name, beta, se, t_stat, p_value in zip(
+                ("constant", *predictors),
+                fit.beta,
+                fit.standard_errors,
+                fit.t_statistics,
+                fit.p_values,
+                strict=True,
+            ):
+                coefficient = float(beta)
+                standard_error = float(se)
+                log_outcome = outcome == "log_future_primary_routes"
+                rows.append(
+                    {
+                        "record_type": "entry_future_activity_regression",
+                        "horizon_days": int(data["horizon_days"].iloc[0]),
+                        "sample": "non_weth_endpoint",
+                        "specification": main_predictor,
+                        "outcome": outcome,
+                        "predictor": name,
+                        "coefficient": coefficient,
+                        "coefficient_pp": (
+                            np.nan if log_outcome else 100.0 * coefficient
+                        ),
+                        "coefficient_pct": (
+                            100.0 * np.expm1(coefficient)
+                            if log_outcome
+                            else np.nan
+                        ),
+                        "standard_error": standard_error,
+                        "standard_error_pp": (
+                            np.nan if log_outcome else 100.0 * standard_error
+                        ),
+                        "standard_error_pct": (
+                            100.0 * np.exp(coefficient) * standard_error
+                            if log_outcome
+                            else np.nan
+                        ),
+                        "t_statistic": float(t_stat),
+                        "p_value": float(p_value),
+                        "observations": int(fit.n_observations),
+                        "entry_date_clusters": int(fit.n_clusters),
+                        "weighted_by": "unweighted_pair",
+                        "covariance_id": "entry_date_cluster_cr1",
+                        "controls": ",".join(predictors),
+                        "interpretation": (
+                            "exploratory_entrant_future_activity_association_"
+                            "not_causal"
+                        ),
+                    }
+                )
+    return pd.DataFrame(rows)
+
+
 def entry_value_follow_panel(
     horizon_days: int,
     *,
@@ -1817,6 +2015,180 @@ def entry_path_dependence_regressions(
     return pd.DataFrame(rows)
 
 
+def entry_path_dependence_direct_route_regressions(
+    follow: pd.DataFrame,
+    driver_panel: pd.DataFrame,
+    *,
+    min_observations: int = 1000,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Split entry-state persistence by whether a direct route existed at birth."""
+
+    required_follow = {
+        "horizon_days",
+        "entry_date",
+        "src",
+        "tgt",
+        "entry_primary_routes",
+        "entry_stable_share",
+        "entry_type",
+        "stable_share",
+        "stable_dominant_followup",
+    }
+    missing_follow = sorted(required_follow - set(follow.columns))
+    if missing_follow:
+        raise ValueError(
+            "entry follow panel lacks direct-route split columns: "
+            f"{missing_follow}"
+        )
+    required_driver = {
+        "date",
+        "src",
+        "tgt",
+        "stable_endpoint",
+        "is_2026",
+        "log_entry_routes",
+        "direct_share",
+        "complex_share",
+    }
+    missing_driver = sorted(required_driver - set(driver_panel.columns))
+    if missing_driver:
+        raise ValueError(
+            "entry driver panel lacks direct-route split columns: "
+            f"{missing_driver}"
+        )
+    controls = [
+        "entry_stable_share",
+        "entry_stable_dominant",
+        "is_2026",
+        "stable_endpoint",
+        "log_entry_routes",
+        "complex_share",
+    ]
+    driver_columns = [
+        "date",
+        "src",
+        "tgt",
+        "stable_endpoint",
+        "is_2026",
+        "log_entry_routes",
+        "direct_share",
+        "complex_share",
+    ]
+    data = follow.merge(
+        driver_panel[driver_columns],
+        left_on=["entry_date", "src", "tgt"],
+        right_on=["date", "src", "tgt"],
+        how="inner",
+        validate="one_to_one",
+    ).copy()
+    if data.empty:
+        raise ValueError("entry direct-route split has no non-WETH entrants")
+    data["entry_stable_dominant"] = data["entry_type"].eq(
+        "stable_dominant_entry"
+    ).astype(float)
+    data["direct_route_bucket"] = np.where(
+        data["direct_share"].astype(float).gt(0),
+        "direct_route_present",
+        "no_direct_route",
+    )
+    horizon = int(data["horizon_days"].iloc[0])
+    rows: list[dict[str, object]] = []
+    for bucket, group in data.groupby("direct_route_bucket", sort=True):
+        rows.append(
+            {
+                "record_type": "entry_path_dependence_direct_route_support",
+                "horizon_days": horizon,
+                "sample": "non_weth_endpoint",
+                "direct_route_bucket": str(bucket),
+                "observations": int(len(group)),
+                "entry_date_clusters": int(group["entry_date"].nunique()),
+                "entry_primary_routes": float(group["entry_primary_routes"].sum()),
+                "followup_primary_routes": float(group["primary_routes"].sum()),
+                "analysis_status": "exploratory_descriptive",
+                "interpretation": (
+                    "support for entry-state path-dependence split by direct-route "
+                    "availability at market birth"
+                ),
+            }
+        )
+        for outcome in ("stable_share", "stable_dominant_followup"):
+            sample = (
+                group[
+                    [
+                        "entry_date",
+                        "entry_primary_routes",
+                        outcome,
+                        *controls,
+                    ]
+                ]
+                .replace([np.inf, -np.inf], np.nan)
+                .dropna()
+            )
+            if (
+                len(sample) < min_observations
+                or sample["entry_date"].nunique() < min_clusters
+            ):
+                continue
+            fit = ols_clustered(
+                sample[outcome].astype(float),
+                sample[controls].astype(float),
+                sample["entry_date"],
+                weights=sample["entry_primary_routes"].astype(float),
+                min_observations=min_observations,
+                min_clusters=min_clusters,
+            )
+            for name, beta, se, t_stat, p_value in zip(
+                ("constant", *controls),
+                fit.beta,
+                fit.standard_errors,
+                fit.t_statistics,
+                fit.p_values,
+                strict=True,
+            ):
+                coefficient = float(beta)
+                standard_error = float(se)
+                rows.append(
+                    {
+                        "record_type": (
+                            "entry_path_dependence_direct_route_regression"
+                        ),
+                        "horizon_days": horizon,
+                        "sample": "non_weth_endpoint",
+                        "direct_route_bucket": str(bucket),
+                        "outcome": outcome,
+                        "predictor": name,
+                        "coefficient": coefficient,
+                        "coefficient_pp": 100.0 * coefficient,
+                        "coefficient_per_10pp_entry_share": (
+                            0.10 * coefficient
+                            if name == "entry_stable_share"
+                            else np.nan
+                        ),
+                        "standard_error": standard_error,
+                        "standard_error_pp": 100.0 * standard_error,
+                        "standard_error_per_10pp_entry_share": (
+                            0.10 * standard_error
+                            if name == "entry_stable_share"
+                            else np.nan
+                        ),
+                        "t_statistic": float(t_stat),
+                        "p_value": float(p_value),
+                        "observations": int(fit.n_observations),
+                        "entry_date_clusters": int(fit.n_clusters),
+                        "weighted_by": "entry_primary_choice_routes",
+                        "covariance_id": "entry_date_cluster_cr1",
+                        "controls": ",".join(controls),
+                        "analysis_status": "exploratory_descriptive",
+                        "interpretation": (
+                            "entry vehicle state persistence inside a direct-route "
+                            "availability bucket; descriptive, not causal"
+                        ),
+                    }
+                )
+    return pd.DataFrame(rows)
+
+
 def entry_value_path_dependence_regressions(
     follow: pd.DataFrame,
     driver_panel: pd.DataFrame,
@@ -2036,6 +2408,10 @@ def build_results(
         entry_follow_panel(horizon, pair_support_path=pair_support_path)
         for horizon in HORIZONS
     ]
+    future_activity_panels = [
+        entry_future_activity_panel(horizon, pair_support_path=pair_support_path)
+        for horizon in HORIZONS
+    ]
     value_follow_panels = [
         entry_value_follow_panel(
             horizon,
@@ -2070,6 +2446,13 @@ def build_results(
         entry_path_dependence_regressions(panel, driver_panel)
         for panel in follow_panels
     ]
+    direct_route_path_dependence = [
+        entry_path_dependence_direct_route_regressions(panel, driver_panel)
+        for panel in follow_panels
+    ]
+    future_activity = [
+        entry_future_activity_regressions(panel) for panel in future_activity_panels
+    ]
     value_path_dependence = [
         entry_value_path_dependence_regressions(panel, driver_panel)
         for panel in value_follow_panels
@@ -2095,6 +2478,8 @@ def build_results(
             *summaries,
             *contrasts,
             *path_dependence,
+            *direct_route_path_dependence,
+            *future_activity,
             *value_path_dependence,
             *hysteresis,
         ],

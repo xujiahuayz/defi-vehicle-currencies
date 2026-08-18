@@ -283,6 +283,34 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
                 "observations": 9000,
             },
             {
+                "record_type": "entry_future_activity_regression",
+                "horizon_days": 120,
+                "sample": "non_weth_endpoint",
+                "specification": "entry_stable_present",
+                "outcome": "log_future_primary_routes",
+                "predictor": "entry_stable_present",
+                "primary_routes": None,
+                "stable_share": None,
+                "coefficient_pct": 9.2,
+                "standard_error_pct": 1.7,
+                "p_value": 0.001,
+                "observations": 512201,
+            },
+            {
+                "record_type": "entry_future_activity_regression",
+                "horizon_days": 120,
+                "sample": "non_weth_endpoint",
+                "specification": "entry_stable_present",
+                "outcome": "future_retrade",
+                "predictor": "entry_stable_present",
+                "primary_routes": None,
+                "stable_share": None,
+                "coefficient": 0.058,
+                "standard_error": 0.007,
+                "p_value": 0.001,
+                "observations": 512201,
+            },
+            {
                 "record_type": "entry_driver_regression",
                 "endpoint_class": "non_weth_endpoint",
                 "outcome": "stable_share",
@@ -375,6 +403,8 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
     assert "99.6\\%" in rendered
     assert "\\FormationUSDCEntryOwnThirty" in rendered
     assert "\\FormationIdentityPathOneTwentyCoef" in rendered
+    assert "\\FormationStablePresentFutureRoutesCoef" in rendered
+    assert "$+9.2\\%$" in rendered
     assert "\\FormationStableHysteresisThirtyRetrade" in rendered
     assert "94.6\\%" in rendered
     assert "\\FormationNonWethYearDriver" in rendered

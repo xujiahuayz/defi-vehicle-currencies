@@ -34,6 +34,16 @@ def _unsigned_pp(value: float, decimals: int = 1) -> str:
     return f"${100 * value:.{decimals}f}$ pp"
 
 
+def _signed_percent(value: float, decimals: int = 1) -> str:
+    if abs(value) < 0.5 * 10 ** (-decimals):
+        return f"${0:.{decimals}f}\\%$"
+    return f"${value:+.{decimals}f}\\%$"
+
+
+def _unsigned_percent(value: float, decimals: int = 1) -> str:
+    return f"${value:.{decimals}f}\\%$"
+
+
 def _int(value: int | float) -> str:
     return f"{int(value):,}".replace(",", "{,}")
 
@@ -117,6 +127,47 @@ def render_vehicle_formation_deck_values(estimates: pd.DataFrame) -> str:
         sample="non_weth_endpoint",
         outcome="stable_dominant_followup",
         predictor="entry_stable_dominant",
+    )
+    no_direct_path_share_120 = _one(
+        estimates,
+        record_type="entry_path_dependence_direct_route_regression",
+        horizon_days=120,
+        sample="non_weth_endpoint",
+        direct_route_bucket="no_direct_route",
+        outcome="stable_share",
+        predictor="entry_stable_share",
+    )
+    no_direct_path_support_120 = _one(
+        estimates,
+        record_type="entry_path_dependence_direct_route_support",
+        horizon_days=120,
+        sample="non_weth_endpoint",
+        direct_route_bucket="no_direct_route",
+    )
+    direct_present_path_support_120 = _one(
+        estimates,
+        record_type="entry_path_dependence_direct_route_support",
+        horizon_days=120,
+        sample="non_weth_endpoint",
+        direct_route_bucket="direct_route_present",
+    )
+    future_activity_routes_120 = _one(
+        estimates,
+        record_type="entry_future_activity_regression",
+        horizon_days=120,
+        sample="non_weth_endpoint",
+        specification="entry_stable_present",
+        outcome="log_future_primary_routes",
+        predictor="entry_stable_present",
+    )
+    future_activity_retrade_120 = _one(
+        estimates,
+        record_type="entry_future_activity_regression",
+        horizon_days=120,
+        sample="non_weth_endpoint",
+        specification="entry_stable_present",
+        outcome="future_retrade",
+        predictor="entry_stable_present",
     )
     value_path_share_30 = _one(
         estimates,
@@ -289,6 +340,9 @@ def render_vehicle_formation_deck_values(estimates: pd.DataFrame) -> str:
         float(path_share_30["coefficient_per_10pp_entry_share"]),
         float(path_share_120["coefficient_per_10pp_entry_share"]),
         float(path_dominant_120["coefficient"]),
+        float(no_direct_path_share_120["coefficient_per_10pp_entry_share"]),
+        float(future_activity_routes_120["coefficient_pct"]),
+        float(future_activity_retrade_120["coefficient"]),
         float(value_path_share_30["coefficient_per_10pp_entry_value_share"]),
         float(value_path_share_120["coefficient_per_10pp_entry_value_share"]),
         float(stable_hysteresis_2026_30["never_left_share_retrade"]),
@@ -329,6 +383,22 @@ def render_vehicle_formation_deck_values(estimates: pd.DataFrame) -> str:
         and float(path_dominant_120["p_value"]) < 0.01
     ):
         raise ValueError("entry path-dependence screen no longer holds")
+    if not (
+        float(no_direct_path_share_120["coefficient_per_10pp_entry_share"]) > 0.05
+        and float(no_direct_path_share_120["p_value"]) < 0.05
+        and float(no_direct_path_support_120["observations"]) > float(
+            direct_present_path_support_120["observations"]
+        )
+    ):
+        raise ValueError("no-direct-route entry path-dependence screen no longer holds")
+    if not (
+        float(future_activity_routes_120["coefficient_pct"]) > 5
+        and float(future_activity_retrade_120["coefficient"]) > 0.03
+        and float(future_activity_routes_120["p_value"]) < 0.01
+        and float(future_activity_retrade_120["p_value"]) < 0.01
+        and float(future_activity_routes_120["observations"]) > 100000
+    ):
+        raise ValueError("entry future-activity screen no longer holds")
     if not (
         float(value_path_share_30["coefficient_per_10pp_entry_value_share"]) > 0.05
         and float(value_path_share_120["coefficient_per_10pp_entry_value_share"]) > 0.05
@@ -410,6 +480,15 @@ def render_vehicle_formation_deck_values(estimates: pd.DataFrame) -> str:
         f"\\newcommand{{\\FormationPathEntryShareOneTwentySE}}{{{_unsigned_pp(float(path_share_120['standard_error_per_10pp_entry_share']))}}}",
         f"\\newcommand{{\\FormationPathDominantOneTwentyCoef}}{{{_signed_pp(float(path_dominant_120['coefficient']))}}}",
         f"\\newcommand{{\\FormationPathDominantOneTwentySE}}{{{_unsigned_pp(float(path_dominant_120['standard_error']))}}}",
+        f"\\newcommand{{\\FormationNoDirectPathRowsOneTwenty}}{{{_int(no_direct_path_support_120['observations'])}}}",
+        f"\\newcommand{{\\FormationDirectPresentPathRowsOneTwenty}}{{{_int(direct_present_path_support_120['observations'])}}}",
+        f"\\newcommand{{\\FormationNoDirectPathEntryShareOneTwentyCoef}}{{{_signed_pp(float(no_direct_path_share_120['coefficient_per_10pp_entry_share']))}}}",
+        f"\\newcommand{{\\FormationNoDirectPathEntryShareOneTwentySE}}{{{_unsigned_pp(float(no_direct_path_share_120['standard_error_per_10pp_entry_share']))}}}",
+        f"\\newcommand{{\\FormationFutureActivityRows}}{{{_int(future_activity_routes_120['observations'])}}}",
+        f"\\newcommand{{\\FormationStablePresentFutureRoutesCoef}}{{{_signed_percent(float(future_activity_routes_120['coefficient_pct']))}}}",
+        f"\\newcommand{{\\FormationStablePresentFutureRoutesSE}}{{{_unsigned_percent(float(future_activity_routes_120['standard_error_pct']))}}}",
+        f"\\newcommand{{\\FormationStablePresentRetradeCoef}}{{{_signed_pp(float(future_activity_retrade_120['coefficient']))}}}",
+        f"\\newcommand{{\\FormationStablePresentRetradeSE}}{{{_unsigned_pp(float(future_activity_retrade_120['standard_error']))}}}",
         f"\\newcommand{{\\FormationValuePathRowsThirty}}{{{_int(value_path_share_30['observations'])}}}",
         f"\\newcommand{{\\FormationValuePathRowsOneTwenty}}{{{_int(value_path_share_120['observations'])}}}",
         f"\\newcommand{{\\FormationValuePathEntryShareThirtyCoef}}{{{_signed_pp(float(value_path_share_30['coefficient_per_10pp_entry_value_share']))}}}",

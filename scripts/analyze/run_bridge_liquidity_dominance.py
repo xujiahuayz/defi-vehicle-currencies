@@ -29,6 +29,7 @@ from ddvc.tables import write_exhibit
 
 
 CHOICES_INPUT = REPO_ROOT / "data/processed/endpoint_candidate_choices.parquet"
+PAIR_SUPPORT_INPUT = REPO_ROOT / "data/processed/endpoint_candidate_pair_support.parquet"
 POOL_CAPITAL_INPUT = REPO_ROOT / "data/processed/pool_capital_daily.parquet"
 RESULT_OUTPUT = OUTPUT_DIR / "exhibits/bridge_liquidity_dominance.jsonl"
 SUPPORT_OUTPUT = OUTPUT_DIR / "exhibits/bridge_liquidity_dominance_support.jsonl"
@@ -42,6 +43,7 @@ STABLE_ISSUER_CANDIDATES = ("DAI", "USDC", "USDT")
 CODE_SOURCES = ["scripts/analyze/run_bridge_liquidity_dominance.py"]
 INPUTS = [
     "data/processed/endpoint_candidate_choices.parquet",
+    "data/processed/endpoint_candidate_pair_support.parquet",
     "data/processed/pool_capital_daily.parquet",
 ]
 
@@ -161,6 +163,11 @@ WHERE five_route_total > 0
   AND bridge_min_capital_usd > 0
   AND supported_candidates >= ?
 """
+
+PANEL_QUERY_WITH_ZERO_BRIDGES = PANEL_QUERY.replace(
+    "  AND bridge_min_capital_usd > 0\n",
+    "",
+)
 
 
 def _candidate_global_reach_features(
@@ -308,13 +315,15 @@ def load_bridge_liquidity_panel(
     endpoint_cutoff: str = ENDPOINT_CUTOFF,
     capital_status: str = CAPITAL_STATUS,
     min_supported_candidates: int = MIN_SUPPORTED_CANDIDATES,
+    include_zero_bridge_candidates: bool = False,
 ) -> pd.DataFrame:
     """Load the supported five-candidate bridge-liquidity risk set."""
 
+    query = PANEL_QUERY_WITH_ZERO_BRIDGES if include_zero_bridge_candidates else PANEL_QUERY
     connection = duckdb.connect()
     try:
         frame = connection.execute(
-            PANEL_QUERY,
+            query,
             [
                 str(choices_path),
                 baseline_year,
@@ -585,6 +594,164 @@ def bridge_liquidity_horse_race_regressions(
                     "interpretation": (
                         "local prior bridge-depth association conditional on "
                         "candidate network reach; descriptive, not causal"
+                    ),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def bridge_liquidity_entry_birth_panel(
+    panel: pd.DataFrame,
+    *,
+    pair_support_path: Path = PAIR_SUPPORT_INPUT,
+    baseline_year: int = BASELINE_YEAR,
+    comparison_year: int = COMPARISON_YEAR,
+    endpoint_cutoff: str = ENDPOINT_CUTOFF,
+) -> pd.DataFrame:
+    """Return bridge-choice rows for first-observed ultimate-pair dates.
+
+    The broader panel keeps zero bridge-depth candidates because absence of a
+    feasible local bridge is part of the entry choice set.  The opportunity
+    still requires at least two locally supported candidates through
+    ``supported_candidates`` inherited from the loader.
+    """
+
+    connection = duckdb.connect()
+    try:
+        entries = connection.execute(
+            """
+            SELECT DISTINCT
+                CAST(date AS DATE) AS origin_date,
+                lower(src) AS src,
+                lower(tgt) AS tgt
+            FROM read_parquet(?)
+            WHERE pair_entry_on_day
+              AND primary_choice_route_count > 0
+              AND year(date) IN (?, ?)
+              AND strftime(date, '%m-%d') <= ?
+            """,
+            [str(pair_support_path), baseline_year, comparison_year, endpoint_cutoff],
+        ).fetchdf()
+    finally:
+        connection.close()
+    if entries.empty:
+        raise ValueError("bridge-liquidity entry support is empty")
+    entries["origin_date"] = pd.to_datetime(entries["origin_date"]).dt.normalize()
+    for column in ("src", "tgt"):
+        entries[column] = entries[column].astype(str).str.lower()
+    entry_panel = panel.merge(entries, on=["origin_date", "src", "tgt"], how="inner")
+    if entry_panel.empty:
+        raise ValueError("bridge-liquidity entry panel is empty")
+    return entry_panel.reset_index(drop=True)
+
+
+def bridge_liquidity_entry_birth_regressions(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 100,
+    min_clusters: int = 20,
+) -> pd.DataFrame:
+    """Estimate local bridge depth in first-observed market choice sets."""
+
+    specs = (
+        (
+            "entry_route_share_depth_reach_candidate_fe",
+            "route_share_five",
+            (
+                "log_bridge_min_capital",
+                "log_global_route_count_lag30",
+                "log_global_pair_count_lag30",
+            ),
+            ("choice_group_id", "candidate_address"),
+            "ordered_ultimate_pair_entry_date_scope+candidate",
+        ),
+        (
+            "entry_selection_depth_reach_candidate_fe",
+            "selected_five",
+            (
+                "log_bridge_min_capital",
+                "log_global_route_count_lag30",
+                "log_global_pair_count_lag30",
+            ),
+            ("choice_group_id", "candidate_address"),
+            "ordered_ultimate_pair_entry_date_scope+candidate",
+        ),
+        (
+            "entry_route_share_stable_depth_reach",
+            "route_share_five",
+            (
+                "is_stable",
+                "log_bridge_min_capital",
+                "log_global_route_count_lag30",
+                "log_global_pair_count_lag30",
+            ),
+            ("choice_group_id",),
+            "ordered_ultimate_pair_entry_date_scope",
+        ),
+    )
+    rows: list[dict[str, object]] = []
+    for model_id, outcome, regressors, fixed_effects, fixed_effect_label in specs:
+        columns = [
+            outcome,
+            *regressors,
+            *fixed_effects,
+            "origin_date",
+            "ordered_pair",
+            "five_route_total",
+        ]
+        data = (
+            panel.loc[:, columns]
+            .replace([np.inf, -np.inf], np.nan)
+            .dropna()
+            .copy()
+        )
+        residual = absorb_fixed_effects(
+            data[[outcome, *regressors]],
+            *(data[column] for column in fixed_effects),
+            weights=data["five_route_total"],
+        )
+        fit = ols_clustered(
+            residual[outcome],
+            residual[list(regressors)],
+            data["ordered_pair"],
+            add_constant=False,
+            absorbed_groups=tuple(data[column] for column in fixed_effects),
+            additional_clusters=(data["origin_date"],),
+            weights=data["five_route_total"],
+            min_observations=min_observations,
+            min_clusters=min_clusters,
+        )
+        for index, regressor in enumerate(regressors):
+            coefficient = float(fit.beta[index])
+            standard_error = float(fit.standard_errors[index])
+            rows.append(
+                {
+                    "claim_status": "provisional_exploratory",
+                    "record_type": "bridge_liquidity_entry_birth_regression",
+                    "model_id": model_id,
+                    "outcome": outcome,
+                    "regressor": regressor,
+                    "coefficient": coefficient,
+                    "standard_error": standard_error,
+                    "t_statistic": float(fit.t_statistics[index]),
+                    "p_value": float(fit.p_values[index]),
+                    "coefficient_pp_per_log_point": 100.0 * coefficient,
+                    "standard_error_pp_per_log_point": 100.0 * standard_error,
+                    "n_observations": int(fit.n_observations),
+                    "choice_groups": int(data["choice_group_id"].nunique()),
+                    "ordered_pair_clusters": int(fit.cluster_counts[0]),
+                    "date_clusters": int(fit.cluster_counts[1]),
+                    "fixed_effects": fixed_effect_label,
+                    "covariance": "two_way_ordered_pair_date_cr1",
+                    "weight": "five_candidate_route_count",
+                    "capital_status": CAPITAL_STATUS,
+                    "candidate_reach_quantity": (
+                        "prior-30-day five-candidate route and pair reach in "
+                        "endpoint_candidate_choices"
+                    ),
+                    "interpretation": (
+                        "market-birth local bridge-depth association conditional "
+                        "on candidate network reach; descriptive, not causal"
                     ),
                 }
             )
@@ -1083,38 +1250,69 @@ def bridge_liquidity_depth_regressions(
     return pd.DataFrame(rows)
 
 
-def support_rows(panel: pd.DataFrame) -> pd.DataFrame:
+def support_rows(
+    panel: pd.DataFrame,
+    *,
+    entry_panel: pd.DataFrame | None = None,
+) -> pd.DataFrame:
     """Return the support ledger for the bridge-liquidity screen."""
 
-    return pd.DataFrame(
-        [
+    rows: list[dict[str, object]] = [
+        {
+            "claim_status": "provisional_exploratory",
+            "record_type": "support",
+            "choices_input": str(CHOICES_INPUT.relative_to(REPO_ROOT)),
+            "pair_support_input": str(PAIR_SUPPORT_INPUT.relative_to(REPO_ROOT)),
+            "pool_capital_input": str(POOL_CAPITAL_INPUT.relative_to(REPO_ROOT)),
+            "capital_status": CAPITAL_STATUS,
+            "baseline_year": BASELINE_YEAR,
+            "comparison_year": COMPARISON_YEAR,
+            "endpoint_cutoff": ENDPOINT_CUTOFF,
+            "candidate_rows": int(len(panel)),
+            "choice_groups": int(panel["choice_group_id"].nunique()),
+            "ordered_pairs": int(panel["ordered_pair"].nunique()),
+            "days": int(panel["origin_date"].nunique()),
+            "candidate_count": int(panel["candidate_address"].nunique()),
+            "min_supported_candidates": MIN_SUPPORTED_CANDIDATES,
+            "include_zero_bridge_candidates": False,
+            "quantity": (
+                "prior-calendar deposited capital on both atomic legs of "
+                "source-candidate-target; not executable quote depth"
+            ),
+        }
+    ]
+    if entry_panel is not None:
+        rows.append(
             {
                 "claim_status": "provisional_exploratory",
-                "record_type": "support",
+                "record_type": "entry_birth_support",
                 "choices_input": str(CHOICES_INPUT.relative_to(REPO_ROOT)),
+                "pair_support_input": str(PAIR_SUPPORT_INPUT.relative_to(REPO_ROOT)),
                 "pool_capital_input": str(POOL_CAPITAL_INPUT.relative_to(REPO_ROOT)),
                 "capital_status": CAPITAL_STATUS,
                 "baseline_year": BASELINE_YEAR,
                 "comparison_year": COMPARISON_YEAR,
                 "endpoint_cutoff": ENDPOINT_CUTOFF,
-                "candidate_rows": int(len(panel)),
-                "choice_groups": int(panel["choice_group_id"].nunique()),
-                "ordered_pairs": int(panel["ordered_pair"].nunique()),
-                "days": int(panel["origin_date"].nunique()),
-                "candidate_count": int(panel["candidate_address"].nunique()),
+                "candidate_rows": int(len(entry_panel)),
+                "choice_groups": int(entry_panel["choice_group_id"].nunique()),
+                "ordered_pairs": int(entry_panel["ordered_pair"].nunique()),
+                "days": int(entry_panel["origin_date"].nunique()),
+                "candidate_count": int(entry_panel["candidate_address"].nunique()),
                 "min_supported_candidates": MIN_SUPPORTED_CANDIDATES,
+                "include_zero_bridge_candidates": True,
                 "quantity": (
-                    "prior-calendar deposited capital on both atomic legs of "
-                    "source-candidate-target; not executable quote depth"
+                    "entry-date five-candidate risk set; zero local two-leg "
+                    "bridge capital is retained as a candidate attribute"
                 ),
             }
-        ]
-    )
+        )
+    return pd.DataFrame(rows)
 
 
 def run(
     *,
     choices_path: Path = CHOICES_INPUT,
+    pair_support_path: Path = PAIR_SUPPORT_INPUT,
     pool_capital_path: Path = POOL_CAPITAL_INPUT,
     output_path: Path = RESULT_OUTPUT,
     support_path: Path = SUPPORT_OUTPUT,
@@ -1123,11 +1321,20 @@ def run(
         choices_path=choices_path,
         pool_capital_path=pool_capital_path,
     )
+    entry_panel = bridge_liquidity_entry_birth_panel(
+        load_bridge_liquidity_panel(
+            choices_path=choices_path,
+            pool_capital_path=pool_capital_path,
+            include_zero_bridge_candidates=True,
+        ),
+        pair_support_path=pair_support_path,
+    )
     result = pd.concat(
         [
             bridge_liquidity_top_rank_summaries(panel),
             bridge_liquidity_depth_regressions(panel),
             bridge_liquidity_horse_race_regressions(panel),
+            bridge_liquidity_entry_birth_regressions(entry_panel),
             bridge_liquidity_bottleneck_regressions(panel),
             bridge_liquidity_leave_one_candidate_regressions(panel),
             bridge_liquidity_stable_issuer_regressions(panel),
@@ -1135,7 +1342,12 @@ def run(
         ignore_index=True,
     )
     write_exhibit(result, output_path, code_sources=CODE_SOURCES, inputs=INPUTS)
-    write_exhibit(support_rows(panel), support_path, code_sources=CODE_SOURCES, inputs=INPUTS)
+    write_exhibit(
+        support_rows(panel, entry_panel=entry_panel),
+        support_path,
+        code_sources=CODE_SOURCES,
+        inputs=INPUTS,
+    )
     print(
         f"wrote {len(result):,} bridge-liquidity rows over "
         f"{panel['choice_group_id'].nunique():,} choice groups"
@@ -1146,12 +1358,14 @@ def run(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--choices", type=Path, default=CHOICES_INPUT)
+    parser.add_argument("--pair-support", type=Path, default=PAIR_SUPPORT_INPUT)
     parser.add_argument("--pool-capital", type=Path, default=POOL_CAPITAL_INPUT)
     parser.add_argument("--output", type=Path, default=RESULT_OUTPUT)
     parser.add_argument("--support", type=Path, default=SUPPORT_OUTPUT)
     args = parser.parse_args()
     return run(
         choices_path=args.choices,
+        pair_support_path=args.pair_support,
         pool_capital_path=args.pool_capital,
         output_path=args.output,
         support_path=args.support,

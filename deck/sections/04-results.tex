@@ -222,9 +222,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.44cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.4}{9.4}\selectfont Entrant state sticks: stable-born pairs stay at \FormationThirtyStableBirthStableShare{}, native-born at \FormationThirtyNativeBirthStableShare{}. +10 pp entry stable share predicts \FormationPathEntryShareOneTwentyCoef{} at 120 days; value analogue: \FormationValuePathEntryShareOneTwentyCoef{}. Named identity sticks: +10 pp entry-candidate share predicts \FormationIdentityPathOneTwentyCoef{} same-candidate follow-up.\par}
+{\fontsize{8.4}{9.4}\selectfont Entrant state sticks: stable-born pairs stay at \FormationThirtyStableBirthStableShare{}, native-born at \FormationThirtyNativeBirthStableShare{}. +10 pp entry stable share predicts \FormationPathEntryShareOneTwentyCoef{} at 120 days. Stable-present birth predicts \FormationStablePresentFutureRoutesCoef{} future routes and \FormationStablePresentRetradeCoef{} retrade. Named identity sticks too.\par}
 \end{minipage}}
-\decknote{Entrants are first-observed ordered pairs in matched January-June windows. Path and value screens use non-WETH entrants with standard controls. Identity screen uses \FormationIdentityPathRowsOneTwenty{} non-WETH stable-entry candidate rows with candidate fixed effects. Descriptive association only.}
+\decknote{Entrants are first-observed ordered pairs in matched January-June windows. Path, value, and future-activity screens use non-WETH entrants with standard controls; future activity excludes entry day. Identity screen uses \FormationIdentityPathRowsOneTwenty{} stable-entry candidate rows with candidate fixed effects. Descriptive association only.}
 \note{WETH endpoints carry \FormationWethEntryRouteMassEnd{} of 2026 entrant mass. Stable-endpoint gap expands by \FormationSecureGapChange{}. Identity screen conditions on positive stable follow-up mass.}
 \end{frame}
 
@@ -395,7 +395,7 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 % EVIDENCE-STATUS: provisional exploratory local-depth and candidate-reach mechanism screen
 % EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl; output/exhibits/bridge_liquidity_dominance_support.jsonl; output/exhibits/bridge_liquidity_deck_values.tex
 % SCIENTIFIC-BOUNDARY: prior-calendar deposited capital on the two atomic legs of A-candidate-C routes; not active concentrated-liquidity depth, executable quote size, provider returns, or causal liquidity supply
-% ESTIMAND-BOUNDARY: five-candidate endpoint-date-scope risk sets with at least two locally supported candidates; top-bridge rows rank candidates by the weaker of the two prior-capital legs; horse-race and bottleneck rows absorb endpoint-date-scope and candidate effects, control for same-day and prior-30-day route reach, and cluster by ordered pair and date; stable-issuer rows restrict to DAI/USDC/USDT supported opportunities with at least two stable candidates
+% ESTIMAND-BOUNDARY: five-candidate endpoint-date-scope risk sets with at least two locally supported candidates; top-bridge rows rank candidates by the weaker of the two prior-capital legs; birth rows retain zero local bridge-depth alternatives; horse-race and bottleneck rows absorb endpoint-date-scope and candidate effects, control for candidate reach, and cluster by ordered pair and date; stable-issuer rows restrict to DAI/USDC/USDT supported opportunities with at least two stable candidates
 % VISUAL-FUNCTION: local bridge depth | three-stat mechanism screen | show that route choices concentrate on corridor-specific depth after candidate-reach controls
 \begin{frame}{Routes follow local bridges, not only popular vehicles}
 \vspace{0.08cm}
@@ -418,9 +418,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.36cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.2}{9.2}\selectfont Deepest prior bridge carries most route mass. After reach controls, weak-leg depth remains \BridgeLiquidityBottleneckMinCoef{} and leg imbalance predicts \BridgeLiquidityImbalanceCoef{}. In stable-only cells, 2026 USDT adds \BridgeLiquidityStableIssuerUsdtTwentySixCoef{} versus DAI.\par}
+{\fontsize{8.2}{9.2}\selectfont At market birth, +1 log point of local bridge depth predicts \BridgeLiquidityEntryBirthDepthCoef{} route share and \BridgeLiquidityEntryBirthSelectionCoef{} selection. In the full panel, weak-leg depth remains \BridgeLiquidityBottleneckMinCoef{} after reach controls; leg imbalance predicts \BridgeLiquidityImbalanceCoef{}.\par}
 \end{minipage}}
-\decknote{Five candidates; \BridgeLiquidityRows{} candidate rows, \BridgeLiquidityPairs{} pairs, \BridgeLiquidityDays{} days. Depth is the smaller prior-capital bridge leg. Bottleneck rows add stronger-leg or leg-imbalance controls. Reach uses same-day and prior-30-day routes. Stable-issuer rows use \BridgeLiquidityStableIssuerGroups{} DAI/USDC/USDT cells. Association only.}
+\decknote{Five candidates; \BridgeLiquidityRows{} candidate rows, \BridgeLiquidityPairs{} pairs, \BridgeLiquidityDays{} days. Birth rows use \BridgeLiquidityEntryBirthRows{} candidate rows and retain zero local depth. Depth is the smaller prior-capital bridge leg. Reach uses same-day or prior-30-day routes. Stable-issuer rows use \BridgeLiquidityStableIssuerGroups{} DAI/USDC/USDT cells. Association only.}
 \end{frame}
 
 % EVIDENCE-STATUS: provisional exploratory dynamic local-bridge feedback screen
