@@ -125,6 +125,38 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
                 "observations": 900,
             },
             {
+                "record_type": "entry_value_path_dependence_regression",
+                "horizon_days": 30,
+                "sample": "non_weth_endpoint_value_supported",
+                "outcome": "stable_value_share",
+                "predictor": "entry_stable_value_share",
+                "entry_year": None,
+                "primary_routes": None,
+                "stable_share": None,
+                "coefficient": 0.90,
+                "standard_error": 0.10,
+                "coefficient_per_10pp_entry_value_share": 0.090,
+                "standard_error_per_10pp_entry_value_share": 0.010,
+                "p_value": 0.001,
+                "observations": 510000,
+            },
+            {
+                "record_type": "entry_value_path_dependence_regression",
+                "horizon_days": 120,
+                "sample": "non_weth_endpoint_value_supported",
+                "outcome": "stable_value_share",
+                "predictor": "entry_stable_value_share",
+                "entry_year": None,
+                "primary_routes": None,
+                "stable_share": None,
+                "coefficient": 0.78,
+                "standard_error": 0.14,
+                "coefficient_per_10pp_entry_value_share": 0.078,
+                "standard_error_per_10pp_entry_value_share": 0.014,
+                "p_value": 0.001,
+                "observations": 428000,
+            },
+            {
                 "record_type": "entry_regime_hysteresis",
                 "horizon_days": 30,
                 "entry_year": 2026,
@@ -309,6 +341,9 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
     assert "\\FormationPathEntryShareThirtyCoef" in rendered
     assert "\\FormationPathEntryShareOneTwentyCoef" in rendered
     assert "\\FormationPathDominantOneTwentyCoef" in rendered
+    assert "\\FormationValuePathEntryShareThirtyCoef" in rendered
+    assert "\\FormationValuePathEntryShareOneTwentyCoef" in rendered
+    assert "$+9.0$ pp" in rendered
     assert "\\FormationNonWethEntryStableShareEnd" in rendered
     assert "\\FormationStableEntryTopTwoShareEnd" in rendered
     assert "99.6\\%" in rendered

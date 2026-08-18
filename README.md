@@ -51,7 +51,7 @@ reproducible, but not yet submission-ready. The current research mode is
 parallel: keep the paper and slides presentable, integrate provisional results
 with explicit status labels, and continue the scoped mechanism and review loops.
 Current provisional layers cover vehicle birth, active-day birth-state
-hysteresis, controlled entry-state path dependence, non-WETH entry drivers, route-architecture entry interactions,
+hysteresis, controlled entry-state path dependence, value-supported entry path dependence, non-WETH entry drivers, route-architecture entry interactions,
 large-entrant routing, thin-market turn-on with a direct-route by thinness
 interaction, rolling native-only-to-stable turn-on hazards, same-day and
 prior-30-day candidate-network reach inside observed mixed-risk-set rival checks,

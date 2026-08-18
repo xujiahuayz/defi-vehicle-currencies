@@ -118,6 +118,22 @@ def render_vehicle_formation_deck_values(estimates: pd.DataFrame) -> str:
         outcome="stable_dominant_followup",
         predictor="entry_stable_dominant",
     )
+    value_path_share_30 = _one(
+        estimates,
+        record_type="entry_value_path_dependence_regression",
+        horizon_days=30,
+        sample="non_weth_endpoint_value_supported",
+        outcome="stable_value_share",
+        predictor="entry_stable_value_share",
+    )
+    value_path_share_120 = _one(
+        estimates,
+        record_type="entry_value_path_dependence_regression",
+        horizon_days=120,
+        sample="non_weth_endpoint_value_supported",
+        outcome="stable_value_share",
+        predictor="entry_stable_value_share",
+    )
     stable_hysteresis_2026_30 = _one(
         estimates,
         record_type="entry_regime_hysteresis",
@@ -257,6 +273,8 @@ def render_vehicle_formation_deck_values(estimates: pd.DataFrame) -> str:
         float(path_share_30["coefficient_per_10pp_entry_share"]),
         float(path_share_120["coefficient_per_10pp_entry_share"]),
         float(path_dominant_120["coefficient"]),
+        float(value_path_share_30["coefficient_per_10pp_entry_value_share"]),
+        float(value_path_share_120["coefficient_per_10pp_entry_value_share"]),
         float(stable_hysteresis_2026_30["never_left_share_retrade"]),
         float(stable_hysteresis_2026_120["never_left_share_retrade"]),
         float(stable_hysteresis_2026_30["mean_stable_majority_day_share"]),
@@ -293,6 +311,15 @@ def render_vehicle_formation_deck_values(estimates: pd.DataFrame) -> str:
         and float(path_dominant_120["p_value"]) < 0.01
     ):
         raise ValueError("entry path-dependence screen no longer holds")
+    if not (
+        float(value_path_share_30["coefficient_per_10pp_entry_value_share"]) > 0.05
+        and float(value_path_share_120["coefficient_per_10pp_entry_value_share"]) > 0.05
+        and float(value_path_share_30["p_value"]) < 0.01
+        and float(value_path_share_120["p_value"]) < 0.01
+        and float(value_path_share_30["observations"]) > 100000
+        and float(value_path_share_120["observations"]) > 100000
+    ):
+        raise ValueError("value-supported entry path-dependence screen no longer holds")
     if not (
         float(non_weth_year_driver["coefficient"]) > 0
         and float(non_weth_stable_endpoint_driver["coefficient"]) > 0
@@ -356,6 +383,12 @@ def render_vehicle_formation_deck_values(estimates: pd.DataFrame) -> str:
         f"\\newcommand{{\\FormationPathEntryShareOneTwentySE}}{{{_unsigned_pp(float(path_share_120['standard_error_per_10pp_entry_share']))}}}",
         f"\\newcommand{{\\FormationPathDominantOneTwentyCoef}}{{{_signed_pp(float(path_dominant_120['coefficient']))}}}",
         f"\\newcommand{{\\FormationPathDominantOneTwentySE}}{{{_unsigned_pp(float(path_dominant_120['standard_error']))}}}",
+        f"\\newcommand{{\\FormationValuePathRowsThirty}}{{{_int(value_path_share_30['observations'])}}}",
+        f"\\newcommand{{\\FormationValuePathRowsOneTwenty}}{{{_int(value_path_share_120['observations'])}}}",
+        f"\\newcommand{{\\FormationValuePathEntryShareThirtyCoef}}{{{_signed_pp(float(value_path_share_30['coefficient_per_10pp_entry_value_share']))}}}",
+        f"\\newcommand{{\\FormationValuePathEntryShareThirtySE}}{{{_unsigned_pp(float(value_path_share_30['standard_error_per_10pp_entry_value_share']))}}}",
+        f"\\newcommand{{\\FormationValuePathEntryShareOneTwentyCoef}}{{{_signed_pp(float(value_path_share_120['coefficient_per_10pp_entry_value_share']))}}}",
+        f"\\newcommand{{\\FormationValuePathEntryShareOneTwentySE}}{{{_unsigned_pp(float(value_path_share_120['standard_error_per_10pp_entry_value_share']))}}}",
         f"\\newcommand{{\\FormationStableHysteresisThirtyRetrade}}{{{_pct(float(stable_hysteresis_2026_30['never_left_share_retrade']))}}}",
         f"\\newcommand{{\\FormationStableHysteresisOneTwentyRetrade}}{{{_pct(float(stable_hysteresis_2026_120['never_left_share_retrade']))}}}",
         f"\\newcommand{{\\FormationStableHysteresisThirtyDayShare}}{{{_pct(float(stable_hysteresis_2026_30['mean_stable_majority_day_share']))}}}",

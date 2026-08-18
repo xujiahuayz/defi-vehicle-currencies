@@ -19,6 +19,8 @@ from scripts.analyze.run_vehicle_formation_exploration import (
     entry_secure_volume_summary,
     entry_stable_candidate_persistence,
     entry_stable_candidate_summary,
+    entry_value_follow_panel,
+    entry_value_path_dependence_regressions,
     endpoint_class,
     persistence_contrasts,
     persistence_summary,
@@ -179,6 +181,25 @@ def test_entry_follow_panel_requires_complete_horizon(pair_support_path) -> None
     )
     assert set(follow["src"]) == {"a", "c", "g"}
     assert follow["horizon_days"].eq(30).all()
+
+
+def test_entry_value_follow_panel_uses_within_band_value_support(
+    pair_support_path, candidate_choices_path
+) -> None:
+    follow = entry_value_follow_panel(
+        30,
+        pair_support_path=pair_support_path,
+        candidate_choices_path=candidate_choices_path,
+        sample_end=pd.Timestamp("2026-06-30"),
+    )
+    assert set(follow["src"]) == {"a", "c", "g"}
+    stable = follow[follow["src"].eq("c")].iloc[0]
+    native = follow[follow["src"].eq("a")].iloc[0]
+    assert stable["entry_stable_value_share"] == pytest.approx(1.0)
+    assert stable["stable_value_share"] == pytest.approx(1.0)
+    assert stable["primary_value"] == pytest.approx(160.0)
+    assert native["entry_stable_value_share"] == pytest.approx(0.0)
+    assert native["stable_value_share"] == pytest.approx(0.0)
 
 
 def test_persistence_summary_separates_native_and_stable_births(pair_support_path) -> None:
@@ -391,6 +412,74 @@ def test_entry_path_dependence_regressions_publish_entry_state_driver() -> None:
     assert result["record_type"].eq("entry_path_dependence_regression").all()
     assert share_driver["coefficient"] > 0.6
     assert dominant_driver["coefficient"] > 0
+    assert np.isfinite(share_driver["standard_error"])
+
+
+def test_entry_value_path_dependence_regressions_publish_value_driver() -> None:
+    follow_rows = []
+    driver_rows = []
+    for day in range(1, 61):
+        date = pd.Timestamp("2026-01-01") + pd.Timedelta(days=day - 1)
+        entry_value_shares = (
+            0.02 * (day % 4),
+            0.25 + 0.02 * (day % 5),
+            0.64 + 0.03 * (day % 6),
+        )
+        for index, entry_share in enumerate(entry_value_shares):
+            src = f"value-src-{day}-{index}"
+            tgt = f"value-tgt-{day}-{index}"
+            dominant = float(entry_share > 0.5)
+            stable_endpoint = float(index == 1)
+            direct_share = 0.04 * ((day + index) % 5)
+            complex_share = 0.03 * ((day + 2 * index) % 6)
+            is_2026 = float(day % 2 == 0)
+            follow_share = (
+                0.03
+                + 0.75 * entry_share
+                + 0.04 * dominant
+                + 0.01 * is_2026
+                + 0.02 * direct_share
+                - 0.01 * complex_share
+            )
+            follow_rows.append(
+                {
+                    "horizon_days": 120,
+                    "entry_date": date,
+                    "src": src,
+                    "tgt": tgt,
+                    "entry_primary_value": 1000.0 + day,
+                    "entry_stable_value_share": entry_share,
+                    "entry_stable_value_dominant": dominant,
+                    "stable_value_share": follow_share,
+                    "stable_value_dominant_followup": float(follow_share > 0.5),
+                }
+            )
+            driver_rows.append(
+                {
+                    "date": date,
+                    "src": src,
+                    "tgt": tgt,
+                    "stable_endpoint": stable_endpoint,
+                    "is_2026": is_2026,
+                    "log_entry_routes": np.log1p(10.0 + day),
+                    "direct_share": direct_share,
+                    "complex_share": complex_share,
+                }
+            )
+    result = entry_value_path_dependence_regressions(
+        pd.DataFrame(follow_rows),
+        pd.DataFrame(driver_rows),
+        min_observations=100,
+        min_clusters=20,
+    )
+    share_driver = result[
+        result["outcome"].eq("stable_value_share")
+        & result["predictor"].eq("entry_stable_value_share")
+    ].iloc[0]
+
+    assert result["record_type"].eq("entry_value_path_dependence_regression").all()
+    assert share_driver["coefficient"] > 0.7
+    assert share_driver["weighted_by"] == "entry_primary_within_20pct_value_usd"
     assert np.isfinite(share_driver["standard_error"])
 
 

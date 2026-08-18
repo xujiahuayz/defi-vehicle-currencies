@@ -1087,6 +1087,133 @@ def entry_follow_panel(
     )
 
 
+def entry_value_follow_panel(
+    horizon_days: int,
+    *,
+    pair_support_path: Path = PAIR_SUPPORT,
+    candidate_choices_path: Path = CANDIDATE_CHOICES,
+    sample_end: pd.Timestamp = SAMPLE_END,
+) -> pd.DataFrame:
+    """Return value-supported pair follow-up rows for one complete horizon."""
+
+    if horizon_days <= 0:
+        raise ValueError("horizon_days must be positive")
+    pair_path = _sql_path(pair_support_path)
+    choices_path = _sql_path(candidate_choices_path)
+    years = ", ".join(str(year) for year in MAIN_ENTRY_YEARS)
+    sample_end_text = pd.Timestamp(sample_end).strftime("%Y-%m-%d")
+    return _read_sql(
+        f"""
+        WITH entries AS (
+            SELECT
+                src,
+                tgt,
+                CAST(date AS DATE) AS entry_date,
+                year(date)::INTEGER AS entry_year,
+                primary_choice_route_count::DOUBLE AS entry_primary_routes,
+                stable_choice_route_count::DOUBLE AS entry_stable_routes,
+                native_choice_route_count::DOUBLE AS entry_native_routes,
+                stable_choice_route_count::DOUBLE
+                    / nullif(primary_choice_route_count, 0) AS entry_stable_share,
+                CASE
+                    WHEN stable_choice_route_count > native_choice_route_count
+                        THEN 'stable_dominant_entry'
+                    WHEN stable_choice_route_count > 0
+                        THEN 'stable_present_entry'
+                    ELSE 'native_only_entry'
+                END AS entry_type
+            FROM read_parquet('{pair_path}')
+            WHERE pair_entry_on_day
+              AND primary_choice_route_count > 0
+              AND year(date) IN ({years})
+              AND strftime(date, '%m-%d') <= '06-30'
+              AND date + INTERVAL {int(horizon_days)} DAY <= DATE '{sample_end_text}'
+        ),
+        choice AS (
+            SELECT
+                CAST(date AS DATE) AS date,
+                src,
+                tgt,
+                sum(
+                    CASE
+                        WHEN candidate_type = 'stable'
+                            THEN coalesce(within_20pct_value_usd, 0)
+                        ELSE 0
+                    END
+                )::DOUBLE AS stable_value,
+                sum(
+                    CASE
+                        WHEN candidate_type = 'native'
+                            THEN coalesce(within_20pct_value_usd, 0)
+                        ELSE 0
+                    END
+                )::DOUBLE AS native_value,
+                sum(
+                    CASE
+                        WHEN candidate_type IN ('stable', 'native')
+                            THEN coalesce(within_20pct_value_usd, 0)
+                        ELSE 0
+                    END
+                )::DOUBLE AS primary_value
+            FROM read_parquet('{choices_path}')
+            WHERE candidate_type IN ('stable', 'native')
+            GROUP BY 1, 2, 3
+        ),
+        entry_choice AS (
+            SELECT
+                e.*,
+                c.stable_value AS entry_stable_value,
+                c.native_value AS entry_native_value,
+                c.primary_value AS entry_primary_value
+            FROM entries e
+            JOIN choice c
+              ON c.date = e.entry_date
+             AND c.src = e.src
+             AND c.tgt = e.tgt
+            WHERE c.primary_value > 0
+        ),
+        follow AS (
+            SELECT
+                e.entry_year,
+                e.entry_date,
+                e.entry_type,
+                e.src,
+                e.tgt,
+                e.entry_primary_routes,
+                e.entry_stable_routes,
+                e.entry_native_routes,
+                e.entry_stable_share,
+                e.entry_stable_value,
+                e.entry_native_value,
+                e.entry_primary_value,
+                sum(c.stable_value)::DOUBLE AS stable_value,
+                sum(c.native_value)::DOUBLE AS native_value,
+                sum(c.primary_value)::DOUBLE AS primary_value,
+                count(*)::INTEGER AS observed_days
+            FROM entry_choice e
+            JOIN choice c
+              ON c.src = e.src
+             AND c.tgt = e.tgt
+             AND c.date BETWEEN e.entry_date
+                            AND e.entry_date + INTERVAL {int(horizon_days)} DAY
+            GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12
+        )
+        SELECT
+            {int(horizon_days)}::INTEGER AS horizon_days,
+            *,
+            entry_stable_value / nullif(entry_primary_value, 0)
+                AS entry_stable_value_share,
+            (entry_stable_value > entry_native_value)::BOOLEAN
+                AS entry_stable_value_dominant,
+            stable_value / nullif(primary_value, 0) AS stable_value_share,
+            (stable_value > native_value)::BOOLEAN AS stable_value_dominant_followup
+        FROM follow
+        WHERE primary_value > 0
+        ORDER BY entry_year, entry_type, src, tgt
+        """
+    )
+
+
 def persistence_summary(follow: pd.DataFrame) -> pd.DataFrame:
     """Summarise follow-up vehicle use by entry type and cohort."""
 
@@ -1412,6 +1539,146 @@ def entry_path_dependence_regressions(
     return pd.DataFrame(rows)
 
 
+def entry_value_path_dependence_regressions(
+    follow: pd.DataFrame,
+    driver_panel: pd.DataFrame,
+    *,
+    min_observations: int = 1000,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Fit value-supported entry-state screens for follow-up value support."""
+
+    required_follow = {
+        "horizon_days",
+        "entry_date",
+        "src",
+        "tgt",
+        "entry_primary_value",
+        "entry_stable_value_share",
+        "entry_stable_value_dominant",
+        "stable_value_share",
+        "stable_value_dominant_followup",
+    }
+    missing_follow = sorted(required_follow - set(follow.columns))
+    if missing_follow:
+        raise ValueError(
+            f"entry value follow panel lacks path-dependence columns: {missing_follow}"
+        )
+    required_driver = {
+        "date",
+        "src",
+        "tgt",
+        "stable_endpoint",
+        "is_2026",
+        "log_entry_routes",
+        "direct_share",
+        "complex_share",
+    }
+    missing_driver = sorted(required_driver - set(driver_panel.columns))
+    if missing_driver:
+        raise ValueError(
+            f"entry driver panel lacks value path-dependence columns: {missing_driver}"
+        )
+    controls = [
+        "entry_stable_value_share",
+        "entry_stable_value_dominant",
+        "is_2026",
+        "stable_endpoint",
+        "log_entry_routes",
+        "direct_share",
+        "complex_share",
+    ]
+    driver_columns = [
+        "date",
+        "src",
+        "tgt",
+        "stable_endpoint",
+        "is_2026",
+        "log_entry_routes",
+        "direct_share",
+        "complex_share",
+    ]
+    data = follow.merge(
+        driver_panel[driver_columns],
+        left_on=["entry_date", "src", "tgt"],
+        right_on=["date", "src", "tgt"],
+        how="inner",
+        validate="one_to_one",
+    ).copy()
+    if data.empty:
+        raise ValueError(
+            "entry value path-dependence regression has no non-WETH entrants"
+        )
+    rows: list[dict[str, object]] = []
+    for outcome in ("stable_value_share", "stable_value_dominant_followup"):
+        sample = (
+            data[
+                [
+                    "horizon_days",
+                    "entry_date",
+                    "entry_primary_value",
+                    outcome,
+                    *controls,
+                ]
+            ]
+            .replace([np.inf, -np.inf], np.nan)
+            .dropna()
+        )
+        fit = ols_clustered(
+            sample[outcome].astype(float),
+            sample[controls].astype(float),
+            sample["entry_date"],
+            weights=sample["entry_primary_value"].astype(float),
+            min_observations=min_observations,
+            min_clusters=min_clusters,
+        )
+        for name, beta, se, t_stat, p_value in zip(
+            ("constant", *controls),
+            fit.beta,
+            fit.standard_errors,
+            fit.t_statistics,
+            fit.p_values,
+            strict=True,
+        ):
+            coefficient = float(beta)
+            standard_error = float(se)
+            rows.append(
+                {
+                    "record_type": "entry_value_path_dependence_regression",
+                    "horizon_days": int(sample["horizon_days"].iloc[0]),
+                    "sample": "non_weth_endpoint_value_supported",
+                    "outcome": outcome,
+                    "predictor": name,
+                    "coefficient": coefficient,
+                    "coefficient_pp": 100.0 * coefficient,
+                    "coefficient_per_10pp_entry_value_share": (
+                        0.10 * coefficient
+                        if name == "entry_stable_value_share"
+                        else np.nan
+                    ),
+                    "standard_error": standard_error,
+                    "standard_error_pp": 100.0 * standard_error,
+                    "standard_error_per_10pp_entry_value_share": (
+                        0.10 * standard_error
+                        if name == "entry_stable_value_share"
+                        else np.nan
+                    ),
+                    "t_statistic": float(t_stat),
+                    "p_value": float(p_value),
+                    "observations": int(fit.n_observations),
+                    "entry_date_clusters": int(fit.n_clusters),
+                    "weighted_by": "entry_primary_within_20pct_value_usd",
+                    "covariance_id": "entry_date_cluster_cr1",
+                    "controls": ",".join(controls),
+                    "interpretation": (
+                        "exploratory_value_supported_entry_vehicle_state_"
+                        "persistence_not_causal"
+                    ),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
 def support_records(
     *,
     pair_support_path: Path,
@@ -1491,6 +1758,14 @@ def build_results(
         entry_follow_panel(horizon, pair_support_path=pair_support_path)
         for horizon in HORIZONS
     ]
+    value_follow_panels = [
+        entry_value_follow_panel(
+            horizon,
+            pair_support_path=pair_support_path,
+            candidate_choices_path=candidate_choices_path,
+        )
+        for horizon in HORIZONS
+    ]
     candidate_persistence = [
         entry_stable_candidate_persistence(
             horizon,
@@ -1504,6 +1779,10 @@ def build_results(
     path_dependence = [
         entry_path_dependence_regressions(panel, driver_panel)
         for panel in follow_panels
+    ]
+    value_path_dependence = [
+        entry_value_path_dependence_regressions(panel, driver_panel)
+        for panel in value_follow_panels
     ]
     hysteresis = [
         entry_regime_hysteresis(horizon, pair_support_path=pair_support_path)
@@ -1525,6 +1804,7 @@ def build_results(
             *summaries,
             *contrasts,
             *path_dependence,
+            *value_path_dependence,
             *hysteresis,
         ],
         ignore_index=True,

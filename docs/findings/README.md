@@ -87,7 +87,8 @@ and deck only when explicitly labelled and reproducible enough for review.
 
 The active provisional result stack now includes vehicle formation at market
 birth, large-entrant stable routing, 30-day and 120-day birth-state persistence,
-active-day birth-regime hysteresis, non-WETH entry-driver controls,
+active-day birth-regime hysteresis, value-supported entry path dependence,
+non-WETH entry-driver controls,
 route-architecture entry interactions, stable turn-on in thin baseline markets,
 rolling native-only-to-stable turn-on hazards, the direct-route by thinness
 interaction, same-day and prior-30-day candidate-network reach inside observed mixed native-stable
