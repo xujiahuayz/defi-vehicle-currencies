@@ -52,8 +52,9 @@ parallel: keep the paper and slides presentable, integrate provisional results
 with explicit status labels, and continue the scoped mechanism and review loops.
 Current provisional layers cover vehicle birth, non-WETH entry drivers,
 long-horizon persistence, thin-market turn-on with a direct-route by thinness
-interaction, sticky incumbent vehicle regimes, LP capital-use gaps, and V2
-capital predictability. A result becomes headline evidence only if it is
+interaction, sticky incumbent vehicle regimes, USDC/USDT concentration at
+stable-entry, LP capital-use gaps, delayed LP gap-closing, and V2 capital
+predictability. A result becomes headline evidence only if it is
 economically material, distinguishes at least one serious rival story, fits the
 literature contribution, and has a complete producer-to-deliverable path.
 Routing maturation, direct-cost dominance, rent incidence, provider-flow

@@ -103,6 +103,22 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
                 "route_mass_share": 0.20,
             },
             {
+                "record_type": "entry_stable_candidate",
+                "entry_year": 2026,
+                "candidate_symbol": "USDC",
+                "primary_routes": None,
+                "stable_share": None,
+                "stable_entry_route_share": 0.738,
+            },
+            {
+                "record_type": "entry_stable_candidate",
+                "entry_year": 2026,
+                "candidate_symbol": "USDT",
+                "primary_routes": None,
+                "stable_share": None,
+                "stable_entry_route_share": 0.258,
+            },
+            {
                 "record_type": "entry_driver_regression",
                 "endpoint_class": "non_weth_endpoint",
                 "outcome": "stable_share",
@@ -130,4 +146,6 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
     assert "$+97.0$ pp" in rendered
     assert "$+98.0$ pp" in rendered
     assert "\\FormationNonWethEntryStableShareEnd" in rendered
+    assert "\\FormationStableEntryTopTwoShareEnd" in rendered
+    assert "99.6\\%" in rendered
     assert "\\FormationNonWethYearDriver" in rendered

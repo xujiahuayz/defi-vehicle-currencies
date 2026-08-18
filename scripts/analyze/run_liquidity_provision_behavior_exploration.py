@@ -27,6 +27,7 @@ from ddvc.tables import write_exhibit
 
 
 CANDIDATE_DAY_INPUT = REPO_ROOT / "data/processed/liquidity_capital_v2_candidate_day.parquet"
+EXACT_HORIZON_INPUT = REPO_ROOT / "data/processed/liquidity_capital_v2_exact_horizons.parquet"
 RESULT_OUTPUT = OUTPUT_DIR / "exhibits/liquidity_provision_behavior_exploration.jsonl"
 SUPPORT_OUTPUT = OUTPUT_DIR / "exhibits/liquidity_provision_behavior_support.jsonl"
 
@@ -34,7 +35,10 @@ CODE_SOURCES = [
     "scripts/analyze/run_liquidity_provision_behavior_exploration.py",
     "src/ddvc/analysis/regression.py",
 ]
-INPUTS = ["data/processed/liquidity_capital_v2_candidate_day.parquet"]
+INPUTS = [
+    "data/processed/liquidity_capital_v2_candidate_day.parquet",
+    "data/processed/liquidity_capital_v2_exact_horizons.parquet",
+]
 STABLE_SYMBOLS = frozenset({"DAI", "USDC", "USDT"})
 WETH_SYMBOL = "WETH"
 BASELINE_YEAR = 2024
@@ -74,6 +78,35 @@ def load_candidate_day(path: Path = CANDIDATE_DAY_INPUT) -> pd.DataFrame:
     frame = frame.copy()
     frame["origin_date"] = pd.to_datetime(frame["origin_date"])
     frame["candidate_symbol"] = frame["candidate_symbol"].astype(str)
+    return frame
+
+
+def load_exact_horizons(path: Path = EXACT_HORIZON_INPUT) -> pd.DataFrame:
+    """Load exact-horizon capital and route outcomes for gap-closing screens."""
+
+    frame = pd.read_parquet(path)
+    required = {
+        "origin_date",
+        "candidate_address",
+        "candidate_symbol",
+        "horizon_days",
+        "route_exact_target_supported",
+        "v2_exact_target_supported",
+        "intermediate_route_count",
+        "endpoint_route_count",
+        "v2_deposited_capital_usd",
+        "v2_candidate_pool_count",
+        "v2_candidate_venue_count",
+        "future_v2_five_candidate_capital_share_change",
+        "future_v2_log1p_deposited_capital_usd_change",
+    }
+    missing = sorted(required - set(frame.columns))
+    if missing:
+        raise ValueError(f"exact-horizon panel lacks columns: {missing}")
+    frame = frame.copy()
+    frame["origin_date"] = pd.to_datetime(frame["origin_date"])
+    frame["candidate_symbol"] = frame["candidate_symbol"].astype(str)
+    frame["horizon_days"] = frame["horizon_days"].astype(int)
     return frame
 
 
@@ -213,6 +246,43 @@ def candidate_share_gap_panel(sample: pd.DataFrame) -> pd.DataFrame:
     return panel
 
 
+def route_capital_gap_horizon_panel(exact_horizons: pd.DataFrame) -> pd.DataFrame:
+    """Attach origin route-minus-capital gaps to exact future capital outcomes."""
+
+    sample = exact_horizons[
+        exact_horizons["route_exact_target_supported"].astype(bool)
+        & exact_horizons["v2_exact_target_supported"].astype(bool)
+    ].copy()
+    sample["is_stable"] = sample["candidate_symbol"].isin(STABLE_SYMBOLS).astype(float)
+    by_origin_horizon = sample.groupby(["origin_date", "horizon_days"], sort=True)
+    sample["route_total_5"] = by_origin_horizon["intermediate_route_count"].transform(
+        "sum"
+    ).astype(float)
+    sample["capital_total_5"] = by_origin_horizon["v2_deposited_capital_usd"].transform(
+        "sum"
+    ).astype(float)
+    sample = sample[
+        sample["route_total_5"].gt(0.0)
+        & sample["capital_total_5"].gt(0.0)
+    ].copy()
+    sample["route_share_5"] = (
+        sample["intermediate_route_count"].astype(float) / sample["route_total_5"]
+    )
+    sample["capital_share_5"] = (
+        sample["v2_deposited_capital_usd"].astype(float) / sample["capital_total_5"]
+    )
+    sample["route_capital_gap_5"] = sample["route_share_5"] - sample["capital_share_5"]
+    required = [
+        "route_capital_gap_5",
+        "future_v2_five_candidate_capital_share_change",
+        "future_v2_log1p_deposited_capital_usd_change",
+    ]
+    sample = sample.replace([np.inf, -np.inf], np.nan).dropna(subset=required)
+    if sample.empty:
+        raise ValueError("route-capital gap exact-horizon panel is empty")
+    return sample
+
+
 def within_day_gap_associations(panel: pd.DataFrame) -> pd.DataFrame:
     """Estimate whether stable candidates carry extra use relative to capital."""
 
@@ -262,6 +332,75 @@ def within_day_gap_associations(panel: pd.DataFrame) -> pd.DataFrame:
                 "interpretation": "within-day five-candidate route-minus-capital association, not provider-flow timing",
             }
         )
+    return pd.DataFrame(rows)
+
+
+def route_capital_gap_closing(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 1000,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Test whether route over-use relative to capital predicts later capital."""
+
+    rows: list[dict[str, object]] = []
+    outcomes = (
+        "future_v2_five_candidate_capital_share_change",
+        "future_v2_log1p_deposited_capital_usd_change",
+    )
+    for horizon, group in panel.groupby("horizon_days", sort=True):
+        for outcome in outcomes:
+            data = (
+                group[
+                    [
+                        "origin_date",
+                        "candidate_address",
+                        "route_capital_gap_5",
+                        outcome,
+                    ]
+                ]
+                .replace([np.inf, -np.inf], np.nan)
+                .dropna()
+                .copy()
+            )
+            residual = absorb_fixed_effects(
+                data[[outcome, "route_capital_gap_5"]],
+                data["candidate_address"],
+                data["origin_date"],
+            )
+            fit = ols_clustered(
+                residual[outcome],
+                residual[["route_capital_gap_5"]],
+                data["origin_date"],
+                add_constant=False,
+                absorbed_groups=(data["candidate_address"], data["origin_date"]),
+                min_observations=min_observations,
+                min_clusters=min_clusters,
+            )
+            coefficient = float(fit.beta[0])
+            standard_error = float(fit.standard_errors[0])
+            rows.append(
+                {
+                    "analysis_status": "exploratory_descriptive",
+                    "record_type": "route_capital_gap_closing",
+                    "horizon_days": int(horizon),
+                    "outcome": outcome,
+                    "predictor": "route_capital_gap_5",
+                    "coefficient": coefficient,
+                    "standard_error": standard_error,
+                    "t_statistic": float(fit.t_statistics[0]),
+                    "p_value": float(fit.p_values[0]),
+                    "coefficient_per_10pp_gap": 0.10 * coefficient,
+                    "standard_error_per_10pp_gap": 0.10 * standard_error,
+                    "coefficient_per_10pp_gap_pp": 10.0 * coefficient,
+                    "standard_error_per_10pp_gap_pp": 10.0 * standard_error,
+                    "n_observations": int(fit.n_observations),
+                    "date_clusters": int(fit.n_clusters),
+                    "fixed_effects": "candidate_address+origin_date",
+                    "covariance": "origin_date_clustered",
+                    "interpretation": "temporally ordered gap-closing association, not causal provider-flow timing",
+                }
+            )
     return pd.DataFrame(rows)
 
 
@@ -468,6 +607,7 @@ def support_rows(sample: pd.DataFrame) -> pd.DataFrame:
                 "record_type": "support",
                 "analysis_status": "exploratory_descriptive",
                 "input": str(CANDIDATE_DAY_INPUT.relative_to(REPO_ROOT)),
+                "exact_horizon_input": str(EXACT_HORIZON_INPUT.relative_to(REPO_ROOT)),
                 "candidate_day_rows": int(len(sample)),
                 "days": int(sample["origin_date"].nunique()),
                 "candidate_count": int(sample["candidate_symbol"].nunique()),
@@ -483,10 +623,12 @@ def support_rows(sample: pd.DataFrame) -> pd.DataFrame:
 def run(
     *,
     input_path: Path = CANDIDATE_DAY_INPUT,
+    exact_horizon_path: Path = EXACT_HORIZON_INPUT,
     output_path: Path = RESULT_OUTPUT,
     support_path: Path = SUPPORT_OUTPUT,
 ) -> int:
     sample = supported_candidate_days(load_candidate_day(input_path))
+    exact_panel = route_capital_gap_horizon_panel(load_exact_horizons(exact_horizon_path))
     daily_gaps = daily_capital_use_gaps(sample)
     share_gap_panel = candidate_share_gap_panel(sample)
     result = pd.concat(
@@ -497,6 +639,7 @@ def run(
             candidate_profiles(sample),
             level_associations(sample),
             within_day_gap_associations(share_gap_panel),
+            route_capital_gap_closing(exact_panel),
         ],
         ignore_index=True,
     )
@@ -509,10 +652,16 @@ def run(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, default=CANDIDATE_DAY_INPUT)
+    parser.add_argument("--exact-horizon", type=Path, default=EXACT_HORIZON_INPUT)
     parser.add_argument("--output", type=Path, default=RESULT_OUTPUT)
     parser.add_argument("--support", type=Path, default=SUPPORT_OUTPUT)
     args = parser.parse_args()
-    return run(input_path=args.input, output_path=args.output, support_path=args.support)
+    return run(
+        input_path=args.input,
+        exact_horizon_path=args.exact_horizon,
+        output_path=args.output,
+        support_path=args.support,
+    )
 
 
 if __name__ == "__main__":

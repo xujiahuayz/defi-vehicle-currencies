@@ -9,6 +9,8 @@ from scripts.analyze.run_liquidity_provision_behavior_exploration import (
     candidate_share_gap_panel,
     daily_leader_alignment,
     daily_capital_use_gaps,
+    route_capital_gap_closing,
+    route_capital_gap_horizon_panel,
     supported_candidate_days,
     within_day_gap_associations,
 )
@@ -161,3 +163,58 @@ def test_within_day_gap_association_reports_stable_indicator() -> None:
     stable = result[result["predictor"].eq("is_stable")].iloc[0]
     assert stable["record_type"] == "within_day_route_capital_gap_association"
     assert stable["coefficient"] > 0
+
+
+def test_route_capital_gap_closing_detects_future_capital_reallocation() -> None:
+    rows = []
+    symbols = ["WETH", "WBTC", "USDC", "USDT", "DAI"]
+    capital = {"WETH": 100, "WBTC": 25, "USDC": 10, "USDT": 10, "DAI": 10}
+    for day_index, day in enumerate(pd.date_range("2024-01-01", periods=220, freq="D")):
+        date = day.strftime("%Y-%m-%d")
+        route_counts = {
+            "WETH": 25 + day_index % 3,
+            "WBTC": 10 + day_index % 5,
+            "USDC": 32 + day_index % 7,
+            "USDT": 28 + day_index % 11,
+            "DAI": 15 + day_index % 2,
+        }
+        for symbol in symbols:
+            rows.append(
+                {
+                    "origin_date": pd.Timestamp(date),
+                    "candidate_address": symbol.lower(),
+                    "candidate_symbol": symbol,
+                    "horizon_days": 30,
+                    "route_exact_target_supported": True,
+                    "v2_exact_target_supported": True,
+                    "intermediate_route_count": route_counts[symbol],
+                    "endpoint_route_count": 10,
+                    "v2_deposited_capital_usd": capital[symbol],
+                    "v2_candidate_pool_count": 1,
+                    "v2_candidate_venue_count": 1,
+                }
+            )
+    frame = pd.DataFrame(rows)
+    by_day = frame.groupby(["origin_date", "horizon_days"], sort=True)
+    route_share = frame["intermediate_route_count"] / by_day[
+        "intermediate_route_count"
+    ].transform("sum")
+    capital_share = frame["v2_deposited_capital_usd"] / by_day[
+        "v2_deposited_capital_usd"
+    ].transform("sum")
+    gap = route_share - capital_share
+    frame["future_v2_five_candidate_capital_share_change"] = 0.08 * gap
+    frame["future_v2_log1p_deposited_capital_usd_change"] = 0.50 * gap
+
+    panel = route_capital_gap_horizon_panel(frame)
+    result = route_capital_gap_closing(
+        panel,
+        min_observations=100,
+        min_clusters=20,
+    )
+    month = result[
+        result["outcome"].eq("future_v2_five_candidate_capital_share_change")
+    ].iloc[0]
+    assert month["record_type"] == "route_capital_gap_closing"
+    assert month["coefficient"] > 0
+    assert month["coefficient_per_10pp_gap_pp"] > 0

@@ -207,9 +207,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.44cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.4}{9.4}\selectfont Among \FormationEntryPairsEnd{} ordered pairs first observed in 2026, the first vehicle state predicts the next month: stable-born pairs stay at \FormationThirtyStableBirthStableShare{} stable share, while native-born pairs stay at \FormationThirtyNativeBirthStableShare{}. At 120 days the gap remains \FormationOneTwentyPersistenceGap{}.\par}
+{\fontsize{8.4}{9.4}\selectfont Among 2026 entrants, vehicle state is sticky: stable-born pairs stay at \FormationThirtyStableBirthStableShare{}, native-born pairs at \FormationThirtyNativeBirthStableShare{}. Stable entry is concentrated: USDC and USDT carry \FormationStableEntryTopTwoShareEnd{} of stable-entry routes.\par}
 \end{minipage}}
-\decknote{Entrants are ordered ultimate pairs first observed in the matched January-through-June endpoint window with positive native-plus-stable primary-choice route mass. WETH-endpoint entrants carry \FormationWethEntryRouteMassEnd{} of 2026 entrant route mass; excluding them, entry stable share rises from \FormationNonWethEntryStableShareBase{} to \FormationNonWethEntryStableShareEnd{}. Follow-up requires a complete 30-day window. Standard error for \FormationThirtyPersistenceGap{} clusters by calendar-day position. Descriptive association only.}
+\decknote{Entrants are ordered ultimate pairs first observed in the matched January-through-June endpoint window with positive native-plus-stable primary-choice route mass. WETH-endpoint entrants carry \FormationWethEntryRouteMassEnd{} of 2026 entrant route mass; excluding them, entry stable share rises from \FormationNonWethEntryStableShareBase{} to \FormationNonWethEntryStableShareEnd{}. Candidate concentration is among stable-candidate route rows on the entry date: USDC \FormationStableEntryUSDCShareEnd{}, USDT \FormationStableEntryUSDTShareEnd{}. Follow-up requires a complete 30-day window. Standard error for \FormationThirtyPersistenceGap{} clusters by calendar-day position. Descriptive association only.}
 \end{frame}
 
 % EVIDENCE-STATUS: exploratory descriptive mechanism screen, not causal treatment evidence
@@ -289,7 +289,7 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 % EVIDENCE-STATUS: exploratory descriptive allocation result
 % EVIDENCE-SOURCES: output/exhibits/liquidity_provision_behavior_exploration.jsonl; output/exhibits/liquidity_provision_behavior_support.jsonl; output/exhibits/liquidity_provision_behavior_deck_values.tex
 % SCIENTIFIC-BOUNDARY: V2 deposited-capital stock over five vehicle candidates; not provider inflow, active concentrated-liquidity depth, or executable quote size
-% ESTIMAND-BOUNDARY: daily five-candidate panel with route and V2 capital support; leader rows are same-day rankings, gap rows are within-day route-share minus capital-share associations, and FE rows are contemporaneous level associations
+% ESTIMAND-BOUNDARY: daily five-candidate panel with route and V2 capital support; leader rows are same-day rankings, gap rows are within-day route-share minus capital-share associations, exact-horizon rows are future capital-share changes, and FE rows are contemporaneous level associations
 % VISUAL-FUNCTION: capital-use split | three-stat allocation contrast | show that provider capital remains native-heavy while stablecoins carry excess vehicle use
 \begin{frame}{Provider capital stays native-heavy}
 \vspace{0.10cm}
@@ -312,9 +312,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.44cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.4}{9.4}\selectfont Stablecoins' candidate route share rises from \LiqBehStableRouteShareBase{} to \LiqBehStableRouteShareEnd{}, while their candidate capital share falls from \LiqBehStableCapitalShareBase{} to \LiqBehStableCapitalShareEnd{}. Within a date, after endpoint-share, venue-count, and pool-count controls, the stable label adds \LiqBehStableControlledGapCoef{} to route share minus capital share.\par}
+{\fontsize{8.4}{9.4}\selectfont Stablecoins' route share rises from \LiqBehStableRouteShareBase{} to \LiqBehStableRouteShareEnd{} while their capital share falls from \LiqBehStableCapitalShareBase{} to \LiqBehStableCapitalShareEnd{}. LPs chase slowly: a 10 pp route-minus-capital gap predicts \LiqBehGapCloseMonthCoef{} capital-share catch-up after 30 days and \LiqBehGapCloseLongCoef{} after 120.\par}
 \end{minipage}}
-\decknote{Daily five-candidate V2 panel over \LiqBehPanelDays{} route-and-capital-supported days. Capital is deposited-capital stock in candidate-linked V2 pools. Excess use is intermediary share divided by route-endpoint share. Leader rows are same-day rankings; level associations absorb candidate and origin-date effects. Descriptive association only.}
+\decknote{Daily five-candidate V2 panel over \LiqBehPanelDays{} route-and-capital-supported days. Capital is deposited-capital stock in candidate-linked V2 pools. Excess use is intermediary share divided by route-endpoint share. The stable within-day route-minus-capital premium after endpoint-share, venue-count, and pool-count controls is \LiqBehStableControlledGapCoef{} with SE \LiqBehStableControlledGapSE{}. Gap-closing rows absorb candidate and origin-date effects. Descriptive associations only.}
 \end{frame}
 
 % EVIDENCE-STATUS: current predictive mechanism result; the reciprocal rule records a non-pass

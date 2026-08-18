@@ -6,6 +6,7 @@ import pytest
 from scripts.analyze.run_vehicle_formation_exploration import (
     entry_driver_panel,
     entry_follow_panel,
+    entry_stable_candidate_summary,
     endpoint_class,
     persistence_contrasts,
     persistence_summary,
@@ -55,6 +56,69 @@ def pair_support_path(tmp_path):
     path = tmp_path / "pair_support.parquet"
     frame.to_parquet(path, index=False)
     return path
+
+
+@pytest.fixture
+def candidate_choices_path(tmp_path):
+    frame = pd.DataFrame(
+        [
+            {
+                "date": pd.Timestamp("2026-01-01"),
+                "src": "c",
+                "tgt": "d",
+                "candidate_symbol": "USDC",
+                "candidate_type": "stable",
+                "route_count": 8,
+                "within_20pct_routes": 7,
+                "within_20pct_value_usd": 70.0,
+            },
+            {
+                "date": pd.Timestamp("2026-01-01"),
+                "src": "c",
+                "tgt": "d",
+                "candidate_symbol": "USDT",
+                "candidate_type": "stable",
+                "route_count": 2,
+                "within_20pct_routes": 2,
+                "within_20pct_value_usd": 20.0,
+            },
+            {
+                "date": pd.Timestamp("2026-01-01"),
+                "src": "a",
+                "tgt": "b",
+                "candidate_symbol": "WETH",
+                "candidate_type": "native",
+                "route_count": 10,
+                "within_20pct_routes": 10,
+                "within_20pct_value_usd": 100.0,
+            },
+            {
+                "date": pd.Timestamp("2024-01-01"),
+                "src": "g",
+                "tgt": "h",
+                "candidate_symbol": "USDT",
+                "candidate_type": "stable",
+                "route_count": 1,
+                "within_20pct_routes": 1,
+                "within_20pct_value_usd": 10.0,
+            },
+        ]
+    )
+    path = tmp_path / "candidate_choices.parquet"
+    frame.to_parquet(path, index=False)
+    return path
+
+
+def test_entry_stable_candidate_summary_splits_stable_entry_routes(
+    pair_support_path, candidate_choices_path
+) -> None:
+    summary = entry_stable_candidate_summary(pair_support_path, candidate_choices_path)
+    usdc = summary[
+        summary["entry_year"].eq(2026) & summary["candidate_symbol"].eq("USDC")
+    ].iloc[0]
+    assert usdc["candidate_routes"] == 8
+    assert usdc["stable_entry_routes"] == 10
+    assert usdc["stable_entry_route_share"] == pytest.approx(0.8)
 
 
 def test_entry_follow_panel_requires_complete_horizon(pair_support_path) -> None:

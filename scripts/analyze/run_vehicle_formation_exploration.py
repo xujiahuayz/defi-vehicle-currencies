@@ -24,6 +24,7 @@ from ddvc.runtime import atomic_output
 
 
 PAIR_SUPPORT = DATA_DIR / "processed/endpoint_candidate_pair_support.parquet"
+CANDIDATE_CHOICES = DATA_DIR / "processed/endpoint_candidate_choices.parquet"
 RESULT_OUTPUT = OUTPUT_DIR / "exhibits/vehicle_formation_exploration.jsonl"
 SUPPORT_OUTPUT = OUTPUT_DIR / "exhibits/vehicle_formation_support.jsonl"
 SAMPLE_END = pd.Timestamp("2026-06-30")
@@ -157,6 +158,72 @@ def entry_endpoint_class_summary(pair_support_path: Path = PAIR_SUPPORT) -> pd.D
             }
         )
     return pd.DataFrame(rows)
+
+
+def entry_stable_candidate_summary(
+    pair_support_path: Path = PAIR_SUPPORT,
+    candidate_choices_path: Path = CANDIDATE_CHOICES,
+) -> pd.DataFrame:
+    """Summarise which stable candidates carry stable-vehicle entry routes."""
+
+    pair_path = _sql_path(pair_support_path)
+    choices_path = _sql_path(candidate_choices_path)
+    years = ", ".join(str(year) for year in MAIN_ENTRY_YEARS)
+    return _read_sql(
+        f"""
+        WITH entries AS (
+            SELECT
+                date,
+                src,
+                tgt,
+                year(date)::INTEGER AS entry_year
+            FROM read_parquet('{pair_path}')
+            WHERE pair_entry_on_day
+              AND primary_choice_route_count > 0
+              AND year(date) IN ({years})
+              AND strftime(date, '%m-%d') <= '06-30'
+        ),
+        stable_choices AS (
+            SELECT
+                e.entry_year,
+                c.candidate_symbol,
+                count(DISTINCT concat(CAST(e.date AS VARCHAR), '|', e.src, '|', e.tgt))::INTEGER
+                    AS pair_days,
+                sum(c.route_count)::DOUBLE AS candidate_routes,
+                sum(c.within_20pct_routes)::DOUBLE AS strict_candidate_routes,
+                sum(c.within_20pct_value_usd)::DOUBLE AS strict_candidate_value_usd
+            FROM entries e
+            JOIN read_parquet('{choices_path}') c
+              ON c.date = e.date
+             AND c.src = e.src
+             AND c.tgt = e.tgt
+            WHERE c.candidate_type = 'stable'
+              AND c.route_count > 0
+            GROUP BY 1, 2
+        ),
+        totals AS (
+            SELECT
+                entry_year,
+                sum(candidate_routes)::DOUBLE AS stable_entry_routes
+            FROM stable_choices
+            GROUP BY 1
+        )
+        SELECT
+            'entry_stable_candidate' AS record_type,
+            s.entry_year,
+            s.candidate_symbol,
+            s.pair_days,
+            s.candidate_routes,
+            s.strict_candidate_routes,
+            s.strict_candidate_value_usd,
+            t.stable_entry_routes,
+            s.candidate_routes / nullif(t.stable_entry_routes, 0) AS stable_entry_route_share,
+            'exploratory_stable_entry_candidate_concentration_not_causal' AS interpretation
+        FROM stable_choices s
+        JOIN totals t USING (entry_year)
+        ORDER BY s.entry_year, stable_entry_route_share DESC, s.candidate_symbol
+        """
+    )
 
 
 def entry_driver_panel(pair_support_path: Path = PAIR_SUPPORT) -> pd.DataFrame:
@@ -431,6 +498,7 @@ def persistence_contrasts(follow: pd.DataFrame) -> pd.DataFrame:
 def support_records(
     *,
     pair_support_path: Path,
+    candidate_choices_path: Path,
     result_rows: int,
     support_rows: int,
 ) -> pd.DataFrame:
@@ -440,6 +508,11 @@ def support_records(
                 "record_type": "input",
                 "path": str(pair_support_path.relative_to(REPO_ROOT)),
                 "role": "released_endpoint_candidate_pair_support",
+            },
+            {
+                "record_type": "input",
+                "path": str(candidate_choices_path.relative_to(REPO_ROOT)),
+                "role": "released_endpoint_candidate_choices",
             },
             {
                 "record_type": "sample_contract",
@@ -460,11 +533,20 @@ def support_records(
     )
 
 
-def build_results(pair_support_path: Path = PAIR_SUPPORT) -> tuple[pd.DataFrame, pd.DataFrame]:
+def build_results(
+    pair_support_path: Path = PAIR_SUPPORT,
+    candidate_choices_path: Path = CANDIDATE_CHOICES,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     if not pair_support_path.is_file():
         raise FileNotFoundError(pair_support_path)
+    if not candidate_choices_path.is_file():
+        raise FileNotFoundError(candidate_choices_path)
     cohorts = entry_cohorts(pair_support_path)
     endpoint_classes = entry_endpoint_class_summary(pair_support_path)
+    stable_candidates = entry_stable_candidate_summary(
+        pair_support_path=pair_support_path,
+        candidate_choices_path=candidate_choices_path,
+    )
     driver_panel = entry_driver_panel(pair_support_path)
     driver_regressions = entry_driver_regressions(driver_panel)
     follow_panels = [
@@ -474,11 +556,18 @@ def build_results(pair_support_path: Path = PAIR_SUPPORT) -> tuple[pd.DataFrame,
     summaries = [persistence_summary(panel) for panel in follow_panels]
     contrasts = [persistence_contrasts(panel) for panel in follow_panels]
     result = pd.concat(
-        [cohorts, endpoint_classes, driver_regressions, *summaries, *contrasts],
+        [
+            cohorts,
+            endpoint_classes,
+            stable_candidates,
+            driver_regressions,
+            *summaries,
+            *contrasts,
+        ],
         ignore_index=True,
         sort=False,
     )
-    for column in ("stable_share", "stable_dominant_pair_share"):
+    for column in ("stable_share", "stable_dominant_pair_share", "stable_entry_route_share"):
         if column in result.columns:
             values = pd.to_numeric(result[column], errors="coerce")
             if ((values < -1e-12) | (values > 1 + 1e-12)).any():
@@ -491,8 +580,9 @@ def build_results(pair_support_path: Path = PAIR_SUPPORT) -> tuple[pd.DataFrame,
         raise ValueError("formation results contain nonfinite route mass")
     support = support_records(
         pair_support_path=pair_support_path,
+        candidate_choices_path=candidate_choices_path,
         result_rows=len(result),
-        support_rows=3,
+        support_rows=4,
     )
     return result, support
 
@@ -500,10 +590,14 @@ def build_results(pair_support_path: Path = PAIR_SUPPORT) -> tuple[pd.DataFrame,
 def run(
     *,
     pair_support_path: Path = PAIR_SUPPORT,
+    candidate_choices_path: Path = CANDIDATE_CHOICES,
     result_output: Path = RESULT_OUTPUT,
     support_output: Path = SUPPORT_OUTPUT,
 ) -> int:
-    result, support = build_results(pair_support_path)
+    result, support = build_results(
+        pair_support_path=pair_support_path,
+        candidate_choices_path=candidate_choices_path,
+    )
     result_output.parent.mkdir(parents=True, exist_ok=True)
     support_output.parent.mkdir(parents=True, exist_ok=True)
     with atomic_output(result_output) as temporary:
@@ -531,11 +625,13 @@ def run(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--pair-support", type=Path, default=PAIR_SUPPORT)
+    parser.add_argument("--candidate-choices", type=Path, default=CANDIDATE_CHOICES)
     parser.add_argument("--result-output", type=Path, default=RESULT_OUTPUT)
     parser.add_argument("--support-output", type=Path, default=SUPPORT_OUTPUT)
     args = parser.parse_args()
     return run(
         pair_support_path=args.pair_support,
+        candidate_choices_path=args.candidate_choices,
         result_output=args.result_output,
         support_output=args.support_output,
     )

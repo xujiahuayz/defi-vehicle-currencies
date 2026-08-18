@@ -88,9 +88,11 @@ and deck only when explicitly labelled and reproducible enough for review.
 The active provisional result stack now includes vehicle formation at market
 birth, non-WETH entry-driver controls, 30-day and 120-day birth-state
 persistence, stable turn-on in thin baseline markets, the direct-route by
-thinness interaction, sticky incumbent vehicle regimes, and the V2 liquidity
-route-minus-capital gap. These layers strengthen the mechanism story but do not
-change the registered confirmatory claim set.
+thinness interaction, sticky incumbent vehicle regimes, USDC/USDT concentration
+at stable-entry, the V2 liquidity route-minus-capital gap, and delayed LP
+gap-closing. These layers
+strengthen the mechanism story but do not change the registered confirmatory
+claim set.
 
 Routing maturation, direct-cost dominance, the joint V2/V3 capital-flow family,
 rent incidence, and persistence/hysteresis are blocked, withheld, supporting, or
