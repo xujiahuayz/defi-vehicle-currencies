@@ -42,9 +42,9 @@ E1 confirmatory specification lock      DONE
   |
 F registered confirmatory rebuilds      DONE; FINDINGS GATE GREEN
   |
-G baseline JFE paper                    DONE; CLEAN 52-PAGE PDF
+G baseline JFE paper                    DONE; CLEAN 54-PAGE PDF
   |
-H baseline presentation deck           DONE; CLEAN 45-PAGE PDF
+H baseline presentation deck           DONE; CLEAN 46-PAGE PDF
   |
 I parallel result-search loops          ACTIVE
   |                                     dominance drivers, LP behavior, framing
@@ -163,9 +163,9 @@ and the lock.
 
 ## Deliverable state
 
-The current branch compiles a 52-page paper and a 45-page deck after the
+The current branch compiles a 54-page paper and a 46-page deck after the
 provisional mechanism reruns. The paper and deck compile with zero undefined
-references. The repository passes 692 pytest tests, the findings gate, and every
+references. The repository passes 704 pytest tests, the findings gate, and every
 blocking conformance check. There is one manuscript under `paper/` and one
 presentation under `deck/`; Git history is the archive.
 
