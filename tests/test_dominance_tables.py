@@ -168,37 +168,15 @@ def test_paper_has_one_consumer_and_no_duplicate_inline_body() -> None:
 
 
 @pytest.mark.parametrize(
-    ("stem", "expected_inputs"),
-    [
-        (
-            "dominance_rotation",
-            {
-                "output/exhibits/intermediation_complexity_rival.jsonl",
-            },
-        ),
-        (
-            "pair_composition",
-            {
-                "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
-                "output/exhibits/vehicle_transition_pair_fixed_effects.jsonl",
-            },
-        ),
-        (
-            "usdt_transition",
-            {
-                "output/exhibits/presentation_values.tex",
-            },
-        ),
-    ],
+    "stem", ("dominance_rotation", "pair_composition", "usdt_transition")
 )
-def test_generated_table_lineage_is_current(
-    stem: str, expected_inputs: set[str]
-) -> None:
-    newest_input = max((ROOT / path).stat().st_mtime for path in expected_inputs)
+def test_generated_table_artifacts_exist_for_named_renderers(stem: str) -> None:
+    # Git does not preserve filesystem mtimes across clones. Exact TeX equality
+    # with each named renderer is checked above; here we retain the independent
+    # requirement that both publication artifacts are present.
     for suffix in ("tex", "pdf"):
         artifact = TABLES / f"{stem}.{suffix}"
         assert artifact.is_file()
-        assert artifact.stat().st_mtime >= newest_input
 
 
 def test_renderers_reject_missing_or_ambiguous_cells() -> None:

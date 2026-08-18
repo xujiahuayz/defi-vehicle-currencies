@@ -21,10 +21,11 @@ grind/watchdog machinery no longer owns workflow state; these repo files do.
 ```text
 question and literature                    done
   → definitions and estimands              done
-  → retained raw data                      Studio is canonical owner; raw sync active
+  → retained raw data                      Studio owner; M3 delta coverage verified
   → cleaned and analysis-ready data        ready for the two active claim families
   → registered baseline analysis           done; findings check green
-  → presentable paper/deck trunk           ALWAYS ON; rebuild after admitted changes
+  → repository cleanup and host sync        done; one checkout per host
+  → presentable paper/deck trunk            47/36 pages; rebuild after admitted changes
         status labels                      provisional / registered / confirmed
         review snapshots                   versioned and shareable while work continues
 
@@ -40,26 +41,23 @@ question and literature                    done
         ╚══════════════════════════════════════════════════════════╝
 
   → convergence candidate                  when paper/deck and comments stabilize
-  → submission freeze                      only after final conformance and rewrite
+  → submission freeze                      after final conformance and rewrite
 ```
 
 The detailed claim state is in [`docs/findings/`](docs/findings/README.md). The
 two active confirmatory families are the vehicle-role transition and V2
 deposited-capital predictability. They make the current paper measurable and
 reproducible, but not yet submission-ready. The current research mode is
-parallel: keep the paper and slides presentable at all times, integrate
-provisional results with explicit status labels, send versioned review snapshots
-when useful, and keep searching while comments are outstanding. A result becomes
-headline evidence only if it is economically material, distinguishes at least one
-serious rival story, fits the literature contribution, and has a complete
-producer-to-deliverable path. Routing maturation, direct-cost dominance, rent
-incidence, provider behavior, and persistence are supporting, withheld, or
-expansion work until they pass that bar.
+parallel: keep the paper and slides presentable, integrate provisional results
+with explicit status labels, and continue the scoped mechanism and review loops.
+A result becomes headline evidence only if it is economically material,
+distinguishes at least one serious rival story, fits the literature contribution,
+and has a complete producer-to-deliverable path. Routing maturation, direct-cost
+dominance, rent incidence, provider behavior, and persistence are supporting,
+withheld, or expansion work until they pass that bar.
 
-Parallel work should use named Git branches or small focused commits on `main`.
-Ad hoc sibling folders such as `-d3` or `-backup` are not workflow state. A
-temporary worktree is acceptable only when a named branch or heavy isolated run
-needs it, and it must not become a second project truth.
+Parallel work uses named branches or small focused commits without creating
+sibling checkouts, backup folders, or another project truth.
 
 ## Scientific workflow
 
@@ -172,6 +170,12 @@ Studio owns the complete retained raw boundary. M3 is the interactive analysis,
 TeX, and review host and may hold a smaller raw subset. Synchronization uses
 relative paths and file sizes and never treats the smaller M3 corpus as evidence
 that Studio data should be removed.
+
+The 2026-08-18 handoff verified every M3-only candidate: 2,562 genuinely new
+files were copied to the same Studio path, while 1,911 recovered-archive records
+were already present there under the same source/date-bearing basename and byte
+size. No raw file was deleted, no synchronization used `--delete`, and neither
+host has a raw-data symlink.
 
 The retired `defi-dominant-currency` checkout is no longer a live project.
 Recovered raw files are retained under `data/raw/archive/`; its Git history stays

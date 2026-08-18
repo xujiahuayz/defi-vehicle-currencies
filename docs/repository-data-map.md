@@ -46,8 +46,12 @@ source. That is the reproducibility contract.
 | `paper/`, `deck/` | Authored deliverables | Build only from authored source and generated output |
 
 Raw data never live through symlinks to another repository. Cross-machine copies
-are compared by relative path and byte size. A path mismatch is resolved before a
-claim is run.
+are compared by relative path and byte size. Recovered archive records may also
+be recognized as the same observation when source, stream, date-bearing basename,
+and byte size agree even though a legacy archive prefix differs. This rule avoids
+duplicating a recovered record; it never authorizes deletion. The smaller host is
+never a deletion template for Studio, and cross-host comparison requires no hash,
+fingerprint, release generation, or sidecar.
 
 The executable indexed-source registry currently maps providers as follows:
 
@@ -78,8 +82,8 @@ call that logic, and write one declared result family.
 
 | Claim | Current state | Required action |
 |---|---|---|
-| `vehicle_transition` | Registered primary | Rebuild all declared outputs after the confirmatory lock |
-| `liquidity_capital_v2_predictability` | Registered mechanism | Rebuild all declared outputs after the confirmatory lock |
+| `vehicle_transition` | Rebuilt after lock; gate green | Rebuild when a declared input or specification changes |
+| `liquidity_capital_v2_predictability` | Rebuilt after lock; gate green | Rebuild when a declared input or specification changes |
 
 Routing maturation, direct-cost dominance, joint V2/V3 capital flow and rent
 incidence stay blocked or withheld. They are not allowed to hold the working JFE

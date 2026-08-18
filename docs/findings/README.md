@@ -32,7 +32,7 @@ B literature and contribution          DONE for current paper
   |
 C definitions and estimands            DONE
   |
-  D raw data and reconstruction           STUDIO CANONICAL OWNER; M3 BUILD COPY INTENTIONALLY PARTIAL
+  D raw data and reconstruction           STUDIO OWNER; M3 DELTA COVERAGE VERIFIED
   |
 D3 purpose-built analysis inputs        READY ON BOTH HOSTS FOR ACTIVE CLAIMS
   |
@@ -42,9 +42,9 @@ E1 confirmatory specification lock      DONE
   |
 F registered confirmatory rebuilds      DONE; FINDINGS GATE GREEN
   |
-G baseline JFE paper                    DONE LOCALLY; CLEAN 47-PAGE PDF
+G baseline JFE paper                    DONE; CLEAN 47-PAGE PDF
   |
-H baseline presentation deck            DONE LOCALLY; CLEAN 36-PAGE PDF
+H baseline presentation deck           DONE; CLEAN 36-PAGE PDF
   |
 I parallel result-search loops          ACTIVE
   |                                     dominance drivers, LP behavior, framing
@@ -74,8 +74,7 @@ the executable findings gate is green. That is a reproducibility statement, not
 a JFE submission decision. The live workflow is now at node I: parallel
 result-search, draft-integration, and review loops. If the current evidence is
 measurement-only or not economically interesting enough, the workflow keeps
-looking. It still keeps a presentable paper and deck rebuilt with clearly
-labelled provisional, registered, or confirmed evidence.
+looking while retaining a presentable paper and deck.
 
 The loop targets the making of vehicle dominance (features, drivers, adoption,
 reversal, persistence, and conditional choice) and liquidity-provision behavior
@@ -83,9 +82,8 @@ reversal, persistence, and conditional choice) and liquidity-provision behavior
 V3/V4 routing or netting behavior where inputs support it). A candidate result
 can become headline evidence only after it states the unit, conditioning set,
 economic magnitude, strongest rival explanation, literature contribution, and
-complete producer-to-deliverable path. Provisional results may still enter the
-paper and deck if they are explicitly labelled and reproducible enough for
-review.
+complete producer-to-deliverable path. Provisional results may enter the paper
+and deck only when explicitly labelled and reproducible enough for review.
 
 Routing maturation, direct-cost dominance, the joint V2/V3 capital-flow family,
 rent incidence, and persistence/hysteresis are blocked, withheld, supporting, or
@@ -94,12 +92,11 @@ producer-to-deliverable path. They must not be presented as established findings
 
 ## Current blockers
 
-- The Studio checkout is the canonical raw-data owner. Its raw boundary is
-  complete and is not duplicated byte-for-byte onto M3 because the only route
-  between the hosts is a heavily throttled relay. M3 retains the code, generated
-  deliverables, and the active processed inputs needed for review.
-- Studio has no LaTeX toolchain; the final paper/deck compile gate is therefore
-  run on M3, while Studio stores the same source and already-built PDFs.
+There is no repository or data-handoff blocker. Studio is the canonical raw-data
+owner and retains the larger corpus; M3 intentionally retains a smaller
+review/build subset. Studio has no LaTeX toolchain, so the clean compile and
+visual gates run on M3 and the built PDFs travel through Git. The open work is
+scientific expansion and revision toward the JFE bar.
 
 The executable check is:
 
@@ -112,21 +109,22 @@ and the lock.
 
 ## Data consolidation state
 
-- M3 current repository: about 87 GB of raw data, all regular files and no raw
-  symlinks. The data recovered from `defi-dominant-currency` were moved into this
-  repository; unconsumed derived data were removed. M3 is the TeX/build and review
-  host, not the canonical raw store.
-- Studio current repository: about 158 GB and 700,412 regular raw files, including
-  the complete Ethereum boundary and the explicit
-  `data/raw/ethereum/rpc_cache/`. It has no raw symlinks. The recovered backup
-  folder is inside `data/raw/archive/defi-vehicle-currencies-backups/`; the
-  retired sibling checkout has been removed from the projects directory and no
-  top-level backup checkout remains.
+- M3 has 119,258 regular raw files totaling 92,872,183,217 bytes (86.494 GiB),
+  with no raw symlinks. It is the TeX/build and review host, not the canonical raw
+  store.
+- Studio has 714,871 regular raw files totaling 169,525,329,199 bytes
+  (157.883 GiB), with no raw symlinks. The comparison found 4,473 M3 paths absent
+  initially: 1,911 records already had a Studio copy under the same
+  source/date-bearing basename and byte size, and all 2,562 genuinely new files
+  were copied to their exact relative paths with zero missing or size mismatches.
+- The 4,686 M3 processed/unified files were compared by path and size with
+  Studio's 12,864-file derived boundary. Six absent current support inputs were
+  copied; differing Studio files were retained rather than overwritten.
 - Stale runtime caches and derived artifacts were removed from both checkouts
   (recoverable copies are in each machine's Trash).
   Raw RPC cache records were moved into `data/raw/ethereum/rpc_cache/` before the
-  runtime cleanup. Cross-machine raw equality is intentionally not claimed: Studio
-  is the owner and M3's smaller copy is a working/build copy.
+  runtime cleanup. Cross-machine raw equality is intentionally not claimed:
+  Studio is the owner and M3's smaller copy is a working/build subset.
 
 ## Definition guards
 
@@ -142,17 +140,16 @@ and the lock.
 
 ## Deliverable state
 
-The M3 compiles a 47-page paper and a 36-page deck after both registered reruns.
-The paper log is clean; the deck's result pages were visually inspected and its
-two layout overflows corrected. Studio contains the same source and PDFs and
-passes the findings freeze plus the full repository test suite. There is one
-manuscript under `paper/` and one presentation under `deck/`; Git history is the
-archive.
+M3 compiles a 47-page paper and a 36-page deck after both registered reruns. The
+paper log is clean; the deck's result pages were visually inspected and its two
+layout overflows corrected. M3 passes 633 pytest tests plus 445 subtests, 331
+unittest tests, the findings gate, and every blocking conformance check. Studio
+contains the same source and PDFs and passes the repository test suite after its
+named processed inputs are synchronized. There is one manuscript under `paper/`
+and one presentation under `deck/`; Git history is the archive.
 
 These are baseline deliverables, not final submission deliverables. The paper
-and deck should remain presentable throughout the research process. Before the
-submission freeze, they need expanded mechanism results and a motivation rewrite
-built around concrete, down-to-earth vehicle-currency examples from traditional
-finance. If that expansion does not reach the JFE bar, the correct action is
-more search while maintaining the current draft and review snapshot, not a global
-pause.
+and deck remain presentable throughout the research process. Before submission
+freeze, they need expanded mechanism results and a motivation rewrite built
+around concrete vehicle-currency examples from traditional finance. A weak
+candidate loops back to more search rather than entering the headline evidence.
