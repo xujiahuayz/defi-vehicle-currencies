@@ -76,10 +76,39 @@ def render_stable_stress_event_deck_values(estimates: pd.DataFrame) -> str:
         record_type="stable_identity_contrast",
         contrast="stress_mean_daily_stable_routes_vs_pre",
     )
+    stable_route_change = _one(
+        estimates,
+        record_type="stress_lp_contrast",
+        contrast="stress_minus_pre_stable_route_share_5",
+    )
+    stable_capital_change = _one(
+        estimates,
+        record_type="stress_lp_contrast",
+        contrast="stress_minus_pre_stable_capital_share_5",
+    )
+    post_stable_capital_change = _one(
+        estimates,
+        record_type="stress_lp_contrast",
+        contrast="post_minus_pre_stable_capital_share_5",
+    )
+    post_weth_capital_change = _one(
+        estimates,
+        record_type="stress_lp_contrast",
+        contrast="post_minus_pre_weth_capital_share_5",
+    )
+    post_usdc_capital_change = _one(
+        estimates,
+        record_type="stress_lp_contrast",
+        contrast="post_minus_pre_usdc_capital_share_5",
+    )
     if not (
         float(stress_usdc["stable_route_share"]) > 0.5
         and abs(float(usdc_change["estimate"])) < 0.05
         and float(activity_change["estimate"]) > 0.25
+        and float(stable_route_change["estimate"]) > 0.05
+        and float(stable_capital_change["estimate"]) < 0.01
+        and float(post_weth_capital_change["estimate"]) > 0.0
+        and float(post_usdc_capital_change["estimate"]) < 0.0
     ):
         raise ValueError("stable stress-event identity pattern no longer holds")
     lines = [
@@ -90,6 +119,11 @@ def render_stable_stress_event_deck_values(estimates: pd.DataFrame) -> str:
         f"\\newcommand{{\\StressEventStableActivityRise}}{{{_pct(float(activity_change['estimate']))}}}",
         f"\\newcommand{{\\StressEventStressRoutesPerDay}}{{{_integer(float(stress_usdc['mean_daily_stable_routes']))}}}",
         f"\\newcommand{{\\StressEventPostUsdtShare}}{{{_pct(float(post_usdt['stable_route_share']))}}}",
+        f"\\newcommand{{\\StressEventStableRouteShareChange}}{{{_signed_pp(float(stable_route_change['estimate']))}}}",
+        f"\\newcommand{{\\StressEventStableCapitalShareChange}}{{{_signed_pp(float(stable_capital_change['estimate']))}}}",
+        f"\\newcommand{{\\StressEventPostStableCapitalShareChange}}{{{_signed_pp(float(post_stable_capital_change['estimate']))}}}",
+        f"\\newcommand{{\\StressEventPostWethCapitalShareChange}}{{{_signed_pp(float(post_weth_capital_change['estimate']))}}}",
+        f"\\newcommand{{\\StressEventPostUsdcCapitalShareChange}}{{{_signed_pp(float(post_usdc_capital_change['estimate']))}}}",
     ]
     return "\n".join(lines) + "\n"
 

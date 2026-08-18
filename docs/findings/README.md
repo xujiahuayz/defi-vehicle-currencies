@@ -93,8 +93,8 @@ rolling native-only-to-stable turn-on hazards, the direct-route by thinness
 interaction, same-day and prior-30-day candidate-network reach inside observed mixed native-stable
 risk-set checks, sticky incumbent
 vehicle regimes, USDC/USDT concentration at stable-entry, stable-candidate
-identity persistence, USDC/SVB stress-window identity persistence, extra-hop gas
-economics and route-level fixed-toll feasibility, the V2 liquidity
+identity persistence, USDC/SVB stress-window identity persistence and LP capital
+non-chase, extra-hop gas economics and route-level fixed-toll feasibility, the V2 liquidity
 route-minus-capital gap, stable-basket portfolio rebalancing, delayed/asymmetric
 LP rebalancing, LP stable-candidate response heterogeneity, venue-footprint and
 pool-count extensive-margin behavior, V2 pool-capital concentration and

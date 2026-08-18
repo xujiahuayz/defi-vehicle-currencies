@@ -25,7 +25,7 @@ question and literature                    done
   → cleaned and analysis-ready data        ready for the two active claim families
   → registered baseline analysis           done; findings check green
   → repository cleanup and host sync        done; one checkout per host
-  → presentable paper/deck trunk            51/43 pages; rebuild after admitted changes
+  → presentable paper/deck trunk            52/44 pages; rebuild after admitted changes
         status labels                      provisional / registered / confirmed
         review snapshots                   versioned and shareable while work continues
 
@@ -56,7 +56,7 @@ large-entrant routing, thin-market turn-on with a direct-route by thinness
 interaction, rolling native-only-to-stable turn-on hazards, same-day and
 prior-30-day candidate-network reach inside observed mixed-risk-set rival checks, sticky incumbent vehicle regimes, USDC/USDT
 concentration at stable-entry, stable-candidate identity persistence, USDC/SVB
-stress-window identity persistence,
+stress-window identity persistence and LP capital non-chase,
 extra-hop gas economics and route-level fixed-toll feasibility, LP capital-use
 gaps, stable-basket portfolio rebalancing, delayed/asymmetric LP rebalancing,
 stable-candidate LP response heterogeneity, LP extensive-margin behavior, V2
