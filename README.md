@@ -50,9 +50,12 @@ receipts fetched by processing scripts live under `data/raw/ethereum/rpc_cache/`
 not in a hidden Git runtime directory. Scratch data with no downstream consumer
 are disposable.
 
-This project does not require cryptographic content hashes, fingerprint registries,
-certificate chains, or multiple release namespaces. Direct paths, schemas, row
-checks, byte sizes, timestamps, tests, and successful rebuilds are enough.
+The normal research path does not require cryptographic content hashes, fingerprint
+registries, certificate chains, or multiple release namespaces. Direct paths,
+schemas, row checks, byte sizes, timestamps, tests, and successful rebuilds are
+enough. Older release helpers still understand hash-bearing sidecars for
+compatibility, but they are not a build gate and no new provenance layer should be
+introduced.
 
 The detailed path map and cleanup rules are in
 [`docs/repository-data-map.md`](docs/repository-data-map.md).

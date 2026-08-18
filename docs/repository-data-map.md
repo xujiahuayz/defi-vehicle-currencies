@@ -49,6 +49,8 @@ certificate chains, and parallel release registries are not required.
 Raw data never live through symlinks to another repository. Cross-machine copies
 are compared by relative path and byte size. A path mismatch is resolved before a
 claim is run; a content-identity system is not added to the research project.
+Legacy release helpers may read existing hash-bearing sidecars, but the direct
+research workflow does not create or require them.
 
 The executable indexed-source registry currently maps providers as follows:
 
