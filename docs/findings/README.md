@@ -101,7 +101,8 @@ route-minus-capital gap, stable-basket portfolio rebalancing, delayed/asymmetric
 LP rebalancing, LP stable-candidate response heterogeneity, venue-footprint and
 pool-count extensive-margin behavior, V2 pool-capital concentration and
 fragmentation, plus same-pool LP capital-chase rival screens, bounded V3
-fee/rent-incidence and TVL-normalized fee-yield screens, V3 mint/burn action-count, provider-day, activity-controlled provider-day responses, V4 modify-liquidity action composition, activity-controlled response, flash-accounting netting proxies, screened candidate-side V4 LP flow, V4 flash-to-wide-range LP reallocation, and local
+fee/rent-incidence and TVL-normalized fee-yield screens, V3 mint/burn action-count, provider-day, activity-controlled provider-day responses, V4 modify-liquidity action composition, activity-controlled response, flash-accounting netting proxies, screened candidate-side V4 LP flow, V4 flash-to-wide-range LP reallocation,
+stable-shortfall x V4 flash-accounting LP repositioning, and local
 bridge-liquidity dominance, entry-date local bridge-depth choice screens, plus
 stable-specific dynamic local bridge-depth feedback. The deck
 also carries the traditional-FX route analogy as motivation. These layers
