@@ -41,6 +41,7 @@ def _complete_rows() -> list[dict[str, object]]:
         "future_delta_log1p_tvl_usd",
         "future_log1p_lp_actions",
         "future_narrow_medium_action_share",
+        "future_wide_very_wide_action_share",
     )
     rows = []
     for predictor_index, predictor in enumerate(predictors):
@@ -65,8 +66,9 @@ def test_v4_flash_lp_mechanism_table_scales_coefficients() -> None:
     assert "Gross-to-net reduction share" in rendered
     assert "Future LP flow (log pts)" in rendered
     assert "Narrow/medium ranges (pp)" in rendered
+    assert "Wide/very-wide ranges (pp)" in rendered
     assert "$+0.010^{***}$" in rendered
-    assert "$+4.000^{**}$" in rendered
+    assert "$+5.000^{**}$" in rendered
     assert "2,015 / 403" in rendered
 
 

@@ -49,6 +49,7 @@ OUTCOMES = (
     "future_delta_log1p_tvl_usd",
     "future_log1p_lp_actions",
     "future_narrow_medium_action_share",
+    "future_wide_very_wide_action_share",
     "future_full_range_action_share",
 )
 CONTROLS = (
@@ -252,6 +253,8 @@ def build_mechanism_panel(
         "v4_remove_events",
         "v4_narrow_range_events",
         "v4_medium_range_events",
+        "v4_wide_range_events",
+        "v4_very_wide_range_events",
         "v4_full_range_events",
     ]
     for _candidate, candidate_panel in base.groupby("candidate_address", sort=True):
@@ -299,6 +302,9 @@ def build_mechanism_panel(
     ) / (panel["future_v4_gross_lp_flow_usd_screened"] + 1.0)
     panel["future_narrow_medium_action_share"] = (
         panel["future_v4_narrow_range_events"] + panel["future_v4_medium_range_events"]
+    ) / (panel["future_v4_total_lp_actions"] + 1.0)
+    panel["future_wide_very_wide_action_share"] = (
+        panel["future_v4_wide_range_events"] + panel["future_v4_very_wide_range_events"]
     ) / (panel["future_v4_total_lp_actions"] + 1.0)
     panel["future_full_range_action_share"] = (
         panel["future_v4_full_range_events"] / (panel["future_v4_total_lp_actions"] + 1.0)
@@ -436,9 +442,14 @@ def run(
     )
     write_exhibit(results, result_output, code_sources=CODE_SOURCES, inputs=INPUTS)
     write_exhibit(support, support_output, code_sources=CODE_SOURCES, inputs=INPUTS)
+    display_output = result_output.resolve()
+    try:
+        display_output = display_output.relative_to(REPO_ROOT)
+    except ValueError:
+        pass
     print(
         f"wrote {len(results):,} V4 flash-LP mechanism rows to "
-        f"{result_output.relative_to(REPO_ROOT)}"
+        f"{display_output}"
     )
     return 0
 

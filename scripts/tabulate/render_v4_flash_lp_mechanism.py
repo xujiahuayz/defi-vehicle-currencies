@@ -22,6 +22,7 @@ OUTCOMES = {
     "future_delta_log1p_tvl_usd": ("Candidate-linked TVL", "log pts"),
     "future_log1p_lp_actions": ("LP actions", "log pts"),
     "future_narrow_medium_action_share": ("Narrow/medium ranges", "pp"),
+    "future_wide_very_wide_action_share": ("Wide/very-wide ranges", "pp"),
 }
 
 
@@ -38,7 +39,10 @@ def _stars(p_value: float) -> str:
 def _effect(row: pd.Series) -> tuple[float, float]:
     coefficient = float(row["coefficient"])
     standard_error = float(row["standard_error"])
-    if row["outcome"] == "future_narrow_medium_action_share":
+    if row["outcome"] in {
+        "future_narrow_medium_action_share",
+        "future_wide_very_wide_action_share",
+    }:
         return 10.0 * coefficient, 10.0 * standard_error
     return 0.10 * coefficient, 0.10 * standard_error
 
@@ -103,7 +107,7 @@ def render_v4_flash_lp_mechanism(results: pd.DataFrame) -> str:
     rows: list[str] = []
     rows.append(
         r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}X"
-        r"*{4}{>{\centering\arraybackslash}X}@{}}"
+        r"*{5}{>{\centering\arraybackslash}X}@{}}"
     )
     rows.append(r"\toprule")
     rows.append(
@@ -128,12 +132,12 @@ def render_v4_flash_lp_mechanism(results: pd.DataFrame) -> str:
         raise ValueError("V4 mechanism table mixes observation or cluster counts")
     rows.append(
         "Observations / date clusters & "
-        + r"\multicolumn{4}{r}{"
+        + r"\multicolumn{5}{r}{"
         + f"{observations[0]:,} / {clusters[0]:,}"
         + r"} \\"
     )
-    rows.append(r"Candidate and date effects & \multicolumn{4}{r}{Yes} \\")
-    rows.append(r"Origin-day activity controls & \multicolumn{4}{r}{Yes} \\")
+    rows.append(r"Candidate and date effects & \multicolumn{5}{r}{Yes} \\")
+    rows.append(r"Origin-day activity controls & \multicolumn{5}{r}{Yes} \\")
     rows.append(r"\bottomrule")
     rows.append(r"\end{tabularx}")
     rows.append("")

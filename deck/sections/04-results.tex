@@ -16,6 +16,9 @@
 \IfFileExists{../output/exhibits/liquidity_provision_behavior_deck_values.tex}{%
 \input{../output/exhibits/liquidity_provision_behavior_deck_values.tex}%
 }{\PackageError{dvc-deck}{Missing generated liquidity-provision behavior values}{Run scripts/analyze/run_liquidity_provision_behavior_exploration.py then scripts/tabulate/build_liquidity_provision_behavior_deck_values.py.}}
+\IfFileExists{../output/exhibits/v4_flash_lp_deck_values.tex}{%
+\input{../output/exhibits/v4_flash_lp_deck_values.tex}%
+}{\PackageError{dvc-deck}{Missing generated V4 flash-LP values}{Run scripts/analyze/run_v4_flash_lp_mechanism_exploration.py then scripts/tabulate/build_v4_flash_lp_deck_values.py.}}
 \IfFileExists{../output/exhibits/bridge_liquidity_deck_values.tex}{%
 \input{../output/exhibits/bridge_liquidity_deck_values.tex}%
 }{\PackageError{dvc-deck}{Missing generated bridge-liquidity values}{Run scripts/analyze/run_bridge_liquidity_dominance.py then scripts/tabulate/build_bridge_liquidity_deck_values.py.}}
@@ -475,9 +478,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.44cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.4}{9.4}\selectfont Stable routes rise as capital falls. A 10 pp stable shortfall moves capital rank \LiqBehStableCapitalRankLongCoef{} and incumbent capital \LiqBehStablePoolEntryIncumbentLongCoef{}. On V4-active days, screened LP flow rises \LiqBehStableVFourFlowGrossLongCoef{}; remove flow \LiqBehStableVFourFlowRemoveLongCoef{} exceeds add flow \LiqBehStableVFourFlowAddLongCoef{}. Flash netting rises \LiqBehStableVFourFlashNettingCoef{}.\par}
+{\fontsize{8.4}{9.4}\selectfont Stable routes rise as capital falls. A 10 pp stable shortfall moves capital rank \LiqBehStableCapitalRankLongCoef{} and incumbent capital \LiqBehStablePoolEntryIncumbentLongCoef{}. V4 internal routing shifts future LP ranges from narrow/medium (\VFourFlashInternalNarrowLongCoef{}) to wide/very-wide (\VFourFlashInternalWideLongCoef{}).\par}
 \end{minipage}}
-\decknote{Five-candidate V2 capital panel. Pool split uses candidate/date FE. V3 rows use \LiqBehVThreeLpActionRows{} mint/burn records. V4 flow rows value filtered candidate-token sides and absorb current flow activity. Flash proxy is transaction gross-versus-net swap flow. Not true LP inventory or causal provider response.}
+\decknote{Five-candidate V2 capital panel. Pool split uses candidate/date FE. V3 rows use \LiqBehVThreeLpActionRows{} mint/burn records. V4 flow rows value filtered candidate-token sides and absorb current flow activity. Flash-LP range rows use \VFourFlashLpRows{} candidate-date observations and \VFourFlashLpDateClusters{} date clusters. Not true LP inventory or causal provider response.}
 \end{frame}
 
 % EVIDENCE-STATUS: current predictive mechanism result; the reciprocal rule records a non-pass

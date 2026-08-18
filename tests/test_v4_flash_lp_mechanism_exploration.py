@@ -91,6 +91,7 @@ def test_v4_flash_lp_mechanism_panel_and_regression_are_estimable() -> None:
     )
     assert panel["horizon_days"].eq(7).all()
     assert "future_log1p_gross_lp_flow_usd" in panel.columns
+    assert "future_wide_very_wide_action_share" in panel.columns
 
     results = fit_mechanism_regressions(
         panel,

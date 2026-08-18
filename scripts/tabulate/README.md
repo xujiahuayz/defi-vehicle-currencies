@@ -35,6 +35,7 @@ analysis exhibit that supplies each value.
 | `build_fixed_opportunity_deck_values.py` | fixed-opportunity macros |
 | `build_liquidity_capital_v2_deck_values.py` | V2 mechanism macros |
 | `build_liquidity_provision_behavior_deck_values.py` | exploratory liquidity behavior macros |
+| `build_v4_flash_lp_deck_values.py` | V4 flash-accounting LP-position macros |
 | `build_bridge_liquidity_feedback_deck_values.py` | local bridge-depth feedback macros |
 | `build_stable_stress_event_deck_values.py` | USDC/SVB stable-identity stress-screen macros |
 | `build_vehicle_formation_deck_values.py` | exploratory market-formation macros |
