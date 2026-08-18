@@ -552,6 +552,80 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         record_type="lp_action_protocol_comparison",
         candidate_symbol="USDT",
     )
+    stable_v4_lp_activity_action_long = _single(
+        estimates,
+        record_type="route_capital_gap_v4_lp_action_activity_control",
+        horizon_days=120,
+        outcome="future_log1p_v4_total_lp_actions",
+        predictor="stable_total_route_capital_gap_5",
+    )
+    stable_v4_lp_activity_sender_long = _single(
+        estimates,
+        record_type="route_capital_gap_v4_lp_action_activity_control",
+        horizon_days=120,
+        outcome="future_log1p_v4_sender_count",
+        predictor="stable_total_route_capital_gap_5",
+    )
+    stable_v4_active_lp_activity_action_long = _single(
+        estimates,
+        record_type="route_capital_gap_v4_lp_action_activity_control_v4_active",
+        horizon_days=120,
+        outcome="future_log1p_v4_total_lp_actions",
+        predictor="stable_total_route_capital_gap_5",
+    )
+    stable_v4_active_lp_activity_sender_long = _single(
+        estimates,
+        record_type="route_capital_gap_v4_lp_action_activity_control_v4_active",
+        horizon_days=120,
+        outcome="future_log1p_v4_sender_count",
+        predictor="stable_total_route_capital_gap_5",
+    )
+    stable_v4_flash_multileg = _single(
+        estimates,
+        record_type="route_capital_gap_v4_flash_accounting",
+        outcome="multi_leg_tx_share",
+        predictor="stable_total_route_capital_gap_5",
+    )
+    stable_v4_flash_internal = _single(
+        estimates,
+        record_type="route_capital_gap_v4_flash_accounting",
+        outcome="internal_tx_share",
+        predictor="stable_total_route_capital_gap_5",
+    )
+    stable_v4_flash_netting = _single(
+        estimates,
+        record_type="route_capital_gap_v4_flash_accounting",
+        outcome="netting_reduction_share",
+        predictor="stable_total_route_capital_gap_5",
+    )
+    stable_v4_flow_gross_long = _single(
+        estimates,
+        record_type="route_capital_gap_v4_lp_flow",
+        horizon_days=120,
+        outcome="future_log1p_v4_gross_lp_flow_usd_screened",
+        predictor="stable_total_route_capital_gap_5",
+    )
+    stable_v4_flow_add_long = _single(
+        estimates,
+        record_type="route_capital_gap_v4_lp_flow",
+        horizon_days=120,
+        outcome="future_log1p_v4_add_lp_flow_usd_screened",
+        predictor="stable_total_route_capital_gap_5",
+    )
+    stable_v4_flow_remove_long = _single(
+        estimates,
+        record_type="route_capital_gap_v4_lp_flow",
+        horizon_days=120,
+        outcome="future_log1p_v4_remove_lp_flow_usd_screened",
+        predictor="stable_total_route_capital_gap_5",
+    )
+    stable_v4_flow_sender_long = _single(
+        estimates,
+        record_type="route_capital_gap_v4_lp_flow",
+        horizon_days=120,
+        outcome="future_log1p_v4_lp_flow_sender_count",
+        predictor="stable_total_route_capital_gap_5",
+    )
     usdc_gap_close_long = _single(
         estimates,
         record_type="route_capital_gap_candidate_specific",
@@ -763,6 +837,46 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         and float(all_v4_lp_actions["v4_full_range_share"]) < 0.10
     ):
         raise ValueError("V4 LP-action composition contrast no longer holds")
+    if not (
+        float(stable_v4_lp_activity_action_long["coefficient"]) > 0
+        and float(stable_v4_lp_activity_sender_long["coefficient"]) > 0
+        and float(stable_v4_lp_activity_action_long["p_value"]) < 0.01
+        and float(stable_v4_lp_activity_sender_long["p_value"]) < 0.01
+        and float(stable_v4_lp_activity_action_long["n_observations"]) > 1000
+    ):
+        raise ValueError("activity-controlled V4 LP-action response no longer holds")
+    if not (
+        float(stable_v4_active_lp_activity_action_long["coefficient"]) > 0
+        and float(stable_v4_active_lp_activity_sender_long["coefficient"]) > 0
+        and float(stable_v4_active_lp_activity_action_long["p_value"]) < 0.01
+        and float(stable_v4_active_lp_activity_sender_long["p_value"]) < 0.01
+        and float(stable_v4_active_lp_activity_action_long["n_observations"]) > 1000
+    ):
+        raise ValueError("V4-active LP-action response no longer holds")
+    if not (
+        float(stable_v4_flash_multileg["coefficient"]) > 0
+        and float(stable_v4_flash_internal["coefficient"]) > 0
+        and float(stable_v4_flash_netting["coefficient"]) > 0
+        and float(stable_v4_flash_multileg["p_value"]) < 0.01
+        and float(stable_v4_flash_internal["p_value"]) < 0.01
+        and float(stable_v4_flash_netting["p_value"]) < 0.01
+        and float(stable_v4_flash_netting["n_observations"]) > 1000
+    ):
+        raise ValueError("V4 flash-accounting route-gap response no longer holds")
+    if not (
+        float(stable_v4_flow_gross_long["coefficient"]) > 0
+        and float(stable_v4_flow_add_long["coefficient"]) > 0
+        and float(stable_v4_flow_remove_long["coefficient"]) > 0
+        and float(stable_v4_flow_sender_long["coefficient"]) > 0
+        and float(stable_v4_flow_gross_long["p_value"]) < 0.01
+        and float(stable_v4_flow_add_long["p_value"]) < 0.01
+        and float(stable_v4_flow_remove_long["p_value"]) < 0.01
+        and float(stable_v4_flow_sender_long["p_value"]) < 0.01
+        and float(stable_v4_flow_remove_long["coefficient_per_10pp_gap"])
+        > float(stable_v4_flow_add_long["coefficient_per_10pp_gap"])
+        and float(stable_v4_flow_gross_long["n_observations"]) > 1000
+    ):
+        raise ValueError("V4 LP-flow route-gap response no longer holds")
     lines = [
         "% Generated by scripts/tabulate/build_liquidity_provision_behavior_deck_values.py; do not edit.",
         f"\\newcommand{{\\LiqBehPanelDays}}{{{_integer(int(leaders['days']))}}}",
@@ -903,6 +1017,28 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         f"\\newcommand{{\\LiqBehVThreeUsdtActionShare}}{{{_pct(float(usdt_v4_lp_actions['v3_action_share']))}}}",
         f"\\newcommand{{\\LiqBehVFourNarrowMediumShare}}{{{_pct(float(all_v4_lp_actions['v4_narrow_medium_share']))}}}",
         f"\\newcommand{{\\LiqBehVFourFullRangeShare}}{{{_pct(float(all_v4_lp_actions['v4_full_range_share']))}}}",
+        f"\\newcommand{{\\LiqBehStableVFourActivityLongCoef}}{{{_signed_percent(float(stable_v4_lp_activity_action_long['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVFourActivityLongSE}}{{{_unsigned_percent(float(stable_v4_lp_activity_action_long['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVFourSenderLongCoef}}{{{_signed_percent(float(stable_v4_lp_activity_sender_long['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVFourSenderLongSE}}{{{_unsigned_percent(float(stable_v4_lp_activity_sender_long['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVFourActiveActivityLongCoef}}{{{_signed_percent(float(stable_v4_active_lp_activity_action_long['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVFourActiveActivityLongSE}}{{{_unsigned_percent(float(stable_v4_active_lp_activity_action_long['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVFourActiveSenderLongCoef}}{{{_signed_percent(float(stable_v4_active_lp_activity_sender_long['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVFourActiveSenderLongSE}}{{{_unsigned_percent(float(stable_v4_active_lp_activity_sender_long['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVFourFlashMultilegCoef}}{{{_signed_pp(float(stable_v4_flash_multileg['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVFourFlashMultilegSE}}{{{_unsigned_pp(float(stable_v4_flash_multileg['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVFourFlashInternalCoef}}{{{_signed_pp(float(stable_v4_flash_internal['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVFourFlashInternalSE}}{{{_unsigned_pp(float(stable_v4_flash_internal['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVFourFlashNettingCoef}}{{{_signed_pp(float(stable_v4_flash_netting['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVFourFlashNettingSE}}{{{_unsigned_pp(float(stable_v4_flash_netting['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVFourFlowGrossLongCoef}}{{{_signed_percent(float(stable_v4_flow_gross_long['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVFourFlowGrossLongSE}}{{{_unsigned_percent(float(stable_v4_flow_gross_long['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVFourFlowAddLongCoef}}{{{_signed_percent(float(stable_v4_flow_add_long['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVFourFlowAddLongSE}}{{{_unsigned_percent(float(stable_v4_flow_add_long['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVFourFlowRemoveLongCoef}}{{{_signed_percent(float(stable_v4_flow_remove_long['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVFourFlowRemoveLongSE}}{{{_unsigned_percent(float(stable_v4_flow_remove_long['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVFourFlowSenderLongCoef}}{{{_signed_percent(float(stable_v4_flow_sender_long['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVFourFlowSenderLongSE}}{{{_unsigned_percent(float(stable_v4_flow_sender_long['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehUsdcGapCloseLongCoef}}{{{_signed_pp(float(usdc_gap_close_long['coefficient_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehUsdcGapCloseLongSE}}{{{_unsigned_pp(float(usdc_gap_close_long['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehDaiGapCloseLongCoef}}{{{_signed_pp(float(dai_gap_close_long['coefficient_per_10pp_gap']))}}}",

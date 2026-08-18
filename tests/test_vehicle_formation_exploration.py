@@ -20,6 +20,7 @@ from scripts.analyze.run_vehicle_formation_exploration import (
     entry_route_architecture_regressions,
     entry_secure_volume_regressions,
     entry_secure_volume_summary,
+    entry_scope_value_summaries,
     entry_stable_candidate_identity_regressions,
     entry_stable_candidate_persistence,
     entry_stable_candidate_summary,
@@ -157,6 +158,91 @@ def test_entry_stable_candidate_summary_splits_stable_entry_routes(
     assert usdc["candidate_routes"] == 8
     assert usdc["stable_entry_routes"] == 10
     assert usdc["stable_entry_route_share"] == pytest.approx(0.8)
+
+
+def test_entry_scope_value_summaries_split_venue_and_fixed_value_bins(
+    pair_support_path, tmp_path
+) -> None:
+    support = pd.read_parquet(pair_support_path)
+    duplicated_support = pd.concat(
+        [
+            support,
+            support[
+                support["date"].eq(pd.Timestamp("2026-01-01"))
+                & support["src"].eq("c")
+                & support["tgt"].eq("d")
+            ],
+        ],
+        ignore_index=True,
+    )
+    duplicate_support_path = tmp_path / "duplicate_pair_support.parquet"
+    duplicated_support.to_parquet(duplicate_support_path, index=False)
+    choices = pd.DataFrame(
+        [
+            {
+                "date": pd.Timestamp("2026-01-01"),
+                "src": "c",
+                "tgt": "d",
+                "candidate_type": "stable",
+                "integration_scope": "single_venue",
+                "route_count": 8,
+                "within_20pct_value_usd": 150_000.0,
+                "raw_value_usd": 160_000.0,
+            },
+            {
+                "date": pd.Timestamp("2026-01-01"),
+                "src": "c",
+                "tgt": "d",
+                "candidate_type": "native",
+                "integration_scope": "single_venue",
+                "route_count": 2,
+                "within_20pct_value_usd": 10_000.0,
+                "raw_value_usd": 12_000.0,
+            },
+            {
+                "date": pd.Timestamp("2026-01-01"),
+                "src": "a",
+                "tgt": "b",
+                "candidate_type": "native",
+                "integration_scope": "cross_venue",
+                "route_count": 10,
+                "within_20pct_value_usd": 5_000.0,
+                "raw_value_usd": 6_000.0,
+            },
+            {
+                "date": pd.Timestamp("2024-01-01"),
+                "src": "g",
+                "tgt": "h",
+                "candidate_type": "stable",
+                "integration_scope": "single_venue",
+                "route_count": 1,
+                "within_20pct_value_usd": 0.0,
+                "raw_value_usd": 100.0,
+            },
+        ]
+    )
+    choice_path = tmp_path / "choices.parquet"
+    choices.to_parquet(choice_path, index=False)
+
+    summary = entry_scope_value_summaries(
+        pair_support_path=duplicate_support_path,
+        candidate_choices_path=choice_path,
+    )
+
+    high_value = summary[
+        summary["record_type"].eq("entry_value_support_bin")
+        & summary["entry_year"].eq(2026)
+        & summary["value_support_bin"].eq("ge_100k_supported_value")
+    ].iloc[0]
+    single = summary[
+        summary["record_type"].eq("entry_venue_scope")
+        & summary["entry_year"].eq(2026)
+        & summary["integration_scope"].eq("single_venue")
+    ].iloc[0]
+    assert high_value["stable_share"] == pytest.approx(0.8)
+    assert high_value["supported_value_usd"] == pytest.approx(160_000.0)
+    assert single["pair_scope_rows"] == 1
+    assert single["route_mass_share"] == pytest.approx(0.5)
 
 
 def test_entry_stable_candidate_persistence_tracks_entry_candidate_identity(

@@ -34,11 +34,17 @@ POOL_CANDIDATE_CAPITAL_INPUT = REPO_ROOT / "data/processed/pool_candidate_capita
 V3_POOL_DAY_FEES_INPUT = REPO_ROOT / "data/processed/v3_pool_day_fees.parquet"
 V3_LP_ACTION_INPUT = REPO_ROOT / "data/processed/v3_lp_action_candidate_daily.parquet"
 V4_LP_ACTION_INPUT = REPO_ROOT / "data/processed/v4_lp_action_candidate_daily.parquet"
+V4_FLASH_ACCOUNTING_INPUT = (
+    REPO_ROOT / "data/processed/v4_flash_accounting_candidate_daily.parquet"
+)
+V4_LP_FLOW_INPUT = REPO_ROOT / "data/processed/v4_lp_flow_candidate_daily.parquet"
 RESULT_OUTPUT = OUTPUT_DIR / "exhibits/liquidity_provision_behavior_exploration.jsonl"
 SUPPORT_OUTPUT = OUTPUT_DIR / "exhibits/liquidity_provision_behavior_support.jsonl"
 
 CODE_SOURCES = [
     "scripts/analyze/run_liquidity_provision_behavior_exploration.py",
+    "scripts/process/build_v4_flash_accounting_candidate_daily.py",
+    "scripts/process/build_v4_lp_flow_candidate_daily.py",
     "src/ddvc/analysis/regression.py",
 ]
 INPUTS = [
@@ -48,6 +54,8 @@ INPUTS = [
     "data/processed/v3_pool_day_fees.parquet",
     "data/processed/v3_lp_action_candidate_daily.parquet",
     "data/processed/v4_lp_action_candidate_daily.parquet",
+    "data/processed/v4_flash_accounting_candidate_daily.parquet",
+    "data/processed/v4_lp_flow_candidate_daily.parquet",
 ]
 STABLE_SYMBOLS = frozenset({"DAI", "USDC", "USDT"})
 WETH_SYMBOL = "WETH"
@@ -1831,6 +1839,62 @@ def load_v4_lp_actions(path: Path = V4_LP_ACTION_INPUT) -> pd.DataFrame:
     return frame
 
 
+def load_v4_flash_accounting(path: Path = V4_FLASH_ACCOUNTING_INPUT) -> pd.DataFrame:
+    """Load the processed Uniswap V4 singleton-netting proxy panel."""
+
+    frame = pd.read_parquet(path)
+    required = {
+        "origin_date",
+        "candidate_address",
+        "candidate_symbol",
+        "candidate_tx_count",
+        "swap_leg_assignments",
+        "multi_leg_tx_count",
+        "internal_tx_count",
+        "gross_abs_amount",
+        "net_abs_amount",
+        "netting_reduction_amount",
+        "netting_reduction_tx_count",
+        "multi_leg_tx_share",
+        "internal_tx_share",
+        "netting_reduction_share",
+        "net_to_gross_share",
+    }
+    missing = sorted(required - set(frame.columns))
+    if missing:
+        raise ValueError(f"V4 flash-accounting panel lacks columns: {missing}")
+    frame = frame.copy()
+    frame["origin_date"] = pd.to_datetime(frame["origin_date"]).dt.normalize()
+    frame["candidate_address"] = frame["candidate_address"].astype(str).str.lower()
+    frame["candidate_symbol"] = frame["candidate_symbol"].astype(str)
+    return frame
+
+
+def load_v4_lp_flows(path: Path = V4_LP_FLOW_INPUT) -> pd.DataFrame:
+    """Load the screened Uniswap V4 candidate-side LP flow panel."""
+
+    frame = pd.read_parquet(path)
+    required = {
+        "origin_date",
+        "candidate_address",
+        "candidate_symbol",
+        "v4_gross_lp_flow_usd_screened",
+        "v4_add_lp_flow_usd_screened",
+        "v4_remove_lp_flow_usd_screened",
+        "v4_net_add_lp_flow_usd_screened",
+        "v4_lp_flow_origin_count",
+        "v4_lp_flow_sender_count",
+    }
+    missing = sorted(required - set(frame.columns))
+    if missing:
+        raise ValueError(f"V4 LP-flow panel lacks columns: {missing}")
+    frame = frame.copy()
+    frame["origin_date"] = pd.to_datetime(frame["origin_date"]).dt.normalize()
+    frame["candidate_address"] = frame["candidate_address"].astype(str).str.lower()
+    frame["candidate_symbol"] = frame["candidate_symbol"].astype(str)
+    return frame
+
+
 def lp_action_protocol_comparison(
     v3_actions: pd.DataFrame,
     v4_actions: pd.DataFrame,
@@ -2608,6 +2672,984 @@ def route_capital_gap_v3_lp_action_candidate_specific(
                         ),
                     }
                 )
+    return pd.DataFrame(rows)
+
+
+def route_capital_gap_v4_lp_action_horizon_panel(
+    share_gap_panel: pd.DataFrame,
+    *,
+    actions: pd.DataFrame,
+    horizons: tuple[int, ...] = V3_LP_ACTION_HORIZONS,
+) -> pd.DataFrame:
+    """Attach future Uniswap V4 modify-liquidity actions to route-capital gaps."""
+
+    if not horizons:
+        raise ValueError("at least one V4 LP-action horizon is required")
+    required = {
+        "origin_date",
+        "candidate_address",
+        "candidate_symbol",
+        "route_capital_gap_5",
+        "is_stable",
+    }
+    missing = sorted(required - set(share_gap_panel.columns))
+    if missing:
+        raise ValueError(f"share-gap panel lacks V4 LP-action columns: {missing}")
+    base = share_gap_panel[list(required)].copy()
+    base["origin_date"] = pd.to_datetime(base["origin_date"]).dt.normalize()
+    base["candidate_address"] = base["candidate_address"].astype(str).str.lower()
+    base["candidate_symbol"] = base["candidate_symbol"].astype(str)
+    action_columns = [
+        "v4_add_events",
+        "v4_remove_events",
+        "v4_zero_liquidity_events",
+        "v4_total_lp_actions",
+        "v4_net_add_events",
+        "v4_total_origin_count",
+        "v4_sender_count",
+        "v4_narrow_range_events",
+        "v4_medium_range_events",
+        "v4_wide_range_events",
+        "v4_very_wide_range_events",
+        "v4_full_range_events",
+    ]
+    origin_action_columns = [f"origin_{column}" for column in action_columns]
+    if actions.empty:
+        action_frame = pd.DataFrame(
+            columns=["origin_date", "candidate_address", *action_columns]
+        )
+    else:
+        action_frame = actions.copy()
+        action_frame["origin_date"] = pd.to_datetime(
+            action_frame["origin_date"]
+        ).dt.normalize()
+        action_frame["candidate_address"] = (
+            action_frame["candidate_address"].astype(str).str.lower()
+        )
+        action_frame = (
+            action_frame.groupby(
+                ["origin_date", "candidate_address"], as_index=False, sort=True
+            )[action_columns]
+            .sum()
+        )
+    origin_action_frame = action_frame.rename(
+        columns={column: f"origin_{column}" for column in action_columns}
+    )
+
+    horizon_rows: list[pd.DataFrame] = []
+    max_horizon = max(horizons)
+    for candidate_address, candidate_base in base.groupby(
+        "candidate_address", sort=True
+    ):
+        candidate_base = candidate_base.sort_values("origin_date").copy()
+        start = candidate_base["origin_date"].min()
+        end = candidate_base["origin_date"].max() + pd.Timedelta(days=max_horizon)
+        calendar = pd.DataFrame(
+            {
+                "origin_date": pd.date_range(start, end, freq="D"),
+                "candidate_address": candidate_address,
+            }
+        )
+        calendar = calendar.merge(
+            action_frame[action_frame["candidate_address"].eq(candidate_address)],
+            on=["origin_date", "candidate_address"],
+            how="left",
+        )
+        calendar[action_columns] = calendar[action_columns].fillna(0.0)
+        for column in action_columns:
+            calendar[f"{column}_cumulative"] = calendar[column].cumsum()
+        cumulative = calendar[
+            ["origin_date", *[f"{column}_cumulative" for column in action_columns]]
+        ]
+        origin = candidate_base.merge(
+            origin_action_frame,
+            on=["origin_date", "candidate_address"],
+            how="left",
+            validate="one_to_one",
+        )
+        origin[origin_action_columns] = origin[origin_action_columns].fillna(0.0)
+        origin = origin.merge(
+            cumulative,
+            on="origin_date",
+            how="left",
+            validate="one_to_one",
+        )
+        for horizon in horizons:
+            target = cumulative.copy()
+            target["origin_date"] = target["origin_date"] - pd.Timedelta(
+                days=horizon
+            )
+            joined = origin.merge(
+                target,
+                on="origin_date",
+                how="inner",
+                suffixes=("", "_target"),
+                validate="one_to_one",
+            )
+            if joined.empty:
+                continue
+            joined["horizon_days"] = int(horizon)
+            for column in action_columns:
+                joined[f"future_{column}"] = (
+                    joined[f"{column}_cumulative_target"]
+                    - joined[f"{column}_cumulative"]
+                )
+            horizon_rows.append(joined)
+    if not horizon_rows:
+        raise ValueError("V4 LP-action horizon panel is empty")
+    panel = pd.concat(horizon_rows, ignore_index=True, sort=False)
+    panel["future_log1p_v4_add_events"] = np.log1p(
+        panel["future_v4_add_events"].astype(float)
+    )
+    panel["future_log1p_v4_remove_events"] = np.log1p(
+        panel["future_v4_remove_events"].astype(float)
+    )
+    panel["future_log1p_v4_zero_liquidity_events"] = np.log1p(
+        panel["future_v4_zero_liquidity_events"].astype(float)
+    )
+    panel["future_log1p_v4_total_lp_actions"] = np.log1p(
+        panel["future_v4_total_lp_actions"].astype(float)
+    )
+    panel["future_v4_net_add_event_balance"] = (
+        panel["future_v4_net_add_events"].astype(float)
+        / panel["future_v4_total_lp_actions"].astype(float).add(1.0)
+    )
+    panel["future_log1p_v4_total_origin_count"] = np.log1p(
+        panel["future_v4_total_origin_count"].astype(float)
+    )
+    panel["future_log1p_v4_sender_count"] = np.log1p(
+        panel["future_v4_sender_count"].astype(float)
+    )
+    future_range_total = (
+        panel["future_v4_narrow_range_events"].astype(float)
+        + panel["future_v4_medium_range_events"].astype(float)
+        + panel["future_v4_wide_range_events"].astype(float)
+        + panel["future_v4_very_wide_range_events"].astype(float)
+        + panel["future_v4_full_range_events"].astype(float)
+    )
+    panel["future_v4_narrow_medium_share"] = np.where(
+        future_range_total > 0,
+        (
+            panel["future_v4_narrow_range_events"].astype(float)
+            + panel["future_v4_medium_range_events"].astype(float)
+        )
+        / future_range_total,
+        np.nan,
+    )
+    panel["future_v4_full_range_share"] = np.where(
+        future_range_total > 0,
+        panel["future_v4_full_range_events"].astype(float) / future_range_total,
+        np.nan,
+    )
+    panel["origin_log1p_v4_total_lp_actions"] = np.log1p(
+        panel["origin_v4_total_lp_actions"].astype(float)
+    )
+    panel["origin_log1p_v4_total_origin_count"] = np.log1p(
+        panel["origin_v4_total_origin_count"].astype(float)
+    )
+    panel["origin_log1p_v4_sender_count"] = np.log1p(
+        panel["origin_v4_sender_count"].astype(float)
+    )
+    return panel.replace([np.inf, -np.inf], np.nan).dropna(
+        subset=[
+            "route_capital_gap_5",
+            "is_stable",
+            "future_log1p_v4_add_events",
+            "future_log1p_v4_remove_events",
+            "future_log1p_v4_zero_liquidity_events",
+            "future_log1p_v4_total_lp_actions",
+            "future_v4_net_add_event_balance",
+            "future_log1p_v4_total_origin_count",
+            "future_log1p_v4_sender_count",
+            "origin_log1p_v4_total_lp_actions",
+            "origin_log1p_v4_total_origin_count",
+            "origin_log1p_v4_sender_count",
+        ]
+    )
+
+
+def route_capital_gap_v4_lp_action_response(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 300,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Test whether route-capital gaps predict later V4 LP action composition."""
+
+    rows: list[dict[str, object]] = []
+    outcomes = (
+        "future_log1p_v4_add_events",
+        "future_log1p_v4_remove_events",
+        "future_log1p_v4_zero_liquidity_events",
+        "future_log1p_v4_total_lp_actions",
+        "future_v4_net_add_event_balance",
+        "future_log1p_v4_total_origin_count",
+        "future_log1p_v4_sender_count",
+        "future_v4_narrow_medium_share",
+        "future_v4_full_range_share",
+    )
+    for horizon, group in panel.groupby("horizon_days", sort=True):
+        for outcome in outcomes:
+            data = (
+                group[
+                    [
+                        "origin_date",
+                        "candidate_address",
+                        "is_stable",
+                        "route_capital_gap_5",
+                        outcome,
+                    ]
+                ]
+                .replace([np.inf, -np.inf], np.nan)
+                .dropna()
+                .copy()
+            )
+            if data.empty:
+                continue
+            data["route_capital_gap_5_x_stable"] = (
+                data["route_capital_gap_5"].astype(float)
+                * data["is_stable"].astype(float)
+            )
+            residual = absorb_fixed_effects(
+                data[
+                    [
+                        outcome,
+                        "route_capital_gap_5",
+                        "route_capital_gap_5_x_stable",
+                    ]
+                ],
+                data["candidate_address"],
+                data["origin_date"],
+            )
+            fit = ols_clustered(
+                residual[outcome],
+                residual[["route_capital_gap_5", "route_capital_gap_5_x_stable"]],
+                data["origin_date"],
+                add_constant=False,
+                absorbed_groups=(data["candidate_address"], data["origin_date"]),
+                min_observations=min_observations,
+                min_clusters=min_clusters,
+            )
+            for predictor, coefficient, standard_error, t_statistic, p_value in zip(
+                ("route_capital_gap_5", "route_capital_gap_5_x_stable"),
+                fit.beta,
+                fit.standard_errors,
+                fit.t_statistics,
+                fit.p_values,
+                strict=True,
+            ):
+                coefficient = float(coefficient)
+                standard_error = float(standard_error)
+                rows.append(
+                    {
+                        "analysis_status": "exploratory_descriptive",
+                        "record_type": "route_capital_gap_v4_lp_action",
+                        "horizon_days": int(horizon),
+                        "outcome": outcome,
+                        "predictor": predictor,
+                        "coefficient": coefficient,
+                        "standard_error": standard_error,
+                        "t_statistic": float(t_statistic),
+                        "p_value": float(p_value),
+                        "coefficient_per_10pp_gap": 0.10 * coefficient,
+                        "standard_error_per_10pp_gap": 0.10 * standard_error,
+                        "n_observations": int(fit.n_observations),
+                        "date_clusters": int(fit.n_clusters),
+                        "fixed_effects": "candidate_address+origin_date",
+                        "covariance": "origin_date_clustered",
+                        "event_source": "uniswap_v4_graph_modify_liquidity_events",
+                        "interpretation": (
+                            "future V4 modify-liquidity event-count, sender-day, "
+                            "or range-composition association; not dollar-valued "
+                            "provider flow or causal LP response"
+                        ),
+                    }
+                )
+            stable_total = linear_contrast(fit, [1.0, 1.0])
+            rows.append(
+                {
+                    "analysis_status": "exploratory_descriptive",
+                    "record_type": "route_capital_gap_v4_lp_action",
+                    "horizon_days": int(horizon),
+                    "outcome": outcome,
+                    "predictor": "stable_total_route_capital_gap_5",
+                    "coefficient": stable_total.estimate,
+                    "standard_error": stable_total.standard_error,
+                    "t_statistic": stable_total.t_statistic,
+                    "p_value": stable_total.p_value,
+                    "coefficient_per_10pp_gap": 0.10 * stable_total.estimate,
+                    "standard_error_per_10pp_gap": 0.10
+                    * stable_total.standard_error,
+                    "n_observations": int(fit.n_observations),
+                    "date_clusters": int(fit.n_clusters),
+                    "fixed_effects": "candidate_address+origin_date",
+                    "covariance": "origin_date_clustered",
+                    "event_source": "uniswap_v4_graph_modify_liquidity_events",
+                    "interpretation": (
+                        "stable-candidate future V4 modify-liquidity event-count, "
+                        "sender-day, or range-composition association; not "
+                        "dollar-valued provider flow or causal LP response"
+                    ),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def route_capital_gap_v4_lp_action_activity_control(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 300,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Test V4 LP-action response net of current candidate action activity."""
+
+    rows: list[dict[str, object]] = []
+    outcomes = (
+        "future_log1p_v4_total_lp_actions",
+        "future_log1p_v4_total_origin_count",
+        "future_log1p_v4_sender_count",
+    )
+    controls = (
+        "route_capital_gap_5",
+        "route_capital_gap_5_x_stable",
+        "origin_log1p_v4_total_lp_actions",
+        "origin_log1p_v4_total_origin_count",
+        "origin_log1p_v4_sender_count",
+    )
+    required = {
+        "origin_date",
+        "candidate_address",
+        "is_stable",
+        "route_capital_gap_5",
+        "origin_log1p_v4_total_lp_actions",
+        "origin_log1p_v4_total_origin_count",
+        "origin_log1p_v4_sender_count",
+        *outcomes,
+    }
+    missing = sorted(required - set(panel.columns))
+    if missing:
+        raise ValueError(f"V4 LP-action panel lacks activity-control columns: {missing}")
+    for horizon, group in panel.groupby("horizon_days", sort=True):
+        for outcome in outcomes:
+            data = (
+                group[
+                    [
+                        "origin_date",
+                        "candidate_address",
+                        "is_stable",
+                        "route_capital_gap_5",
+                        "origin_log1p_v4_total_lp_actions",
+                        "origin_log1p_v4_total_origin_count",
+                        "origin_log1p_v4_sender_count",
+                        outcome,
+                    ]
+                ]
+                .replace([np.inf, -np.inf], np.nan)
+                .dropna()
+                .copy()
+            )
+            data["route_capital_gap_5_x_stable"] = (
+                data["route_capital_gap_5"].astype(float)
+                * data["is_stable"].astype(float)
+            )
+            residual = absorb_fixed_effects(
+                data[[outcome, *controls]],
+                data["candidate_address"],
+                data["origin_date"],
+            )
+            fit = ols_clustered(
+                residual[outcome],
+                residual[list(controls)],
+                data["origin_date"],
+                add_constant=False,
+                absorbed_groups=(data["candidate_address"], data["origin_date"]),
+                min_observations=min_observations,
+                min_clusters=min_clusters,
+            )
+            for predictor, coefficient, standard_error, t_statistic, p_value in zip(
+                controls,
+                fit.beta,
+                fit.standard_errors,
+                fit.t_statistics,
+                fit.p_values,
+                strict=True,
+            ):
+                coefficient = float(coefficient)
+                standard_error = float(standard_error)
+                rows.append(
+                    {
+                        "analysis_status": "exploratory_descriptive",
+                        "record_type": (
+                            "route_capital_gap_v4_lp_action_activity_control"
+                        ),
+                        "horizon_days": int(horizon),
+                        "outcome": outcome,
+                        "predictor": predictor,
+                        "coefficient": coefficient,
+                        "standard_error": standard_error,
+                        "t_statistic": float(t_statistic),
+                        "p_value": float(p_value),
+                        "coefficient_per_10pp_gap": (
+                            0.10 * coefficient
+                            if predictor.startswith("route_capital_gap_5")
+                            else np.nan
+                        ),
+                        "standard_error_per_10pp_gap": (
+                            0.10 * standard_error
+                            if predictor.startswith("route_capital_gap_5")
+                            else np.nan
+                        ),
+                        "n_observations": int(fit.n_observations),
+                        "date_clusters": int(fit.n_clusters),
+                        "fixed_effects": "candidate_address+origin_date",
+                        "covariance": "origin_date_clustered",
+                        "activity_controls": (
+                            "origin_log1p_v4_total_lp_actions+"
+                            "origin_log1p_v4_total_origin_count+"
+                            "origin_log1p_v4_sender_count"
+                        ),
+                        "event_source": "uniswap_v4_graph_modify_liquidity_events",
+                        "interpretation": (
+                            "future V4 LP action or sender-day association net "
+                            "of current candidate action activity; not "
+                            "dollar-valued provider flow or causal LP response"
+                        ),
+                    }
+                )
+            stable_total = linear_contrast(fit, [1.0, 1.0, 0.0, 0.0, 0.0])
+            rows.append(
+                {
+                    "analysis_status": "exploratory_descriptive",
+                    "record_type": "route_capital_gap_v4_lp_action_activity_control",
+                    "horizon_days": int(horizon),
+                    "outcome": outcome,
+                    "predictor": "stable_total_route_capital_gap_5",
+                    "coefficient": stable_total.estimate,
+                    "standard_error": stable_total.standard_error,
+                    "t_statistic": stable_total.t_statistic,
+                    "p_value": stable_total.p_value,
+                    "coefficient_per_10pp_gap": 0.10 * stable_total.estimate,
+                    "standard_error_per_10pp_gap": 0.10
+                    * stable_total.standard_error,
+                    "n_observations": int(fit.n_observations),
+                    "date_clusters": int(fit.n_clusters),
+                    "fixed_effects": "candidate_address+origin_date",
+                    "covariance": "origin_date_clustered",
+                    "activity_controls": (
+                        "origin_log1p_v4_total_lp_actions+"
+                        "origin_log1p_v4_total_origin_count+"
+                        "origin_log1p_v4_sender_count"
+                    ),
+                    "event_source": "uniswap_v4_graph_modify_liquidity_events",
+                    "interpretation": (
+                        "stable-candidate future V4 LP action or sender-day "
+                        "association net of current candidate action activity; "
+                        "not dollar-valued provider flow or causal LP response"
+                    ),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def route_capital_gap_v4_lp_action_activity_control_v4_active(
+    panel: pd.DataFrame,
+    *,
+    flash_accounting: pd.DataFrame,
+    min_observations: int = 300,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Restrict V4 LP-action responses to days with observed V4 singleton swaps."""
+
+    required = {
+        "origin_date",
+        "candidate_address",
+        "candidate_tx_count",
+        "multi_leg_tx_share",
+        "internal_tx_share",
+        "netting_reduction_share",
+    }
+    missing = sorted(required - set(flash_accounting.columns))
+    if missing:
+        raise ValueError(f"V4 flash-accounting panel lacks active-sample columns: {missing}")
+    flash = flash_accounting[list(required)].copy()
+    flash["origin_date"] = pd.to_datetime(flash["origin_date"]).dt.normalize()
+    flash["candidate_address"] = flash["candidate_address"].astype(str).str.lower()
+    active = panel.merge(
+        flash,
+        on=["origin_date", "candidate_address"],
+        how="inner",
+        validate="many_to_one",
+    )
+    if active.empty:
+        raise ValueError("V4-active LP-action panel is empty")
+    result = route_capital_gap_v4_lp_action_activity_control(
+        active,
+        min_observations=min_observations,
+        min_clusters=min_clusters,
+    )
+    result = result.copy()
+    result["record_type"] = "route_capital_gap_v4_lp_action_activity_control_v4_active"
+    result["sample"] = "v4_active_origin_candidate_days"
+    result["v4_active_origin_candidate_days"] = int(
+        active[["origin_date", "candidate_address"]].drop_duplicates().shape[0]
+    )
+    result["flash_accounting_input"] = str(
+        V4_FLASH_ACCOUNTING_INPUT.relative_to(REPO_ROOT)
+    )
+    result["interpretation"] = (
+        "stable-candidate future V4 LP action or sender-day association on "
+        "origin days with observed V4 singleton swaps, net of current candidate "
+        "action activity; not dollar-valued provider flow or causal LP response"
+    )
+    return result
+
+
+def route_capital_gap_v4_flash_accounting(
+    share_gap_panel: pd.DataFrame,
+    *,
+    flash_accounting: pd.DataFrame,
+    min_observations: int = 300,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Test whether route-capital gaps align with V4 singleton-netting intensity."""
+
+    required_share = {
+        "origin_date",
+        "candidate_address",
+        "candidate_symbol",
+        "route_capital_gap_5",
+        "is_stable",
+    }
+    missing_share = sorted(required_share - set(share_gap_panel.columns))
+    if missing_share:
+        raise ValueError(f"share-gap panel lacks V4 flash columns: {missing_share}")
+    required_flash = {
+        "origin_date",
+        "candidate_address",
+        "candidate_tx_count",
+        "multi_leg_tx_share",
+        "internal_tx_share",
+        "netting_reduction_share",
+    }
+    missing_flash = sorted(required_flash - set(flash_accounting.columns))
+    if missing_flash:
+        raise ValueError(f"V4 flash-accounting panel lacks columns: {missing_flash}")
+
+    base = share_gap_panel[list(required_share)].copy()
+    base["origin_date"] = pd.to_datetime(base["origin_date"]).dt.normalize()
+    base["candidate_address"] = base["candidate_address"].astype(str).str.lower()
+    flash = flash_accounting[list(required_flash)].copy()
+    flash["origin_date"] = pd.to_datetime(flash["origin_date"]).dt.normalize()
+    flash["candidate_address"] = flash["candidate_address"].astype(str).str.lower()
+    data = base.merge(
+        flash,
+        on=["origin_date", "candidate_address"],
+        how="inner",
+        validate="one_to_one",
+    )
+    if data.empty:
+        raise ValueError("V4 flash-accounting route-gap panel is empty")
+
+    rows: list[dict[str, object]] = []
+    outcomes = (
+        "multi_leg_tx_share",
+        "internal_tx_share",
+        "netting_reduction_share",
+    )
+    for outcome in outcomes:
+        sample = (
+            data[
+                [
+                    "origin_date",
+                    "candidate_address",
+                    "is_stable",
+                    "route_capital_gap_5",
+                    "candidate_tx_count",
+                    outcome,
+                ]
+            ]
+            .replace([np.inf, -np.inf], np.nan)
+            .dropna()
+            .copy()
+        )
+        sample["route_capital_gap_5_x_stable"] = (
+            sample["route_capital_gap_5"].astype(float)
+            * sample["is_stable"].astype(float)
+        )
+        residual = absorb_fixed_effects(
+            sample[
+                [
+                    outcome,
+                    "route_capital_gap_5",
+                    "route_capital_gap_5_x_stable",
+                ]
+            ],
+            sample["candidate_address"],
+            sample["origin_date"],
+        )
+        fit = ols_clustered(
+            residual[outcome],
+            residual[["route_capital_gap_5", "route_capital_gap_5_x_stable"]],
+            sample["origin_date"],
+            add_constant=False,
+            absorbed_groups=(sample["candidate_address"], sample["origin_date"]),
+            min_observations=min_observations,
+            min_clusters=min_clusters,
+        )
+        for predictor, coefficient, standard_error, t_statistic, p_value in zip(
+            ("route_capital_gap_5", "route_capital_gap_5_x_stable"),
+            fit.beta,
+            fit.standard_errors,
+            fit.t_statistics,
+            fit.p_values,
+            strict=True,
+        ):
+            rows.append(
+                {
+                    "analysis_status": "exploratory_descriptive",
+                    "record_type": "route_capital_gap_v4_flash_accounting",
+                    "outcome": outcome,
+                    "predictor": predictor,
+                    "coefficient": float(coefficient),
+                    "standard_error": float(standard_error),
+                    "t_statistic": float(t_statistic),
+                    "p_value": float(p_value),
+                    "coefficient_per_10pp_gap": 0.10 * float(coefficient),
+                    "standard_error_per_10pp_gap": 0.10 * float(standard_error),
+                    "n_observations": int(fit.n_observations),
+                    "date_clusters": int(fit.n_clusters),
+                    "fixed_effects": "candidate_address+origin_date",
+                    "covariance": "origin_date_clustered",
+                    "event_source": "uniswap_v4_graph_swap_events",
+                    "flash_accounting_input": str(
+                        V4_FLASH_ACCOUNTING_INPUT.relative_to(REPO_ROOT)
+                    ),
+                    "interpretation": (
+                        "within-transaction V4 singleton netting proxy associated "
+                        "with route-capital gaps; unit-free swap-flow netting, not "
+                        "dollar-valued LP flow or causality"
+                    ),
+                }
+            )
+        stable_total = linear_contrast(fit, [1.0, 1.0])
+        rows.append(
+            {
+                "analysis_status": "exploratory_descriptive",
+                "record_type": "route_capital_gap_v4_flash_accounting",
+                "outcome": outcome,
+                "predictor": "stable_total_route_capital_gap_5",
+                "coefficient": stable_total.estimate,
+                "standard_error": stable_total.standard_error,
+                "t_statistic": stable_total.t_statistic,
+                "p_value": stable_total.p_value,
+                "coefficient_per_10pp_gap": 0.10 * stable_total.estimate,
+                "standard_error_per_10pp_gap": 0.10 * stable_total.standard_error,
+                "n_observations": int(fit.n_observations),
+                "date_clusters": int(fit.n_clusters),
+                "fixed_effects": "candidate_address+origin_date",
+                "covariance": "origin_date_clustered",
+                "event_source": "uniswap_v4_graph_swap_events",
+                "flash_accounting_input": str(
+                    V4_FLASH_ACCOUNTING_INPUT.relative_to(REPO_ROOT)
+                ),
+                "interpretation": (
+                    "stable-candidate V4 singleton netting proxy associated with "
+                    "route-capital gaps; unit-free swap-flow netting, not "
+                    "dollar-valued LP flow or causality"
+                ),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def route_capital_gap_v4_lp_flow_horizon_panel(
+    share_gap_panel: pd.DataFrame,
+    *,
+    flows: pd.DataFrame,
+    horizons: tuple[int, ...] = V3_LP_ACTION_HORIZONS,
+) -> pd.DataFrame:
+    """Attach future screened V4 candidate-side LP flows to route-capital gaps."""
+
+    if not horizons:
+        raise ValueError("at least one V4 LP-flow horizon is required")
+    required = {
+        "origin_date",
+        "candidate_address",
+        "candidate_symbol",
+        "route_capital_gap_5",
+        "is_stable",
+    }
+    missing = sorted(required - set(share_gap_panel.columns))
+    if missing:
+        raise ValueError(f"share-gap panel lacks V4 LP-flow columns: {missing}")
+    flow_columns = [
+        "v4_gross_lp_flow_usd_screened",
+        "v4_add_lp_flow_usd_screened",
+        "v4_remove_lp_flow_usd_screened",
+        "v4_net_add_lp_flow_usd_screened",
+        "v4_lp_flow_origin_count",
+        "v4_lp_flow_sender_count",
+    ]
+    missing_flow = sorted({"origin_date", "candidate_address", *flow_columns} - set(flows.columns))
+    if missing_flow:
+        raise ValueError(f"V4 LP-flow panel lacks columns: {missing_flow}")
+
+    base = share_gap_panel[list(required)].copy()
+    base["origin_date"] = pd.to_datetime(base["origin_date"]).dt.normalize()
+    base["candidate_address"] = base["candidate_address"].astype(str).str.lower()
+    flow_frame = flows[["origin_date", "candidate_address", *flow_columns]].copy()
+    flow_frame["origin_date"] = pd.to_datetime(flow_frame["origin_date"]).dt.normalize()
+    flow_frame["candidate_address"] = flow_frame["candidate_address"].astype(str).str.lower()
+    flow_frame = flow_frame.groupby(
+        ["origin_date", "candidate_address"], as_index=False, sort=True
+    )[flow_columns].sum()
+    active_keys = set(zip(flow_frame["origin_date"], flow_frame["candidate_address"]))
+
+    horizon_rows: list[pd.DataFrame] = []
+    max_horizon = max(horizons)
+    for candidate_address, candidate_base in base.groupby(
+        "candidate_address", sort=True
+    ):
+        candidate_base = candidate_base.sort_values("origin_date").copy()
+        start = candidate_base["origin_date"].min()
+        end = candidate_base["origin_date"].max() + pd.Timedelta(days=max_horizon)
+        calendar = pd.DataFrame(
+            {
+                "origin_date": pd.date_range(start, end, freq="D"),
+                "candidate_address": candidate_address,
+            }
+        )
+        calendar = calendar.merge(
+            flow_frame[flow_frame["candidate_address"].eq(candidate_address)],
+            on=["origin_date", "candidate_address"],
+            how="left",
+        )
+        calendar[flow_columns] = calendar[flow_columns].fillna(0.0)
+        for column in flow_columns:
+            calendar[f"{column}_cumulative"] = calendar[column].cumsum()
+        cumulative = calendar[
+            ["origin_date", *[f"{column}_cumulative" for column in flow_columns]]
+        ]
+        origin = candidate_base.merge(
+            flow_frame,
+            on=["origin_date", "candidate_address"],
+            how="left",
+            validate="one_to_one",
+        )
+        origin[flow_columns] = origin[flow_columns].fillna(0.0)
+        origin = origin.merge(
+            cumulative,
+            on="origin_date",
+            how="left",
+            validate="one_to_one",
+        )
+        origin = origin[
+            [key in active_keys for key in zip(origin["origin_date"], origin["candidate_address"])]
+        ].copy()
+        for horizon in horizons:
+            target = cumulative.copy()
+            target["origin_date"] = target["origin_date"] - pd.Timedelta(
+                days=horizon
+            )
+            joined = origin.merge(
+                target,
+                on="origin_date",
+                how="inner",
+                suffixes=("", "_target"),
+                validate="one_to_one",
+            )
+            if joined.empty:
+                continue
+            joined["horizon_days"] = int(horizon)
+            for column in flow_columns:
+                joined[f"future_{column}"] = (
+                    joined[f"{column}_cumulative_target"]
+                    - joined[f"{column}_cumulative"]
+                )
+            horizon_rows.append(joined)
+    if not horizon_rows:
+        raise ValueError("V4 LP-flow horizon panel is empty")
+    panel = pd.concat(horizon_rows, ignore_index=True, sort=False)
+    for column in (
+        "v4_gross_lp_flow_usd_screened",
+        "v4_add_lp_flow_usd_screened",
+        "v4_remove_lp_flow_usd_screened",
+        "v4_lp_flow_origin_count",
+        "v4_lp_flow_sender_count",
+    ):
+        panel[f"origin_log1p_{column}"] = np.log1p(panel[column].astype(float))
+        panel[f"future_log1p_{column}"] = np.log1p(
+            panel[f"future_{column}"].astype(float)
+        )
+    panel["future_asinh_v4_net_add_lp_flow_musd_screened"] = np.arcsinh(
+        panel["future_v4_net_add_lp_flow_usd_screened"].astype(float) / 1_000_000.0
+    )
+    return panel.replace([np.inf, -np.inf], np.nan).dropna(
+        subset=[
+            "route_capital_gap_5",
+            "is_stable",
+            "future_log1p_v4_gross_lp_flow_usd_screened",
+            "future_log1p_v4_add_lp_flow_usd_screened",
+            "future_log1p_v4_remove_lp_flow_usd_screened",
+            "future_log1p_v4_lp_flow_sender_count",
+            "origin_log1p_v4_gross_lp_flow_usd_screened",
+            "origin_log1p_v4_add_lp_flow_usd_screened",
+            "origin_log1p_v4_remove_lp_flow_usd_screened",
+            "origin_log1p_v4_lp_flow_sender_count",
+        ]
+    )
+
+
+def route_capital_gap_v4_lp_flow_response(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 300,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Estimate V4-active future candidate-side LP-flow responses."""
+
+    rows: list[dict[str, object]] = []
+    outcomes = (
+        "future_log1p_v4_gross_lp_flow_usd_screened",
+        "future_log1p_v4_add_lp_flow_usd_screened",
+        "future_log1p_v4_remove_lp_flow_usd_screened",
+        "future_asinh_v4_net_add_lp_flow_musd_screened",
+        "future_log1p_v4_lp_flow_sender_count",
+    )
+    controls = (
+        "route_capital_gap_5",
+        "route_capital_gap_5_x_stable",
+        "origin_log1p_v4_gross_lp_flow_usd_screened",
+        "origin_log1p_v4_add_lp_flow_usd_screened",
+        "origin_log1p_v4_remove_lp_flow_usd_screened",
+        "origin_log1p_v4_lp_flow_sender_count",
+    )
+    for horizon, group in panel.groupby("horizon_days", sort=True):
+        for outcome in outcomes:
+            data = (
+                group[
+                    [
+                        "origin_date",
+                        "candidate_address",
+                        "is_stable",
+                        "route_capital_gap_5",
+                        "origin_log1p_v4_gross_lp_flow_usd_screened",
+                        "origin_log1p_v4_add_lp_flow_usd_screened",
+                        "origin_log1p_v4_remove_lp_flow_usd_screened",
+                        "origin_log1p_v4_lp_flow_sender_count",
+                        outcome,
+                    ]
+                ]
+                .replace([np.inf, -np.inf], np.nan)
+                .dropna()
+                .copy()
+            )
+            data["route_capital_gap_5_x_stable"] = (
+                data["route_capital_gap_5"].astype(float)
+                * data["is_stable"].astype(float)
+            )
+            residual = absorb_fixed_effects(
+                data[[outcome, *controls]],
+                data["candidate_address"],
+                data["origin_date"],
+            )
+            fit = ols_clustered(
+                residual[outcome],
+                residual[list(controls)],
+                data["origin_date"],
+                add_constant=False,
+                absorbed_groups=(data["candidate_address"], data["origin_date"]),
+                min_observations=min_observations,
+                min_clusters=min_clusters,
+            )
+            for predictor, coefficient, standard_error, t_statistic, p_value in zip(
+                controls,
+                fit.beta,
+                fit.standard_errors,
+                fit.t_statistics,
+                fit.p_values,
+                strict=True,
+            ):
+                coefficient = float(coefficient)
+                standard_error = float(standard_error)
+                rows.append(
+                    {
+                        "analysis_status": "exploratory_descriptive",
+                        "record_type": "route_capital_gap_v4_lp_flow",
+                        "horizon_days": int(horizon),
+                        "outcome": outcome,
+                        "predictor": predictor,
+                        "coefficient": coefficient,
+                        "standard_error": standard_error,
+                        "t_statistic": float(t_statistic),
+                        "p_value": float(p_value),
+                        "coefficient_per_10pp_gap": (
+                            0.10 * coefficient
+                            if predictor.startswith("route_capital_gap_5")
+                            else np.nan
+                        ),
+                        "standard_error_per_10pp_gap": (
+                            0.10 * standard_error
+                            if predictor.startswith("route_capital_gap_5")
+                            else np.nan
+                        ),
+                        "n_observations": int(fit.n_observations),
+                        "date_clusters": int(fit.n_clusters),
+                        "fixed_effects": "candidate_address+origin_date",
+                        "covariance": "origin_date_clustered",
+                        "activity_controls": (
+                            "origin_log1p_v4_gross_lp_flow_usd_screened+"
+                            "origin_log1p_v4_add_lp_flow_usd_screened+"
+                            "origin_log1p_v4_remove_lp_flow_usd_screened+"
+                            "origin_log1p_v4_lp_flow_sender_count"
+                        ),
+                        "event_source": "uniswap_v4_graph_modify_liquidity_events",
+                        "flow_input": str(V4_LP_FLOW_INPUT.relative_to(REPO_ROOT)),
+                        "sample": "v4_active_origin_candidate_days",
+                        "interpretation": (
+                            "future screened candidate-side V4 LP-flow association "
+                            "on V4-active origin days, net of current candidate flow "
+                            "activity; not whole-pool TVL, true LP inventory, or causal "
+                            "provider response"
+                        ),
+                    }
+                )
+            stable_total = linear_contrast(fit, [1.0, 1.0, 0.0, 0.0, 0.0, 0.0])
+            rows.append(
+                {
+                    "analysis_status": "exploratory_descriptive",
+                    "record_type": "route_capital_gap_v4_lp_flow",
+                    "horizon_days": int(horizon),
+                    "outcome": outcome,
+                    "predictor": "stable_total_route_capital_gap_5",
+                    "coefficient": stable_total.estimate,
+                    "standard_error": stable_total.standard_error,
+                    "t_statistic": stable_total.t_statistic,
+                    "p_value": stable_total.p_value,
+                    "coefficient_per_10pp_gap": 0.10 * stable_total.estimate,
+                    "standard_error_per_10pp_gap": 0.10
+                    * stable_total.standard_error,
+                    "n_observations": int(fit.n_observations),
+                    "date_clusters": int(fit.n_clusters),
+                    "fixed_effects": "candidate_address+origin_date",
+                    "covariance": "origin_date_clustered",
+                    "activity_controls": (
+                        "origin_log1p_v4_gross_lp_flow_usd_screened+"
+                        "origin_log1p_v4_add_lp_flow_usd_screened+"
+                        "origin_log1p_v4_remove_lp_flow_usd_screened+"
+                        "origin_log1p_v4_lp_flow_sender_count"
+                    ),
+                    "event_source": "uniswap_v4_graph_modify_liquidity_events",
+                    "flow_input": str(V4_LP_FLOW_INPUT.relative_to(REPO_ROOT)),
+                    "sample": "v4_active_origin_candidate_days",
+                    "interpretation": (
+                        "stable-candidate future screened V4 LP-flow association "
+                        "on V4-active origin days, net of current candidate flow "
+                        "activity; add and remove flows are dollarized candidate-token "
+                        "sides, not whole-pool TVL or causal provider response"
+                    ),
+                }
+            )
     return pd.DataFrame(rows)
 
 
@@ -3446,6 +4488,8 @@ def support_rows(
     *,
     v3_lp_actions: pd.DataFrame | None = None,
     v4_lp_actions: pd.DataFrame | None = None,
+    v4_flash_accounting: pd.DataFrame | None = None,
+    v4_lp_flows: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     rows: list[dict[str, object]] = [
         {
@@ -3465,6 +4509,10 @@ def support_rows(
             "v4_lp_action_candidate_input": str(
                 V4_LP_ACTION_INPUT.relative_to(REPO_ROOT)
             ),
+            "v4_flash_accounting_candidate_input": str(
+                V4_FLASH_ACCOUNTING_INPUT.relative_to(REPO_ROOT)
+            ),
+            "v4_lp_flow_candidate_input": str(V4_LP_FLOW_INPUT.relative_to(REPO_ROOT)),
             "candidate_day_rows": int(len(sample)),
             "days": int(sample["origin_date"].nunique()),
             "candidate_count": int(sample["candidate_symbol"].nunique()),
@@ -3473,8 +4521,9 @@ def support_rows(
             "stable_symbols": ",".join(sorted(STABLE_SYMBOLS)),
             "quantity": (
                 "V2 deposited-capital stock plus Uniswap V3 mint/burn event "
-                "counts and Uniswap V4 modify-liquidity event counts; no "
-                "dollar-valued provider flows"
+                "counts, Uniswap V4 modify-liquidity event counts, and V4 "
+                "singleton-netting proxies plus screened V4 candidate-side LP "
+                "flow; no true provider wallet inventory"
             ),
         }
     ]
@@ -3529,6 +4578,66 @@ def support_rows(
                 ),
             }
         )
+    if v4_flash_accounting is not None:
+        rows.append(
+            {
+                "record_type": "v4_flash_accounting_input_support",
+                "analysis_status": "exploratory_descriptive",
+                "input": str(V4_FLASH_ACCOUNTING_INPUT.relative_to(REPO_ROOT)),
+                "candidate_day_rows": int(len(v4_flash_accounting)),
+                "days": int(v4_flash_accounting["origin_date"].nunique())
+                if not v4_flash_accounting.empty
+                else 0,
+                "candidate_count": int(
+                    v4_flash_accounting["candidate_address"].nunique()
+                )
+                if not v4_flash_accounting.empty
+                else 0,
+                "first_date": v4_flash_accounting["origin_date"].min().strftime(
+                    "%Y-%m-%d"
+                )
+                if not v4_flash_accounting.empty
+                else None,
+                "last_date": v4_flash_accounting["origin_date"].max().strftime(
+                    "%Y-%m-%d"
+                )
+                if not v4_flash_accounting.empty
+                else None,
+                "native_eth_mapping": "native_eth_zero_address_to_weth_candidate_family",
+                "quantity": (
+                    "processed Uniswap V4 transaction-level gross-versus-net "
+                    "swap-flow proxy for singleton flash accounting; unit-free "
+                    "netting intensity, not dollar-valued provider flow"
+                ),
+            }
+        )
+    if v4_lp_flows is not None:
+        rows.append(
+            {
+                "record_type": "v4_lp_flow_input_support",
+                "analysis_status": "exploratory_descriptive",
+                "input": str(V4_LP_FLOW_INPUT.relative_to(REPO_ROOT)),
+                "candidate_day_rows": int(len(v4_lp_flows)),
+                "days": int(v4_lp_flows["origin_date"].nunique())
+                if not v4_lp_flows.empty
+                else 0,
+                "candidate_count": int(v4_lp_flows["candidate_address"].nunique())
+                if not v4_lp_flows.empty
+                else 0,
+                "first_date": v4_lp_flows["origin_date"].min().strftime("%Y-%m-%d")
+                if not v4_lp_flows.empty
+                else None,
+                "last_date": v4_lp_flows["origin_date"].max().strftime("%Y-%m-%d")
+                if not v4_lp_flows.empty
+                else None,
+                "native_eth_mapping": "native_eth_zero_address_to_weth_candidate_family",
+                "quantity": (
+                    "screened candidate-token-side USD value of V4 "
+                    "modify-liquidity events; not whole-pool TVL, true LP "
+                    "inventory, or side-complete deposited capital stock"
+                ),
+            }
+        )
     return pd.DataFrame(rows)
 
 
@@ -3555,11 +4664,21 @@ def run(
     pool_entry_panel = route_capital_gap_pool_entry_horizon_panel(share_gap_panel)
     fee_incidence_panel = route_capital_gap_v3_fee_horizon_panel(share_gap_panel)
     v3_lp_actions = load_v3_lp_actions()
+    v4_lp_actions = load_v4_lp_actions()
+    v4_flash_accounting = load_v4_flash_accounting()
+    v4_lp_flows = load_v4_lp_flows()
     v3_lp_action_panel = route_capital_gap_v3_lp_action_horizon_panel(
         share_gap_panel,
         actions=v3_lp_actions,
     )
-    v4_lp_actions = load_v4_lp_actions()
+    v4_lp_action_panel = route_capital_gap_v4_lp_action_horizon_panel(
+        share_gap_panel,
+        actions=v4_lp_actions,
+    )
+    v4_lp_flow_panel = route_capital_gap_v4_lp_flow_horizon_panel(
+        share_gap_panel,
+        flows=v4_lp_flows,
+    )
     result = pd.concat(
         [
             annual_stable_allocation(sample),
@@ -3583,6 +4702,17 @@ def run(
             route_capital_gap_v3_lp_action_response(v3_lp_action_panel),
             route_capital_gap_v3_lp_action_activity_control(v3_lp_action_panel),
             route_capital_gap_v3_lp_action_candidate_specific(v3_lp_action_panel),
+            route_capital_gap_v4_lp_action_response(v4_lp_action_panel),
+            route_capital_gap_v4_lp_action_activity_control(v4_lp_action_panel),
+            route_capital_gap_v4_lp_action_activity_control_v4_active(
+                v4_lp_action_panel,
+                flash_accounting=v4_flash_accounting,
+            ),
+            route_capital_gap_v4_flash_accounting(
+                share_gap_panel,
+                flash_accounting=v4_flash_accounting,
+            ),
+            route_capital_gap_v4_lp_flow_response(v4_lp_flow_panel),
             lp_action_protocol_comparison(v3_lp_actions, v4_lp_actions),
         ],
         ignore_index=True,
@@ -3592,6 +4722,8 @@ def run(
         sample,
         v3_lp_actions=v3_lp_actions,
         v4_lp_actions=v4_lp_actions,
+        v4_flash_accounting=v4_flash_accounting,
+        v4_lp_flows=v4_lp_flows,
     )
     write_exhibit(
         support,

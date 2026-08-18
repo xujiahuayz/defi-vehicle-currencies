@@ -25,6 +25,48 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
                 "stable_share": 0.25,
             },
             {
+                "record_type": "entry_value_support_bin",
+                "entry_year": 2024,
+                "value_support_bin": "ge_100k_supported_value",
+                "primary_routes": 100,
+                "stable_share": 0.45,
+            },
+            {
+                "record_type": "entry_value_support_bin",
+                "entry_year": 2026,
+                "value_support_bin": "ge_100k_supported_value",
+                "primary_routes": 120,
+                "stable_share": 0.80,
+            },
+            {
+                "record_type": "entry_venue_scope",
+                "entry_year": 2024,
+                "integration_scope": "single_venue",
+                "primary_routes": 70,
+                "stable_share": 0.10,
+            },
+            {
+                "record_type": "entry_venue_scope",
+                "entry_year": 2024,
+                "integration_scope": "cross_venue",
+                "primary_routes": 60,
+                "stable_share": 0.20,
+            },
+            {
+                "record_type": "entry_venue_scope",
+                "entry_year": 2026,
+                "integration_scope": "single_venue",
+                "primary_routes": 90,
+                "stable_share": 0.60,
+            },
+            {
+                "record_type": "entry_venue_scope",
+                "entry_year": 2026,
+                "integration_scope": "cross_venue",
+                "primary_routes": 80,
+                "stable_share": 0.62,
+            },
+            {
                 "record_type": "entry_persistence",
                 "horizon_days": 30,
                 "entry_year": 2026,
@@ -421,6 +463,9 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
     )
     rendered = render_vehicle_formation_deck_values(estimates)
     assert "\\FormationEntryStableShareBase" in rendered
+    assert "\\FormationHighValueEntryStableShareEnd" in rendered
+    assert "\\FormationHighValueThresholdUsd" in rendered
+    assert "\\FormationSingleVenueEntryStableShareEnd" in rendered
     assert "5.0\\%" in rendered
     assert "$+97.0$ pp" in rendered
     assert "$+98.0$ pp" in rendered

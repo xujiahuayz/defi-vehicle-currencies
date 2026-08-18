@@ -74,6 +74,12 @@ ENTRY_ENDPOINT_HISTORY_PREDICTORS = (
     "log_min_prior_price_obs_30",
     "endpoint_log_price_sd_30",
 )
+ENTRY_VALUE_BINS: tuple[tuple[str, float, float | None], ...] = (
+    ("no_supported_value", 0.0, 0.0),
+    ("le_10k_supported_value", 0.0, 10_000.0),
+    ("10k_to_100k_supported_value", 10_000.0, 100_000.0),
+    ("ge_100k_supported_value", 100_000.0, None),
+)
 
 
 def _sql_path(path: Path) -> str:
@@ -117,6 +123,176 @@ def entry_cohorts(pair_support_path: Path = PAIR_SUPPORT) -> pd.DataFrame:
         GROUP BY 1, 2
         ORDER BY 2
         """
+    )
+
+
+def entry_scope_value_summaries(
+    pair_support_path: Path = PAIR_SUPPORT,
+    candidate_choices_path: Path = CANDIDATE_CHOICES,
+) -> pd.DataFrame:
+    """Split entrant vehicle use by venue scope and supported notional.
+
+    The unit is an entering ordered-pair-by-integration-scope row. Supported
+    notional is the sum of within-20%-price native and stable candidate value on
+    the entry day, using fixed dollar bins rather than data-mined quantiles.
+    """
+
+    pair_path = _sql_path(pair_support_path)
+    choices_path = _sql_path(candidate_choices_path)
+    years = ", ".join(str(year) for year in MAIN_ENTRY_YEARS)
+    rows = _read_sql(
+        f"""
+        WITH entries AS (
+            SELECT
+                CAST(date AS DATE) AS date,
+                src,
+                tgt,
+                year(date)::INTEGER AS entry_year
+            FROM read_parquet('{pair_path}')
+            WHERE pair_entry_on_day
+              AND primary_choice_route_count > 0
+              AND year(date) IN ({years})
+              AND strftime(date, '%m-%d') <= '06-30'
+            GROUP BY 1,2,3,4
+        ),
+        scoped_choice AS (
+            SELECT
+                e.date,
+                e.src,
+                e.tgt,
+                e.entry_year,
+                c.integration_scope,
+                sum(c.route_count)::DOUBLE AS primary_routes,
+                sum(
+                    CASE
+                        WHEN c.candidate_type = 'stable' THEN c.route_count
+                        ELSE 0
+                    END
+                )::DOUBLE AS stable_routes,
+                sum(
+                    CASE
+                        WHEN c.candidate_type = 'native' THEN c.route_count
+                        ELSE 0
+                    END
+                )::DOUBLE AS native_routes,
+                sum(
+                    CASE
+                        WHEN c.candidate_type IN ('stable', 'native')
+                            THEN coalesce(c.within_20pct_value_usd, 0)
+                        ELSE 0
+                    END
+                )::DOUBLE AS supported_value_usd,
+                sum(
+                    CASE
+                        WHEN c.candidate_type IN ('stable', 'native')
+                            THEN coalesce(c.raw_value_usd, 0)
+                        ELSE 0
+                    END
+                )::DOUBLE AS raw_value_usd
+            FROM entries e
+            JOIN read_parquet('{choices_path}') c
+              ON c.date = e.date
+             AND c.src = e.src
+             AND c.tgt = e.tgt
+            WHERE c.candidate_type IN ('stable', 'native')
+            GROUP BY 1,2,3,4,5
+        )
+        SELECT *
+        FROM scoped_choice
+        WHERE primary_routes > 0
+        """
+    )
+    if rows.empty:
+        raise ValueError("entry scope/value split has no entrant choice rows")
+    rows["endpoint_claim_class"] = [
+        endpoint_claim_class(src, tgt) for src, tgt in zip(rows["src"], rows["tgt"])
+    ]
+    values = rows["supported_value_usd"].astype(float)
+    rows["value_support_bin"] = "unsupported"
+    rows.loc[values <= 0, "value_support_bin"] = "no_supported_value"
+    rows.loc[
+        values.gt(0) & values.le(10_000.0),
+        "value_support_bin",
+    ] = "le_10k_supported_value"
+    rows.loc[
+        values.gt(10_000.0) & values.lt(100_000.0),
+        "value_support_bin",
+    ] = "10k_to_100k_supported_value"
+    rows.loc[values.ge(100_000.0), "value_support_bin"] = (
+        "ge_100k_supported_value"
+    )
+    if rows["value_support_bin"].eq("unsupported").any():
+        raise ValueError("entry scope/value split left unsupported value bins")
+
+    def _summarise(
+        sample: pd.DataFrame,
+        *,
+        record_type: str,
+        group_columns: list[str],
+        interpretation: str,
+    ) -> pd.DataFrame:
+        total_by_year = sample.groupby("entry_year")["primary_routes"].sum()
+        out_rows: list[dict[str, object]] = []
+        for keys, group in sample.groupby(["entry_year", *group_columns], sort=True):
+            if not isinstance(keys, tuple):
+                keys = (keys,)
+            entry_year = int(keys[0])
+            labels = dict(zip(group_columns, keys[1:], strict=True))
+            primary_routes = float(group["primary_routes"].sum())
+            stable_routes = float(group["stable_routes"].sum())
+            native_routes = float(group["native_routes"].sum())
+            if primary_routes <= 0:
+                continue
+            out_rows.append(
+                {
+                    "record_type": record_type,
+                    "entry_year": entry_year,
+                    **labels,
+                    "pair_scope_rows": int(len(group)),
+                    "pairs": int(group[["src", "tgt"]].drop_duplicates().shape[0]),
+                    "primary_routes": primary_routes,
+                    "stable_routes": stable_routes,
+                    "native_routes": native_routes,
+                    "stable_share": stable_routes / primary_routes,
+                    "stable_dominant_pair_scope_share": float(
+                        (group["stable_routes"] > group["native_routes"]).mean()
+                    ),
+                    "route_mass_share": primary_routes
+                    / float(total_by_year.loc[entry_year]),
+                    "supported_value_usd": float(group["supported_value_usd"].sum()),
+                    "raw_value_usd": float(group["raw_value_usd"].sum()),
+                    "interpretation": interpretation,
+                }
+            )
+        return pd.DataFrame(out_rows)
+
+    return pd.concat(
+        [
+            _summarise(
+                rows,
+                record_type="entry_venue_scope",
+                group_columns=["integration_scope"],
+                interpretation="exploratory_entry_venue_scope_split_not_causal",
+            ),
+            _summarise(
+                rows,
+                record_type="entry_value_support_bin",
+                group_columns=["value_support_bin"],
+                interpretation=(
+                    "exploratory_entry_supported_value_bin_split_not_causal"
+                ),
+            ),
+            _summarise(
+                rows,
+                record_type="entry_endpoint_claim_scope",
+                group_columns=["endpoint_claim_class", "integration_scope"],
+                interpretation=(
+                    "exploratory_endpoint_claim_by_venue_scope_split_not_causal"
+                ),
+            ),
+        ],
+        ignore_index=True,
+        sort=False,
     )
 
 
@@ -2385,6 +2561,10 @@ def build_results(
     if not token_price_path.is_file():
         raise FileNotFoundError(token_price_path)
     cohorts = entry_cohorts(pair_support_path)
+    scope_value_splits = entry_scope_value_summaries(
+        pair_support_path=pair_support_path,
+        candidate_choices_path=candidate_choices_path,
+    )
     claim_classes = endpoint_claim_class_summaries(pair_support_path)
     endpoint_classes = entry_endpoint_class_summary(pair_support_path)
     secure_volume = entry_secure_volume_summary(pair_support_path)
@@ -2464,6 +2644,7 @@ def build_results(
     result = pd.concat(
         [
             cohorts,
+            scope_value_splits,
             claim_classes,
             endpoint_classes,
             secure_volume,

@@ -40,6 +40,13 @@ from scripts.analyze.run_liquidity_provision_behavior_exploration import (
     route_capital_gap_v3_lp_action_activity_control,
     route_capital_gap_v3_lp_action_candidate_specific,
     route_capital_gap_v3_lp_action_response,
+    route_capital_gap_v4_lp_action_horizon_panel,
+    route_capital_gap_v4_lp_action_activity_control,
+    route_capital_gap_v4_lp_action_activity_control_v4_active,
+    route_capital_gap_v4_lp_action_response,
+    route_capital_gap_v4_flash_accounting,
+    route_capital_gap_v4_lp_flow_horizon_panel,
+    route_capital_gap_v4_lp_flow_response,
     stable_basket_gap_horizon_panel,
     stable_basket_gap_portfolio_rebalancing,
     supported_candidate_days,
@@ -946,6 +953,63 @@ def test_v3_lp_action_horizon_panel_sums_future_actions() -> None:
     assert origin_row["origin_log1p_v3_total_origin_count"] > 0
 
 
+def test_v4_lp_action_horizon_panel_sums_future_actions_and_ranges() -> None:
+    share_gap = pd.DataFrame(
+        [
+            {
+                "origin_date": pd.Timestamp("2025-01-01"),
+                "candidate_address": "usdc",
+                "candidate_symbol": "USDC",
+                "route_capital_gap_5": 0.2,
+                "is_stable": 1.0,
+            },
+            {
+                "origin_date": pd.Timestamp("2025-01-02"),
+                "candidate_address": "usdc",
+                "candidate_symbol": "USDC",
+                "route_capital_gap_5": 0.1,
+                "is_stable": 1.0,
+            },
+        ]
+    )
+    actions = pd.DataFrame(
+        [
+            {
+                "origin_date": pd.Timestamp("2025-01-02"),
+                "candidate_address": "usdc",
+                "candidate_symbol": "USDC",
+                "v4_add_events": 4,
+                "v4_remove_events": 1,
+                "v4_zero_liquidity_events": 1,
+                "v4_total_lp_actions": 6,
+                "v4_net_add_events": 3,
+                "v4_total_origin_count": 5,
+                "v4_sender_count": 2,
+                "v4_narrow_range_events": 3,
+                "v4_medium_range_events": 1,
+                "v4_wide_range_events": 1,
+                "v4_very_wide_range_events": 0,
+                "v4_full_range_events": 1,
+            }
+        ]
+    )
+    panel = route_capital_gap_v4_lp_action_horizon_panel(
+        share_gap,
+        actions=actions,
+        horizons=(1,),
+    )
+    row = panel[panel["origin_date"].eq(pd.Timestamp("2025-01-01"))].iloc[0]
+    assert row["future_v4_add_events"] == 4
+    assert row["future_v4_remove_events"] == 1
+    assert row["future_v4_total_lp_actions"] == 6
+    assert row["future_log1p_v4_sender_count"] > 0
+    assert row["future_v4_narrow_medium_share"] == pytest.approx(4 / 6)
+    assert row["future_v4_full_range_share"] == pytest.approx(1 / 6)
+    origin_row = panel[panel["origin_date"].eq(pd.Timestamp("2025-01-02"))].iloc[0]
+    assert origin_row["origin_v4_total_lp_actions"] == 6
+    assert origin_row["origin_log1p_v4_sender_count"] > 0
+
+
 def test_lp_action_protocol_comparison_reports_v4_stable_shift() -> None:
     v3_actions = pd.DataFrame(
         [
@@ -1104,6 +1168,348 @@ def test_v3_lp_action_response_reports_stable_total() -> None:
         & result["outcome"].eq("future_log1p_v3_total_origin_count")
     ].iloc[0]
     assert stable_origin["coefficient"] > 0
+
+
+def test_v4_lp_action_response_reports_stable_total() -> None:
+    rows = []
+    symbols = ["WETH", "WBTC", "USDC", "USDT", "DAI"]
+    for day_index, day in enumerate(pd.date_range("2025-01-01", periods=180, freq="D")):
+        date_effect = 0.001 * day_index
+        for symbol_index, symbol in enumerate(symbols):
+            is_stable = float(symbol in {"DAI", "USDC", "USDT"})
+            gap = (
+                0.10 * math.sin(day_index / 11 + symbol_index / 3)
+                + 0.02 * (symbol_index - 2)
+            )
+            rows.append(
+                {
+                    "origin_date": day,
+                    "candidate_address": symbol.lower(),
+                    "candidate_symbol": symbol,
+                    "is_stable": is_stable,
+                    "route_capital_gap_5": gap,
+                    "horizon_days": 30,
+                    "future_log1p_v4_add_events": (
+                        0.02 * gap
+                        + 0.08 * gap * is_stable
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                    "future_log1p_v4_remove_events": (
+                        0.01 * gap
+                        + 0.04 * gap * is_stable
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                    "future_log1p_v4_zero_liquidity_events": (
+                        0.01 * gap
+                        + 0.03 * gap * is_stable
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                    "future_log1p_v4_total_lp_actions": (
+                        0.02 * gap
+                        + 0.07 * gap * is_stable
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                    "future_v4_net_add_event_balance": (
+                        0.01 * gap
+                        + 0.05 * gap * is_stable
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                    "future_log1p_v4_total_origin_count": (
+                        0.02 * gap
+                        + 0.06 * gap * is_stable
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                    "future_log1p_v4_sender_count": (
+                        0.02 * gap
+                        + 0.05 * gap * is_stable
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                    "future_v4_narrow_medium_share": (
+                        0.60
+                        + 0.01 * gap
+                        + 0.04 * gap * is_stable
+                        + 0.001 * symbol_index
+                    ),
+                    "future_v4_full_range_share": (
+                        0.05
+                        - 0.01 * gap
+                        - 0.02 * gap * is_stable
+                        + 0.001 * symbol_index
+                    ),
+                }
+            )
+    result = route_capital_gap_v4_lp_action_response(
+        pd.DataFrame(rows),
+        min_observations=100,
+        min_clusters=20,
+    )
+    stable_add = result[
+        result["predictor"].eq("stable_total_route_capital_gap_5")
+        & result["outcome"].eq("future_log1p_v4_add_events")
+    ].iloc[0]
+    assert stable_add["record_type"] == "route_capital_gap_v4_lp_action"
+    assert stable_add["coefficient"] > 0
+    stable_range = result[
+        result["predictor"].eq("stable_total_route_capital_gap_5")
+        & result["outcome"].eq("future_v4_narrow_medium_share")
+    ].iloc[0]
+    assert stable_range["coefficient"] > 0
+
+
+def test_v4_lp_action_activity_control_reports_stable_total() -> None:
+    rows = []
+    symbols = ["WETH", "WBTC", "USDC", "USDT", "DAI"]
+    for day_index, day in enumerate(pd.date_range("2025-01-01", periods=180, freq="D")):
+        date_effect = 0.001 * day_index
+        for symbol_index, symbol in enumerate(symbols):
+            is_stable = float(symbol in {"DAI", "USDC", "USDT"})
+            gap = (
+                0.10 * math.sin(day_index / 11 + symbol_index / 3)
+                + 0.02 * (symbol_index - 2)
+            )
+            origin_actions = 0.2 + 0.02 * ((day_index + symbol_index) % 7)
+            origin_origins = 0.3 + 0.03 * ((day_index + 2 * symbol_index) % 5)
+            origin_senders = 0.1 + 0.01 * ((day_index + symbol_index) % 3)
+            rows.append(
+                {
+                    "origin_date": day,
+                    "candidate_address": symbol.lower(),
+                    "candidate_symbol": symbol,
+                    "is_stable": is_stable,
+                    "route_capital_gap_5": gap,
+                    "horizon_days": 30,
+                    "origin_log1p_v4_total_lp_actions": origin_actions,
+                    "origin_log1p_v4_total_origin_count": origin_origins,
+                    "origin_log1p_v4_sender_count": origin_senders,
+                    "future_log1p_v4_total_lp_actions": (
+                        0.04 * gap
+                        + 0.08 * gap * is_stable
+                        + 0.20 * origin_actions
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                    "future_log1p_v4_total_origin_count": (
+                        0.03 * gap
+                        + 0.07 * gap * is_stable
+                        + 0.15 * origin_origins
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                    "future_log1p_v4_sender_count": (
+                        0.02 * gap
+                        + 0.06 * gap * is_stable
+                        + 0.10 * origin_senders
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                }
+            )
+    result = route_capital_gap_v4_lp_action_activity_control(
+        pd.DataFrame(rows),
+        min_observations=100,
+        min_clusters=20,
+    )
+    stable_total = result[
+        result["predictor"].eq("stable_total_route_capital_gap_5")
+        & result["outcome"].eq("future_log1p_v4_total_lp_actions")
+    ].iloc[0]
+    assert stable_total["record_type"] == "route_capital_gap_v4_lp_action_activity_control"
+    assert stable_total["coefficient"] > 0
+    activity_control = result[
+        result["predictor"].eq("origin_log1p_v4_total_lp_actions")
+        & result["outcome"].eq("future_log1p_v4_total_lp_actions")
+    ].iloc[0]
+    assert activity_control["coefficient"] > 0
+
+
+def test_v4_active_lp_action_activity_control_reports_stable_total() -> None:
+    rows = []
+    symbols = ["WETH", "WBTC", "USDC", "USDT", "DAI"]
+    for day_index, day in enumerate(pd.date_range("2025-01-01", periods=180, freq="D")):
+        date_effect = 0.001 * day_index
+        for symbol_index, symbol in enumerate(symbols):
+            is_stable = float(symbol in {"DAI", "USDC", "USDT"})
+            gap = (
+                0.10 * math.sin(day_index / 11 + symbol_index / 3)
+                + 0.02 * (symbol_index - 2)
+            )
+            origin_actions = 0.2 + 0.02 * ((day_index + symbol_index) % 7)
+            origin_origins = 0.3 + 0.03 * ((day_index + 2 * symbol_index) % 5)
+            origin_senders = 0.1 + 0.01 * ((day_index + symbol_index) % 3)
+            rows.append(
+                {
+                    "origin_date": day,
+                    "candidate_address": symbol.lower(),
+                    "candidate_symbol": symbol,
+                    "is_stable": is_stable,
+                    "route_capital_gap_5": gap,
+                    "horizon_days": 30,
+                    "origin_log1p_v4_total_lp_actions": origin_actions,
+                    "origin_log1p_v4_total_origin_count": origin_origins,
+                    "origin_log1p_v4_sender_count": origin_senders,
+                    "future_log1p_v4_total_lp_actions": (
+                        0.04 * gap
+                        + 0.08 * gap * is_stable
+                        + 0.20 * origin_actions
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                    "future_log1p_v4_total_origin_count": (
+                        0.03 * gap
+                        + 0.07 * gap * is_stable
+                        + 0.15 * origin_origins
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                    "future_log1p_v4_sender_count": (
+                        0.02 * gap
+                        + 0.06 * gap * is_stable
+                        + 0.10 * origin_senders
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                }
+            )
+    flash = pd.DataFrame(
+        {
+            "origin_date": [row["origin_date"] for row in rows],
+            "candidate_address": [row["candidate_address"] for row in rows],
+            "candidate_tx_count": 1.0,
+            "multi_leg_tx_share": 0.5,
+            "internal_tx_share": 0.2,
+            "netting_reduction_share": 0.1,
+        }
+    )
+    result = route_capital_gap_v4_lp_action_activity_control_v4_active(
+        pd.DataFrame(rows),
+        flash_accounting=flash,
+        min_observations=100,
+        min_clusters=20,
+    )
+    stable_total = result[
+        result["predictor"].eq("stable_total_route_capital_gap_5")
+        & result["outcome"].eq("future_log1p_v4_total_lp_actions")
+    ].iloc[0]
+    assert stable_total["record_type"] == (
+        "route_capital_gap_v4_lp_action_activity_control_v4_active"
+    )
+    assert stable_total["sample"] == "v4_active_origin_candidate_days"
+    assert stable_total["coefficient"] > 0
+
+
+def test_v4_flash_accounting_response_reports_stable_total() -> None:
+    rows = []
+    flash_rows = []
+    symbols = ["WETH", "WBTC", "USDC", "USDT", "DAI"]
+    for day_index, day in enumerate(pd.date_range("2025-01-01", periods=180, freq="D")):
+        date_effect = 0.001 * day_index
+        for symbol_index, symbol in enumerate(symbols):
+            is_stable = float(symbol in {"DAI", "USDC", "USDT"})
+            gap = (
+                0.10 * math.sin(day_index / 9 + symbol_index / 4)
+                + 0.02 * (symbol_index - 2)
+            )
+            address = symbol.lower()
+            rows.append(
+                {
+                    "origin_date": day,
+                    "candidate_address": address,
+                    "candidate_symbol": symbol,
+                    "is_stable": is_stable,
+                    "route_capital_gap_5": gap,
+                }
+            )
+            flash_rows.append(
+                {
+                    "origin_date": day,
+                    "candidate_address": address,
+                    "candidate_tx_count": 10.0,
+                    "multi_leg_tx_share": (
+                        0.30 + 0.03 * gap + 0.08 * gap * is_stable + date_effect
+                    ),
+                    "internal_tx_share": (
+                        0.10 + 0.02 * gap + 0.07 * gap * is_stable + date_effect
+                    ),
+                    "netting_reduction_share": (
+                        0.05 + 0.01 * gap + 0.04 * gap * is_stable + date_effect
+                    ),
+                }
+            )
+    result = route_capital_gap_v4_flash_accounting(
+        pd.DataFrame(rows),
+        flash_accounting=pd.DataFrame(flash_rows),
+        min_observations=100,
+        min_clusters=20,
+    )
+    stable_total = result[
+        result["predictor"].eq("stable_total_route_capital_gap_5")
+        & result["outcome"].eq("netting_reduction_share")
+    ].iloc[0]
+    assert stable_total["record_type"] == "route_capital_gap_v4_flash_accounting"
+    assert stable_total["coefficient"] > 0
+
+
+def test_v4_lp_flow_response_reports_stable_total() -> None:
+    share_rows = []
+    flow_rows = []
+    symbols = ["WETH", "WBTC", "USDC", "USDT", "DAI"]
+    for day_index, day in enumerate(pd.date_range("2025-01-01", periods=180, freq="D")):
+        for symbol_index, symbol in enumerate(symbols):
+            is_stable = float(symbol in {"DAI", "USDC", "USDT"})
+            gap = (
+                0.10 * math.sin(day_index / 9 + symbol_index / 4)
+                + 0.02 * (symbol_index - 2)
+            )
+            address = symbol.lower()
+            share_rows.append(
+                {
+                    "origin_date": day,
+                    "candidate_address": address,
+                    "candidate_symbol": symbol,
+                    "is_stable": is_stable,
+                    "route_capital_gap_5": gap,
+                }
+            )
+            flow_level = max(
+                0.0,
+                10.0 + 2.0 * gap + 8.0 * gap * is_stable + 0.1 * day_index,
+            )
+            flow_rows.append(
+                {
+                    "origin_date": day,
+                    "candidate_address": address,
+                    "candidate_symbol": symbol,
+                    "v4_gross_lp_flow_usd_screened": flow_level,
+                    "v4_add_lp_flow_usd_screened": 0.6 * flow_level,
+                    "v4_remove_lp_flow_usd_screened": 0.4 * flow_level,
+                    "v4_net_add_lp_flow_usd_screened": 0.2 * flow_level,
+                    "v4_lp_flow_origin_count": 1.0 + flow_level / 10.0,
+                    "v4_lp_flow_sender_count": 1.0 + flow_level / 20.0,
+                }
+            )
+    panel = route_capital_gap_v4_lp_flow_horizon_panel(
+        pd.DataFrame(share_rows),
+        flows=pd.DataFrame(flow_rows),
+        horizons=(30,),
+    )
+    result = route_capital_gap_v4_lp_flow_response(
+        panel,
+        min_observations=100,
+        min_clusters=20,
+    )
+    stable_total = result[
+        result["predictor"].eq("stable_total_route_capital_gap_5")
+        & result["outcome"].eq("future_log1p_v4_gross_lp_flow_usd_screened")
+    ].iloc[0]
+    assert stable_total["record_type"] == "route_capital_gap_v4_lp_flow"
+    assert stable_total["coefficient"] > 0
 
 
 def test_v3_lp_action_activity_control_reports_stable_total() -> None:

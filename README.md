@@ -63,7 +63,7 @@ extra-hop gas economics and route-level fixed-toll feasibility, LP capital-use
 gaps, stable-basket portfolio rebalancing, delayed/asymmetric LP rebalancing,
 stable-candidate LP response heterogeneity, LP extensive-margin behavior, V2
 pool-capital concentration/fragmentation, same-pool capital-chase screens,
-bounded V3 fee/rent-incidence and TVL-normalized fee-yield screens, V3 mint/burn action-count, provider-day, activity-controlled provider-day responses, V4 modify-liquidity action composition,
+bounded V3 fee/rent-incidence and TVL-normalized fee-yield screens, V3 mint/burn action-count, provider-day, activity-controlled provider-day responses, V4 modify-liquidity action composition, activity-controlled response, flash-accounting netting proxies, and screened candidate-side V4 LP flow,
 local bridge-liquidity dominance, entry-date local bridge-depth choice screens,
 stable-specific dynamic local bridge-depth feedback, and V2 capital predictability. A
 result becomes headline evidence only if it is economically material,
