@@ -12,6 +12,8 @@ from scripts.analyze.run_liquidity_provision_behavior_exploration import (
     route_capital_gap_asymmetry,
     route_capital_gap_closing,
     route_capital_gap_closing_stable_interactions,
+    route_capital_gap_extensive_margin_panel,
+    route_capital_gap_extensive_margins,
     route_capital_gap_horizon_panel,
     supported_candidate_days,
     within_day_gap_associations,
@@ -280,6 +282,122 @@ def test_route_capital_gap_closing_stable_interaction_reports_total_effect() -> 
     ].iloc[0]
     assert stable_total["coefficient"] > interaction["coefficient"]
     assert stable_total["coefficient_per_10pp_gap_pp"] > 0
+
+
+def test_extensive_margin_panel_attaches_future_pool_and_venue_counts() -> None:
+    rows = []
+    for date, pool_shift, venue_shift in (
+        ("2024-01-01", 0, 0),
+        ("2024-01-31", 1, 1),
+    ):
+        rows.extend(
+            [
+                _row(
+                    date,
+                    "WETH",
+                    capital=100,
+                    intermediate_routes=40,
+                    endpoint_routes=50,
+                    excess=0.8,
+                    pool_count=5 + pool_shift,
+                    venue_count=2,
+                ),
+                _row(
+                    date,
+                    "WBTC",
+                    capital=10,
+                    intermediate_routes=5,
+                    endpoint_routes=10,
+                    excess=0.5,
+                    pool_count=2,
+                    venue_count=1,
+                ),
+                _row(
+                    date,
+                    "USDC",
+                    capital=20,
+                    intermediate_routes=30,
+                    endpoint_routes=20,
+                    excess=3.0,
+                    pool_count=3 + pool_shift,
+                    venue_count=1 + venue_shift,
+                ),
+                _row(
+                    date,
+                    "USDT",
+                    capital=10,
+                    intermediate_routes=20,
+                    endpoint_routes=10,
+                    excess=4.0,
+                    pool_count=3,
+                    venue_count=1 + venue_shift,
+                ),
+                _row(
+                    date,
+                    "DAI",
+                    capital=10,
+                    intermediate_routes=5,
+                    endpoint_routes=10,
+                    excess=1.0,
+                    pool_count=1,
+                    venue_count=1,
+                ),
+            ]
+        )
+    panel = route_capital_gap_extensive_margin_panel(
+        supported_candidate_days(pd.DataFrame(rows)),
+        horizons=(30,),
+    )
+    usdc = panel[panel["candidate_symbol"].eq("USDC")].iloc[0]
+    assert usdc["horizon_days"] == 30
+    assert usdc["future_log_pool_count_change"] > 0
+    assert usdc["future_log_venue_count_change"] > 0
+
+
+def test_route_capital_gap_extensive_margins_report_stable_total() -> None:
+    rows = []
+    symbols = ["WETH", "WBTC", "USDC", "USDT", "DAI"]
+    for day_index, day in enumerate(pd.date_range("2024-01-01", periods=220, freq="D")):
+        for symbol_index, symbol in enumerate(symbols):
+            is_stable = float(symbol in {"DAI", "USDC", "USDT"})
+            gap = (
+                ((symbol_index - 2) / 10)
+                + ((day_index % 7) - 3) / 100
+                + ((day_index % (symbol_index + 2)) / 100)
+            )
+            noise = ((day_index * (symbol_index + 1)) % 11) / 10000
+            rows.append(
+                {
+                    "origin_date": day,
+                    "candidate_address": symbol.lower(),
+                    "candidate_symbol": symbol,
+                    "horizon_days": 30,
+                    "is_stable": is_stable,
+                    "route_capital_gap_5": gap,
+                    "future_log_pool_count_change": 0.02 * gap
+                    - 0.10 * gap * is_stable
+                    + noise,
+                    "future_log_venue_count_change": -0.02 * gap
+                    + 0.08 * gap * is_stable
+                    + noise,
+                }
+            )
+    result = route_capital_gap_extensive_margins(
+        pd.DataFrame(rows),
+        min_observations=100,
+        min_clusters=20,
+    )
+    stable_venue = result[
+        result["predictor"].eq("stable_total_route_capital_gap_5")
+        & result["outcome"].eq("future_log_venue_count_change")
+    ].iloc[0]
+    stable_pool = result[
+        result["predictor"].eq("stable_total_route_capital_gap_5")
+        & result["outcome"].eq("future_log_pool_count_change")
+    ].iloc[0]
+    assert stable_venue["record_type"] == "route_capital_gap_extensive_margin"
+    assert stable_venue["coefficient_per_10pp_gap_percent"] > 0
+    assert stable_pool["coefficient_per_10pp_gap_percent"] < 0
 
 
 def test_route_capital_gap_asymmetry_reports_stable_overhang_effect() -> None:

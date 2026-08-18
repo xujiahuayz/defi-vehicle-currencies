@@ -145,6 +145,42 @@ def test_liquidity_behavior_values_render_from_guarded_rows() -> None:
             "effect_per_10pp_stable_overcapitalization": -0.070,
             "p_value": 0.001,
         },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_extensive_margin",
+            "horizon_days": 30,
+            "outcome": "future_log_venue_count_change",
+            "predictor": "stable_total_route_capital_gap_5",
+            "coefficient": 0.05,
+            "standard_error": 0.01,
+            "coefficient_per_10pp_gap": 0.005,
+            "standard_error_per_10pp_gap": 0.001,
+            "p_value": 0.001,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_extensive_margin",
+            "horizon_days": 120,
+            "outcome": "future_log_venue_count_change",
+            "predictor": "stable_total_route_capital_gap_5",
+            "coefficient": 0.06,
+            "standard_error": 0.02,
+            "coefficient_per_10pp_gap": 0.006,
+            "standard_error_per_10pp_gap": 0.002,
+            "p_value": 0.001,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_extensive_margin",
+            "horizon_days": 120,
+            "outcome": "future_log_pool_count_change",
+            "predictor": "stable_total_route_capital_gap_5",
+            "coefficient": -0.20,
+            "standard_error": 0.05,
+            "coefficient_per_10pp_gap": -0.020,
+            "standard_error_per_10pp_gap": 0.005,
+            "p_value": 0.001,
+        },
     ]
     rendered = render_liquidity_provision_behavior_deck_values(pd.DataFrame(rows))
     assert "\\LiqBehWethCapitalLeaderDays" in rendered
@@ -154,4 +190,6 @@ def test_liquidity_behavior_values_render_from_guarded_rows() -> None:
     assert "\\LiqBehGapCloseMonthCoef" in rendered
     assert "\\LiqBehStableGapCloseMonthCoef" in rendered
     assert "\\LiqBehStableOverhangMonthCoef" in rendered
+    assert "\\LiqBehStableVenueMonthCoef" in rendered
+    assert "\\LiqBehStablePoolLongCoef" in rendered
     assert "5.0\\times" in rendered

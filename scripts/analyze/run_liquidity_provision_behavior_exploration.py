@@ -294,6 +294,191 @@ def route_capital_gap_horizon_panel(exact_horizons: pd.DataFrame) -> pd.DataFram
     return sample
 
 
+def route_capital_gap_extensive_margin_panel(
+    sample: pd.DataFrame,
+    *,
+    horizons: tuple[int, ...] = (1, 7, 30, 120),
+) -> pd.DataFrame:
+    """Attach origin route-minus-capital gaps to future pool/venue counts."""
+
+    panel = candidate_share_gap_panel(sample)
+    panel["log_venue_count"] = np.log1p(panel["v2_candidate_venue_count"].astype(float))
+    current = panel[
+        [
+            "origin_date",
+            "candidate_address",
+            "candidate_symbol",
+            "route_capital_gap_5",
+            "is_stable",
+            "log_pool_count",
+            "log_venue_count",
+        ]
+    ].copy()
+    rows: list[pd.DataFrame] = []
+    target_columns = [
+        "origin_date",
+        "candidate_address",
+        "log_pool_count",
+        "log_venue_count",
+    ]
+    for horizon in horizons:
+        target = panel[target_columns].copy()
+        target["origin_date"] = target["origin_date"] - pd.Timedelta(days=horizon)
+        joined = current.merge(
+            target,
+            on=["origin_date", "candidate_address"],
+            how="inner",
+            suffixes=("", "_target"),
+            validate="one_to_one",
+        )
+        if joined.empty:
+            continue
+        joined["horizon_days"] = int(horizon)
+        joined["future_log_pool_count_change"] = (
+            joined["log_pool_count_target"] - joined["log_pool_count"]
+        )
+        joined["future_log_venue_count_change"] = (
+            joined["log_venue_count_target"] - joined["log_venue_count"]
+        )
+        rows.append(joined)
+    if not rows:
+        raise ValueError("route-capital extensive-margin panel is empty")
+    out = pd.concat(rows, ignore_index=True, sort=False)
+    required = [
+        "route_capital_gap_5",
+        "is_stable",
+        "future_log_pool_count_change",
+        "future_log_venue_count_change",
+    ]
+    out = out.replace([np.inf, -np.inf], np.nan).dropna(subset=required)
+    if out.empty:
+        raise ValueError("route-capital extensive-margin panel lost all rows")
+    return out
+
+
+def route_capital_gap_extensive_margins(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 1000,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Test whether route-capital gaps predict future pool or venue reach."""
+
+    rows: list[dict[str, object]] = []
+    outcomes = (
+        "future_log_pool_count_change",
+        "future_log_venue_count_change",
+    )
+    for horizon, group in panel.groupby("horizon_days", sort=True):
+        for outcome in outcomes:
+            data = (
+                group[
+                    [
+                        "origin_date",
+                        "candidate_address",
+                        "is_stable",
+                        "route_capital_gap_5",
+                        outcome,
+                    ]
+                ]
+                .replace([np.inf, -np.inf], np.nan)
+                .dropna()
+                .copy()
+            )
+            data["route_capital_gap_5_x_stable"] = (
+                data["route_capital_gap_5"].astype(float)
+                * data["is_stable"].astype(float)
+            )
+            residual = absorb_fixed_effects(
+                data[
+                    [
+                        outcome,
+                        "route_capital_gap_5",
+                        "route_capital_gap_5_x_stable",
+                    ]
+                ],
+                data["candidate_address"],
+                data["origin_date"],
+            )
+            fit = ols_clustered(
+                residual[outcome],
+                residual[["route_capital_gap_5", "route_capital_gap_5_x_stable"]],
+                data["origin_date"],
+                add_constant=False,
+                absorbed_groups=(data["candidate_address"], data["origin_date"]),
+                min_observations=min_observations,
+                min_clusters=min_clusters,
+            )
+            for predictor, coefficient, standard_error, t_statistic, p_value in zip(
+                ("route_capital_gap_5", "route_capital_gap_5_x_stable"),
+                fit.beta,
+                fit.standard_errors,
+                fit.t_statistics,
+                fit.p_values,
+                strict=True,
+            ):
+                coefficient = float(coefficient)
+                standard_error = float(standard_error)
+                rows.append(
+                    {
+                        "analysis_status": "exploratory_descriptive",
+                        "record_type": "route_capital_gap_extensive_margin",
+                        "horizon_days": int(horizon),
+                        "outcome": outcome,
+                        "predictor": predictor,
+                        "coefficient": coefficient,
+                        "standard_error": standard_error,
+                        "t_statistic": float(t_statistic),
+                        "p_value": float(p_value),
+                        "coefficient_per_10pp_gap": 0.10 * coefficient,
+                        "standard_error_per_10pp_gap": 0.10 * standard_error,
+                        "coefficient_per_10pp_gap_percent": 10.0 * coefficient,
+                        "standard_error_per_10pp_gap_percent": 10.0 * standard_error,
+                        "n_observations": int(fit.n_observations),
+                        "date_clusters": int(fit.n_clusters),
+                        "fixed_effects": "candidate_address+origin_date",
+                        "covariance": "origin_date_clustered",
+                        "interpretation": (
+                            "temporally ordered pool-or-venue reach association, "
+                            "not causal provider-flow timing"
+                        ),
+                    }
+                )
+            try:
+                stable_total = linear_contrast(fit, [1.0, 1.0])
+            except ValueError:
+                continue
+            rows.append(
+                {
+                    "analysis_status": "exploratory_descriptive",
+                    "record_type": "route_capital_gap_extensive_margin",
+                    "horizon_days": int(horizon),
+                    "outcome": outcome,
+                    "predictor": "stable_total_route_capital_gap_5",
+                    "coefficient": stable_total.estimate,
+                    "standard_error": stable_total.standard_error,
+                    "t_statistic": stable_total.t_statistic,
+                    "p_value": stable_total.p_value,
+                    "coefficient_per_10pp_gap": 0.10 * stable_total.estimate,
+                    "standard_error_per_10pp_gap": 0.10
+                    * stable_total.standard_error,
+                    "coefficient_per_10pp_gap_percent": 10.0
+                    * stable_total.estimate,
+                    "standard_error_per_10pp_gap_percent": 10.0
+                    * stable_total.standard_error,
+                    "n_observations": int(fit.n_observations),
+                    "date_clusters": int(fit.n_clusters),
+                    "fixed_effects": "candidate_address+origin_date",
+                    "covariance": "origin_date_clustered",
+                    "interpretation": (
+                        "stable-candidate total pool-or-venue reach association, "
+                        "not causal provider-flow timing"
+                    ),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
 def within_day_gap_associations(panel: pd.DataFrame) -> pd.DataFrame:
     """Estimate whether stable candidates carry extra use relative to capital."""
 
@@ -892,6 +1077,7 @@ def run(
     exact_panel = route_capital_gap_horizon_panel(load_exact_horizons(exact_horizon_path))
     daily_gaps = daily_capital_use_gaps(sample)
     share_gap_panel = candidate_share_gap_panel(sample)
+    extensive_margin_panel = route_capital_gap_extensive_margin_panel(sample)
     result = pd.concat(
         [
             annual_stable_allocation(sample),
@@ -903,6 +1089,7 @@ def run(
             route_capital_gap_closing(exact_panel),
             route_capital_gap_closing_stable_interactions(exact_panel),
             route_capital_gap_asymmetry(exact_panel),
+            route_capital_gap_extensive_margins(extensive_margin_panel),
         ],
         ignore_index=True,
     )
