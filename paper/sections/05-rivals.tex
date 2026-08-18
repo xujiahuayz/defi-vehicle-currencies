@@ -117,14 +117,30 @@ The local bridge-depth screen supports that earlier-margin interpretation. For e
 % causal liquidity-supply estimate. Depth rows absorb endpoint-date-scope and
 % candidate effects and cluster by ordered pair and date.
 
-A dynamic bridge screen gives the feedback version of the volume--cost mechanism in \citet{Krugman1980VehicleCurrencies}. Matching the same source--candidate--destination bridge at exact future horizons, a 10 percentage point higher current route share predicts \BridgeFeedbackRouteToDepthMonthLog{} log points more bridge-depth growth after 30 days and \BridgeFeedbackRouteToDepthLongLog{} after 120 days, with standard errors \BridgeFeedbackRouteToDepthMonthLogSE{} and \BridgeFeedbackRouteToDepthLongLogSE{}. In the other direction, a one-log-point larger current bridge predicts \BridgeFeedbackDepthToRouteMonthCoef{} more route-share growth after 30 days and \BridgeFeedbackDepthToRouteLongCoef{} after 120 days, with standard errors \BridgeFeedbackDepthToRouteMonthSE{} and \BridgeFeedbackDepthToRouteLongSE{}. The feedback margin is stronger for stable candidates: the corresponding 120-day stable route-share to depth-growth coefficient is \BridgeFeedbackStableRouteToDepthLongLog{} for a 10 percentage point route-share difference, with standard error \BridgeFeedbackStableRouteToDepthLongLogSE{}, and the stable depth to route-share coefficient is \BridgeFeedbackStableDepthToRouteLongCoef{} with standard error \BridgeFeedbackStableDepthToRouteLongSE{}. These rows absorb candidate and origin-date effects and cluster by ordered pair and date. They do not show that liquidity providers fund route demand one for one, but they move the evidence from a static sorting result toward a local feedback margin: route use and corridor depth forecast one another inside the same bridge.
+A dynamic bridge screen gives the feedback version of the volume--cost mechanism in \citet{Krugman1980VehicleCurrencies}. Let \(b\) index a source--candidate--destination bridge, \(R_{b,t}\) be the candidate's share of five-candidate route mass in that local opportunity, and \(B_{b,t}\) be the log weak-leg bridge depth. The two predictive equations are
+\begin{equation}
+\begin{aligned}
+\Delta B_{b,t+h}
+  &= \beta_R R_{b,t} + \gamma_R B_{b,t} + \alpha_c+\delta_t+\varepsilon_{b,t+h},\\
+\Delta R_{b,t+h}
+  &= \beta_B B_{b,t} + \gamma_B R_{b,t} + \alpha_c+\delta_t+\eta_{b,t+h}.
+\end{aligned}
+\label{eq:bridge-feedback}
+\end{equation}
+Matching the same bridge at exact future horizons, a 10 percentage point higher current route share predicts \BridgeFeedbackRouteToDepthMonthLog{} log points more bridge-depth growth after 30 days and \BridgeFeedbackRouteToDepthLongLog{} after 120 days, with standard errors \BridgeFeedbackRouteToDepthMonthLogSE{} and \BridgeFeedbackRouteToDepthLongLogSE{}. In the other direction, a one-log-point larger current bridge predicts \BridgeFeedbackDepthToRouteMonthCoef{} more route-share growth after 30 days and \BridgeFeedbackDepthToRouteLongCoef{} after 120 days, with standard errors \BridgeFeedbackDepthToRouteMonthSE{} and \BridgeFeedbackDepthToRouteLongSE{}. The feedback margin is stronger for stable candidates: the corresponding 120-day stable route-share to depth-growth coefficient is \BridgeFeedbackStableRouteToDepthLongLog{} for a 10 percentage point route-share difference, with standard error \BridgeFeedbackStableRouteToDepthLongLogSE{}, and the stable depth to route-share coefficient is \BridgeFeedbackStableDepthToRouteLongCoef{} with standard error \BridgeFeedbackStableDepthToRouteLongSE{}. These rows absorb candidate and origin-date effects and cluster by ordered pair and date. They do not show that liquidity providers fund route demand one for one, consistent with constrained and active liquidity provision \citep{LeharParlour2024Uniswap,HuangRanaldoSchrimpfSomogyi2025Constrained}, but they move the evidence from a static sorting result toward a local feedback margin: route use and corridor depth forecast one another inside the same bridge.
 % EVIDENCE-STATUS: provisional exploratory dynamic local-bridge feedback screen.
-% output/exhibits/bridge_liquidity_feedback.jsonl and
-% output/exhibits/bridge_liquidity_feedback_support.jsonl; macros from
-% scripts/tabulate/build_bridge_liquidity_feedback_deck_values.py. The unit is
-% the same source-candidate-target bridge observed at an exact future calendar
-% horizon. Deposited-capital stock and realised route share are predictive state
-% variables, not provider-flow treatments.
+% output/exhibits/bridge_liquidity_feedback.jsonl; output/tables/bridge_liquidity_feedback.tex;
+% macros from scripts/tabulate/build_bridge_liquidity_feedback_deck_values.py. The
+% unit is the same source-candidate-target bridge observed at an exact future
+% calendar horizon. Deposited-capital stock and realised route share are
+% predictive state variables, not provider-flow treatments.
+
+\begin{table}[tbp]
+\caption{Dynamic feedback between route use and local bridge depth}
+\label{tab:bridge-feedback}
+\input{../output/tables/bridge_liquidity_feedback.tex}
+\exhibitnote{Each cell reports a predictive coefficient with two-way clustered standard errors in parentheses. Route-use rows scale current route share by 10 percentage points and report future log weak-leg bridge-depth growth. Bridge-depth rows scale current log bridge depth by one log point and report future route-share growth in percentage points. The unit is a source--candidate--destination bridge observed at the exact future horizon. All regressions absorb candidate and origin-date effects, control for the other current state variable, weight by five-candidate route count, and cluster by ordered pair and date. Stable rows add the stable-candidate interaction and report the stable total. These are local feedback screens, not causal provider-flow estimates. Stars denote 1\%, 5\%, and 10\% significance.}
+\end{table}
 
 The allocation of capital itself cuts against a flow-chasing interpretation. In the daily five-candidate V2 panel, WETH is the largest deposited-capital candidate on \LiqBehWethCapitalLeaderDays{} of \LiqBehPanelDays{} days, while stablecoins lead excess use on \LiqBehStableExcessLeaderDays{} of days. From 2024 to 2026, stablecoins' share of candidate deposited capital falls from \LiqBehStableCapitalShareBase{} to \LiqBehStableCapitalShareEnd{}, while their share of candidate intermediary route counts rises from \LiqBehStableRouteShareBase{} to \LiqBehStableRouteShareEnd{}, leaving their 2026 route share \LiqBehStableRouteCapitalRatioEnd{} their capital share. On the matched January-through-June daily calendar, the stablecoin route-minus-capital gap expands by \LiqBehStableGapChange{} with standard error \LiqBehStableGapChangeSE{}, while the WETH gap moves by \LiqBehWethGapChange{} with standard error \LiqBehWethGapChangeSE{}. Holding the date fixed, and controlling for endpoint share, venue count, and pool count, stablecoin candidates still carry \LiqBehStableControlledGapCoef{} more route share than deposited-capital share, with standard error \LiqBehStableControlledGapSE{}.
 
