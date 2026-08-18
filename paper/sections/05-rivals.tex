@@ -136,6 +136,22 @@ A same-pool screen gives the rival its best shot. Across pool-candidate rows, a 
 
 The forward V4 exercise uses the singleton's own swap and modify-liquidity logs. Within candidate and origin-date effects, a 10 percentage point stable route-minus-capital gap predicts \LiqBehStableVFourFlashMultilegCoef{} higher multi-leg V4 transaction share, \LiqBehStableVFourFlashInternalCoef{} higher same-candidate internal-leg share, and \LiqBehStableVFourFlashNettingCoef{} higher gross-to-net singleton reduction, with standard errors \LiqBehStableVFourFlashMultilegSE{}, \LiqBehStableVFourFlashInternalSE{}, and \LiqBehStableVFourFlashNettingSE{}. The corresponding LP-flow specification values each candidate token side of V4 modify-liquidity events. On V4-active origin days, net of current candidate-side flow activity, the same gap predicts \LiqBehStableVFourFlowGrossLongCoef{} more future admissible LP flow after 120 days, with standard error \LiqBehStableVFourFlowGrossLongSE{}. Both sides of the book move: add flow rises \LiqBehStableVFourFlowAddLongCoef{}, with standard error \LiqBehStableVFourFlowAddLongSE{}, while remove flow rises \LiqBehStableVFourFlowRemoveLongCoef{}, with standard error \LiqBehStableVFourFlowRemoveLongSE{}. Net of the candidate's current V4 action, origin-count, and sender-count activity, the same gap predicts \LiqBehStableVFourActiveActivityLongCoef{} more future V4 modify-liquidity actions and \LiqBehStableVFourActiveSenderLongCoef{} more future sender-days. This is the liquidity-provision result connected to the V4 accounting design: the economic route remains visible even when the singleton nets settlement, and LPs respond on flow, action-count, and sender-day margins \citep{LeharParlour2024Uniswap}. It is still filtered candidate-side flow, not whole-pool TVL, a true LP inventory, or a causal provider response.
 
+Table~\ref{tab:lp-behavior-regressions} consolidates the route-capital-gap regressions. A compact notation for the candidate-day rows is
+\begin{equation}
+Y_{c,t+h}
+= \beta G^{S}_{c,t}+X_{c,t}'\Gamma+\alpha_c+\delta_t+\varepsilon_{c,t+h},
+\label{eq:lp-gap-response}
+\end{equation}
+where \(G^{S}_{c,t}\) is the stable-candidate route-minus-capital gap at the origin date. The table reports the effect of a 10 percentage point larger gap. The estimate is positive for gradual capital adjustment and for incumbent-pool capital, but it is small and insignificant in same-pool capital and V3 fee yield. V3 responds through mint-and-burn churn, and V4 responds through flash-accounting intensity, candidate-side LP flow, actions, and sender-days, which is the provider-side margin closest to constrained-liquidity adjustment in \citet{HuangRanaldoSchrimpfSomogyi2025Constrained}.
+% output/exhibits/liquidity_provision_behavior_exploration.jsonl; output/tables/liquidity_provision_regressions.tex; producer scripts/tabulate/render_liquidity_provision_regressions.py.
+
+\begin{table}[tbp]
+\caption{Liquidity-provision responses to stable route-capital gaps}
+\label{tab:lp-behavior-regressions}
+\input{../output/tables/liquidity_provision_regressions.tex}
+\exhibitnote{Each cell reports the effect of a 10 percentage point higher stable-candidate route-minus-capital gap, with clustered standard errors in parentheses. Units are percentage points, log points, rank positions, or event balance as indicated. Candidate-day rows absorb candidate and origin-date effects unless the row label implies a pool-level design: same-pool capital absorbs pool-candidate and origin-date effects, V3 fee yield absorbs pool and origin-date effects, and V4 rows use V4-active origin candidate-days. V3 activity-controlled and V4 activity-controlled rows include current origin-day action, origin-count, and sender-count controls; V4 flow rows include current candidate-side LP-flow controls. These are predictive mechanism regressions, not causal provider-supply estimates. Stars denote 1\%, 5\%, and 10\% significance.}
+\end{table}
+
 Table~\ref{tab:v4-flash-lp} reports the corresponding route-to-provider mechanism in the opposite direction, using the singleton's own accounting intensity at the candidate-day level:
 \begin{equation}
 Y_{c,t+h}
