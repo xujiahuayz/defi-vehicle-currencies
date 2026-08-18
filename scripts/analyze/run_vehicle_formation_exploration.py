@@ -17,7 +17,7 @@ import duckdb
 import numpy as np
 import pandas as pd
 
-from ddvc.analysis.regression import ols_clustered
+from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered
 from ddvc.asset_types import classify
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.runtime import atomic_output
@@ -571,6 +571,284 @@ def entry_stable_candidate_persistence(
                  f.entry_candidate_symbol
         """
     )
+
+
+def entry_stable_candidate_identity_panel(
+    horizon_days: int,
+    *,
+    pair_support_path: Path = PAIR_SUPPORT,
+    candidate_choices_path: Path = CANDIDATE_CHOICES,
+    sample_end: pd.Timestamp = SAMPLE_END,
+) -> pd.DataFrame:
+    """Return entry stable-candidate rows for candidate-identity persistence.
+
+    The outcome is the candidate's share of later stable follow-up routes,
+    conditional on the entering pair having any stable follow-up route mass.
+    This asks whether markets lock onto a named stablecoin at birth, not only
+    whether they lock onto the stablecoin class.
+    """
+
+    if horizon_days <= 0:
+        raise ValueError("horizon_days must be positive")
+    pair_path = _sql_path(pair_support_path)
+    choices_path = _sql_path(candidate_choices_path)
+    years = ", ".join(str(year) for year in MAIN_ENTRY_YEARS)
+    sample_end_text = pd.Timestamp(sample_end).strftime("%Y-%m-%d")
+    panel = _read_sql(
+        f"""
+        WITH entries AS (
+            SELECT
+                date AS entry_date,
+                src,
+                tgt,
+                year(date)::INTEGER AS entry_year,
+                primary_choice_route_count::DOUBLE AS primary_routes,
+                stable_choice_route_count::DOUBLE AS stable_routes,
+                native_choice_route_count::DOUBLE AS native_routes,
+                direct_route_count::DOUBLE AS direct_routes,
+                (
+                    multiple_intermediary_route_count
+                    + split_or_join_route_count
+                    + nonsequential_two_leg_route_count
+                )::DOUBLE AS complex_routes,
+                market_route_count::DOUBLE AS market_routes
+            FROM read_parquet('{pair_path}')
+            WHERE pair_entry_on_day
+              AND primary_choice_route_count > 0
+              AND stable_choice_route_count > 0
+              AND year(date) IN ({years})
+              AND strftime(date, '%m-%d') <= '06-30'
+              AND date + INTERVAL {int(horizon_days)} DAY <= DATE '{sample_end_text}'
+        ),
+        entry_candidates AS (
+            SELECT
+                e.entry_date,
+                e.src,
+                e.tgt,
+                e.entry_year,
+                e.primary_routes,
+                e.stable_routes,
+                e.native_routes,
+                e.direct_routes,
+                e.complex_routes,
+                e.market_routes,
+                c.candidate_symbol,
+                sum(c.route_count)::DOUBLE AS entry_candidate_routes
+            FROM entries e
+            JOIN read_parquet('{choices_path}') c
+              ON c.date = e.entry_date
+             AND c.src = e.src
+             AND c.tgt = e.tgt
+            WHERE c.candidate_type = 'stable'
+              AND c.route_count > 0
+            GROUP BY 1,2,3,4,5,6,7,8,9,10,11
+        ),
+        follow_candidate AS (
+            SELECT
+                e.entry_date,
+                e.src,
+                e.tgt,
+                e.candidate_symbol,
+                sum(c.route_count)::DOUBLE AS own_candidate_followup_routes
+            FROM entry_candidates e
+            JOIN read_parquet('{choices_path}') c
+              ON c.src = e.src
+             AND c.tgt = e.tgt
+             AND c.candidate_symbol = e.candidate_symbol
+             AND c.date BETWEEN e.entry_date
+                            AND e.entry_date + INTERVAL {int(horizon_days)} DAY
+            WHERE c.candidate_type = 'stable'
+              AND c.route_count > 0
+            GROUP BY 1,2,3,4
+        ),
+        follow_stable AS (
+            SELECT
+                e.entry_date,
+                e.src,
+                e.tgt,
+                sum(c.route_count)::DOUBLE AS stable_followup_routes
+            FROM entries e
+            JOIN read_parquet('{choices_path}') c
+              ON c.src = e.src
+             AND c.tgt = e.tgt
+             AND c.date BETWEEN e.entry_date
+                            AND e.entry_date + INTERVAL {int(horizon_days)} DAY
+            WHERE c.candidate_type = 'stable'
+              AND c.route_count > 0
+            GROUP BY 1,2,3
+        )
+        SELECT
+            {int(horizon_days)}::INTEGER AS horizon_days,
+            e.*,
+            coalesce(f.own_candidate_followup_routes, 0)::DOUBLE
+                AS own_candidate_followup_routes,
+            s.stable_followup_routes
+        FROM entry_candidates e
+        JOIN follow_stable s USING (entry_date, src, tgt)
+        LEFT JOIN follow_candidate f USING (
+            entry_date, src, tgt, candidate_symbol
+        )
+        WHERE s.stable_followup_routes > 0
+        """
+    )
+    if panel.empty:
+        raise ValueError("entry stable-candidate identity panel is empty")
+    panel["entry_date"] = pd.to_datetime(panel["entry_date"])
+    panel["endpoint_class"] = [
+        endpoint_class(src, tgt) for src, tgt in zip(panel["src"], panel["tgt"])
+    ]
+    panel["sample"] = "all_stable_entry_candidate"
+    panel.loc[
+        ~panel["endpoint_class"].eq("weth_endpoint"),
+        "sample",
+    ] = "non_weth_stable_entry_candidate"
+    panel["entry_candidate_share"] = (
+        panel["entry_candidate_routes"] / panel["stable_routes"]
+    )
+    panel["own_candidate_followup_share"] = (
+        panel["own_candidate_followup_routes"] / panel["stable_followup_routes"]
+    )
+    panel["is_2026"] = panel["entry_year"].eq(COMPARISON_YEAR).astype(float)
+    panel["stable_endpoint"] = (
+        panel["endpoint_class"].eq("stable_endpoint").astype(float)
+    )
+    panel["log_entry_stable_routes"] = np.log1p(panel["stable_routes"])
+    panel["log_entry_routes"] = np.log1p(panel["primary_routes"])
+    market_routes = panel["market_routes"].replace(0, np.nan)
+    panel["direct_share"] = (
+        panel["direct_routes"] / market_routes
+    ).fillna(0.0).clip(0.0, 1.0)
+    panel["complex_share"] = (
+        panel["complex_routes"] / market_routes
+    ).fillna(0.0).clip(0.0, 1.0)
+    return panel
+
+
+def entry_stable_candidate_identity_regressions(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 1000,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Fit controlled screens for named stablecoin identity persistence."""
+
+    required = {
+        "horizon_days",
+        "entry_date",
+        "endpoint_class",
+        "candidate_symbol",
+        "entry_candidate_routes",
+        "own_candidate_followup_share",
+        "entry_candidate_share",
+        "is_2026",
+        "stable_endpoint",
+        "log_entry_stable_routes",
+        "direct_share",
+        "complex_share",
+    }
+    missing = sorted(required - set(panel.columns))
+    if missing:
+        raise ValueError(
+            f"entry stable-candidate identity panel lacks columns: {missing}"
+        )
+    controls = [
+        "entry_candidate_share",
+        "is_2026",
+        "stable_endpoint",
+        "log_entry_stable_routes",
+        "direct_share",
+        "complex_share",
+    ]
+    rows: list[dict[str, object]] = []
+    samples = [
+        ("all_stable_entry_candidate", panel.copy()),
+        (
+            "non_weth_stable_entry_candidate",
+            panel[~panel["endpoint_class"].eq("weth_endpoint")].copy(),
+        ),
+    ]
+    for sample_name, sample_frame in samples:
+        data = (
+            sample_frame[
+                [
+                    "horizon_days",
+                    "entry_date",
+                    "candidate_symbol",
+                    "entry_candidate_routes",
+                    "own_candidate_followup_share",
+                    *controls,
+                ]
+            ]
+            .replace([np.inf, -np.inf], np.nan)
+            .dropna()
+        )
+        if data.empty:
+            continue
+        yx = pd.concat(
+            [data["own_candidate_followup_share"], data[controls]],
+            axis=1,
+        )
+        residual = absorb_fixed_effects(
+            yx,
+            data["candidate_symbol"],
+            weights=data["entry_candidate_routes"].astype(float),
+        )
+        fit = ols_clustered(
+            residual["own_candidate_followup_share"].astype(float),
+            residual[controls].astype(float),
+            data["entry_date"],
+            add_constant=False,
+            absorbed_groups=(data["candidate_symbol"],),
+            weights=data["entry_candidate_routes"].astype(float),
+            min_observations=min_observations,
+            min_clusters=min_clusters,
+        )
+        for name, beta, se, t_stat, p_value in zip(
+            controls,
+            fit.beta,
+            fit.standard_errors,
+            fit.t_statistics,
+            fit.p_values,
+            strict=True,
+        ):
+            coefficient = float(beta)
+            standard_error = float(se)
+            rows.append(
+                {
+                    "record_type": "entry_stable_candidate_identity_regression",
+                    "horizon_days": int(data["horizon_days"].iloc[0]),
+                    "sample": sample_name,
+                    "outcome": "own_candidate_followup_share",
+                    "predictor": name,
+                    "coefficient": coefficient,
+                    "coefficient_pp": 100.0 * coefficient,
+                    "coefficient_per_10pp_entry_candidate_share": (
+                        0.10 * coefficient
+                        if name == "entry_candidate_share"
+                        else np.nan
+                    ),
+                    "standard_error": standard_error,
+                    "standard_error_pp": 100.0 * standard_error,
+                    "standard_error_per_10pp_entry_candidate_share": (
+                        0.10 * standard_error
+                        if name == "entry_candidate_share"
+                        else np.nan
+                    ),
+                    "t_statistic": float(t_stat),
+                    "p_value": float(p_value),
+                    "observations": int(fit.n_observations),
+                    "entry_date_clusters": int(fit.n_clusters),
+                    "weighted_by": "entry_candidate_routes",
+                    "fixed_effects": "candidate_symbol",
+                    "covariance_id": "entry_date_cluster_cr1",
+                    "controls": ",".join([*controls, "candidate_symbol_fe"]),
+                    "interpretation": (
+                        "exploratory_named_stablecoin_identity_persistence_"
+                        "not_causal"
+                    ),
+                }
+            )
+    return pd.DataFrame(rows)
 
 
 def entry_driver_panel(pair_support_path: Path = PAIR_SUPPORT) -> pd.DataFrame:
@@ -1774,6 +2052,18 @@ def build_results(
         )
         for horizon in HORIZONS
     ]
+    candidate_identity_panels = [
+        entry_stable_candidate_identity_panel(
+            horizon,
+            pair_support_path=pair_support_path,
+            candidate_choices_path=candidate_choices_path,
+        )
+        for horizon in HORIZONS
+    ]
+    candidate_identity_regressions = [
+        entry_stable_candidate_identity_regressions(panel)
+        for panel in candidate_identity_panels
+    ]
     summaries = [persistence_summary(panel) for panel in follow_panels]
     contrasts = [persistence_contrasts(panel) for panel in follow_panels]
     path_dependence = [
@@ -1796,6 +2086,7 @@ def build_results(
             secure_volume,
             stable_candidates,
             *candidate_persistence,
+            *candidate_identity_regressions,
             driver_regressions,
             architecture_regressions,
             secure_volume_regressions,

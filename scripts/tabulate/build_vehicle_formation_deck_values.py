@@ -206,6 +206,22 @@ def render_vehicle_formation_deck_values(estimates: pd.DataFrame) -> str:
         entry_year=2026,
         entry_candidate_symbol="USDT",
     )
+    identity_path_30 = _one(
+        estimates,
+        record_type="entry_stable_candidate_identity_regression",
+        horizon_days=30,
+        sample="non_weth_stable_entry_candidate",
+        outcome="own_candidate_followup_share",
+        predictor="entry_candidate_share",
+    )
+    identity_path_120 = _one(
+        estimates,
+        record_type="entry_stable_candidate_identity_regression",
+        horizon_days=120,
+        sample="non_weth_stable_entry_candidate",
+        outcome="own_candidate_followup_share",
+        predictor="entry_candidate_share",
+    )
     non_weth_year_driver = _one(
         estimates,
         record_type="entry_driver_regression",
@@ -288,6 +304,8 @@ def render_vehicle_formation_deck_values(estimates: pd.DataFrame) -> str:
         float(usdt_2026_own_30["own_candidate_followup_share"]),
         float(usdc_2026_own_120["own_candidate_followup_share"]),
         float(usdt_2026_own_120["own_candidate_followup_share"]),
+        float(identity_path_30["coefficient_per_10pp_entry_candidate_share"]),
+        float(identity_path_120["coefficient_per_10pp_entry_candidate_share"]),
         float(non_weth_year_driver["coefficient"]),
         float(non_weth_stable_endpoint_driver["coefficient"]),
         float(route_direct_2026_driver["coefficient"]),
@@ -356,6 +374,15 @@ def render_vehicle_formation_deck_values(estimates: pd.DataFrame) -> str:
     ):
         raise ValueError("USDC/USDT stable-entry candidate identity no longer persists")
     if not (
+        float(identity_path_30["coefficient_per_10pp_entry_candidate_share"]) > 0.08
+        and float(identity_path_120["coefficient_per_10pp_entry_candidate_share"]) > 0.08
+        and float(identity_path_30["p_value"]) < 0.01
+        and float(identity_path_120["p_value"]) < 0.01
+        and float(identity_path_30["observations"]) > 5000
+        and float(identity_path_120["observations"]) > 5000
+    ):
+        raise ValueError("controlled stable-entry candidate identity screen no longer holds")
+    if not (
         float(stable_hysteresis_2026_30["never_left_share_retrade"]) > 0.90
         and float(stable_hysteresis_2026_120["never_left_share_retrade"]) > 0.90
         and float(stable_hysteresis_2026_30["mean_stable_majority_day_share"]) > 0.98
@@ -405,6 +432,11 @@ def render_vehicle_formation_deck_values(estimates: pd.DataFrame) -> str:
         f"\\newcommand{{\\FormationUSDTEntryOwnThirty}}{{{_pct(float(usdt_2026_own_30['own_candidate_followup_share']))}}}",
         f"\\newcommand{{\\FormationUSDCEntryOwnOneTwenty}}{{{_pct(float(usdc_2026_own_120['own_candidate_followup_share']))}}}",
         f"\\newcommand{{\\FormationUSDTEntryOwnOneTwenty}}{{{_pct(float(usdt_2026_own_120['own_candidate_followup_share']))}}}",
+        f"\\newcommand{{\\FormationIdentityPathRowsOneTwenty}}{{{_int(identity_path_120['observations'])}}}",
+        f"\\newcommand{{\\FormationIdentityPathThirtyCoef}}{{{_signed_pp(float(identity_path_30['coefficient_per_10pp_entry_candidate_share']))}}}",
+        f"\\newcommand{{\\FormationIdentityPathThirtySE}}{{{_unsigned_pp(float(identity_path_30['standard_error_per_10pp_entry_candidate_share']), 2)}}}",
+        f"\\newcommand{{\\FormationIdentityPathOneTwentyCoef}}{{{_signed_pp(float(identity_path_120['coefficient_per_10pp_entry_candidate_share']))}}}",
+        f"\\newcommand{{\\FormationIdentityPathOneTwentySE}}{{{_unsigned_pp(float(identity_path_120['standard_error_per_10pp_entry_candidate_share']), 2)}}}",
         f"\\newcommand{{\\FormationNonWethYearDriver}}{{{_signed_pp(float(non_weth_year_driver['coefficient']))}}}",
         f"\\newcommand{{\\FormationNonWethYearDriverSE}}{{{_unsigned_pp(float(non_weth_year_driver['standard_error']))}}}",
         f"\\newcommand{{\\FormationNonWethStableEndpointDriver}}{{{_signed_pp(float(non_weth_stable_endpoint_driver['coefficient']))}}}",

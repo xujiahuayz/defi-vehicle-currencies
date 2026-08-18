@@ -17,6 +17,7 @@ from scripts.analyze.run_vehicle_formation_exploration import (
     entry_route_architecture_regressions,
     entry_secure_volume_regressions,
     entry_secure_volume_summary,
+    entry_stable_candidate_identity_regressions,
     entry_stable_candidate_persistence,
     entry_stable_candidate_summary,
     entry_value_follow_panel,
@@ -171,6 +172,59 @@ def test_entry_stable_candidate_persistence_tracks_entry_candidate_identity(
     assert usdc["stable_followup_routes"] == 17
     assert usdc["own_candidate_followup_routes"] == 14
     assert usdc["own_candidate_followup_share"] == pytest.approx(14 / 17)
+
+
+def test_entry_stable_candidate_identity_regression_absorbs_candidate_fe() -> None:
+    rows = []
+    candidates = ("USDC", "USDT", "DAI")
+    for day in range(1, 61):
+        is_2026 = float(day % 2 == 0)
+        date = pd.Timestamp(f"{2024 + int(2 * is_2026)}-01-01") + pd.Timedelta(
+            days=day - 1
+        )
+        for index, candidate in enumerate(candidates):
+            entry_share = 0.10 + 0.08 * index + 0.01 * (day % 7)
+            stable_endpoint = float((day + index) % 3 == 0)
+            direct_share = 0.03 * ((day + index) % 5)
+            complex_share = 0.02 * ((day + 2 * index) % 6)
+            own_share = (
+                0.04
+                + 0.82 * entry_share
+                + 0.05 * stable_endpoint
+                + 0.02 * direct_share
+                - 0.01 * complex_share
+                + {"USDC": 0.05, "USDT": 0.02, "DAI": -0.01}[candidate]
+            )
+            rows.append(
+                {
+                    "horizon_days": 120,
+                    "entry_date": date,
+                    "endpoint_class": "stable_endpoint",
+                    "candidate_symbol": candidate,
+                    "entry_candidate_routes": 10.0 + day + index,
+                    "own_candidate_followup_share": own_share,
+                    "entry_candidate_share": entry_share,
+                    "is_2026": is_2026,
+                    "stable_endpoint": stable_endpoint,
+                    "log_entry_stable_routes": np.log1p(30.0 + day),
+                    "direct_share": direct_share,
+                    "complex_share": complex_share,
+                }
+            )
+    result = entry_stable_candidate_identity_regressions(
+        pd.DataFrame(rows), min_observations=100, min_clusters=20
+    )
+    driver = result[
+        result["sample"].eq("non_weth_stable_entry_candidate")
+        & result["predictor"].eq("entry_candidate_share")
+    ].iloc[0]
+
+    assert result["record_type"].eq(
+        "entry_stable_candidate_identity_regression"
+    ).all()
+    assert driver["coefficient"] > 0.75
+    assert driver["fixed_effects"] == "candidate_symbol"
+    assert np.isfinite(driver["standard_error"])
 
 
 def test_entry_follow_panel_requires_complete_horizon(pair_support_path) -> None:

@@ -94,7 +94,7 @@ rolling native-only-to-stable turn-on hazards, the direct-route by thinness
 interaction, same-day and prior-30-day candidate-network reach inside observed mixed native-stable
 risk-set checks, endpoint claim-class formation splits, endpoint price-history
 formation screens, sticky incumbent
-vehicle regimes, USDC/USDT concentration at stable-entry, stable-candidate
+vehicle regimes, USDC/USDT concentration at stable-entry, controlled stable-candidate
 identity persistence, USDC/SVB stress-window identity persistence and LP capital
 non-chase, extra-hop gas economics and route-level fixed-toll feasibility, the V2 liquidity
 route-minus-capital gap, stable-basket portfolio rebalancing, delayed/asymmetric
@@ -166,7 +166,7 @@ and the lock.
 
 The current branch compiles a 54-page paper and a 46-page deck after the
 provisional mechanism reruns. The paper and deck compile with zero undefined
-references. The repository passes 704 pytest tests, the findings gate, and every
+references. The repository passes 707 pytest tests, the findings gate, and every
 blocking conformance check. There is one manuscript under `paper/` and one
 presentation under `deck/`; Git history is the archive.
 

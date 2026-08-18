@@ -257,6 +257,32 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
                 "own_candidate_followup_share": 0.877,
             },
             {
+                "record_type": "entry_stable_candidate_identity_regression",
+                "horizon_days": 30,
+                "sample": "non_weth_stable_entry_candidate",
+                "outcome": "own_candidate_followup_share",
+                "predictor": "entry_candidate_share",
+                "primary_routes": None,
+                "stable_share": None,
+                "coefficient_per_10pp_entry_candidate_share": 0.095,
+                "standard_error_per_10pp_entry_candidate_share": 0.004,
+                "p_value": 0.001,
+                "observations": 12000,
+            },
+            {
+                "record_type": "entry_stable_candidate_identity_regression",
+                "horizon_days": 120,
+                "sample": "non_weth_stable_entry_candidate",
+                "outcome": "own_candidate_followup_share",
+                "predictor": "entry_candidate_share",
+                "primary_routes": None,
+                "stable_share": None,
+                "coefficient_per_10pp_entry_candidate_share": 0.092,
+                "standard_error_per_10pp_entry_candidate_share": 0.007,
+                "p_value": 0.001,
+                "observations": 9000,
+            },
+            {
                 "record_type": "entry_driver_regression",
                 "endpoint_class": "non_weth_endpoint",
                 "outcome": "stable_share",
@@ -348,6 +374,7 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
     assert "\\FormationStableEntryTopTwoShareEnd" in rendered
     assert "99.6\\%" in rendered
     assert "\\FormationUSDCEntryOwnThirty" in rendered
+    assert "\\FormationIdentityPathOneTwentyCoef" in rendered
     assert "\\FormationStableHysteresisThirtyRetrade" in rendered
     assert "94.6\\%" in rendered
     assert "\\FormationNonWethYearDriver" in rendered
