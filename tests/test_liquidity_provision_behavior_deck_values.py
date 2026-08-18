@@ -233,6 +233,66 @@ def test_liquidity_behavior_values_render_from_guarded_rows() -> None:
             "n_observations": 2000,
             "pool_count": 200,
         },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_candidate_specific",
+            "horizon_days": 120,
+            "outcome": "future_v2_five_candidate_capital_share_change",
+            "candidate_symbol": "DAI",
+            "coefficient": 0.30,
+            "standard_error": 0.02,
+            "coefficient_per_10pp_gap": 0.030,
+            "standard_error_per_10pp_gap": 0.002,
+            "p_value": 0.001,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_candidate_specific",
+            "horizon_days": 120,
+            "outcome": "future_v2_five_candidate_capital_share_change",
+            "candidate_symbol": "USDC",
+            "coefficient": 0.08,
+            "standard_error": 0.01,
+            "coefficient_per_10pp_gap": 0.008,
+            "standard_error_per_10pp_gap": 0.001,
+            "p_value": 0.001,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_candidate_specific",
+            "horizon_days": 120,
+            "outcome": "future_v2_five_candidate_capital_share_change",
+            "candidate_symbol": "USDT",
+            "coefficient": 0.02,
+            "standard_error": 0.01,
+            "coefficient_per_10pp_gap": 0.002,
+            "standard_error_per_10pp_gap": 0.001,
+            "p_value": 0.20,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_candidate_specific",
+            "horizon_days": 120,
+            "outcome": "future_v2_log1p_deposited_capital_usd_change",
+            "candidate_symbol": "USDC",
+            "coefficient": 1.40,
+            "standard_error": 0.20,
+            "coefficient_per_10pp_gap": 0.140,
+            "standard_error_per_10pp_gap": 0.020,
+            "p_value": 0.001,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_candidate_specific",
+            "horizon_days": 120,
+            "outcome": "future_v2_log1p_deposited_capital_usd_change",
+            "candidate_symbol": "USDT",
+            "coefficient": 0.70,
+            "standard_error": 0.20,
+            "coefficient_per_10pp_gap": 0.070,
+            "standard_error_per_10pp_gap": 0.020,
+            "p_value": 0.02,
+        },
     ]
     rendered = render_liquidity_provision_behavior_deck_values(pd.DataFrame(rows))
     assert "\\LiqBehWethCapitalLeaderDays" in rendered
@@ -248,4 +308,7 @@ def test_liquidity_behavior_values_render_from_guarded_rows() -> None:
     assert "\\LiqBehStableSamePoolLongCoef" in rendered
     assert "\\LiqBehStableFeeLongCoef" in rendered
     assert "\\LiqBehStableVolumeLongCoef" in rendered
+    assert "\\LiqBehUsdcGapCloseLongCoef" in rendered
+    assert "\\LiqBehDaiGapCloseLongCoef" in rendered
+    assert "\\LiqBehUsdtLogGapCloseLongCoef" in rendered
     assert "5.0\\times" in rendered

@@ -1151,6 +1151,99 @@ def route_capital_gap_closing_stable_interactions(
     return pd.DataFrame(rows)
 
 
+def route_capital_gap_candidate_specific(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 1000,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Estimate gap-closing slopes separately for each vehicle candidate."""
+
+    rows: list[dict[str, object]] = []
+    outcomes = (
+        "future_v2_five_candidate_capital_share_change",
+        "future_v2_log1p_deposited_capital_usd_change",
+    )
+    for horizon, group in panel.groupby("horizon_days", sort=True):
+        candidate_symbols = sorted(group["candidate_symbol"].dropna().astype(str).unique())
+        predictors = [
+            f"route_capital_gap_5_x_{symbol.lower()}" for symbol in candidate_symbols
+        ]
+        for outcome in outcomes:
+            data = (
+                group[
+                    [
+                        "origin_date",
+                        "candidate_address",
+                        "candidate_symbol",
+                        "route_capital_gap_5",
+                        outcome,
+                    ]
+                ]
+                .replace([np.inf, -np.inf], np.nan)
+                .dropna()
+                .copy()
+            )
+            data["candidate_symbol"] = data["candidate_symbol"].astype(str)
+            for symbol, predictor in zip(candidate_symbols, predictors, strict=True):
+                data[predictor] = (
+                    data["route_capital_gap_5"].astype(float)
+                    * data["candidate_symbol"].eq(symbol).astype(float)
+                )
+            residual = absorb_fixed_effects(
+                data[[outcome, *predictors]],
+                data["candidate_address"],
+                data["origin_date"],
+            )
+            fit = ols_clustered(
+                residual[outcome],
+                residual[predictors],
+                data["origin_date"],
+                add_constant=False,
+                absorbed_groups=(data["candidate_address"], data["origin_date"]),
+                min_observations=min_observations,
+                min_clusters=min_clusters,
+            )
+            for symbol, predictor, coefficient, standard_error, t_statistic, p_value in zip(
+                candidate_symbols,
+                predictors,
+                fit.beta,
+                fit.standard_errors,
+                fit.t_statistics,
+                fit.p_values,
+                strict=True,
+            ):
+                coefficient = float(coefficient)
+                standard_error = float(standard_error)
+                rows.append(
+                    {
+                        "analysis_status": "exploratory_descriptive",
+                        "record_type": "route_capital_gap_candidate_specific",
+                        "horizon_days": int(horizon),
+                        "outcome": outcome,
+                        "candidate_symbol": symbol,
+                        "predictor": predictor,
+                        "coefficient": coefficient,
+                        "standard_error": standard_error,
+                        "t_statistic": float(t_statistic),
+                        "p_value": float(p_value),
+                        "coefficient_per_10pp_gap": 0.10 * coefficient,
+                        "standard_error_per_10pp_gap": 0.10 * standard_error,
+                        "coefficient_per_10pp_gap_pp": 10.0 * coefficient,
+                        "standard_error_per_10pp_gap_pp": 10.0 * standard_error,
+                        "n_observations": int(fit.n_observations),
+                        "date_clusters": int(fit.n_clusters),
+                        "fixed_effects": "candidate_address+origin_date",
+                        "covariance": "origin_date_clustered",
+                        "interpretation": (
+                            "candidate-specific temporally ordered gap-closing "
+                            "association, not causal provider-flow timing"
+                        ),
+                    }
+                )
+    return pd.DataFrame(rows)
+
+
 def route_capital_gap_asymmetry(
     panel: pd.DataFrame,
     *,
@@ -1539,6 +1632,7 @@ def run(
             within_day_gap_associations(share_gap_panel),
             route_capital_gap_closing(exact_panel),
             route_capital_gap_closing_stable_interactions(exact_panel),
+            route_capital_gap_candidate_specific(exact_panel),
             route_capital_gap_asymmetry(exact_panel),
             route_capital_gap_extensive_margins(extensive_margin_panel),
             route_capital_gap_same_pool_reallocation(same_pool_panel),

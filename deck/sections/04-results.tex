@@ -253,7 +253,7 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 
 % EVIDENCE-STATUS: exploratory descriptive mechanism screen, not causal treatment evidence
 % EVIDENCE-SOURCES: output/exhibits/vehicle_dominance_mechanism_sweep.jsonl; output/exhibits/vehicle_dominance_mechanism_support.jsonl; output/exhibits/vehicle_mechanism_sweep_deck_values.tex; output/exhibits/vehicle_market_size_exploration.jsonl; output/exhibits/vehicle_market_size_deck_values.tex
-% ESTIMAND-BOUNDARY: pair-month-day-scope transition rows on the count-share metric; month-day fixed effects, two-way CR1 by ordered pair and month-day, harmonic endpoint denominator weights; risk-set rows are observed mixed native-stable candidate sets, not feasible untraded alternatives
+% ESTIMAND-BOUNDARY: pair-month-day-scope transition rows on the count-share metric; month-day fixed effects, two-way CR1 by ordered pair and month-day, harmonic endpoint denominator weights; risk-set rows are observed mixed native-stable candidate sets, not feasible untraded alternatives; centrality is same-day candidate pair-scope reach outside the current risk set
 % VISUAL-FUNCTION: formation driver screen | three transition coefficients | locate stable-vehicle creation at thin-market edge
 \begin{frame}{Stable vehicles turn on at the market edge}
 \vspace{0.10cm}
@@ -276,9 +276,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.40cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.4}{9.4}\selectfont Turn-on is thinner, direct, and complex; not same-set conquest. Not dust: large 2026 entrants route \MarketSizeEntryThickShareEnd{} through stablecoins.\par}
+{\fontsize{8.4}{9.4}\selectfont Turn-on is thinner, direct, and complex. Inside mixed risk sets, candidate reach predicts \MechanismRiskSetCentralityCoef{} more route share per log point, while the stable label remains negative.\par}
 \end{minipage}}
-\decknote{Transition screen uses pair-day-scope rows, month-day fixed effects, harmonic weights, and two-way CR1. Risk-set rows are observed native-stable candidate sets, not feasible alternatives. Market-size rows are descriptive realised route-count bins and first-day entrant size; driver screen only.}
+\decknote{Transition screen uses pair-day-scope rows, month-day fixed effects, harmonic weights, and two-way CR1. Risk-set rows are observed native-stable candidate sets, not feasible alternatives; candidate reach is leave-one same-day pair-scope count. Market-size rows are descriptive realised route-count bins and first-day entrant size; driver screen only.}
 \end{frame}
 
 % EVIDENCE-STATUS: exploratory descriptive rolling adoption result, not causal timing
@@ -411,7 +411,7 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.44cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.4}{9.4}\selectfont Stablecoins' route share rises while capital share falls. Adjustment is selective: overhangs shrink, venue reach rises, pool count does not, and stable same-pool capital and fee responses are \LiqBehStableSamePoolLongCoef{} and \LiqBehStableFeeLongCoef{}.\par}
+{\fontsize{8.4}{9.4}\selectfont Stablecoins' route share rises while capital share falls. Adjustment is selective: overhangs shrink, venue reach rises, pool count does not, and 120-day capital responses differ: DAI \LiqBehDaiGapCloseLongCoef{}, USDC \LiqBehUsdcGapCloseLongCoef{}, USDT \LiqBehUsdtGapCloseLongCoef{}.\par}
 \end{minipage}}
 \decknote{Daily five-candidate V2 panel over \LiqBehPanelDays{} days; capital is deposited-capital stock. Stable route share rises \LiqBehStableRouteShareBase{} to \LiqBehStableRouteShareEnd{} while capital share falls \LiqBehStableCapitalShareBase{} to \LiqBehStableCapitalShareEnd{}. Controlled stable premium: \LiqBehStableControlledGapCoef{} (SE \LiqBehStableControlledGapSE{}). Same-pool rows absorb pool-candidate/date effects; all-candidate 120-day coefficient \LiqBehSamePoolLongCoef{} (SE \LiqBehSamePoolLongSE{}). Descriptive.}
 \end{frame}

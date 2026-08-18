@@ -60,6 +60,11 @@ DIRECT_THIN_RHS = (
 )
 REGIME_THRESHOLD = 0.5
 RISK_SET_MIN_TOTAL_ROUTES = (1, 5, 20)
+RISK_SET_CENTRALITY_REGRESSORS = (
+    "is_stable",
+    "is_stable_x_2026",
+    "log_leaveout_candidate_pair_scopes",
+)
 STABLE_TURN_ON_HORIZON_DAYS = 30
 STABLE_TURN_ON_PREDICTORS = (
     "is_2026",
@@ -566,19 +571,31 @@ def build_candidate_risk_set_design(path: Path = CHOICES_INPUT) -> pd.DataFrame:
                     src,
                     tgt,
                     integration_scope,
-                    candidate_address,
-                    candidate_symbol,
-                    candidate_type,
+                    lower(candidate_address) AS candidate_address,
+                    any_value(candidate_symbol) AS candidate_symbol,
+                    any_value(candidate_type) AS candidate_type,
                     sum(route_count)::DOUBLE AS route_count
                 FROM read_parquet(?)
                 WHERE year(date) IN (?, ?)
                   AND month(date) <= 6
                   AND candidate_type IN ('stable', 'native')
-                GROUP BY 1, 2, 3, 4, 5, 6, 7
+                GROUP BY 1, 2, 3, 4, 5
+            ),
+            candidate_centrality AS (
+                SELECT
+                    date,
+                    candidate_address,
+                    sum(route_count)::DOUBLE AS candidate_day_routes,
+                    count(DISTINCT concat(src, '|', tgt, '|', integration_scope))::DOUBLE
+                        AS candidate_day_pair_scopes
+                FROM candidate_rows
+                GROUP BY 1, 2
             ),
             risk_sets AS (
                 SELECT
-                    *,
+                    r.*,
+                    c.candidate_day_routes,
+                    c.candidate_day_pair_scopes,
                     sum(route_count) OVER (
                         PARTITION BY date, src, tgt, integration_scope
                     ) AS total_routes,
@@ -591,7 +608,8 @@ def build_candidate_risk_set_design(path: Path = CHOICES_INPUT) -> pd.DataFrame:
                     max((candidate_type = 'native')::INTEGER) OVER (
                         PARTITION BY date, src, tgt, integration_scope
                     ) AS has_native
-                FROM candidate_rows
+                FROM candidate_rows r
+                JOIN candidate_centrality c USING (date, candidate_address)
             )
             SELECT *
             FROM risk_sets
@@ -615,6 +633,18 @@ def build_candidate_risk_set_design(path: Path = CHOICES_INPUT) -> pd.DataFrame:
     frame["is_stable"] = frame["candidate_type"].eq("stable").astype(float)
     frame["is_2026"] = frame["year"].eq(COMPARISON_YEAR).astype(float)
     frame["is_stable_x_2026"] = frame["is_stable"] * frame["is_2026"]
+    frame["leaveout_candidate_routes"] = (
+        frame["candidate_day_routes"].astype(float) - frame["route_count"].astype(float)
+    ).clip(lower=0.0)
+    frame["leaveout_candidate_pair_scopes"] = (
+        frame["candidate_day_pair_scopes"].astype(float) - 1.0
+    ).clip(lower=0.0)
+    frame["log_leaveout_candidate_routes"] = np.log1p(
+        frame["leaveout_candidate_routes"]
+    )
+    frame["log_leaveout_candidate_pair_scopes"] = np.log1p(
+        frame["leaveout_candidate_pair_scopes"]
+    )
     frame["risk_set_id"] = (
         frame["date"].astype(str)
         + "|"
@@ -651,6 +681,7 @@ def estimate_candidate_risk_set_choice(
         "candidate_type",
         "is_stable",
         "is_stable_x_2026",
+        "log_leaveout_candidate_pair_scopes",
         "risk_set_id",
         "ordered_pair_scope",
     }
@@ -774,6 +805,84 @@ def estimate_candidate_risk_set_choice(
                         "stable dominance could arise because stable candidates win "
                         "inside already-mixed risk sets; this screen tests that rival "
                         "against the entry and persistence margins"
+                    ),
+                }
+            )
+        centrality_data = (
+            sample[
+                [
+                    "route_share",
+                    *RISK_SET_CENTRALITY_REGRESSORS,
+                    "risk_set_id",
+                    "ordered_pair_scope",
+                    "date",
+                    "total_routes",
+                ]
+            ]
+            .replace([np.inf, -np.inf], np.nan)
+            .dropna()
+            .copy()
+        )
+        centrality_residual = absorb_fixed_effects(
+            centrality_data[["route_share", *RISK_SET_CENTRALITY_REGRESSORS]],
+            centrality_data["risk_set_id"],
+            weights=centrality_data["total_routes"],
+        )
+        centrality_fit = ols_clustered(
+            centrality_residual["route_share"],
+            centrality_residual[list(RISK_SET_CENTRALITY_REGRESSORS)],
+            centrality_data["ordered_pair_scope"],
+            add_constant=False,
+            absorbed_groups=(centrality_data["risk_set_id"],),
+            additional_clusters=(centrality_data["date"],),
+            weights=centrality_data["total_routes"],
+            min_observations=min_observations,
+            min_clusters=min_clusters,
+        )
+        for regressor, coefficient, standard_error, t_statistic, p_value in zip(
+            RISK_SET_CENTRALITY_REGRESSORS,
+            centrality_fit.beta,
+            centrality_fit.standard_errors,
+            centrality_fit.t_statistics,
+            centrality_fit.p_values,
+            strict=True,
+        ):
+            result_rows.append(
+                {
+                    "claim_status": "provisional_exploratory",
+                    "experiment_family": "vehicle_dominance_mechanism_sweep",
+                    "metric": "candidate_route_share",
+                    "model_id": "mixed_native_stable_risk_set_centrality_fe",
+                    "question": (
+                        "Inside the same observed native-stable pair-day-scope "
+                        "risk set, does a candidate's broader same-day network "
+                        "reach explain route share?"
+                    ),
+                    "min_total_routes": int(threshold),
+                    "outcome": "candidate_route_share",
+                    "regressor": regressor,
+                    "coefficient": float(coefficient),
+                    "coefficient_pp": 100.0 * float(coefficient),
+                    "standard_error": float(standard_error),
+                    "standard_error_pp": 100.0 * float(standard_error),
+                    "t_statistic": float(t_statistic),
+                    "p_value": float(p_value),
+                    "observations": int(centrality_fit.n_observations),
+                    "ordered_pair_clusters": int(centrality_fit.cluster_counts[0]),
+                    "date_clusters": int(centrality_fit.cluster_counts[1]),
+                    "fixed_effects": "pair_day_scope_risk_set",
+                    "covariance": "two_way_ordered_pair_scope_date_cr1",
+                    "weight": "risk_set_total_route_count",
+                    "centrality_measure": (
+                        "log one plus the candidate's same-day observed "
+                        "native/stable pair-scope count outside the current risk set"
+                    ),
+                    "interpretation": (
+                        "within_observed_risk_set_network_centrality_screen_not_causal"
+                    ),
+                    "rival_story": (
+                        "candidate network reach may proxy liquidity, token news, "
+                        "router defaults, venue coverage, or repeated endpoint demand"
                     ),
                 }
             )

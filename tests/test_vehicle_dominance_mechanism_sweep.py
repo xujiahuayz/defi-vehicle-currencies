@@ -114,11 +114,19 @@ class VehicleDominanceMechanismSweepTests(unittest.TestCase):
                     for pair_index in range(1, 6):
                         src = f"0xsrc{pair_index:02x}"
                         tgt = f"0xtgt{pair_index:02x}"
-                        native_routes = 20 + pair_index
-                        stable_routes = 5 + int(year == COMPARISON_YEAR)
+                        if pair_index <= 3:
+                            native = "WETH"
+                            stable = f"STABLE{pair_index}"
+                            native_routes = 24 + pair_index
+                            stable_routes = 6 + int(year == COMPARISON_YEAR)
+                        else:
+                            native = f"NATIVE{pair_index}"
+                            stable = "USDC"
+                            native_routes = 12 + pair_index
+                            stable_routes = 14 + int(year == COMPARISON_YEAR)
                         for candidate_type, candidate, route_count in (
-                            ("native", "WETH", native_routes),
-                            ("stable", "USDC", stable_routes),
+                            ("native", native, native_routes),
+                            ("stable", stable, stable_routes),
                         ):
                             rows.append(
                                 {
@@ -138,6 +146,7 @@ class VehicleDominanceMechanismSweepTests(unittest.TestCase):
             design = build_candidate_risk_set_design(choices_path)
             self.assertTrue(design["has_stable"].eq(1).all())
             self.assertTrue(design["has_native"].eq(1).all())
+            self.assertIn("log_leaveout_candidate_pair_scopes", design)
 
             results, support = estimate_candidate_risk_set_choice(
                 design, min_observations=20, min_clusters=2
@@ -152,6 +161,12 @@ class VehicleDominanceMechanismSweepTests(unittest.TestCase):
                 & results["regressor"].eq("is_stable")
             ].iloc[0]
             self.assertLess(penalty["coefficient"], 0)
+            centrality = results[
+                results["model_id"].eq("mixed_native_stable_risk_set_centrality_fe")
+                & results["min_total_routes"].eq(1)
+                & results["regressor"].eq("log_leaveout_candidate_pair_scopes")
+            ].iloc[0]
+            self.assertGreater(centrality["coefficient"], 0)
             self.assertIn("candidate_route_share", set(support["metric"]))
 
     def test_stable_turn_on_hazard_reports_thick_market_contrast(self) -> None:
