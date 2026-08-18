@@ -92,15 +92,16 @@ route-architecture entry interactions, stable turn-on in thin baseline markets,
 rolling native-only-to-stable turn-on hazards, the direct-route by thinness
 interaction, observed mixed native-stable risk-set checks, sticky incumbent
 vehicle regimes, USDC/USDT concentration at stable-entry, stable-candidate
-identity persistence, extra-hop gas economics, the V2 liquidity
+identity persistence, USDC/SVB stress-window identity persistence, extra-hop gas
+economics, the V2 liquidity
 route-minus-capital gap, delayed/asymmetric LP rebalancing, and LP
 venue-footprint/pool-count extensive-margin behavior, plus a same-pool LP
-capital-chase rival screen. The deck also carries the traditional-FX route
-analogy as motivation. These layers strengthen the
+capital-chase rival screen and bounded V3 fee/rent-incidence screen. The deck
+also carries the traditional-FX route analogy as motivation. These layers strengthen the
 mechanism story but do not change the registered confirmatory claim set.
 
 Routing maturation, full same-state direct-cost dominance, the joint V2/V3
-capital-flow family, rent incidence, provider-flow measurement, and V4
+capital-flow family, provider-flow measurement, and V4
 settlement/netting claims are blocked, withheld, supporting, or outside the
 executable perimeter until they receive a complete
 producer-to-deliverable path. They must not be presented as established findings.

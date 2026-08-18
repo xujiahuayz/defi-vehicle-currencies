@@ -32,6 +32,7 @@ analysis exhibit that supplies each value.
 | `build_fixed_opportunity_deck_values.py` | fixed-opportunity macros |
 | `build_liquidity_capital_v2_deck_values.py` | V2 mechanism macros |
 | `build_liquidity_provision_behavior_deck_values.py` | exploratory liquidity behavior macros |
+| `build_stable_stress_event_deck_values.py` | USDC/SVB stable-identity stress-screen macros |
 | `build_vehicle_formation_deck_values.py` | exploratory market-formation macros |
 | `build_vehicle_market_size_deck_values.py` | exploratory market-size vehicle-use macros |
 | `build_v1_architecture_deck_values.py` | V1 mandate and V2 routing facts |

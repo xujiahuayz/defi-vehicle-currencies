@@ -14,6 +14,7 @@ data and analysis-ready panels. Each current panel has one owner.
 | `build_token_price_panel.py` | daily route-token prices |
 | `build_pool_capital_panel.py` | pool and candidate deposited-capital panels, rejection ledger, and coverage summary |
 | `build_liquidity_capital_flow_panels.py` | V2 candidate-day and exact-horizon mechanism panels |
+| `build_v3_pool_day_fees.py` | processed Uniswap v3 pool-day fee and volume panel for bounded LP rent-incidence screens |
 | `build_endpoint_candidate_composition.py` | choice, audit, exclusion, and pair-support panels |
 | `build_intermediation_by_type.py` | daily intermediary-type panel and its descriptive exhibits |
 | `build_vehicle_excess_use.py` | daily excess-use panel and transition exhibits |

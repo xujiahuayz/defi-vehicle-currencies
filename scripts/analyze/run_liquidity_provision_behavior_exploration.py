@@ -31,6 +31,7 @@ from ddvc.tables import write_exhibit
 CANDIDATE_DAY_INPUT = REPO_ROOT / "data/processed/liquidity_capital_v2_candidate_day.parquet"
 EXACT_HORIZON_INPUT = REPO_ROOT / "data/processed/liquidity_capital_v2_exact_horizons.parquet"
 POOL_CANDIDATE_CAPITAL_INPUT = REPO_ROOT / "data/processed/pool_candidate_capital_daily.parquet"
+V3_POOL_DAY_FEES_INPUT = REPO_ROOT / "data/processed/v3_pool_day_fees.parquet"
 RESULT_OUTPUT = OUTPUT_DIR / "exhibits/liquidity_provision_behavior_exploration.jsonl"
 SUPPORT_OUTPUT = OUTPUT_DIR / "exhibits/liquidity_provision_behavior_support.jsonl"
 
@@ -42,6 +43,7 @@ INPUTS = [
     "data/processed/liquidity_capital_v2_candidate_day.parquet",
     "data/processed/liquidity_capital_v2_exact_horizons.parquet",
     "data/processed/pool_candidate_capital_daily.parquet",
+    "data/processed/v3_pool_day_fees.parquet",
 ]
 STABLE_SYMBOLS = frozenset({"DAI", "USDC", "USDT"})
 WETH_SYMBOL = "WETH"
@@ -492,17 +494,18 @@ def route_capital_gap_pool_candidate_horizon_panel(
 
     if not horizons:
         raise ValueError("at least one same-pool horizon is required")
-    required = {
+    required_columns = [
         "origin_date",
         "candidate_address",
         "candidate_symbol",
         "route_capital_gap_5",
         "is_stable",
-    }
+    ]
+    required = set(required_columns)
     missing = sorted(required - set(share_gap_panel.columns))
     if missing:
         raise ValueError(f"share-gap panel lacks pool-chase columns: {missing}")
-    gaps = share_gap_panel[list(required)].copy()
+    gaps = share_gap_panel[required_columns].copy()
     gaps["origin_date"] = pd.to_datetime(gaps["origin_date"]).dt.normalize()
     gaps["candidate_address"] = gaps["candidate_address"].astype(str).str.lower()
     connection = duckdb.connect()
@@ -688,6 +691,234 @@ def route_capital_gap_same_pool_reallocation(
                 ),
             }
         )
+    return pd.DataFrame(rows)
+
+
+def route_capital_gap_v3_fee_horizon_panel(
+    share_gap_panel: pd.DataFrame,
+    *,
+    fee_panel_path: Path = V3_POOL_DAY_FEES_INPUT,
+    horizons: tuple[int, ...] = (30, 120),
+) -> pd.DataFrame:
+    """Attach candidate route-capital gaps to future same-pool V3 fee outcomes."""
+
+    if not horizons:
+        raise ValueError("at least one V3 fee horizon is required")
+    required_columns = [
+        "origin_date",
+        "candidate_address",
+        "candidate_symbol",
+        "route_capital_gap_5",
+        "is_stable",
+    ]
+    required = set(required_columns)
+    missing = sorted(required - set(share_gap_panel.columns))
+    if missing:
+        raise ValueError(f"share-gap panel lacks V3 fee columns: {missing}")
+    gaps = share_gap_panel[required_columns].copy()
+    gaps["origin_date"] = pd.to_datetime(gaps["origin_date"]).dt.normalize()
+    gaps["candidate_address"] = gaps["candidate_address"].astype(str).str.lower()
+
+    horizon_selects = []
+    for horizon in horizons:
+        horizon_selects.append(
+            f"""
+            SELECT
+                j.origin_date,
+                j.pool,
+                j.candidate_address,
+                j.candidate_symbol,
+                j.is_stable,
+                j.route_capital_gap_5,
+                {int(horizon)}::INTEGER AS horizon_days,
+                t.log_fees_usd - j.log_fees_usd AS future_log_fees_change,
+                t.log_volume_usd - j.log_volume_usd AS future_log_volume_change
+            FROM joined j
+            JOIN joined t
+              ON t.pool = j.pool
+             AND t.candidate_address = j.candidate_address
+             AND t.origin_date = j.origin_date + INTERVAL {int(horizon)} DAY
+            """
+        )
+    query = f"""
+        WITH fee_rows AS (
+            SELECT
+                CAST(origin_date AS DATE) AS origin_date,
+                lower(pool) AS pool,
+                lower(token0_address) AS token0,
+                lower(token1_address) AS token1,
+                fees_usd,
+                volume_usd,
+                tvl_usd
+            FROM read_parquet(?)
+            WHERE tvl_usd > 0
+              AND fees_usd IS NOT NULL
+              AND volume_usd IS NOT NULL
+        ),
+        pool_candidates AS (
+            SELECT origin_date, pool, token0 AS candidate_address, fees_usd, volume_usd
+            FROM fee_rows
+            UNION ALL
+            SELECT origin_date, pool, token1 AS candidate_address, fees_usd, volume_usd
+            FROM fee_rows
+        ),
+        joined AS (
+            SELECT
+                p.origin_date,
+                p.pool,
+                p.candidate_address,
+                g.candidate_symbol,
+                g.is_stable,
+                g.route_capital_gap_5,
+                log(1 + p.fees_usd) AS log_fees_usd,
+                log(1 + p.volume_usd) AS log_volume_usd
+            FROM pool_candidates p
+            JOIN candidate_gaps g
+              ON g.origin_date = p.origin_date
+             AND g.candidate_address = p.candidate_address
+        )
+        {" UNION ALL ".join(horizon_selects)}
+    """
+    connection = duckdb.connect()
+    try:
+        connection.execute("PRAGMA threads=8")
+        connection.register("candidate_gaps", gaps)
+        out = connection.execute(
+            query,
+            [str(fee_panel_path)],
+        ).fetchdf()
+    finally:
+        connection.close()
+    if out.empty:
+        raise ValueError("V3 fee-incidence horizon panel is empty")
+    out["origin_date"] = pd.to_datetime(out["origin_date"])
+    out["candidate_address"] = out["candidate_address"].astype(str)
+    out["candidate_symbol"] = out["candidate_symbol"].astype(str)
+    out["is_stable"] = out["is_stable"].astype(float)
+    return out.replace([np.inf, -np.inf], np.nan).dropna(
+        subset=[
+            "route_capital_gap_5",
+            "future_log_fees_change",
+            "future_log_volume_change",
+        ]
+    )
+
+
+def route_capital_gap_v3_fee_incidence(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 1000,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Test whether route-capital gaps forecast same-pool V3 fees or volume."""
+
+    rows: list[dict[str, object]] = []
+    outcomes = ("future_log_fees_change", "future_log_volume_change")
+    for horizon, group in panel.groupby("horizon_days", sort=True):
+        for outcome in outcomes:
+            data = (
+                group[
+                    [
+                        "origin_date",
+                        "pool",
+                        "is_stable",
+                        "route_capital_gap_5",
+                        outcome,
+                    ]
+                ]
+                .replace([np.inf, -np.inf], np.nan)
+                .dropna()
+                .copy()
+            )
+            data["route_capital_gap_5_x_stable"] = (
+                data["route_capital_gap_5"].astype(float)
+                * data["is_stable"].astype(float)
+            )
+            residual = absorb_fixed_effects(
+                data[
+                    [
+                        outcome,
+                        "route_capital_gap_5",
+                        "route_capital_gap_5_x_stable",
+                    ]
+                ],
+                data["pool"],
+                data["origin_date"],
+            )
+            fit = ols_clustered(
+                residual[outcome],
+                residual[["route_capital_gap_5", "route_capital_gap_5_x_stable"]],
+                data["origin_date"],
+                add_constant=False,
+                absorbed_groups=(data["pool"], data["origin_date"]),
+                min_observations=min_observations,
+                min_clusters=min_clusters,
+            )
+            for predictor, coefficient, standard_error, t_statistic, p_value in zip(
+                ("route_capital_gap_5", "route_capital_gap_5_x_stable"),
+                fit.beta,
+                fit.standard_errors,
+                fit.t_statistics,
+                fit.p_values,
+                strict=True,
+            ):
+                coefficient = float(coefficient)
+                standard_error = float(standard_error)
+                rows.append(
+                    {
+                        "analysis_status": "exploratory_descriptive",
+                        "record_type": "route_capital_gap_v3_fee_incidence",
+                        "horizon_days": int(horizon),
+                        "outcome": outcome,
+                        "predictor": predictor,
+                        "coefficient": coefficient,
+                        "standard_error": standard_error,
+                        "t_statistic": float(t_statistic),
+                        "p_value": float(p_value),
+                        "coefficient_per_10pp_gap": 0.10 * coefficient,
+                        "standard_error_per_10pp_gap": 0.10 * standard_error,
+                        "coefficient_per_10pp_gap_percent": 10.0 * coefficient,
+                        "standard_error_per_10pp_gap_percent": 10.0 * standard_error,
+                        "n_observations": int(fit.n_observations),
+                        "date_clusters": int(fit.n_clusters),
+                        "pool_count": int(data["pool"].nunique()),
+                        "fixed_effects": "pool+origin_date",
+                        "covariance": "origin_date_clustered",
+                        "interpretation": (
+                            "same-pool V3 fee and volume association, not causal "
+                            "rent incidence"
+                        ),
+                    }
+                )
+            stable_total = linear_contrast(fit, [1.0, 1.0])
+            rows.append(
+                {
+                    "analysis_status": "exploratory_descriptive",
+                    "record_type": "route_capital_gap_v3_fee_incidence",
+                    "horizon_days": int(horizon),
+                    "outcome": outcome,
+                    "predictor": "stable_total_route_capital_gap_5",
+                    "coefficient": stable_total.estimate,
+                    "standard_error": stable_total.standard_error,
+                    "t_statistic": stable_total.t_statistic,
+                    "p_value": stable_total.p_value,
+                    "coefficient_per_10pp_gap": 0.10 * stable_total.estimate,
+                    "standard_error_per_10pp_gap": 0.10
+                    * stable_total.standard_error,
+                    "coefficient_per_10pp_gap_percent": 10.0 * stable_total.estimate,
+                    "standard_error_per_10pp_gap_percent": 10.0
+                    * stable_total.standard_error,
+                    "n_observations": int(fit.n_observations),
+                    "date_clusters": int(fit.n_clusters),
+                    "pool_count": int(data["pool"].nunique()),
+                    "fixed_effects": "pool+origin_date",
+                    "covariance": "origin_date_clustered",
+                    "interpretation": (
+                        "stable-candidate same-pool V3 fee and volume association, "
+                        "not causal rent incidence"
+                    ),
+                }
+            )
     return pd.DataFrame(rows)
 
 
@@ -1269,6 +1500,9 @@ def support_rows(sample: pd.DataFrame) -> pd.DataFrame:
                 "pool_candidate_capital_input": str(
                     POOL_CANDIDATE_CAPITAL_INPUT.relative_to(REPO_ROOT)
                 ),
+                "v3_pool_day_fee_input": str(
+                    V3_POOL_DAY_FEES_INPUT.relative_to(REPO_ROOT)
+                ),
                 "candidate_day_rows": int(len(sample)),
                 "days": int(sample["origin_date"].nunique()),
                 "candidate_count": int(sample["candidate_symbol"].nunique()),
@@ -1294,6 +1528,7 @@ def run(
     share_gap_panel = candidate_share_gap_panel(sample)
     extensive_margin_panel = route_capital_gap_extensive_margin_panel(sample)
     same_pool_panel = route_capital_gap_pool_candidate_horizon_panel(share_gap_panel)
+    fee_incidence_panel = route_capital_gap_v3_fee_horizon_panel(share_gap_panel)
     result = pd.concat(
         [
             annual_stable_allocation(sample),
@@ -1307,6 +1542,7 @@ def run(
             route_capital_gap_asymmetry(exact_panel),
             route_capital_gap_extensive_margins(extensive_margin_panel),
             route_capital_gap_same_pool_reallocation(same_pool_panel),
+            route_capital_gap_v3_fee_incidence(fee_incidence_panel),
         ],
         ignore_index=True,
     )

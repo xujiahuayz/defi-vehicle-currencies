@@ -21,6 +21,8 @@ from scripts.analyze.run_liquidity_provision_behavior_exploration import (
     route_capital_gap_horizon_panel,
     route_capital_gap_pool_candidate_horizon_panel,
     route_capital_gap_same_pool_reallocation,
+    route_capital_gap_v3_fee_horizon_panel,
+    route_capital_gap_v3_fee_incidence,
     supported_candidate_days,
     within_day_gap_associations,
 )
@@ -380,6 +382,111 @@ def test_same_pool_reallocation_reports_stable_total() -> None:
         result["predictor"].eq("stable_total_route_capital_gap_5")
     ].iloc[0]
     assert stable_total["record_type"] == "route_capital_gap_same_pool_reallocation"
+    assert stable_total["coefficient"] > 0
+
+
+def test_v3_fee_horizon_panel_joins_future_pool_day_fees() -> None:
+    share_gap = pd.DataFrame(
+        [
+            {
+                "origin_date": pd.Timestamp("2025-01-01"),
+                "candidate_address": "usdc",
+                "candidate_symbol": "USDC",
+                "route_capital_gap_5": 0.2,
+                "is_stable": 1.0,
+            },
+            {
+                "origin_date": pd.Timestamp("2025-01-31"),
+                "candidate_address": "usdc",
+                "candidate_symbol": "USDC",
+                "route_capital_gap_5": 0.1,
+                "is_stable": 1.0,
+            },
+        ]
+    )
+    fee_rows = pd.DataFrame(
+        [
+            {
+                "origin_date": pd.Timestamp("2025-01-01"),
+                "pool": "pool",
+                "token0_address": "usdc",
+                "token1_address": "weth",
+                "fees_usd": 100.0,
+                "volume_usd": 10_000.0,
+                "tvl_usd": 1_000_000.0,
+            },
+            {
+                "origin_date": pd.Timestamp("2025-01-31"),
+                "pool": "pool",
+                "token0_address": "usdc",
+                "token1_address": "weth",
+                "fees_usd": 110.0,
+                "volume_usd": 12_000.0,
+                "tvl_usd": 1_000_000.0,
+            },
+        ]
+    )
+    with tempfile.TemporaryDirectory() as tmpdir:
+        path = Path(tmpdir) / "fees.parquet"
+        fee_rows.to_parquet(path, index=False)
+        panel = route_capital_gap_v3_fee_horizon_panel(
+            share_gap,
+            fee_panel_path=path,
+            horizons=(30,),
+        )
+    row = panel.iloc[0]
+    assert row["horizon_days"] == 30
+    assert row["future_log_fees_change"] > 0
+    assert row["future_log_volume_change"] > 0
+
+
+def test_v3_fee_incidence_reports_stable_total() -> None:
+    rows = []
+    symbols = ["WETH", "WBTC", "USDC", "USDT", "DAI"]
+    for day_index, day in enumerate(pd.date_range("2025-01-01", periods=160, freq="D")):
+        date_effect = 0.002 * day_index
+        for symbol_index, symbol in enumerate(symbols):
+            is_stable = float(symbol in {"DAI", "USDC", "USDT"})
+            for pool_index in range(4):
+                gap = (
+                    0.12 * math.sin(day_index / 13 + pool_index + symbol_index / 4)
+                    + 0.02 * (pool_index - 1.5)
+                    + 0.01 * symbol_index
+                )
+                pool_effect = 0.04 * pool_index + 0.03 * symbol_index
+                rows.append(
+                    {
+                        "origin_date": day,
+                        "pool": f"pool-{pool_index}|{symbol}",
+                        "candidate_address": symbol.lower(),
+                        "candidate_symbol": symbol,
+                        "is_stable": is_stable,
+                        "route_capital_gap_5": gap,
+                        "horizon_days": 30,
+                        "future_log_fees_change": (
+                            0.04 * gap
+                            + 0.06 * gap * is_stable
+                            + pool_effect
+                            + date_effect
+                        ),
+                        "future_log_volume_change": (
+                            0.03 * gap
+                            + 0.05 * gap * is_stable
+                            + pool_effect
+                            + date_effect
+                        ),
+                    }
+                )
+    result = route_capital_gap_v3_fee_incidence(
+        pd.DataFrame(rows),
+        min_observations=100,
+        min_clusters=20,
+    )
+    stable_total = result[
+        result["predictor"].eq("stable_total_route_capital_gap_5")
+        & result["outcome"].eq("future_log_fees_change")
+    ].iloc[0]
+    assert stable_total["record_type"] == "route_capital_gap_v3_fee_incidence"
     assert stable_total["coefficient"] > 0
 
 

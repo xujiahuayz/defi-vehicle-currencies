@@ -13,6 +13,7 @@ belongs in `../plot/` or `../tabulate/`.
 | `run_liquidity_provision_behavior_exploration.py` | exploratory V2 capital-allocation and vehicle-use behavior |
 | `run_mechanism_expansion_exploration.py` | provisional JFE-expansion mechanism regressions and formation summaries |
 | `run_route_gas_economics.py` | exploratory receipt-gas hurdle for direct and extra-hop vehicle routes |
+| `run_stable_stress_event.py` | exploratory USDC/SVB stable-vehicle identity stress screen |
 | `run_route_heterogeneity.py` | WETH-eligibility and route-scope results plus deck values |
 | `run_usdt_integration_decomposition_e0.py` | USDT transition decomposition; pair-decomposition values |
 | `run_v1_forced_vehicle_tests.py` | aggregate V1 mandate-removal exhibits and research report |

@@ -19,6 +19,9 @@
 \IfFileExists{../output/exhibits/vehicle_formation_deck_values.tex}{%
 \input{../output/exhibits/vehicle_formation_deck_values.tex}%
 }{\PackageError{dvc-deck}{Missing generated vehicle-formation values}{Run scripts/analyze/run_vehicle_formation_exploration.py then scripts/tabulate/build_vehicle_formation_deck_values.py.}}
+\IfFileExists{../output/exhibits/stable_stress_event_deck_values.tex}{%
+\input{../output/exhibits/stable_stress_event_deck_values.tex}%
+}{\PackageError{dvc-deck}{Missing generated stable stress-event values}{Run scripts/analyze/run_stable_stress_event.py then scripts/tabulate/build_stable_stress_event_deck_values.py.}}
 \IfFileExists{../output/exhibits/vehicle_market_size_deck_values.tex}{%
 \input{../output/exhibits/vehicle_market_size_deck_values.tex}%
 }{\PackageError{dvc-deck}{Missing generated vehicle market-size values}{Run scripts/analyze/run_vehicle_market_size_exploration.py then scripts/tabulate/build_vehicle_market_size_deck_values.py.}}
@@ -218,6 +221,36 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \decknote{Entrants are ordered ultimate pairs first observed in the matched January-June endpoint window with positive native-plus-stable route mass. WETH endpoints carry \FormationWethEntryRouteMassEnd{} of 2026 entrant mass; excluding them, entry stable share rises from \FormationNonWethEntryStableShareBase{} to \FormationNonWethEntryStableShareEnd{}. Stable endpoint entrants carry \FormationSecureStableEndpointMassEnd{} of non-WETH entrant mass; their gap expands by \FormationSecureGapChange{}, and the architecture-controlled 2026 term is \FormationSecureVolumeDriver{} with SE \FormationSecureVolumeDriverSE{}. USDC/USDT carry \FormationStableEntryTopTwoShareEnd{} of stable entry. Descriptive association only.}
 \end{frame}
 
+% EVIDENCE-STATUS: exploratory stress-event identity screen
+% EVIDENCE-SOURCES: output/exhibits/stable_stress_event.jsonl; output/exhibits/stable_stress_event_support.jsonl; output/exhibits/stable_stress_event_deck_values.tex
+% ESTIMAND-BOUNDARY: daily stable-candidate intermediary route counts from the five-candidate route-capital panel; pre, stress, and post windows around the March 2023 USDC/SVB episode; descriptive stress-event screen, not a treatment design
+% VISUAL-FUNCTION: stable identity under stress | three-stat strip | show that USDC route identity did not immediately unwind during the depeg weekend
+\begin{frame}{USDC kept the vehicle role during its depeg}
+\vspace{0.10cm}
+\begin{columns}[T,totalwidth=\textwidth]
+\begin{column}{0.31\textwidth}
+{\fontsize{26}{28}\selectfont\bfseries\color{ucldark}\StressEventPreUsdcShare}\par
+\vspace{0.16cm}
+{\small USDC share before stress\par}
+\end{column}
+\begin{column}{0.31\textwidth}
+{\fontsize{26}{28}\selectfont\bfseries\color{ucldark}\StressEventStressUsdcShare}\par
+\vspace{0.16cm}
+{\small USDC share during stress\par}
+\end{column}
+\begin{column}{0.31\textwidth}
+{\fontsize{26}{28}\selectfont\bfseries\color{ucldark}\StressEventStableActivityRise}\par
+\vspace{0.16cm}
+{\small stable-route activity increase\par}
+\end{column}
+\end{columns}
+\vspace{0.44cm}
+\fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
+{\fontsize{8.4}{9.4}\selectfont Stable routes did not flee USDC during the SVB weekend: its stable-vehicle share moved \StressEventUsdcShareChange{} while stable-route activity averaged \StressEventStressRoutesPerDay{} routes per day. USDT's post-window share was \StressEventPostUsdtShare{}.\par}
+\end{minipage}}
+\decknote{Daily stable-candidate intermediary route counts from the five-candidate route-capital panel. Windows are the 30 calendar days before March 10, the March 10--13 stress interval, and the 30 calendar days after. The event mixes peg stress, arbitrage, and demand shocks, so the slide is a descriptive identity-stress screen rather than a treatment effect.}
+\end{frame}
+
 % EVIDENCE-STATUS: exploratory descriptive mechanism screen, not causal treatment evidence
 % EVIDENCE-SOURCES: output/exhibits/vehicle_dominance_mechanism_sweep.jsonl; output/exhibits/vehicle_dominance_mechanism_support.jsonl; output/exhibits/vehicle_mechanism_sweep_deck_values.tex; output/exhibits/vehicle_market_size_exploration.jsonl; output/exhibits/vehicle_market_size_deck_values.tex
 % ESTIMAND-BOUNDARY: pair-month-day-scope transition rows on the count-share metric; month-day fixed effects, two-way CR1 by ordered pair and month-day, harmonic endpoint denominator weights; risk-set rows are observed mixed native-stable candidate sets, not feasible untraded alternatives
@@ -355,7 +388,7 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 % EVIDENCE-STATUS: exploratory descriptive allocation result
 % EVIDENCE-SOURCES: output/exhibits/liquidity_provision_behavior_exploration.jsonl; output/exhibits/liquidity_provision_behavior_support.jsonl; output/exhibits/liquidity_provision_behavior_deck_values.tex
 % SCIENTIFIC-BOUNDARY: V2 deposited-capital stock over five vehicle candidates; not provider inflow, active concentrated-liquidity depth, or executable quote size
-% ESTIMAND-BOUNDARY: daily five-candidate panel with route and V2 capital support; leader rows are same-day rankings, gap rows are within-day route-share minus capital-share associations, exact-horizon rows are future capital-share changes, same-pool rows follow pool-candidate capital, and FE rows are contemporaneous level associations
+% ESTIMAND-BOUNDARY: daily five-candidate panel with route and V2 capital support; leader rows are same-day rankings, gap rows are within-day route-share minus capital-share associations, exact-horizon rows are future capital-share changes, same-pool rows follow pool-candidate capital, fee rows follow processed V3 pool-day fees and volume, and FE rows are contemporaneous level associations
 % VISUAL-FUNCTION: capital-use split | three-stat allocation contrast | show that provider capital remains native-heavy while stablecoins carry excess vehicle use
 \begin{frame}{Provider capital stays native-heavy}
 \vspace{0.10cm}
@@ -378,7 +411,7 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.44cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.4}{9.4}\selectfont Stablecoins' route share rises while capital share falls. Adjustment is selective: overhangs shrink, venue reach rises, pool count does not, and same-pool stable capital response is \LiqBehStableSamePoolLongCoef{} (SE \LiqBehStableSamePoolLongSE{}).\par}
+{\fontsize{8.4}{9.4}\selectfont Stablecoins' route share rises while capital share falls. Adjustment is selective: overhangs shrink, venue reach rises, pool count does not, and stable same-pool capital and fee responses are \LiqBehStableSamePoolLongCoef{} and \LiqBehStableFeeLongCoef{}.\par}
 \end{minipage}}
 \decknote{Daily five-candidate V2 panel over \LiqBehPanelDays{} days; capital is deposited-capital stock. Stable route share rises \LiqBehStableRouteShareBase{} to \LiqBehStableRouteShareEnd{} while capital share falls \LiqBehStableCapitalShareBase{} to \LiqBehStableCapitalShareEnd{}. Controlled stable premium: \LiqBehStableControlledGapCoef{} (SE \LiqBehStableControlledGapSE{}). Same-pool rows absorb pool-candidate/date effects; all-candidate 120-day coefficient \LiqBehSamePoolLongCoef{} (SE \LiqBehSamePoolLongSE{}). Descriptive.}
 \end{frame}
