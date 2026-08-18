@@ -87,7 +87,8 @@ and deck only when explicitly labelled and reproducible enough for review.
 
 The active provisional result stack now includes vehicle formation at market
 birth, non-WETH entry-driver controls, 30-day and 120-day birth-state
-persistence, stable turn-on in thin baseline markets, and the V2 liquidity
+persistence, stable turn-on in thin baseline markets, the direct-route by
+thinness interaction, sticky incumbent vehicle regimes, and the V2 liquidity
 route-minus-capital gap. These layers strengthen the mechanism story but do not
 change the registered confirmatory claim set.
 

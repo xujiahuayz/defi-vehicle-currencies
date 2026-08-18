@@ -47,6 +47,16 @@ CHANGE_RHS = (
     "direct_route_share_change",
     "complex_route_share_change",
 )
+DIRECT_THIN_RHS = (
+    "baseline_thinness",
+    "baseline_direct_route_share",
+    "baseline_direct_x_thin",
+    "baseline_complex_route_share",
+    "baseline_primary_choice_share",
+    "baseline_pair_age_log",
+    "cross_venue",
+)
+REGIME_THRESHOLD = 0.5
 MODEL_SPECS = (
     (
         "share_change_baseline_state",
@@ -65,6 +75,12 @@ MODEL_SPECS = (
         "stable_turn_on",
         BASE_RHS,
         "Where does a stable vehicle appear after no baseline stable use?",
+    ),
+    (
+        "turn_on_direct_thin_interaction",
+        "stable_turn_on",
+        DIRECT_THIN_RHS,
+        "Is direct-route availability more predictive of stable turn-on in thin markets?",
     ),
     (
         "leader_switch_lpm",
@@ -247,6 +263,7 @@ def build_transition_design(
     design["baseline_log_market_routes"] = np.log1p(
         design[f"market_route_count_{base}"].astype(float)
     )
+    design["baseline_thinness"] = -design["baseline_log_market_routes"]
     design["comparison_log_market_routes"] = np.log1p(
         design[f"market_route_count_{comp}"].astype(float)
     )
@@ -257,6 +274,9 @@ def build_transition_design(
     design["baseline_complex_route_share"] = design[f"complex_route_share_{base}"].astype(float)
     design["baseline_primary_choice_share"] = design[f"primary_choice_share_{base}"].astype(float)
     design["baseline_pair_age_log"] = np.log1p(design[f"pair_age_days_{base}"].astype(float))
+    design["baseline_direct_x_thin"] = (
+        design["baseline_direct_route_share"] * design["baseline_thinness"]
+    )
     design["direct_route_share_change"] = (
         design[f"direct_route_share_{comp}"].astype(float)
         - design[f"direct_route_share_{base}"].astype(float)
@@ -417,6 +437,95 @@ def _decile_contrasts(sample: pd.DataFrame, metric: str) -> list[dict[str, objec
     return rows
 
 
+def _regime_persistence_rows(
+    design: pd.DataFrame,
+    *,
+    min_clusters: int,
+) -> list[dict[str, object]]:
+    """Summarise whether continuing markets keep their baseline vehicle regime."""
+
+    rows: list[dict[str, object]] = []
+    for (metric, integration_scope), group in design.groupby(
+        ["metric", "integration_scope"], sort=True
+    ):
+        sample = (
+            group.loc[
+                :,
+                [
+                    "src",
+                    "tgt",
+                    "month_day",
+                    f"stable_share_{BASELINE_YEAR}",
+                    f"stable_share_{COMPARISON_YEAR}",
+                    "effective_transition_weight",
+                    "ordered_pair_cluster",
+                ],
+            ]
+            .replace([np.inf, -np.inf], np.nan)
+            .dropna()
+            .copy()
+        )
+        sample = sample[sample["effective_transition_weight"].gt(0.0)].copy()
+        if sample.empty:
+            continue
+        baseline_share = sample[f"stable_share_{BASELINE_YEAR}"]
+        comparison_share = sample[f"stable_share_{COMPARISON_YEAR}"]
+        for baseline_regime, baseline_mask, comparison_mask in (
+            (
+                "stable_majority",
+                baseline_share.ge(REGIME_THRESHOLD),
+                comparison_share.ge(REGIME_THRESHOLD),
+            ),
+            (
+                "native_majority",
+                baseline_share.lt(REGIME_THRESHOLD),
+                comparison_share.lt(REGIME_THRESHOLD),
+            ),
+        ):
+            data = sample.loc[baseline_mask].copy()
+            if data.empty:
+                continue
+            data["regime_persists"] = comparison_mask.loc[data.index].astype(float)
+            fit = ols_clustered(
+                data["regime_persists"],
+                pd.DataFrame(index=data.index),
+                data["ordered_pair_cluster"],
+                add_constant=True,
+                additional_clusters=(data["month_day"],),
+                weights=data["effective_transition_weight"],
+                min_observations=min_clusters,
+                min_clusters=min_clusters,
+            )
+            estimate = float(fit.beta[0])
+            standard_error = float(fit.standard_errors[0])
+            rows.append(
+                {
+                    "claim_status": "provisional_exploratory",
+                    "experiment_family": "vehicle_dominance_mechanism_sweep",
+                    "metric": metric,
+                    "model_id": "regime_persistence",
+                    "question": "Do continuing markets keep their baseline majority vehicle regime?",
+                    "integration_scope": integration_scope,
+                    "baseline_regime": baseline_regime,
+                    "outcome": "regime_persists",
+                    "coefficient": estimate,
+                    "coefficient_pp": 100.0 * estimate,
+                    "standard_error": standard_error,
+                    "standard_error_pp": 100.0 * standard_error,
+                    "switch_rate": 1.0 - estimate,
+                    "switch_rate_pp": 100.0 * (1.0 - estimate),
+                    "observations": fit.n_observations,
+                    "ordered_pair_clusters": int(fit.cluster_counts[0]),
+                    "month_day_clusters": int(fit.cluster_counts[1]),
+                    "fixed_effects": "none",
+                    "covariance": "two_way_ordered_pair_month_day_cr1",
+                    "weight": "harmonic_endpoint_denominator_mass",
+                    "interpretation": "descriptive_regime_persistence_not_causal",
+                }
+            )
+    return rows
+
+
 def estimate_mechanism_sweep(
     design: pd.DataFrame,
     *,
@@ -435,6 +544,7 @@ def estimate_mechanism_sweep(
             "ordered_pair_cluster",
             *BASE_RHS,
             *CHANGE_RHS,
+            *DIRECT_THIN_RHS,
         }
         - set(design.columns)
     )
@@ -483,6 +593,7 @@ def estimate_mechanism_sweep(
                 )
             )
         result_rows.extend(_decile_contrasts(design, metric))
+    result_rows.extend(_regime_persistence_rows(design, min_clusters=min_clusters))
     return pd.DataFrame(result_rows), pd.DataFrame(support_rows)
 
 

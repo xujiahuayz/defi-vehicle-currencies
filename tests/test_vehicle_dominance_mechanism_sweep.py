@@ -96,6 +96,10 @@ class VehicleDominanceMechanismSweepTests(unittest.TestCase):
             self.assertTrue(
                 results["claim_status"].eq("provisional_exploratory").all()
             )
+            self.assertIn(
+                "regime_persistence",
+                set(results["model_id"]),
+            )
 
 
 if __name__ == "__main__":

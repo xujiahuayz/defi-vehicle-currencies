@@ -51,7 +51,8 @@ reproducible, but not yet submission-ready. The current research mode is
 parallel: keep the paper and slides presentable, integrate provisional results
 with explicit status labels, and continue the scoped mechanism and review loops.
 Current provisional layers cover vehicle birth, non-WETH entry drivers,
-long-horizon persistence, thin-market turn-on, LP capital-use gaps, and V2
+long-horizon persistence, thin-market turn-on with a direct-route by thinness
+interaction, sticky incumbent vehicle regimes, LP capital-use gaps, and V2
 capital predictability. A result becomes headline evidence only if it is
 economically material, distinguishes at least one serious rival story, fits the
 literature contribution, and has a complete producer-to-deliverable path.

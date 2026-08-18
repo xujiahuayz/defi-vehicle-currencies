@@ -41,6 +41,10 @@ def _unsigned_pp(value: float, decimals: int = 1) -> str:
     return f"${value:.{decimals}f}$ pp"
 
 
+def _pct(value: float, decimals: int = 1) -> str:
+    return f"{100.0 * value:.{decimals}f}\\%"
+
+
 def _effect(
     estimates: pd.DataFrame,
     *,
@@ -83,18 +87,65 @@ def render_vehicle_mechanism_sweep_deck_values(
         model_id="turn_on_lpm",
         regressor="baseline_complex_route_share",
     )
+    turn_on_direct_x_thin = _effect(
+        estimates,
+        model_id="turn_on_direct_thin_interaction",
+        regressor="baseline_direct_x_thin",
+    )
     leader_thin = _effect(
         estimates,
         model_id="leader_switch_lpm",
         regressor="baseline_log_market_routes",
+    )
+    single_stable_persistence = _single(
+        estimates,
+        claim_status="provisional_exploratory",
+        experiment_family="vehicle_dominance_mechanism_sweep",
+        metric="count_share",
+        model_id="regime_persistence",
+        integration_scope="single_venue",
+        baseline_regime="stable_majority",
+    )
+    single_native_persistence = _single(
+        estimates,
+        claim_status="provisional_exploratory",
+        experiment_family="vehicle_dominance_mechanism_sweep",
+        metric="count_share",
+        model_id="regime_persistence",
+        integration_scope="single_venue",
+        baseline_regime="native_majority",
+    )
+    cross_stable_persistence = _single(
+        estimates,
+        claim_status="provisional_exploratory",
+        experiment_family="vehicle_dominance_mechanism_sweep",
+        metric="count_share",
+        model_id="regime_persistence",
+        integration_scope="cross_venue",
+        baseline_regime="stable_majority",
+    )
+    cross_native_persistence = _single(
+        estimates,
+        claim_status="provisional_exploratory",
+        experiment_family="vehicle_dominance_mechanism_sweep",
+        metric="count_share",
+        model_id="regime_persistence",
+        integration_scope="cross_venue",
+        baseline_regime="native_majority",
     )
     if not (
         float(turn_on_thin["coefficient_pp"]) < 0
         and float(leader_thin["coefficient_pp"]) < 0
         and float(turn_on_direct["coefficient_pp"]) > 0
         and float(turn_on_complex["coefficient_pp"]) > 0
+        and float(turn_on_direct_x_thin["coefficient_pp"]) > 0
+        and float(single_stable_persistence["coefficient"]) > 0.9
+        and float(single_native_persistence["coefficient"]) > 0.9
+        and float(cross_stable_persistence["coefficient"]) > 0.9
+        and float(cross_native_persistence["coefficient"]) > 0.9
         and float(turn_on_thin["p_value"]) < 0.01
         and float(leader_thin["p_value"]) < 0.01
+        and float(turn_on_direct_x_thin["p_value"]) < 0.01
     ):
         raise ValueError("vehicle mechanism-sweep headline no longer holds")
     lines = [
@@ -109,9 +160,17 @@ def render_vehicle_mechanism_sweep_deck_values(
         f"\\newcommand{{\\MechanismTurnOnDirectSE}}{{{_unsigned_pp(float(turn_on_direct['standard_error_pp']))}}}",
         f"\\newcommand{{\\MechanismTurnOnComplexCoef}}{{{_signed_pp(float(turn_on_complex['coefficient_pp']))}}}",
         f"\\newcommand{{\\MechanismTurnOnComplexSE}}{{{_unsigned_pp(float(turn_on_complex['standard_error_pp']))}}}",
+        f"\\newcommand{{\\MechanismTurnOnDirectThinCoef}}{{{_signed_pp(float(turn_on_direct_x_thin['coefficient_pp']))}}}",
+        f"\\newcommand{{\\MechanismTurnOnDirectThinSE}}{{{_unsigned_pp(float(turn_on_direct_x_thin['standard_error_pp']))}}}",
         f"\\newcommand{{\\MechanismLeaderThinCoef}}{{{_signed_pp(float(leader_thin['coefficient_pp']))}}}",
         f"\\newcommand{{\\MechanismLeaderThinSE}}{{{_unsigned_pp(float(leader_thin['standard_error_pp']))}}}",
         f"\\newcommand{{\\MechanismLeaderThinOneSd}}{{{_signed_pp(float(leader_thin['one_sd_effect_pp']))}}}",
+        f"\\newcommand{{\\MechanismSingleStableRegimePersistence}}{{{_pct(float(single_stable_persistence['coefficient']))}}}",
+        f"\\newcommand{{\\MechanismSingleStableRegimePersistenceSE}}{{{_unsigned_pp(float(single_stable_persistence['standard_error_pp']))}}}",
+        f"\\newcommand{{\\MechanismSingleNativeRegimePersistence}}{{{_pct(float(single_native_persistence['coefficient']))}}}",
+        f"\\newcommand{{\\MechanismSingleNativeRegimePersistenceSE}}{{{_unsigned_pp(float(single_native_persistence['standard_error_pp']))}}}",
+        f"\\newcommand{{\\MechanismCrossStableRegimePersistence}}{{{_pct(float(cross_stable_persistence['coefficient']))}}}",
+        f"\\newcommand{{\\MechanismCrossNativeRegimePersistence}}{{{_pct(float(cross_native_persistence['coefficient']))}}}",
     ]
     return "\n".join(lines) + "\n"
 
