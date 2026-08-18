@@ -25,7 +25,7 @@ question and literature                    done
   → cleaned and analysis-ready data        ready for the two active claim families
   → registered baseline analysis           done; findings check green
   → repository cleanup and host sync        done; one checkout per host
-  → presentable paper/deck trunk            49/40 pages; rebuild after admitted changes
+  → presentable paper/deck trunk            50/41 pages; rebuild after admitted changes
         status labels                      provisional / registered / confirmed
         review snapshots                   versioned and shareable while work continues
 
@@ -56,7 +56,7 @@ thin-market turn-on with a direct-route by thinness interaction, observed
 mixed-risk-set rival checks, sticky incumbent vehicle regimes, USDC/USDT
 concentration at stable-entry, stable-candidate identity persistence,
 extra-hop gas economics, LP capital-use gaps, delayed/asymmetric LP
-rebalancing, and V2 capital predictability. A result becomes headline evidence
+rebalancing, LP extensive-margin behavior, and V2 capital predictability. A result becomes headline evidence
 only if it is
 economically material, distinguishes at least one serious rival story, fits the
 literature contribution, and has a complete producer-to-deliverable path.

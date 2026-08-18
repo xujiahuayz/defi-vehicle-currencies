@@ -42,9 +42,9 @@ E1 confirmatory specification lock      DONE
   |
 F registered confirmatory rebuilds      DONE; FINDINGS GATE GREEN
   |
-G baseline JFE paper                    DONE; CLEAN 49-PAGE PDF
+G baseline JFE paper                    DONE; CLEAN 50-PAGE PDF
   |
-H baseline presentation deck           DONE; CLEAN 40-PAGE PDF
+H baseline presentation deck           DONE; CLEAN 41-PAGE PDF
   |
 I parallel result-search loops          ACTIVE
   |                                     dominance drivers, LP behavior, framing
@@ -92,9 +92,10 @@ interactions, stable turn-on in thin baseline markets, the direct-route by
 thinness interaction, observed mixed native-stable risk-set checks, sticky
 incumbent vehicle regimes, USDC/USDT concentration at stable-entry,
 stable-candidate identity persistence, extra-hop gas economics, the V2
-liquidity route-minus-capital gap, and delayed/asymmetric LP rebalancing. These
-layers strengthen the mechanism story but do not change the registered
-confirmatory claim set.
+liquidity route-minus-capital gap, delayed/asymmetric LP rebalancing, and LP
+venue-footprint/pool-count extensive-margin behavior. The deck also carries the
+traditional-FX route analogy as motivation. These layers strengthen the
+mechanism story but do not change the registered confirmatory claim set.
 
 Routing maturation, full same-state direct-cost dominance, the joint V2/V3
 capital-flow family, rent incidence, provider-flow measurement, and V4
@@ -152,9 +153,9 @@ and the lock.
 
 ## Deliverable state
 
-The current branch compiles a 49-page paper and a 40-page deck after the
+The current branch compiles a 50-page paper and a 41-page deck after the
 provisional mechanism reruns. The paper and deck compile with zero undefined
-references. The repository passes 658 pytest tests, the findings gate, and every
+references. The repository passes 666 pytest tests, the findings gate, and every
 blocking conformance check. There is one manuscript under `paper/` and one
 presentation under `deck/`; Git history is the archive.
 
