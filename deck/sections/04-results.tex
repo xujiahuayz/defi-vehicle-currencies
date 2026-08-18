@@ -22,6 +22,9 @@
 \IfFileExists{../output/exhibits/v4_flash_gap_deck_values.tex}{%
 \input{../output/exhibits/v4_flash_gap_deck_values.tex}%
 }{\PackageError{dvc-deck}{Missing generated V4 flash-gap values}{Run scripts/analyze/run_v4_flash_gap_interaction_exploration.py then scripts/tabulate/build_v4_flash_gap_deck_values.py.}}
+\IfFileExists{../output/exhibits/v3_v4_lp_protocol_deck_values.tex}{%
+\input{../output/exhibits/v3_v4_lp_protocol_deck_values.tex}%
+}{\PackageError{dvc-deck}{Missing generated V3/V4 LP protocol values}{Run scripts/analyze/run_v3_v4_lp_protocol_contrast.py then scripts/tabulate/build_v3_v4_lp_protocol_deck_values.py.}}
 \IfFileExists{../output/exhibits/bridge_liquidity_deck_values.tex}{%
 \input{../output/exhibits/bridge_liquidity_deck_values.tex}%
 }{\PackageError{dvc-deck}{Missing generated bridge-liquidity values}{Run scripts/analyze/run_bridge_liquidity_dominance.py then scripts/tabulate/build_bridge_liquidity_deck_values.py.}}
@@ -481,9 +484,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.44cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.4}{9.4}\selectfont Stable routes rise as capital falls. A 10 pp stable shortfall moves capital rank \LiqBehStableCapitalRankLongCoef{} and incumbent capital \LiqBehStablePoolEntryIncumbentLongCoef{}. When the shortfall is paired with V4 internal routing, future TVL rises \VFourFlashGapInternalTvlCoef{} and wide/very-wide LP ranges rise \VFourFlashGapInternalWideCoef{}.\par}
+{\fontsize{8.4}{9.4}\selectfont Same candidate-date origins: V4's LP-action response to a 10 pp stable shortfall exceeds V3 by \VThreeVFourLpActionLongCoef{}. With V4 internal routing, future TVL rises \VFourFlashGapInternalTvlCoef{} and wide/very-wide ranges rise \VFourFlashGapInternalWideCoef{}.\par}
 \end{minipage}}
-\decknote{Five-candidate V2 capital panel. V3 rows use \LiqBehVThreeLpActionRows{} mint/burn records. V4 flow values filtered candidate-token sides. Flash-LP rows use \VFourFlashLpRows{} candidate-date observations; stable-gap interactions use \VFourFlashGapRows{} stable candidate-date observations. Internal and multi-leg routing widen future ranges; gross-to-net reduction narrows them. Not LP inventory or causal provider response.}
+\decknote{Five-candidate V2 capital panel. V3 rows use \LiqBehVThreeLpActionRows{} mint/burn records. V4 rows use filtered candidate-token flow, flash-LP, and stable-gap interactions. Protocol contrast uses \VThreeVFourLpProtocolRows{} stacked observations with \VThreeVFourLpProtocolFixedEffects{} effects. Not LP inventory or causal protocol treatment.}
 \end{frame}
 
 % EVIDENCE-STATUS: current predictive mechanism result; the reciprocal rule records a non-pass

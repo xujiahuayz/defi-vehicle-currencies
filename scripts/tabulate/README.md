@@ -17,6 +17,7 @@ Captions, labels, placement, and interpretation stay in the paper/deck source.
 | `render_liquidity_provision_regressions.py` | `liquidity_provision_regressions.tex/.pdf` | `tab:lp-behavior-regressions` |
 | `render_v4_flash_lp_mechanism.py` | `v4_flash_lp_mechanism.tex/.pdf` | `tab:v4-flash-lp` |
 | `render_v4_flash_gap_interactions.py` | `v4_flash_gap_interactions.tex/.pdf` | `tab:v4-flash-gap` |
+| `render_v3_v4_lp_protocol_contrast.py` | `v3_v4_lp_protocol_contrast.tex/.pdf` | `tab:v3-v4-lp-protocol` |
 | `render_venue_coverage.py` | `venue_coverage.tex/.pdf` | `tab:app:venues` |
 
 The remaining active manuscript tables are intentionally inline because each is
@@ -38,6 +39,7 @@ analysis exhibit that supplies each value.
 | `build_liquidity_provision_behavior_deck_values.py` | exploratory liquidity behavior macros |
 | `build_v4_flash_lp_deck_values.py` | V4 flash-accounting LP-position macros |
 | `build_v4_flash_gap_deck_values.py` | V4 stable-shortfall flash-accounting interaction macros |
+| `build_v3_v4_lp_protocol_deck_values.py` | V3/V4 same-candidate-date LP protocol-contrast macros |
 | `build_bridge_liquidity_feedback_deck_values.py` | local bridge-depth feedback macros |
 | `build_stable_stress_event_deck_values.py` | USDC/SVB stable-identity stress-screen macros |
 | `build_vehicle_formation_deck_values.py` | exploratory market-formation macros |
