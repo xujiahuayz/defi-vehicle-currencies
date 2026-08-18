@@ -214,6 +214,38 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         outcome="future_log_pool_candidate_capital_change",
         predictor="stable_total_route_capital_gap_5",
     )
+    basket_stable_month = _single(
+        estimates,
+        record_type="stable_basket_gap_portfolio_rebalancing",
+        model_id="activity_controls",
+        horizon_days=30,
+        outcome="future_stable_capital_share_change",
+        predictor="stable_route_capital_gap",
+    )
+    basket_stable_long = _single(
+        estimates,
+        record_type="stable_basket_gap_portfolio_rebalancing",
+        model_id="activity_controls",
+        horizon_days=120,
+        outcome="future_stable_capital_share_change",
+        predictor="stable_route_capital_gap",
+    )
+    basket_weth_long = _single(
+        estimates,
+        record_type="stable_basket_gap_portfolio_rebalancing",
+        model_id="activity_controls",
+        horizon_days=120,
+        outcome="future_weth_capital_share_change",
+        predictor="stable_route_capital_gap",
+    )
+    basket_wbtc_long = _single(
+        estimates,
+        record_type="stable_basket_gap_portfolio_rebalancing",
+        model_id="activity_controls",
+        horizon_days=120,
+        outcome="future_wbtc_capital_share_change",
+        predictor="stable_route_capital_gap",
+    )
     stable_fee_long = _single(
         estimates,
         record_type="route_capital_gap_v3_fee_incidence",
@@ -297,6 +329,17 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
     ):
         raise ValueError("same-pool capital-chase contrast no longer holds")
     if not (
+        float(basket_stable_month["coefficient"]) > 0
+        and float(basket_stable_month["p_value"]) < 0.05
+        and float(basket_stable_long["coefficient"]) > 0
+        and float(basket_stable_long["p_value"]) < 0.01
+        and float(basket_weth_long["coefficient"]) < 0
+        and float(basket_weth_long["p_value"]) < 0.01
+        and abs(float(basket_wbtc_long["coefficient_per_10pp_gap"])) < 0.005
+        and float(basket_wbtc_long["p_value"]) > 0.10
+    ):
+        raise ValueError("stable-basket portfolio rebalancing pattern no longer holds")
+    if not (
         float(stable_fee_long["p_value"]) > 0.10
         and float(stable_volume_long["p_value"]) > 0.10
         and abs(float(stable_fee_long["coefficient_per_10pp_gap"])) < 0.02
@@ -356,6 +399,14 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         f"\\newcommand{{\\LiqBehSamePoolLongSE}}{{{_unsigned_percent(float(same_pool_long['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehStableSamePoolLongCoef}}{{{_signed_percent(float(stable_same_pool_long['coefficient_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehStableSamePoolLongSE}}{{{_unsigned_percent(float(stable_same_pool_long['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableBasketGapMonthCoef}}{{{_signed_pp(float(basket_stable_month['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableBasketGapMonthSE}}{{{_unsigned_pp(float(basket_stable_month['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableBasketGapLongCoef}}{{{_signed_pp(float(basket_stable_long['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableBasketGapLongSE}}{{{_unsigned_pp(float(basket_stable_long['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehWethBasketGapLongCoef}}{{{_signed_pp(float(basket_weth_long['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehWethBasketGapLongSE}}{{{_unsigned_pp(float(basket_weth_long['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehWbtcBasketGapLongCoef}}{{{_signed_pp(float(basket_wbtc_long['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehWbtcBasketGapLongSE}}{{{_unsigned_pp(float(basket_wbtc_long['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehFeeIncidenceRows}}{{{_integer(int(stable_fee_long['n_observations']))}}}",
         f"\\newcommand{{\\LiqBehFeeIncidencePools}}{{{_integer(int(stable_fee_long['pool_count']))}}}",
         f"\\newcommand{{\\LiqBehStableFeeLongCoef}}{{{_signed_percent(float(stable_fee_long['coefficient_per_10pp_gap']))}}}",

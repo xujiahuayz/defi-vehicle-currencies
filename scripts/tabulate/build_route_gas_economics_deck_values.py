@@ -37,6 +37,10 @@ def _pct(value: float, decimals: int = 1) -> str:
     return f"{100 * value:.{decimals}f}\\%"
 
 
+def _bps(value: float, decimals: int = 1) -> str:
+    return f"{value:.{decimals}f} bp"
+
+
 def _integer(value: float) -> str:
     return f"{value:,.0f}".replace(",", "{,}")
 
@@ -74,12 +78,32 @@ def render_route_gas_economics_deck_values(estimates: pd.DataFrame) -> str:
         record_type="endpoint_extra_hop_hurdle_change",
         route_class="stable_vehicle",
     )
+    base_feasibility = _single(
+        estimates,
+        record_type="stable_route_fixed_toll_feasibility",
+        route_class="stable_vehicle",
+        year=BASELINE_YEAR,
+    )
+    end_feasibility = _single(
+        estimates,
+        record_type="stable_route_fixed_toll_feasibility",
+        route_class="stable_vehicle",
+        year=COMPARISON_YEAR,
+    )
+    feasibility_change = _single(
+        estimates,
+        record_type="stable_route_fixed_toll_feasibility_change",
+        route_class="stable_vehicle",
+    )
     if not (
         float(base["extra_gas_units"]) > 0
         and float(end["extra_gas_units"]) > 0
         and float(end["notional_for_extra_gas_1bp_usd"])
         < float(base["notional_for_extra_gas_1bp_usd"])
         and float(change["one_bp_notional_ratio"]) < 0.25
+        and float(end_feasibility["share_fixed_toll_le_25bp"])
+        > float(base_feasibility["share_fixed_toll_le_25bp"])
+        and float(feasibility_change["median_notional_ratio"]) < 0.25
     ):
         raise ValueError("route-gas hurdle headline no longer holds; rewrite the text")
     lines = [
@@ -95,6 +119,15 @@ def render_route_gas_economics_deck_values(estimates: pd.DataFrame) -> str:
         f"\\newcommand{{\\GasStableTenBpNotionalEnd}}{{{_notional(float(end['notional_for_extra_gas_10bp_usd']))}}}",
         f"\\newcommand{{\\GasStableMedianNotionalEnd}}{{{_notional(float(end['route_median_notional_usd']))}}}",
         f"\\newcommand{{\\GasStableOneBpRatio}}{{{_pct(float(change['one_bp_notional_ratio']))}}}",
+        f"\\newcommand{{\\GasStableRouteMedianNotionalBase}}{{{_notional(float(base_feasibility['median_route_notional_usd']))}}}",
+        f"\\newcommand{{\\GasStableRouteMedianNotionalEnd}}{{{_notional(float(end_feasibility['median_route_notional_usd']))}}}",
+        f"\\newcommand{{\\GasStableRouteMedianTollBpsBase}}{{{_bps(float(base_feasibility['median_fixed_extra_hop_toll_bps']))}}}",
+        f"\\newcommand{{\\GasStableRouteMedianTollBpsEnd}}{{{_bps(float(end_feasibility['median_fixed_extra_hop_toll_bps']))}}}",
+        f"\\newcommand{{\\GasStableRouteTenBpShareBase}}{{{_pct(float(base_feasibility['share_fixed_toll_le_10bp']))}}}",
+        f"\\newcommand{{\\GasStableRouteTenBpShareEnd}}{{{_pct(float(end_feasibility['share_fixed_toll_le_10bp']))}}}",
+        f"\\newcommand{{\\GasStableRouteTwentyFiveBpShareBase}}{{{_pct(float(base_feasibility['share_fixed_toll_le_25bp']))}}}",
+        f"\\newcommand{{\\GasStableRouteTwentyFiveBpShareEnd}}{{{_pct(float(end_feasibility['share_fixed_toll_le_25bp']))}}}",
+        f"\\newcommand{{\\GasStableRouteMedianNotionalRatio}}{{{_pct(float(feasibility_change['median_notional_ratio']))}}}",
     ]
     return "\n".join(lines) + "\n"
 

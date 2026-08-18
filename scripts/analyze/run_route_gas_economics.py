@@ -28,6 +28,7 @@ WETH_ADDRESS = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
 BASELINE_YEAR = 2024
 COMPARISON_YEAR = 2026
 FOCUS_CLASS = "stable_vehicle"
+FEASIBILITY_BPS_THRESHOLDS = (1, 10, 25)
 CODE_SOURCES = [
     "scripts/analyze/run_route_gas_economics.py",
     "src/ddvc/ethereum_receipts.py",
@@ -258,6 +259,145 @@ def endpoint_hurdle_change(hurdles: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def stable_route_feasibility_distribution(
+    panel: pd.DataFrame,
+    hurdles: pd.DataFrame,
+) -> pd.DataFrame:
+    """Measure how often the fixed stable-vehicle gas toll is economically small.
+
+    The annual hurdle supplies a stable-minus-direct median gas-unit difference.
+    Each executed stable-vehicle route then prices that fixed unit toll using
+    its own receipt gas price and same-day WETH price. The result is still not a
+    same-state direct-versus-vehicle quote comparison: it excludes pool price
+    impact, fee-tier differences, and untraded alternatives.
+    """
+
+    stable_hurdles = hurdles[
+        hurdles["record_type"].eq("extra_hop_gas_hurdle")
+        & hurdles["route_class"].eq(FOCUS_CLASS)
+    ].loc[:, ["year", "extra_gas_units"]]
+    sample = panel[panel["route_class"].eq(FOCUS_CLASS)].merge(
+        stable_hurdles,
+        on="year",
+        how="left",
+        validate="many_to_one",
+    )
+    sample = sample[
+        sample["extra_gas_units"].gt(0.0)
+        & sample["route_notional_usd"].gt(0.0)
+        & sample["gas_price_gwei"].ge(0.0)
+        & sample["price_usd"].gt(0.0)
+    ].copy()
+    if sample.empty:
+        raise ValueError("stable route gas-feasibility sample is empty")
+    sample["fixed_extra_hop_toll_usd"] = (
+        sample["extra_gas_units"].astype(float)
+        * sample["gas_price_gwei"].astype(float)
+        * 1e-9
+        * sample["price_usd"].astype(float)
+    )
+    sample["fixed_extra_hop_toll_bps"] = (
+        10_000.0
+        * sample["fixed_extra_hop_toll_usd"].astype(float)
+        / sample["route_notional_usd"].astype(float)
+    )
+    sample = sample.replace([np.inf, -np.inf], np.nan).dropna(
+        subset=["fixed_extra_hop_toll_usd", "fixed_extra_hop_toll_bps"]
+    )
+    if sample.empty:
+        raise ValueError("stable route gas-feasibility sample lost all finite rows")
+
+    rows: list[dict[str, object]] = []
+    yearly_rows: dict[int, dict[str, object]] = {}
+    for year, group in sample.groupby("year", sort=True):
+        row: dict[str, object] = {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "stable_route_fixed_toll_feasibility",
+            "route_class": FOCUS_CLASS,
+            "year": int(year),
+            "observations": int(len(group)),
+            "median_route_notional_usd": float(group["route_notional_usd"].median()),
+            "median_fixed_extra_hop_toll_usd": float(
+                group["fixed_extra_hop_toll_usd"].median()
+            ),
+            "median_fixed_extra_hop_toll_bps": float(
+                group["fixed_extra_hop_toll_bps"].median()
+            ),
+            "p75_fixed_extra_hop_toll_bps": float(
+                group["fixed_extra_hop_toll_bps"].quantile(0.75)
+            ),
+            "interpretation": (
+                "annual median stable-minus-direct gas-unit toll priced at each "
+                "executed stable-vehicle route's receipt gas price and WETH price; "
+                "not an all-in direct-versus-vehicle quote comparison"
+            ),
+        }
+        for threshold in FEASIBILITY_BPS_THRESHOLDS:
+            row[f"share_fixed_toll_le_{threshold}bp"] = float(
+                group["fixed_extra_hop_toll_bps"].le(threshold).mean()
+            )
+        rows.append(row)
+        yearly_rows[int(year)] = row
+
+    if BASELINE_YEAR in yearly_rows and COMPARISON_YEAR in yearly_rows:
+        base = yearly_rows[BASELINE_YEAR]
+        end = yearly_rows[COMPARISON_YEAR]
+        rows.append(
+            {
+                "analysis_status": "exploratory_descriptive",
+                "record_type": "stable_route_fixed_toll_feasibility_change",
+                "route_class": FOCUS_CLASS,
+                "baseline_year": BASELINE_YEAR,
+                "comparison_year": COMPARISON_YEAR,
+                "baseline_median_route_notional_usd": float(
+                    base["median_route_notional_usd"]
+                ),
+                "comparison_median_route_notional_usd": float(
+                    end["median_route_notional_usd"]
+                ),
+                "baseline_median_fixed_extra_hop_toll_bps": float(
+                    base["median_fixed_extra_hop_toll_bps"]
+                ),
+                "comparison_median_fixed_extra_hop_toll_bps": float(
+                    end["median_fixed_extra_hop_toll_bps"]
+                ),
+                "baseline_share_fixed_toll_le_10bp": float(
+                    base["share_fixed_toll_le_10bp"]
+                ),
+                "comparison_share_fixed_toll_le_10bp": float(
+                    end["share_fixed_toll_le_10bp"]
+                ),
+                "baseline_share_fixed_toll_le_25bp": float(
+                    base["share_fixed_toll_le_25bp"]
+                ),
+                "comparison_share_fixed_toll_le_25bp": float(
+                    end["share_fixed_toll_le_25bp"]
+                ),
+                "median_notional_ratio": float(
+                    end["median_route_notional_usd"]
+                    / base["median_route_notional_usd"]
+                ),
+                "median_toll_bps_change": float(
+                    end["median_fixed_extra_hop_toll_bps"]
+                    - base["median_fixed_extra_hop_toll_bps"]
+                ),
+                "share_10bp_change": float(
+                    end["share_fixed_toll_le_10bp"]
+                    - base["share_fixed_toll_le_10bp"]
+                ),
+                "share_25bp_change": float(
+                    end["share_fixed_toll_le_25bp"]
+                    - base["share_fixed_toll_le_25bp"]
+                ),
+                "interpretation": (
+                    "change in stable-vehicle route-level fixed gas-feasibility "
+                    "distribution; descriptive execution-friction evidence only"
+                ),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
 def support_rows(panel: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(
         [
@@ -293,7 +433,11 @@ def run(
     )
     annual = annual_route_class_summaries(panel)
     hurdles = extra_hop_hurdles(panel)
-    results = pd.concat([annual, hurdles, endpoint_hurdle_change(hurdles)], ignore_index=True)
+    feasibility = stable_route_feasibility_distribution(panel, hurdles)
+    results = pd.concat(
+        [annual, hurdles, endpoint_hurdle_change(hurdles), feasibility],
+        ignore_index=True,
+    )
     write_exhibit(results, output_path, code_sources=CODE_SOURCES, inputs=INPUTS)
     write_exhibit(support_rows(panel), support_path, code_sources=CODE_SOURCES, inputs=INPUTS)
     print(f"wrote {len(results)} route-gas economics rows and 1 support row")

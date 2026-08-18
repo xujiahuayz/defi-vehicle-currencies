@@ -53,12 +53,12 @@ with explicit status labels, and continue the scoped mechanism and review loops.
 Current provisional layers cover vehicle birth, active-day birth-state
 hysteresis, non-WETH entry drivers, route-architecture entry interactions,
 large-entrant routing, thin-market turn-on with a direct-route by thinness
-interaction, rolling native-only-to-stable turn-on hazards, candidate-network
-reach inside observed mixed-risk-set rival checks, sticky incumbent vehicle regimes, USDC/USDT
+interaction, rolling native-only-to-stable turn-on hazards, same-day and
+prior-30-day candidate-network reach inside observed mixed-risk-set rival checks, sticky incumbent vehicle regimes, USDC/USDT
 concentration at stable-entry, stable-candidate identity persistence, USDC/SVB
 stress-window identity persistence,
-extra-hop gas economics, LP capital-use gaps, delayed/asymmetric LP
-rebalancing, stable-candidate LP response heterogeneity, LP extensive-margin
+extra-hop gas economics and route-level fixed-toll feasibility, LP capital-use gaps, stable-basket portfolio
+rebalancing, delayed/asymmetric LP rebalancing, stable-candidate LP response heterogeneity, LP extensive-margin
 behavior, same-pool capital-chase screens, bounded V3 fee/rent-incidence
 screens, and V2 capital predictability. A
 result becomes headline evidence only if it is economically material,

@@ -253,7 +253,7 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 
 % EVIDENCE-STATUS: exploratory descriptive mechanism screen, not causal treatment evidence
 % EVIDENCE-SOURCES: output/exhibits/vehicle_dominance_mechanism_sweep.jsonl; output/exhibits/vehicle_dominance_mechanism_support.jsonl; output/exhibits/vehicle_mechanism_sweep_deck_values.tex; output/exhibits/vehicle_market_size_exploration.jsonl; output/exhibits/vehicle_market_size_deck_values.tex
-% ESTIMAND-BOUNDARY: pair-month-day-scope transition rows on the count-share metric; month-day fixed effects, two-way CR1 by ordered pair and month-day, harmonic endpoint denominator weights; risk-set rows are observed mixed native-stable candidate sets, not feasible untraded alternatives; centrality is same-day candidate pair-scope reach outside the current risk set
+% ESTIMAND-BOUNDARY: pair-month-day-scope transition rows on the count-share metric; month-day fixed effects, two-way CR1 by ordered pair and month-day, harmonic endpoint denominator weights; risk-set rows are observed mixed native-stable candidate sets, not feasible untraded alternatives; centrality is same-day candidate pair-scope reach outside the current risk set and prior-30-day candidate pair-scope reach
 % VISUAL-FUNCTION: formation driver screen | three transition coefficients | locate stable-vehicle creation at thin-market edge
 \begin{frame}{Stable vehicles turn on at the market edge}
 \vspace{0.10cm}
@@ -276,9 +276,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.40cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.4}{9.4}\selectfont Turn-on is thinner, direct, and complex. Inside mixed risk sets, candidate reach predicts \MechanismRiskSetCentralityCoef{} more route share per log point, while the stable label remains negative.\par}
+{\fontsize{8.4}{9.4}\selectfont Thin/direct/complex corridors turn on. In mixed risk sets, reach predicts share: \MechanismRiskSetCentralityCoef{} same-day, \MechanismRiskSetLagReachCoef{} prior-30-day. Stable remains negative.\par}
 \end{minipage}}
-\decknote{Transition screen uses pair-day-scope rows, month-day fixed effects, harmonic weights, and two-way CR1. Risk-set rows are observed native-stable candidate sets, not feasible alternatives; candidate reach is leave-one same-day pair-scope count. Market-size rows are descriptive realised route-count bins and first-day entrant size; driver screen only.}
+\decknote{Transition screen uses pair-day-scope rows, month-day fixed effects, harmonic weights, and two-way CR1. Risk-set rows are observed native-stable candidate sets, not feasible alternatives; candidate reach is leave-one same-day pair-scope count or prior-30-day candidate pair-scope count. Market-size rows are descriptive realised route-count bins and first-day entrant size; driver screen only.}
 \end{frame}
 
 % EVIDENCE-STATUS: exploratory descriptive rolling adoption result, not causal timing
@@ -336,9 +336,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.42cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.4}{9.4}\selectfont In gas units, stable-vehicle routes still cost more than direct routes: the 2026 median extra toll is \GasStableExtraGasUnitsEnd{} gas. In dollars, the hurdle collapsed from \GasStableExtraCostBase{} in 2024 to \GasStableExtraCostEnd{} in 2026, so the one-basis-point notional fell from \GasStableOneBpNotionalBase{} to \GasStableOneBpNotionalEnd{}.\par}
+{\fontsize{8.4}{9.4}\selectfont In gas units, stable-vehicle routes still cost more than direct routes: the 2026 median extra toll is \GasStableExtraGasUnitsEnd{} gas. But median stable-vehicle notional fell from \GasStableRouteMedianNotionalBase{} to \GasStableRouteMedianNotionalEnd{}, while the median fixed toll fell from \GasStableRouteMedianTollBpsBase{} to \GasStableRouteMedianTollBpsEnd{}.\par}
 \end{minipage}}
-\decknote{Executed-route receipt gas only. Dollar tolls evaluate the stable-vehicle extra-gas median against the same year's median gas price and WETH price. The 2026 ten-basis-point threshold is \GasStableTenBpNotionalEnd{}, close to the observed stable-vehicle median notional of \GasStableMedianNotionalEnd{}. This is execution-friction evidence, not an all-in quote comparison.}
+\decknote{Executed-route receipt gas only. Dollar tolls evaluate the stable-vehicle extra-gas median against the same year's median gas price and WETH price. At route-specific gas prices, the share of stable-vehicle routes with fixed extra-hop toll below 25 bps rises from \GasStableRouteTwentyFiveBpShareBase{} to \GasStableRouteTwentyFiveBpShareEnd{}; the 2026 ten-basis-point threshold is \GasStableTenBpNotionalEnd{}, close to the observed stable-vehicle median notional of \GasStableMedianNotionalEnd{}. This is execution-friction evidence, not an all-in quote comparison.}
 \end{frame}
 
 % EVIDENCE-STATUS: current descriptive result; integration remains a selected route stratum
@@ -388,7 +388,7 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 % EVIDENCE-STATUS: exploratory descriptive allocation result
 % EVIDENCE-SOURCES: output/exhibits/liquidity_provision_behavior_exploration.jsonl; output/exhibits/liquidity_provision_behavior_support.jsonl; output/exhibits/liquidity_provision_behavior_deck_values.tex
 % SCIENTIFIC-BOUNDARY: V2 deposited-capital stock over five vehicle candidates; not provider inflow, active concentrated-liquidity depth, or executable quote size
-% ESTIMAND-BOUNDARY: daily five-candidate panel with route and V2 capital support; leader rows are same-day rankings, gap rows are within-day route-share minus capital-share associations, exact-horizon rows are future capital-share changes, same-pool rows follow pool-candidate capital, fee rows follow processed V3 pool-day fees and volume, and FE rows are contemporaneous level associations
+% ESTIMAND-BOUNDARY: daily five-candidate panel with route and V2 capital support; leader rows are same-day rankings, gap rows are within-day route-share minus capital-share associations, exact-horizon rows are future capital-share changes, stable-basket rows aggregate DAI/USDC/USDT and use 30-day calendar HAC with activity controls, same-pool rows follow pool-candidate capital, fee rows follow processed V3 pool-day fees and volume, and FE rows are contemporaneous level associations
 % VISUAL-FUNCTION: capital-use split | three-stat allocation contrast | show that provider capital remains native-heavy while stablecoins carry excess vehicle use
 \begin{frame}{Provider capital stays native-heavy}
 \vspace{0.10cm}
@@ -411,9 +411,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.44cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.4}{9.4}\selectfont Stablecoins' route share rises while capital share falls. Adjustment is selective: overhangs shrink, venue reach rises, pool count does not, and 120-day capital responses differ: DAI \LiqBehDaiGapCloseLongCoef{}, USDC \LiqBehUsdcGapCloseLongCoef{}, USDT \LiqBehUsdtGapCloseLongCoef{}.\par}
+{\fontsize{8.4}{9.4}\selectfont Stablecoins' route share rises while capital share falls. A 10 pp stable-basket shortfall predicts \LiqBehStableBasketGapLongCoef{} stable capital share and \LiqBehWethBasketGapLongCoef{} WETH capital share over 120 days; WBTC barely moves (\LiqBehWbtcBasketGapLongCoef{}).\par}
 \end{minipage}}
-\decknote{Daily five-candidate V2 panel over \LiqBehPanelDays{} days; capital is deposited-capital stock. Stable route share rises \LiqBehStableRouteShareBase{} to \LiqBehStableRouteShareEnd{} while capital share falls \LiqBehStableCapitalShareBase{} to \LiqBehStableCapitalShareEnd{}. Controlled stable premium: \LiqBehStableControlledGapCoef{} (SE \LiqBehStableControlledGapSE{}). Same-pool rows absorb pool-candidate/date effects; all-candidate 120-day coefficient \LiqBehSamePoolLongCoef{} (SE \LiqBehSamePoolLongSE{}). Descriptive.}
+\decknote{Daily five-candidate V2 panel over \LiqBehPanelDays{} days; capital is deposited-capital stock. Stable route share rises \LiqBehStableRouteShareBase{} to \LiqBehStableRouteShareEnd{} while capital share falls \LiqBehStableCapitalShareBase{} to \LiqBehStableCapitalShareEnd{}. Stable-basket rebalancing rows include log total route and capital controls, with 30-day calendar HAC. Same-pool rows absorb pool-candidate/date effects; all-candidate 120-day coefficient \LiqBehSamePoolLongCoef{} (SE \LiqBehSamePoolLongSE{}). Descriptive.}
 \end{frame}
 
 % EVIDENCE-STATUS: current predictive mechanism result; the reciprocal rule records a non-pass

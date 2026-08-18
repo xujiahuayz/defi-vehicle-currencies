@@ -90,13 +90,13 @@ birth, large-entrant stable routing, 30-day and 120-day birth-state persistence,
 active-day birth-regime hysteresis, non-WETH entry-driver controls,
 route-architecture entry interactions, stable turn-on in thin baseline markets,
 rolling native-only-to-stable turn-on hazards, the direct-route by thinness
-interaction, candidate-network reach inside observed mixed native-stable
+interaction, same-day and prior-30-day candidate-network reach inside observed mixed native-stable
 risk-set checks, sticky incumbent
 vehicle regimes, USDC/USDT concentration at stable-entry, stable-candidate
 identity persistence, USDC/SVB stress-window identity persistence, extra-hop gas
-economics, the V2 liquidity
-route-minus-capital gap, delayed/asymmetric LP rebalancing, and LP
-stable-candidate response heterogeneity, venue-footprint/pool-count
+economics and route-level fixed-toll feasibility, the V2 liquidity
+route-minus-capital gap, stable-basket portfolio rebalancing, delayed/asymmetric
+LP rebalancing, and LP stable-candidate response heterogeneity, venue-footprint/pool-count
 extensive-margin behavior, plus a same-pool LP capital-chase rival screen and
 bounded V3 fee/rent-incidence screen. The deck also carries the traditional-FX
 route analogy as motivation. These layers strengthen the

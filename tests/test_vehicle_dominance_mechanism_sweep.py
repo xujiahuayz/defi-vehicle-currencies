@@ -147,6 +147,7 @@ class VehicleDominanceMechanismSweepTests(unittest.TestCase):
             self.assertTrue(design["has_stable"].eq(1).all())
             self.assertTrue(design["has_native"].eq(1).all())
             self.assertIn("log_leaveout_candidate_pair_scopes", design)
+            self.assertIn("log_lag30_candidate_pair_scopes", design)
 
             results, support = estimate_candidate_risk_set_choice(
                 design, min_observations=20, min_clusters=2
@@ -167,6 +168,10 @@ class VehicleDominanceMechanismSweepTests(unittest.TestCase):
                 & results["regressor"].eq("log_leaveout_candidate_pair_scopes")
             ].iloc[0]
             self.assertGreater(centrality["coefficient"], 0)
+            self.assertIn(
+                "mixed_native_stable_risk_set_lag30_reach_fe",
+                set(results["model_id"]),
+            )
             self.assertIn("candidate_route_share", set(support["metric"]))
 
     def test_stable_turn_on_hazard_reports_thick_market_contrast(self) -> None:

@@ -24,6 +24,8 @@ from scripts.analyze.run_liquidity_provision_behavior_exploration import (
     route_capital_gap_same_pool_reallocation,
     route_capital_gap_v3_fee_horizon_panel,
     route_capital_gap_v3_fee_incidence,
+    stable_basket_gap_horizon_panel,
+    stable_basket_gap_portfolio_rebalancing,
     supported_candidate_days,
     within_day_gap_associations,
 )
@@ -727,3 +729,60 @@ def test_route_capital_gap_asymmetry_reports_stable_overhang_effect() -> None:
     assert overhang["record_type"] == "route_capital_gap_asymmetry"
     assert overhang["coefficient"] > 0
     assert overhang["effect_per_10pp_stable_overcapitalization_pp"] < 0
+
+
+def test_stable_basket_gap_horizon_panel_builds_future_portfolio_changes() -> None:
+    rows = []
+    for date in ("2024-01-01", "2024-01-02"):
+        rows.extend(
+            [
+                _row(date, "WETH", capital=100, intermediate_routes=40, endpoint_routes=50, excess=0.8),
+                _row(date, "WBTC", capital=10, intermediate_routes=5, endpoint_routes=10, excess=0.5),
+                _row(date, "USDC", capital=20, intermediate_routes=30, endpoint_routes=20, excess=3.0),
+                _row(date, "USDT", capital=10, intermediate_routes=20, endpoint_routes=10, excess=4.0),
+                _row(date, "DAI", capital=10, intermediate_routes=5, endpoint_routes=10, excess=1.0),
+            ]
+        )
+    panel = stable_basket_gap_horizon_panel(
+        supported_candidate_days(pd.DataFrame(rows)),
+        horizons=(1,),
+    )
+    assert "stable_route_capital_gap" in panel
+    assert "future_stable_capital_share_change" in panel
+    assert "future_weth_capital_share_change" in panel
+
+
+def test_stable_basket_portfolio_rebalancing_reports_weth_offset() -> None:
+    rows = []
+    for day_index, day in enumerate(pd.date_range("2024-01-01", periods=220, freq="D")):
+        gap = ((day_index % 11) - 5) / 100
+        rows.append(
+            {
+                "origin_date": day,
+                "horizon_days": 30,
+                "stable_route_capital_gap": gap,
+                "future_stable_capital_share_change": 0.20 * gap,
+                "future_weth_capital_share_change": -0.18 * gap,
+                "future_wbtc_capital_share_change": -0.02 * gap,
+                "log_total_routes": 5.0 + 0.01 * (day_index % 7),
+                "log_total_capital": 8.0 + 0.01 * (day_index % 5),
+            }
+        )
+    result = stable_basket_gap_portfolio_rebalancing(
+        pd.DataFrame(rows),
+        min_observations=100,
+        min_clusters=20,
+    )
+    stable = result[
+        result["model_id"].eq("activity_controls")
+        & result["outcome"].eq("future_stable_capital_share_change")
+        & result["predictor"].eq("stable_route_capital_gap")
+    ].iloc[0]
+    weth = result[
+        result["model_id"].eq("activity_controls")
+        & result["outcome"].eq("future_weth_capital_share_change")
+        & result["predictor"].eq("stable_route_capital_gap")
+    ].iloc[0]
+    assert stable["record_type"] == "stable_basket_gap_portfolio_rebalancing"
+    assert stable["coefficient_per_10pp_gap_pp"] > 0
+    assert weth["coefficient_per_10pp_gap_pp"] < 0

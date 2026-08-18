@@ -39,9 +39,36 @@ def test_route_gas_macros_render_guarded_headline() -> None:
             "route_class": "stable_vehicle",
             "one_bp_notional_ratio": 0.025,
         },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "stable_route_fixed_toll_feasibility",
+            "route_class": "stable_vehicle",
+            "year": 2024,
+            "median_route_notional_usd": 800,
+            "median_fixed_extra_hop_toll_bps": 44.0,
+            "share_fixed_toll_le_10bp": 0.27,
+            "share_fixed_toll_le_25bp": 0.39,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "stable_route_fixed_toll_feasibility",
+            "route_class": "stable_vehicle",
+            "year": 2026,
+            "median_route_notional_usd": 82,
+            "median_fixed_extra_hop_toll_bps": 16.0,
+            "share_fixed_toll_le_10bp": 0.45,
+            "share_fixed_toll_le_25bp": 0.56,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "stable_route_fixed_toll_feasibility_change",
+            "route_class": "stable_vehicle",
+            "median_notional_ratio": 0.1025,
+        },
     ]
     rendered = render_route_gas_economics_deck_values(pd.DataFrame(rows))
     assert "\\GasStableExtraGasUnitsEnd" in rendered
     assert "\\GasStableOneBpNotionalBase" in rendered
+    assert "\\GasStableRouteTwentyFiveBpShareEnd" in rendered
     assert "\\$0.08" in rendered
     assert "\\$800" in rendered

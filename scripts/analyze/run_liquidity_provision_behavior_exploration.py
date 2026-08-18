@@ -1386,6 +1386,176 @@ def route_capital_gap_asymmetry(
     return pd.DataFrame(rows)
 
 
+def stable_basket_gap_horizon_panel(
+    sample: pd.DataFrame,
+    *,
+    horizons: tuple[int, ...] = (30, 120),
+) -> pd.DataFrame:
+    """Attach stable-basket route-minus-capital gaps to future capital shares."""
+
+    if not horizons:
+        raise ValueError("at least one stable-basket horizon is required")
+    rows: list[dict[str, object]] = []
+    for date, group in sample.groupby("origin_date", sort=True):
+        route_total = float(group["intermediate_route_count"].sum())
+        capital_total = float(group["v2_deposited_capital_usd"].sum())
+        if route_total <= 0 or capital_total <= 0:
+            continue
+        stable = group[group["candidate_symbol"].isin(STABLE_SYMBOLS)]
+        weth = group[group["candidate_symbol"].eq(WETH_SYMBOL)]
+        wbtc = group[group["candidate_symbol"].eq("WBTC")]
+        stable_route_share = float(stable["intermediate_route_count"].sum()) / route_total
+        stable_capital_share = float(stable["v2_deposited_capital_usd"].sum()) / capital_total
+        rows.append(
+            {
+                "origin_date": date,
+                "stable_route_share": stable_route_share,
+                "stable_capital_share": stable_capital_share,
+                "weth_capital_share": float(weth["v2_deposited_capital_usd"].sum())
+                / capital_total,
+                "wbtc_capital_share": float(wbtc["v2_deposited_capital_usd"].sum())
+                / capital_total,
+                "stable_route_capital_gap": stable_route_share - stable_capital_share,
+                "log_total_routes": np.log1p(route_total),
+                "log_total_capital": np.log1p(capital_total),
+            }
+        )
+    daily = pd.DataFrame(rows).sort_values("origin_date").reset_index(drop=True)
+    if daily.empty:
+        raise ValueError("stable-basket daily panel is empty")
+    horizon_rows: list[pd.DataFrame] = []
+    target_columns = [
+        "origin_date",
+        "stable_capital_share",
+        "weth_capital_share",
+        "wbtc_capital_share",
+    ]
+    for horizon in horizons:
+        target = daily[target_columns].copy()
+        target["origin_date"] = target["origin_date"] - pd.Timedelta(days=horizon)
+        joined = daily.merge(
+            target,
+            on="origin_date",
+            how="inner",
+            suffixes=("", "_target"),
+            validate="one_to_one",
+        )
+        if joined.empty:
+            continue
+        joined["horizon_days"] = int(horizon)
+        for asset in ("stable", "weth", "wbtc"):
+            joined[f"future_{asset}_capital_share_change"] = (
+                joined[f"{asset}_capital_share_target"]
+                - joined[f"{asset}_capital_share"]
+            )
+        horizon_rows.append(joined)
+    if not horizon_rows:
+        raise ValueError("stable-basket horizon panel is empty")
+    panel = pd.concat(horizon_rows, ignore_index=True, sort=False)
+    required = [
+        "stable_route_capital_gap",
+        "future_stable_capital_share_change",
+        "future_weth_capital_share_change",
+        "future_wbtc_capital_share_change",
+        "log_total_routes",
+        "log_total_capital",
+    ]
+    panel = panel.replace([np.inf, -np.inf], np.nan).dropna(subset=required)
+    if panel.empty:
+        raise ValueError("stable-basket horizon panel lost all rows")
+    return panel
+
+
+def stable_basket_gap_portfolio_rebalancing(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 1000,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Test whether stable-basket route demand predicts portfolio rebalancing."""
+
+    rows: list[dict[str, object]] = []
+    models = {
+        "gap_only": ("stable_route_capital_gap",),
+        "activity_controls": (
+            "stable_route_capital_gap",
+            "log_total_routes",
+            "log_total_capital",
+        ),
+    }
+    outcomes = (
+        "future_stable_capital_share_change",
+        "future_weth_capital_share_change",
+        "future_wbtc_capital_share_change",
+    )
+    for horizon, group in panel.groupby("horizon_days", sort=True):
+        for model_id, predictors in models.items():
+            for outcome in outcomes:
+                data = (
+                    group[["origin_date", outcome, *predictors]]
+                    .replace([np.inf, -np.inf], np.nan)
+                    .dropna()
+                    .copy()
+                )
+                fit = ols_clustered(
+                    data[outcome],
+                    data[list(predictors)],
+                    data["origin_date"],
+                    add_constant=True,
+                    min_observations=min_observations,
+                    min_clusters=min_clusters,
+                    cluster_hac_lag=HAC_LAG_DAYS,
+                )
+                for index, predictor in enumerate(predictors, start=1):
+                    coefficient = float(fit.beta[index])
+                    standard_error = float(fit.standard_errors[index])
+                    rows.append(
+                        {
+                            "analysis_status": "exploratory_descriptive",
+                            "record_type": "stable_basket_gap_portfolio_rebalancing",
+                            "model_id": model_id,
+                            "horizon_days": int(horizon),
+                            "outcome": outcome,
+                            "predictor": predictor,
+                            "coefficient": coefficient,
+                            "standard_error": standard_error,
+                            "t_statistic": float(fit.t_statistics[index]),
+                            "p_value": float(fit.p_values[index]),
+                            "coefficient_per_10pp_gap": (
+                                0.10 * coefficient
+                                if predictor == "stable_route_capital_gap"
+                                else np.nan
+                            ),
+                            "standard_error_per_10pp_gap": (
+                                0.10 * standard_error
+                                if predictor == "stable_route_capital_gap"
+                                else np.nan
+                            ),
+                            "coefficient_per_10pp_gap_pp": (
+                                10.0 * coefficient
+                                if predictor == "stable_route_capital_gap"
+                                else np.nan
+                            ),
+                            "standard_error_per_10pp_gap_pp": (
+                                10.0 * standard_error
+                                if predictor == "stable_route_capital_gap"
+                                else np.nan
+                            ),
+                            "n_observations": int(fit.n_observations),
+                            "date_clusters": int(fit.n_clusters),
+                            "covariance": (
+                                "newey_west_actual_calendar_day_lag_"
+                                f"{HAC_LAG_DAYS}"
+                            ),
+                            "interpretation": (
+                                "stable-basket portfolio rebalancing association, "
+                                "not causal provider-flow timing"
+                            ),
+                        }
+                    )
+    return pd.DataFrame(rows)
+
+
 def capital_use_gap_summaries(daily: pd.DataFrame) -> pd.DataFrame:
     """Summarise and test route-minus-capital gaps on the endpoint calendar."""
 
@@ -1620,6 +1790,7 @@ def run(
     daily_gaps = daily_capital_use_gaps(sample)
     share_gap_panel = candidate_share_gap_panel(sample)
     extensive_margin_panel = route_capital_gap_extensive_margin_panel(sample)
+    stable_basket_panel = stable_basket_gap_horizon_panel(sample)
     same_pool_panel = route_capital_gap_pool_candidate_horizon_panel(share_gap_panel)
     fee_incidence_panel = route_capital_gap_v3_fee_horizon_panel(share_gap_panel)
     result = pd.concat(
@@ -1634,6 +1805,7 @@ def run(
             route_capital_gap_closing_stable_interactions(exact_panel),
             route_capital_gap_candidate_specific(exact_panel),
             route_capital_gap_asymmetry(exact_panel),
+            stable_basket_gap_portfolio_rebalancing(stable_basket_panel),
             route_capital_gap_extensive_margins(extensive_margin_panel),
             route_capital_gap_same_pool_reallocation(same_pool_panel),
             route_capital_gap_v3_fee_incidence(fee_incidence_panel),

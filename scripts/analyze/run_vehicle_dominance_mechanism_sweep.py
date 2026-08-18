@@ -65,6 +65,12 @@ RISK_SET_CENTRALITY_REGRESSORS = (
     "is_stable_x_2026",
     "log_leaveout_candidate_pair_scopes",
 )
+LAGGED_REACH_DAYS = 30
+RISK_SET_LAGGED_REACH_REGRESSORS = (
+    "is_stable",
+    "is_stable_x_2026",
+    "log_lag30_candidate_pair_scopes",
+)
 STABLE_TURN_ON_HORIZON_DAYS = 30
 STABLE_TURN_ON_PREDICTORS = (
     "is_2026",
@@ -564,7 +570,7 @@ def build_candidate_risk_set_design(path: Path = CHOICES_INPUT) -> pd.DataFrame:
     try:
         connection.execute("PRAGMA threads=8")
         frame = connection.execute(
-            """
+            f"""
             WITH candidate_rows AS (
                 SELECT
                     CAST(date AS DATE) AS date,
@@ -576,10 +582,39 @@ def build_candidate_risk_set_design(path: Path = CHOICES_INPUT) -> pd.DataFrame:
                     any_value(candidate_type) AS candidate_type,
                     sum(route_count)::DOUBLE AS route_count
                 FROM read_parquet(?)
+                WHERE candidate_type IN ('stable', 'native')
+                  AND CAST(date AS DATE) >= DATE '2023-12-01'
+                  AND CAST(date AS DATE) <= DATE '2026-06-30'
+                GROUP BY 1, 2, 3, 4, 5
+            ),
+            current_rows AS (
+                SELECT *
+                FROM candidate_rows
                 WHERE year(date) IN (?, ?)
                   AND month(date) <= 6
-                  AND candidate_type IN ('stable', 'native')
-                GROUP BY 1, 2, 3, 4, 5
+            ),
+            current_candidate_days AS (
+                SELECT DISTINCT date, candidate_address
+                FROM current_rows
+            ),
+            lagged_reach AS (
+                SELECT
+                    c.date,
+                    c.candidate_address,
+                    coalesce(sum(h.route_count), 0)::DOUBLE
+                        AS lag30_candidate_routes,
+                    coalesce(
+                        count(DISTINCT concat(h.src, '|', h.tgt, '|', h.integration_scope)),
+                        0
+                    )::DOUBLE AS lag30_candidate_pair_scopes,
+                    coalesce(count(DISTINCT h.date), 0)::DOUBLE
+                        AS lag30_candidate_active_days
+                FROM current_candidate_days c
+                LEFT JOIN candidate_rows h
+                  ON h.candidate_address = c.candidate_address
+                 AND h.date BETWEEN c.date - INTERVAL {int(LAGGED_REACH_DAYS)} DAY
+                                AND c.date - INTERVAL 1 DAY
+                GROUP BY 1, 2
             ),
             candidate_centrality AS (
                 SELECT
@@ -588,7 +623,7 @@ def build_candidate_risk_set_design(path: Path = CHOICES_INPUT) -> pd.DataFrame:
                     sum(route_count)::DOUBLE AS candidate_day_routes,
                     count(DISTINCT concat(src, '|', tgt, '|', integration_scope))::DOUBLE
                         AS candidate_day_pair_scopes
-                FROM candidate_rows
+                FROM current_rows
                 GROUP BY 1, 2
             ),
             risk_sets AS (
@@ -596,6 +631,9 @@ def build_candidate_risk_set_design(path: Path = CHOICES_INPUT) -> pd.DataFrame:
                     r.*,
                     c.candidate_day_routes,
                     c.candidate_day_pair_scopes,
+                    l.lag30_candidate_routes,
+                    l.lag30_candidate_pair_scopes,
+                    l.lag30_candidate_active_days,
                     sum(route_count) OVER (
                         PARTITION BY date, src, tgt, integration_scope
                     ) AS total_routes,
@@ -608,8 +646,9 @@ def build_candidate_risk_set_design(path: Path = CHOICES_INPUT) -> pd.DataFrame:
                     max((candidate_type = 'native')::INTEGER) OVER (
                         PARTITION BY date, src, tgt, integration_scope
                     ) AS has_native
-                FROM candidate_rows r
+                FROM current_rows r
                 JOIN candidate_centrality c USING (date, candidate_address)
+                JOIN lagged_reach l USING (date, candidate_address)
             )
             SELECT *
             FROM risk_sets
@@ -644,6 +683,15 @@ def build_candidate_risk_set_design(path: Path = CHOICES_INPUT) -> pd.DataFrame:
     )
     frame["log_leaveout_candidate_pair_scopes"] = np.log1p(
         frame["leaveout_candidate_pair_scopes"]
+    )
+    frame["log_lag30_candidate_routes"] = np.log1p(
+        frame["lag30_candidate_routes"].astype(float)
+    )
+    frame["log_lag30_candidate_pair_scopes"] = np.log1p(
+        frame["lag30_candidate_pair_scopes"].astype(float)
+    )
+    frame["log_lag30_candidate_active_days"] = np.log1p(
+        frame["lag30_candidate_active_days"].astype(float)
     )
     frame["risk_set_id"] = (
         frame["date"].astype(str)
@@ -682,6 +730,7 @@ def estimate_candidate_risk_set_choice(
         "is_stable",
         "is_stable_x_2026",
         "log_leaveout_candidate_pair_scopes",
+        "log_lag30_candidate_pair_scopes",
         "risk_set_id",
         "ordered_pair_scope",
     }
@@ -883,6 +932,86 @@ def estimate_candidate_risk_set_choice(
                     "rival_story": (
                         "candidate network reach may proxy liquidity, token news, "
                         "router defaults, venue coverage, or repeated endpoint demand"
+                    ),
+                }
+            )
+        lagged_reach_data = (
+            sample[
+                [
+                    "route_share",
+                    *RISK_SET_LAGGED_REACH_REGRESSORS,
+                    "risk_set_id",
+                    "ordered_pair_scope",
+                    "date",
+                    "total_routes",
+                ]
+            ]
+            .replace([np.inf, -np.inf], np.nan)
+            .dropna()
+            .copy()
+        )
+        lagged_reach_residual = absorb_fixed_effects(
+            lagged_reach_data[["route_share", *RISK_SET_LAGGED_REACH_REGRESSORS]],
+            lagged_reach_data["risk_set_id"],
+            weights=lagged_reach_data["total_routes"],
+        )
+        lagged_reach_fit = ols_clustered(
+            lagged_reach_residual["route_share"],
+            lagged_reach_residual[list(RISK_SET_LAGGED_REACH_REGRESSORS)],
+            lagged_reach_data["ordered_pair_scope"],
+            add_constant=False,
+            absorbed_groups=(lagged_reach_data["risk_set_id"],),
+            additional_clusters=(lagged_reach_data["date"],),
+            weights=lagged_reach_data["total_routes"],
+            min_observations=min_observations,
+            min_clusters=min_clusters,
+        )
+        for regressor, coefficient, standard_error, t_statistic, p_value in zip(
+            RISK_SET_LAGGED_REACH_REGRESSORS,
+            lagged_reach_fit.beta,
+            lagged_reach_fit.standard_errors,
+            lagged_reach_fit.t_statistics,
+            lagged_reach_fit.p_values,
+            strict=True,
+        ):
+            result_rows.append(
+                {
+                    "claim_status": "provisional_exploratory",
+                    "experiment_family": "vehicle_dominance_mechanism_sweep",
+                    "metric": "candidate_route_share",
+                    "model_id": "mixed_native_stable_risk_set_lag30_reach_fe",
+                    "question": (
+                        "Inside the same observed native-stable pair-day-scope "
+                        "risk set, does a candidate's prior 30-day network reach "
+                        "predict current route share?"
+                    ),
+                    "min_total_routes": int(threshold),
+                    "outcome": "candidate_route_share",
+                    "regressor": regressor,
+                    "coefficient": float(coefficient),
+                    "coefficient_pp": 100.0 * float(coefficient),
+                    "standard_error": float(standard_error),
+                    "standard_error_pp": 100.0 * float(standard_error),
+                    "t_statistic": float(t_statistic),
+                    "p_value": float(p_value),
+                    "observations": int(lagged_reach_fit.n_observations),
+                    "ordered_pair_clusters": int(lagged_reach_fit.cluster_counts[0]),
+                    "date_clusters": int(lagged_reach_fit.cluster_counts[1]),
+                    "fixed_effects": "pair_day_scope_risk_set",
+                    "covariance": "two_way_ordered_pair_scope_date_cr1",
+                    "weight": "risk_set_total_route_count",
+                    "lagged_reach_days": LAGGED_REACH_DAYS,
+                    "lagged_reach_measure": (
+                        "log one plus the candidate's observed native/stable "
+                        "pair-scope count during the prior 30 calendar days"
+                    ),
+                    "interpretation": (
+                        "within_observed_risk_set_lagged_network_reach_screen_not_causal"
+                    ),
+                    "rival_story": (
+                        "prior reach may proxy persistent endpoint demand, liquidity, "
+                        "router defaults, venue coverage, or token attention rather "
+                        "than an assigned hubness treatment"
                     ),
                 }
             )

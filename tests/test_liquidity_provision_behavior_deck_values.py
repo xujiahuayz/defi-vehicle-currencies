@@ -293,6 +293,58 @@ def test_liquidity_behavior_values_render_from_guarded_rows() -> None:
             "standard_error_per_10pp_gap": 0.020,
             "p_value": 0.02,
         },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "stable_basket_gap_portfolio_rebalancing",
+            "model_id": "activity_controls",
+            "horizon_days": 30,
+            "outcome": "future_stable_capital_share_change",
+            "predictor": "stable_route_capital_gap",
+            "coefficient": 0.08,
+            "standard_error": 0.03,
+            "coefficient_per_10pp_gap": 0.008,
+            "standard_error_per_10pp_gap": 0.003,
+            "p_value": 0.02,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "stable_basket_gap_portfolio_rebalancing",
+            "model_id": "activity_controls",
+            "horizon_days": 120,
+            "outcome": "future_stable_capital_share_change",
+            "predictor": "stable_route_capital_gap",
+            "coefficient": 0.23,
+            "standard_error": 0.05,
+            "coefficient_per_10pp_gap": 0.023,
+            "standard_error_per_10pp_gap": 0.005,
+            "p_value": 0.001,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "stable_basket_gap_portfolio_rebalancing",
+            "model_id": "activity_controls",
+            "horizon_days": 120,
+            "outcome": "future_weth_capital_share_change",
+            "predictor": "stable_route_capital_gap",
+            "coefficient": -0.20,
+            "standard_error": 0.05,
+            "coefficient_per_10pp_gap": -0.020,
+            "standard_error_per_10pp_gap": 0.005,
+            "p_value": 0.001,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "stable_basket_gap_portfolio_rebalancing",
+            "model_id": "activity_controls",
+            "horizon_days": 120,
+            "outcome": "future_wbtc_capital_share_change",
+            "predictor": "stable_route_capital_gap",
+            "coefficient": -0.02,
+            "standard_error": 0.02,
+            "coefficient_per_10pp_gap": -0.002,
+            "standard_error_per_10pp_gap": 0.002,
+            "p_value": 0.40,
+        },
     ]
     rendered = render_liquidity_provision_behavior_deck_values(pd.DataFrame(rows))
     assert "\\LiqBehWethCapitalLeaderDays" in rendered
@@ -306,6 +358,8 @@ def test_liquidity_behavior_values_render_from_guarded_rows() -> None:
     assert "\\LiqBehStablePoolLongCoef" in rendered
     assert "\\LiqBehSamePoolLongCoef" in rendered
     assert "\\LiqBehStableSamePoolLongCoef" in rendered
+    assert "\\LiqBehStableBasketGapLongCoef" in rendered
+    assert "\\LiqBehWethBasketGapLongCoef" in rendered
     assert "\\LiqBehStableFeeLongCoef" in rendered
     assert "\\LiqBehStableVolumeLongCoef" in rendered
     assert "\\LiqBehUsdcGapCloseLongCoef" in rendered

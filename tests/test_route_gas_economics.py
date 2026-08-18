@@ -8,6 +8,7 @@ from scripts.analyze.run_route_gas_economics import (
     endpoint_hurdle_change,
     extra_hop_hurdles,
     prepared_gas_panel,
+    stable_route_feasibility_distribution,
 )
 
 
@@ -78,3 +79,58 @@ def test_extra_hop_hurdle_uses_year_median_prices() -> None:
     assert change.iloc[0]["one_bp_notional_ratio"] == pytest.approx(
         end["notional_for_extra_gas_1bp_usd"] / base["notional_for_extra_gas_1bp_usd"]
     )
+
+
+def test_stable_route_feasibility_prices_fixed_toll_at_route_gas_price() -> None:
+    rows = []
+    for year, date, gas_price, notional in [
+        (2024, "2024-01-01", 10.0, 1_000.0),
+        (2026, "2026-01-01", 1.0, 100.0),
+    ]:
+        rows.extend(
+            [
+                _gas_row(
+                    date,
+                    tx_hash=f"0xd{year}",
+                    year=year,
+                    mid_type="direct",
+                    gas_used=100_000,
+                    gas_price_gwei=gas_price,
+                    notional=notional,
+                ),
+                _gas_row(
+                    date,
+                    tx_hash=f"0xs{year}",
+                    year=year,
+                    mid_type="stable",
+                    gas_used=300_000,
+                    gas_price_gwei=gas_price,
+                    notional=notional,
+                ),
+            ]
+        )
+    prices = pd.DataFrame(
+        {
+            "date": [pd.Timestamp("2024-01-01"), pd.Timestamp("2026-01-01")],
+            "price_usd": [2_000.0, 1_000.0],
+        }
+    )
+    panel = prepared_gas_panel(pd.DataFrame(rows), prices)
+    hurdles = extra_hop_hurdles(panel)
+    feasibility = stable_route_feasibility_distribution(panel, hurdles)
+    base = feasibility[
+        feasibility["record_type"].eq("stable_route_fixed_toll_feasibility")
+        & feasibility["year"].eq(2024)
+    ].iloc[0]
+    end = feasibility[
+        feasibility["record_type"].eq("stable_route_fixed_toll_feasibility")
+        & feasibility["year"].eq(2026)
+    ].iloc[0]
+    change = feasibility[
+        feasibility["record_type"].eq("stable_route_fixed_toll_feasibility_change")
+    ].iloc[0]
+    assert base["median_fixed_extra_hop_toll_bps"] == pytest.approx(40.0)
+    assert base["share_fixed_toll_le_25bp"] == pytest.approx(0.0)
+    assert end["median_fixed_extra_hop_toll_bps"] == pytest.approx(20.0)
+    assert end["share_fixed_toll_le_25bp"] == pytest.approx(1.0)
+    assert change["share_25bp_change"] == pytest.approx(1.0)
