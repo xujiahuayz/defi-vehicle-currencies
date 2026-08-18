@@ -166,7 +166,7 @@ and the lock.
 
 The current branch compiles a 54-page paper and a 46-page deck after the
 provisional mechanism reruns. The paper and deck compile with zero undefined
-references. The repository passes 708 pytest tests, the findings gate, and every
+references. The repository passes 714 pytest tests, the findings gate, and every
 blocking conformance check. There is one manuscript under `paper/` and one
 presentation under `deck/`; Git history is the archive.
 
