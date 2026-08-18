@@ -22,6 +22,9 @@
 \IfFileExists{../output/exhibits/vehicle_mechanism_sweep_deck_values.tex}{%
 \input{../output/exhibits/vehicle_mechanism_sweep_deck_values.tex}%
 }{\PackageError{dvc-deck}{Missing generated vehicle mechanism-sweep values}{Run scripts/analyze/run_vehicle_dominance_mechanism_sweep.py then scripts/tabulate/build_vehicle_mechanism_sweep_deck_values.py.}}
+\IfFileExists{../output/exhibits/route_gas_economics_deck_values.tex}{%
+\input{../output/exhibits/route_gas_economics_deck_values.tex}%
+}{\PackageError{dvc-deck}{Missing generated route-gas economics values}{Run scripts/analyze/run_route_gas_economics.py then scripts/tabulate/build_route_gas_economics_deck_values.py.}}
 \IfFileExists{../output/exhibits/excess_use_date_fe_deck_values.tex}{%
 \input{../output/exhibits/excess_use_date_fe_deck_values.tex}%
 }{\PackageError{dvc-deck}{Missing generated within-day excess-use values}{Run scripts/analyze/run_excess_use_date_fe_ladder.py then scripts/tabulate/build_excess_use_date_fe_deck_values.py.}}
@@ -242,6 +245,36 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \decknote{Count-share transition screen over \MechanismScreenPairs{} ordered pairs and \MechanismScreenDays{} common month-days. Rows condition on month-day fixed effects and use harmonic endpoint-denominator weights; uncertainty is two-way CR1 by ordered pair and month-day. Complex-route baseline share is also positive for stable turn-on: \MechanismTurnOnComplexCoef{} with SE \MechanismTurnOnComplexSE{}. Driver screen only, not a causal design.}
 \end{frame}
 
+% EVIDENCE-STATUS: exploratory descriptive execution-friction result
+% EVIDENCE-SOURCES: output/exhibits/route_gas_economics.jsonl; output/exhibits/route_gas_economics_support.jsonl; output/exhibits/route_gas_economics_deck_values.tex
+% ESTIMAND-BOUNDARY: executed-route receipt gas joined to daily WETH prices; fixed extra-hop toll only, not same-state route-cost dominance
+% VISUAL-FUNCTION: execution fixed cost | three-stat hurdle strip | show why extra-hop routing became feasible for smaller markets
+\begin{frame}{Extra-hop execution became cheap enough}
+\vspace{0.10cm}
+\begin{columns}[T,totalwidth=\textwidth]
+\begin{column}{0.31\textwidth}
+{\fontsize{26}{28}\selectfont\bfseries\color{ucldark}\mbox{\GasStableExtraGasPctEnd}}\par
+\vspace{0.16cm}
+{\small more gas than direct,\par stable-vehicle median in 2026\par}
+\end{column}
+\begin{column}{0.31\textwidth}
+{\fontsize{26}{28}\selectfont\bfseries\color{ucldark}\mbox{\GasStableExtraCostEnd}}\par
+\vspace{0.16cm}
+{\small fixed extra-hop toll\par at 2026 medians\par}
+\end{column}
+\begin{column}{0.31\textwidth}
+{\fontsize{26}{28}\selectfont\bfseries\color{ucldark}\mbox{\GasStableOneBpNotionalEnd}}\par
+\vspace{0.16cm}
+{\small notional where extra gas is 1 bp\par}
+\end{column}
+\end{columns}
+\vspace{0.42cm}
+\fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
+{\fontsize{8.4}{9.4}\selectfont In gas units, stable-vehicle routes still cost more than direct routes: the 2026 median extra toll is \GasStableExtraGasUnitsEnd{} gas. In dollars, the hurdle collapsed from \GasStableExtraCostBase{} in 2024 to \GasStableExtraCostEnd{} in 2026, so the one-basis-point notional fell from \GasStableOneBpNotionalBase{} to \GasStableOneBpNotionalEnd{}.\par}
+\end{minipage}}
+\decknote{Executed-route receipt gas only. Dollar tolls evaluate the stable-vehicle extra-gas median against the same year's median gas price and WETH price. The 2026 ten-basis-point threshold is \GasStableTenBpNotionalEnd{}, close to the observed stable-vehicle median notional of \GasStableMedianNotionalEnd{}. This is execution-friction evidence, not an all-in quote comparison.}
+\end{frame}
+
 % EVIDENCE-STATUS: current descriptive result; integration remains a selected route stratum
 % EVIDENCE-SOURCES: output/figures/experiments/integration_change_forest.pdf; output/exhibits/intermediation_integration_rival.jsonl; output/exhibits/intermediation_integration_interaction.jsonl; output/exhibits/intermediation_complexity_rival.jsonl; output/exhibits/integration_date_fe_ladder.jsonl; output/exhibits/venue_technology_rival.jsonl; output/exhibits/routing_technology_windows.jsonl; output/exhibits/presentation_values.tex; docs/findings/README.md
 % ESTIMAND-BOUNDARY: matched January--June dates in 2024 and 2026; native-plus-stable denominator; one
@@ -312,9 +345,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.44cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.4}{9.4}\selectfont Stablecoins' route share rises from \LiqBehStableRouteShareBase{} to \LiqBehStableRouteShareEnd{} while their capital share falls from \LiqBehStableCapitalShareBase{} to \LiqBehStableCapitalShareEnd{}. LPs chase slowly: a 10 pp route-minus-capital gap predicts \LiqBehGapCloseMonthCoef{} capital-share catch-up after 30 days and \LiqBehGapCloseLongCoef{} after 120.\par}
+{\fontsize{8.4}{9.4}\selectfont Stablecoins' route share rises from \LiqBehStableRouteShareBase{} to \LiqBehStableRouteShareEnd{} while their capital share falls from \LiqBehStableCapitalShareBase{} to \LiqBehStableCapitalShareEnd{}. LPs chase slowly: a 10 pp stable gap predicts \LiqBehStableGapCloseMonthCoef{} capital-share catch-up after 30 days.\par}
 \end{minipage}}
-\decknote{Daily five-candidate V2 panel over \LiqBehPanelDays{} route-and-capital-supported days. Capital is deposited-capital stock in candidate-linked V2 pools. Excess use is intermediary share divided by route-endpoint share. The stable within-day route-minus-capital premium after endpoint-share, venue-count, and pool-count controls is \LiqBehStableControlledGapCoef{} with SE \LiqBehStableControlledGapSE{}. Gap-closing rows absorb candidate and origin-date effects. Descriptive associations only.}
+\decknote{Daily five-candidate V2 panel over \LiqBehPanelDays{} route-and-capital-supported days. Capital is deposited-capital stock in candidate-linked V2 pools. Excess use is intermediary share divided by route-endpoint share. The stable within-day route-minus-capital premium after endpoint-share, venue-count, and pool-count controls is \LiqBehStableControlledGapCoef{} with SE \LiqBehStableControlledGapSE{}. Gap-closing rows absorb candidate and origin-date effects; stable total 120-day catch-up is \LiqBehStableGapCloseLongCoef{}. Descriptive associations only.}
 \end{frame}
 
 % EVIDENCE-STATUS: current predictive mechanism result; the reciprocal rule records a non-pass
