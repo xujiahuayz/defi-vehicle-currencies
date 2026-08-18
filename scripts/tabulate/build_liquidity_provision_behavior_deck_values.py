@@ -355,6 +355,48 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         outcome="future_log1p_v3_total_lp_actions",
         candidate_symbol="USDT",
     )
+    dai_v3_lp_mint_month = _single(
+        estimates,
+        record_type="route_capital_gap_v3_lp_action_candidate_specific",
+        horizon_days=30,
+        outcome="future_log1p_v3_mint_events",
+        candidate_symbol="DAI",
+    )
+    usdc_v3_lp_mint_month = _single(
+        estimates,
+        record_type="route_capital_gap_v3_lp_action_candidate_specific",
+        horizon_days=30,
+        outcome="future_log1p_v3_mint_events",
+        candidate_symbol="USDC",
+    )
+    usdt_v3_lp_mint_month = _single(
+        estimates,
+        record_type="route_capital_gap_v3_lp_action_candidate_specific",
+        horizon_days=30,
+        outcome="future_log1p_v3_mint_events",
+        candidate_symbol="USDT",
+    )
+    dai_v3_lp_burn_month = _single(
+        estimates,
+        record_type="route_capital_gap_v3_lp_action_candidate_specific",
+        horizon_days=30,
+        outcome="future_log1p_v3_burn_events",
+        candidate_symbol="DAI",
+    )
+    usdc_v3_lp_burn_month = _single(
+        estimates,
+        record_type="route_capital_gap_v3_lp_action_candidate_specific",
+        horizon_days=30,
+        outcome="future_log1p_v3_burn_events",
+        candidate_symbol="USDC",
+    )
+    usdt_v3_lp_burn_month = _single(
+        estimates,
+        record_type="route_capital_gap_v3_lp_action_candidate_specific",
+        horizon_days=30,
+        outcome="future_log1p_v3_burn_events",
+        candidate_symbol="USDT",
+    )
     dai_v3_lp_net_month = _single(
         estimates,
         record_type="route_capital_gap_v3_lp_action_candidate_specific",
@@ -499,6 +541,22 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         and float(usdt_v3_lp_total_month["p_value"]) < 0.01
         and float(usdt_v3_lp_total_month["coefficient"])
         > float(usdc_v3_lp_total_month["coefficient"])
+        and float(dai_v3_lp_mint_month["coefficient"]) > 0
+        and float(usdc_v3_lp_mint_month["coefficient"]) > 0
+        and float(usdt_v3_lp_mint_month["coefficient"]) > 0
+        and float(dai_v3_lp_burn_month["coefficient"]) > 0
+        and float(usdc_v3_lp_burn_month["coefficient"]) > 0
+        and float(usdt_v3_lp_burn_month["coefficient"]) > 0
+        and float(dai_v3_lp_mint_month["p_value"]) < 0.01
+        and float(usdc_v3_lp_mint_month["p_value"]) < 0.01
+        and float(usdt_v3_lp_mint_month["p_value"]) < 0.01
+        and float(dai_v3_lp_burn_month["p_value"]) < 0.01
+        and float(usdc_v3_lp_burn_month["p_value"]) < 0.01
+        and float(usdt_v3_lp_burn_month["p_value"]) < 0.01
+        and float(usdt_v3_lp_mint_month["coefficient"])
+        > float(usdc_v3_lp_mint_month["coefficient"])
+        and float(usdt_v3_lp_burn_month["coefficient"])
+        > float(usdc_v3_lp_burn_month["coefficient"])
         and float(dai_v3_lp_net_month["coefficient"]) > 0
         and float(usdc_v3_lp_net_month["coefficient"]) > 0
         and float(usdt_v3_lp_net_month["coefficient"]) < 0
@@ -601,6 +659,18 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         f"\\newcommand{{\\LiqBehUsdcVThreeActionMonthSE}}{{{_unsigned_percent(float(usdc_v3_lp_total_month['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehUsdtVThreeActionMonthCoef}}{{{_signed_percent(float(usdt_v3_lp_total_month['coefficient_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehUsdtVThreeActionMonthSE}}{{{_unsigned_percent(float(usdt_v3_lp_total_month['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehDaiVThreeMintMonthCoef}}{{{_signed_percent(float(dai_v3_lp_mint_month['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehDaiVThreeMintMonthSE}}{{{_unsigned_percent(float(dai_v3_lp_mint_month['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehUsdcVThreeMintMonthCoef}}{{{_signed_percent(float(usdc_v3_lp_mint_month['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehUsdcVThreeMintMonthSE}}{{{_unsigned_percent(float(usdc_v3_lp_mint_month['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehUsdtVThreeMintMonthCoef}}{{{_signed_percent(float(usdt_v3_lp_mint_month['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehUsdtVThreeMintMonthSE}}{{{_unsigned_percent(float(usdt_v3_lp_mint_month['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehDaiVThreeBurnMonthCoef}}{{{_signed_percent(float(dai_v3_lp_burn_month['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehDaiVThreeBurnMonthSE}}{{{_unsigned_percent(float(dai_v3_lp_burn_month['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehUsdcVThreeBurnMonthCoef}}{{{_signed_percent(float(usdc_v3_lp_burn_month['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehUsdcVThreeBurnMonthSE}}{{{_unsigned_percent(float(usdc_v3_lp_burn_month['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehUsdtVThreeBurnMonthCoef}}{{{_signed_percent(float(usdt_v3_lp_burn_month['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehUsdtVThreeBurnMonthSE}}{{{_unsigned_percent(float(usdt_v3_lp_burn_month['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehDaiVThreeNetMintMonthCoef}}{{{_signed_pp(float(dai_v3_lp_net_month['coefficient_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehDaiVThreeNetMintMonthSE}}{{{_unsigned_pp(float(dai_v3_lp_net_month['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehUsdcVThreeNetMintMonthCoef}}{{{_signed_pp(float(usdc_v3_lp_net_month['coefficient_per_10pp_gap']))}}}",

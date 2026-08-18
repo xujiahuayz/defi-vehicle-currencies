@@ -474,7 +474,7 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.44cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.4}{9.4}\selectfont Route share rises while stable capital share falls. A 10 pp stable shortfall predicts \LiqBehStableBasketGapLongCoef{} stable capital and \LiqBehWethBasketGapLongCoef{} WETH capital. In V3, actions look like churn: USDT actions rise \LiqBehUsdtVThreeActionMonthCoef{} but net balance is \LiqBehUsdtVThreeNetMintMonthCoef{}, while DAI/USDC net balances are positive.\par}
+{\fontsize{8.4}{9.4}\selectfont Route share rises while stable capital share falls. A 10 pp stable shortfall predicts \LiqBehStableBasketGapLongCoef{} stable capital and \LiqBehWethBasketGapLongCoef{} WETH capital. In V3, USDT mint/burn events rise \LiqBehUsdtVThreeMintMonthCoef{}/\LiqBehUsdtVThreeBurnMonthCoef{} but net balance is \LiqBehUsdtVThreeNetMintMonthCoef{}.\par}
 \end{minipage}}
 \decknote{Five-candidate V2 deposited-capital panel. Stable route share rises \LiqBehStableRouteShareBase{} to \LiqBehStableRouteShareEnd{} while capital share falls \LiqBehStableCapitalShareBase{} to \LiqBehStableCapitalShareEnd{}. Stable-basket rows use activity controls/HAC. Concentration: top-pool share \LiqBehStableTopPoolShareEnd{} vs \LiqBehNonstableTopPoolShareEnd{}. V3 action screen: \LiqBehVThreeLpActionRows{} candidate-date rows, candidate/date FE, issuer-specific gap interactions, mint and burn event counts rather than dollar provider flow.}
 \end{frame}
