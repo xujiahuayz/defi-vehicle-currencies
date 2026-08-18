@@ -5,6 +5,7 @@ import pytest
 
 from scripts.analyze.run_vehicle_formation_exploration import (
     entry_follow_panel,
+    endpoint_class,
     persistence_contrasts,
     persistence_summary,
 )
@@ -84,3 +85,20 @@ def test_persistence_contrast_uses_pair_level_followup(pair_support_path) -> Non
     row = contrast.iloc[0]
     assert row["coefficient"] == pytest.approx(22 / 30)
     assert row["comparison"] == "stable_dominant_entry_minus_native_only_entry"
+
+
+def test_endpoint_class_separates_weth_from_other_stable_endpoints() -> None:
+    assert (
+        endpoint_class(
+            "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+        )
+        == "weth_endpoint"
+    )
+    assert (
+        endpoint_class(
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+            "0x1111111111111111111111111111111111111111",
+        )
+        == "stable_endpoint"
+    )

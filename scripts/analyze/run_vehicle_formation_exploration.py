@@ -18,6 +18,7 @@ import numpy as np
 import pandas as pd
 
 from ddvc.analysis.regression import ols_clustered
+from ddvc.asset_types import classify
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.runtime import atomic_output
 
@@ -73,6 +74,78 @@ def entry_cohorts(pair_support_path: Path = PAIR_SUPPORT) -> pd.DataFrame:
         ORDER BY 2
         """
     )
+
+
+def endpoint_class(src: object, tgt: object) -> str:
+    """Classify the endpoint pair for the mechanical WETH-eligibility split."""
+
+    src_symbol, src_type = classify(src)
+    tgt_symbol, tgt_type = classify(tgt)
+    symbols = {src_symbol, tgt_symbol}
+    types = {src_type, tgt_type}
+    if "WETH" in symbols:
+        return "weth_endpoint"
+    if "stable" in types:
+        return "stable_endpoint"
+    if "native" in types:
+        return "other_native_endpoint"
+    return "other_endpoint"
+
+
+def entry_endpoint_class_summary(pair_support_path: Path = PAIR_SUPPORT) -> pd.DataFrame:
+    """Split entering pairs by endpoint class and add a non-WETH aggregate."""
+
+    path = _sql_path(pair_support_path)
+    years = ", ".join(str(year) for year in MAIN_ENTRY_YEARS)
+    entries = _read_sql(
+        f"""
+        SELECT
+            date,
+            src,
+            tgt,
+            year(date)::INTEGER AS entry_year,
+            primary_choice_route_count::DOUBLE AS primary_routes,
+            stable_choice_route_count::DOUBLE AS stable_routes,
+            native_choice_route_count::DOUBLE AS native_routes
+        FROM read_parquet('{path}')
+        WHERE pair_entry_on_day
+          AND primary_choice_route_count > 0
+          AND year(date) IN ({years})
+          AND strftime(date, '%m-%d') <= '06-30'
+        """
+    )
+    entries["endpoint_class"] = [
+        endpoint_class(src, tgt) for src, tgt in zip(entries["src"], entries["tgt"])
+    ]
+    total_by_year = entries.groupby("entry_year")["primary_routes"].sum()
+    rows: list[dict[str, object]] = []
+    grouped = list(entries.groupby(["entry_year", "endpoint_class"], sort=True))
+    non_weth = entries[~entries["endpoint_class"].eq("weth_endpoint")].copy()
+    grouped.extend(
+        (((int(year), "non_weth_endpoint"), group) for year, group in non_weth.groupby("entry_year", sort=True))
+    )
+    for (year, class_name), group in grouped:
+        primary_routes = float(group["primary_routes"].sum())
+        stable_routes = float(group["stable_routes"].sum())
+        native_routes = float(group["native_routes"].sum())
+        rows.append(
+            {
+                "record_type": "entry_endpoint_class",
+                "entry_year": int(year),
+                "endpoint_class": str(class_name),
+                "pairs": int(len(group)),
+                "primary_routes": primary_routes,
+                "stable_routes": stable_routes,
+                "native_routes": native_routes,
+                "stable_share": stable_routes / primary_routes,
+                "stable_dominant_pair_share": float(
+                    (group["stable_routes"] > group["native_routes"]).mean()
+                ),
+                "route_mass_share": primary_routes / float(total_by_year.loc[year]),
+                "interpretation": "exploratory_endpoint_class_split_not_causal",
+            }
+        )
+    return pd.DataFrame(rows)
 
 
 def entry_follow_panel(
@@ -285,13 +358,18 @@ def build_results(pair_support_path: Path = PAIR_SUPPORT) -> tuple[pd.DataFrame,
     if not pair_support_path.is_file():
         raise FileNotFoundError(pair_support_path)
     cohorts = entry_cohorts(pair_support_path)
+    endpoint_classes = entry_endpoint_class_summary(pair_support_path)
     follow_panels = [
         entry_follow_panel(horizon, pair_support_path=pair_support_path)
         for horizon in HORIZONS
     ]
     summaries = [persistence_summary(panel) for panel in follow_panels]
     contrasts = [persistence_contrasts(panel) for panel in follow_panels]
-    result = pd.concat([cohorts, *summaries, *contrasts], ignore_index=True, sort=False)
+    result = pd.concat(
+        [cohorts, endpoint_classes, *summaries, *contrasts],
+        ignore_index=True,
+        sort=False,
+    )
     for column in ("stable_share", "stable_dominant_pair_share"):
         if column in result.columns:
             values = pd.to_numeric(result[column], errors="coerce")

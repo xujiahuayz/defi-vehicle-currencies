@@ -69,9 +69,34 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
                 "primary_routes": 20,
                 "stable_share": 0.99,
             },
+            {
+                "record_type": "entry_endpoint_class",
+                "entry_year": 2024,
+                "endpoint_class": "non_weth_endpoint",
+                "primary_routes": 90,
+                "stable_share": 0.01,
+                "route_mass_share": 0.90,
+            },
+            {
+                "record_type": "entry_endpoint_class",
+                "entry_year": 2026,
+                "endpoint_class": "non_weth_endpoint",
+                "primary_routes": 80,
+                "stable_share": 0.08,
+                "route_mass_share": 0.80,
+            },
+            {
+                "record_type": "entry_endpoint_class",
+                "entry_year": 2026,
+                "endpoint_class": "weth_endpoint",
+                "primary_routes": 20,
+                "stable_share": 1.0,
+                "route_mass_share": 0.20,
+            },
         ]
     )
     rendered = render_vehicle_formation_deck_values(estimates)
     assert "\\FormationEntryStableShareBase" in rendered
     assert "5.0\\%" in rendered
     assert "$+97.0$ pp" in rendered
+    assert "\\FormationNonWethEntryStableShareEnd" in rendered
