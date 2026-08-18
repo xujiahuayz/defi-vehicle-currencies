@@ -1917,6 +1917,19 @@ def route_capital_gap_v3_lp_action_horizon_panel(
         panel["future_v3_net_mint_events"].astype(float)
         / panel["future_v3_total_lp_actions"].astype(float).add(1.0)
     )
+    panel["future_v3_total_origin_count"] = (
+        panel["future_v3_mint_origin_count"].astype(float)
+        + panel["future_v3_burn_origin_count"].astype(float)
+    )
+    panel["future_log1p_v3_mint_origin_count"] = np.log1p(
+        panel["future_v3_mint_origin_count"].astype(float)
+    )
+    panel["future_log1p_v3_burn_origin_count"] = np.log1p(
+        panel["future_v3_burn_origin_count"].astype(float)
+    )
+    panel["future_log1p_v3_total_origin_count"] = np.log1p(
+        panel["future_v3_total_origin_count"].astype(float)
+    )
     return panel.replace([np.inf, -np.inf], np.nan).dropna(
         subset=[
             "route_capital_gap_5",
@@ -1925,6 +1938,9 @@ def route_capital_gap_v3_lp_action_horizon_panel(
             "future_log1p_v3_burn_events",
             "future_log1p_v3_total_lp_actions",
             "future_v3_net_mint_event_balance",
+            "future_log1p_v3_mint_origin_count",
+            "future_log1p_v3_burn_origin_count",
+            "future_log1p_v3_total_origin_count",
         ]
     )
 
@@ -1943,6 +1959,9 @@ def route_capital_gap_v3_lp_action_response(
         "future_log1p_v3_burn_events",
         "future_log1p_v3_total_lp_actions",
         "future_v3_net_mint_event_balance",
+        "future_log1p_v3_mint_origin_count",
+        "future_log1p_v3_burn_origin_count",
+        "future_log1p_v3_total_origin_count",
     )
     for horizon, group in panel.groupby("horizon_days", sort=True):
         for outcome in outcomes:
@@ -2013,8 +2032,9 @@ def route_capital_gap_v3_lp_action_response(
                         "covariance": "origin_date_clustered",
                         "event_source": "uniswap_v3_graph_mint_burn_events",
                         "interpretation": (
-                            "future V3 mint/burn event-count association, not "
-                            "dollar-valued provider flow or causal LP response"
+                            "future V3 mint/burn event-count or provider-day "
+                            "association, not dollar-valued provider flow or "
+                            "causal LP response"
                         ),
                     }
                 )
@@ -2039,9 +2059,9 @@ def route_capital_gap_v3_lp_action_response(
                     "covariance": "origin_date_clustered",
                     "event_source": "uniswap_v3_graph_mint_burn_events",
                     "interpretation": (
-                        "stable-candidate future V3 mint/burn event-count "
-                        "association, not dollar-valued provider flow or causal "
-                        "LP response"
+                        "stable-candidate future V3 mint/burn event-count or "
+                        "provider-day association, not dollar-valued provider "
+                        "flow or causal LP response"
                     ),
                 }
             )
@@ -2062,6 +2082,9 @@ def route_capital_gap_v3_lp_action_candidate_specific(
         "future_log1p_v3_burn_events",
         "future_log1p_v3_total_lp_actions",
         "future_v3_net_mint_event_balance",
+        "future_log1p_v3_mint_origin_count",
+        "future_log1p_v3_burn_origin_count",
+        "future_log1p_v3_total_origin_count",
     )
     for horizon, group in panel.groupby("horizon_days", sort=True):
         symbols = sorted(
@@ -2149,8 +2172,8 @@ def route_capital_gap_v3_lp_action_candidate_specific(
                         "event_source": "uniswap_v3_graph_mint_burn_events",
                         "interpretation": (
                             "candidate-specific future V3 mint/burn event-count "
-                            "association, not dollar-valued provider flow or causal "
-                            "LP response"
+                            "or provider-day association, not dollar-valued "
+                            "provider flow or causal LP response"
                         ),
                     }
                 )

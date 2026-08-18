@@ -845,6 +845,8 @@ def test_v3_lp_action_horizon_panel_sums_future_actions() -> None:
     row = panel[panel["origin_date"].eq(pd.Timestamp("2025-01-01"))].iloc[0]
     assert row["future_v3_mint_events"] == 2
     assert row["future_v3_burn_events"] == 1
+    assert row["future_v3_total_origin_count"] == 3
+    assert row["future_log1p_v3_total_origin_count"] > 0
     assert row["future_v3_net_mint_event_balance"] > 0
 
 
@@ -891,6 +893,24 @@ def test_v3_lp_action_response_reports_stable_total() -> None:
                         + date_effect
                         + 0.02 * symbol_index
                     ),
+                    "future_log1p_v3_mint_origin_count": (
+                        0.04 * gap
+                        + 0.08 * gap * is_stable
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                    "future_log1p_v3_burn_origin_count": (
+                        0.02 * gap
+                        + 0.06 * gap * is_stable
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                    "future_log1p_v3_total_origin_count": (
+                        0.03 * gap
+                        + 0.07 * gap * is_stable
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
                 }
             )
     result = route_capital_gap_v3_lp_action_response(
@@ -904,6 +924,11 @@ def test_v3_lp_action_response_reports_stable_total() -> None:
     ].iloc[0]
     assert stable_mint["record_type"] == "route_capital_gap_v3_lp_action"
     assert stable_mint["coefficient"] > 0
+    stable_origin = result[
+        result["predictor"].eq("stable_total_route_capital_gap_5")
+        & result["outcome"].eq("future_log1p_v3_total_origin_count")
+    ].iloc[0]
+    assert stable_origin["coefficient"] > 0
 
 
 def test_v3_lp_action_candidate_specific_reports_issuer_responses() -> None:
@@ -951,6 +976,17 @@ def test_v3_lp_action_candidate_specific_reports_issuer_responses() -> None:
                     "future_v3_net_mint_event_balance": (
                         net_slopes[symbol] * gap + date_effect + 0.02 * symbol_index
                     ),
+                    "future_log1p_v3_mint_origin_count": (
+                        action_slopes[symbol] * gap + date_effect + 0.02 * symbol_index
+                    ),
+                    "future_log1p_v3_burn_origin_count": (
+                        0.9 * action_slopes[symbol] * gap
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                    "future_log1p_v3_total_origin_count": (
+                        action_slopes[symbol] * gap + date_effect + 0.02 * symbol_index
+                    ),
                 }
             )
     result = route_capital_gap_v3_lp_action_candidate_specific(
@@ -970,8 +1006,17 @@ def test_v3_lp_action_candidate_specific_reports_issuer_responses() -> None:
         result["candidate_symbol"].eq("USDT")
         & result["outcome"].eq("future_v3_net_mint_event_balance")
     ].iloc[0]
+    usdt_origin = result[
+        result["candidate_symbol"].eq("USDT")
+        & result["outcome"].eq("future_log1p_v3_total_origin_count")
+    ].iloc[0]
+    usdc_origin = result[
+        result["candidate_symbol"].eq("USDC")
+        & result["outcome"].eq("future_log1p_v3_total_origin_count")
+    ].iloc[0]
     assert usdt_actions["record_type"] == "route_capital_gap_v3_lp_action_candidate_specific"
     assert usdt_actions["coefficient"] > usdc_actions["coefficient"]
+    assert usdt_origin["coefficient"] > usdc_origin["coefficient"]
     assert usdt_net["coefficient"] < 0
 
 

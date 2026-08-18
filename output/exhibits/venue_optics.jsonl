@@ -1,10 +1,10 @@
 {"draft": 54, "exemplar_max": 42, "exemplar_median": 22, "exemplar_min": 19, "exemplar_p25": 20, "exemplar_p75": 33, "feature": "pages", "verdict": "in range"}
-{"draft": 23955, "exemplar_max": 47347, "exemplar_median": 21781, "exemplar_min": 18273, "exemplar_p25": 18738, "exemplar_p75": 24662, "feature": "words", "verdict": "in range"}
+{"draft": 23985, "exemplar_max": 47347, "exemplar_median": 21781, "exemplar_min": 18273, "exemplar_p25": 18738, "exemplar_p75": 24662, "feature": "words", "verdict": "in range"}
 {"draft": 14, "exemplar_max": 16, "exemplar_median": 8, "exemplar_min": 0, "exemplar_p25": 0, "exemplar_p75": 10, "feature": "tables", "verdict": "in range"}
 {"draft": 5, "exemplar_max": 11, "exemplar_median": 7, "exemplar_min": 0, "exemplar_p25": 4, "exemplar_p75": 7, "feature": "figures", "verdict": "in range"}
 {"draft": 17, "exemplar_max": 139, "exemplar_median": 64, "exemplar_min": 12, "exemplar_p25": 25, "exemplar_p75": 89, "feature": "equations", "verdict": "below p25"}
 {"draft": 49, "exemplar_max": 100, "exemplar_median": 55, "exemplar_min": 26, "exemplar_p25": 39, "exemplar_p75": 59, "feature": "citations", "verdict": "in range"}
 {"draft": 10, "exemplar_max": 2050, "exemplar_median": 46, "exemplar_min": 0, "exemplar_p25": 7, "exemplar_p75": 749, "feature": "greek", "verdict": "in range"}
 {"draft": 6, "exemplar_max": 14, "exemplar_median": 0, "exemplar_min": 0, "exemplar_p25": 0, "exemplar_p75": 0, "feature": "fixed_effects", "verdict": "in range"}
-{"draft": 87, "exemplar_max": 27, "exemplar_median": 4, "exemplar_min": 0, "exemplar_p25": 0, "exemplar_p75": 11, "feature": "std_errors", "verdict": "in range"}
+{"draft": 88, "exemplar_max": 27, "exemplar_median": 4, "exemplar_min": 0, "exemplar_p25": 0, "exemplar_p75": 11, "feature": "std_errors", "verdict": "in range"}
 {"draft": 1, "exemplar_max": 14, "exemplar_median": 11, "exemplar_min": 0, "exemplar_p25": 0, "exemplar_p75": 14, "feature": "appendix", "verdict": "in range"}

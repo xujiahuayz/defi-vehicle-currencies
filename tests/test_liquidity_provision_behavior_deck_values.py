@@ -475,6 +475,20 @@ def test_liquidity_behavior_values_render_from_guarded_rows() -> None:
             "analysis_status": "exploratory_descriptive",
             "record_type": "route_capital_gap_v3_lp_action",
             "horizon_days": 30,
+            "outcome": "future_log1p_v3_total_origin_count",
+            "predictor": "stable_total_route_capital_gap_5",
+            "coefficient": 5.7,
+            "standard_error": 0.4,
+            "coefficient_per_10pp_gap": 0.57,
+            "standard_error_per_10pp_gap": 0.04,
+            "p_value": 0.001,
+            "n_observations": 2000,
+            "date_clusters": 400,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_v3_lp_action",
+            "horizon_days": 30,
             "outcome": "future_v3_net_mint_event_balance",
             "predictor": "stable_total_route_capital_gap_5",
             "coefficient": 0.18,
@@ -667,6 +681,51 @@ def test_liquidity_behavior_values_render_from_guarded_rows() -> None:
         },
         {
             "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_v3_lp_action_candidate_specific",
+            "horizon_days": 30,
+            "outcome": "future_log1p_v3_total_origin_count",
+            "candidate_symbol": "DAI",
+            "predictor": "route_capital_gap_5_x_dai",
+            "coefficient": 6.8,
+            "standard_error": 0.5,
+            "coefficient_per_10pp_gap": 0.68,
+            "standard_error_per_10pp_gap": 0.05,
+            "p_value": 0.001,
+            "n_observations": 2000,
+            "date_clusters": 400,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_v3_lp_action_candidate_specific",
+            "horizon_days": 30,
+            "outcome": "future_log1p_v3_total_origin_count",
+            "candidate_symbol": "USDC",
+            "predictor": "route_capital_gap_5_x_usdc",
+            "coefficient": 4.3,
+            "standard_error": 0.4,
+            "coefficient_per_10pp_gap": 0.43,
+            "standard_error_per_10pp_gap": 0.04,
+            "p_value": 0.001,
+            "n_observations": 2000,
+            "date_clusters": 400,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_v3_lp_action_candidate_specific",
+            "horizon_days": 30,
+            "outcome": "future_log1p_v3_total_origin_count",
+            "candidate_symbol": "USDT",
+            "predictor": "route_capital_gap_5_x_usdt",
+            "coefficient": 9.2,
+            "standard_error": 0.6,
+            "coefficient_per_10pp_gap": 0.92,
+            "standard_error_per_10pp_gap": 0.06,
+            "p_value": 0.001,
+            "n_observations": 2000,
+            "date_clusters": 400,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
             "record_type": "route_capital_gap_candidate_specific",
             "horizon_days": 120,
             "outcome": "future_v2_five_candidate_capital_share_change",
@@ -802,10 +861,12 @@ def test_liquidity_behavior_values_render_from_guarded_rows() -> None:
     assert "\\LiqBehStableVThreeMintMonthCoef" in rendered
     assert "\\LiqBehStableVThreeBurnMonthCoef" in rendered
     assert "\\LiqBehStableVThreeNetMintMonthCoef" in rendered
+    assert "\\LiqBehStableVThreeOriginMonthCoef" in rendered
     assert "\\LiqBehUsdtVThreeActionMonthCoef" in rendered
     assert "\\LiqBehUsdtVThreeMintMonthCoef" in rendered
     assert "\\LiqBehUsdtVThreeBurnMonthCoef" in rendered
     assert "\\LiqBehUsdtVThreeNetMintMonthCoef" in rendered
+    assert "\\LiqBehUsdtVThreeOriginMonthCoef" in rendered
     assert "\\LiqBehUsdcGapCloseLongCoef" in rendered
     assert "\\LiqBehDaiGapCloseLongCoef" in rendered
     assert "\\LiqBehUsdtLogGapCloseLongCoef" in rendered

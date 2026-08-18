@@ -404,6 +404,13 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         outcome="future_v3_net_mint_event_balance",
         predictor="stable_total_route_capital_gap_5",
     )
+    stable_v3_lp_origin_month = _single(
+        estimates,
+        record_type="route_capital_gap_v3_lp_action",
+        horizon_days=30,
+        outcome="future_log1p_v3_total_origin_count",
+        predictor="stable_total_route_capital_gap_5",
+    )
     dai_v3_lp_total_month = _single(
         estimates,
         record_type="route_capital_gap_v3_lp_action_candidate_specific",
@@ -486,6 +493,27 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         record_type="route_capital_gap_v3_lp_action_candidate_specific",
         horizon_days=30,
         outcome="future_v3_net_mint_event_balance",
+        candidate_symbol="USDT",
+    )
+    dai_v3_lp_origin_month = _single(
+        estimates,
+        record_type="route_capital_gap_v3_lp_action_candidate_specific",
+        horizon_days=30,
+        outcome="future_log1p_v3_total_origin_count",
+        candidate_symbol="DAI",
+    )
+    usdc_v3_lp_origin_month = _single(
+        estimates,
+        record_type="route_capital_gap_v3_lp_action_candidate_specific",
+        horizon_days=30,
+        outcome="future_log1p_v3_total_origin_count",
+        candidate_symbol="USDC",
+    )
+    usdt_v3_lp_origin_month = _single(
+        estimates,
+        record_type="route_capital_gap_v3_lp_action_candidate_specific",
+        horizon_days=30,
+        outcome="future_log1p_v3_total_origin_count",
         candidate_symbol="USDT",
     )
     usdc_gap_close_long = _single(
@@ -615,10 +643,12 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         and float(stable_v3_lp_burn_month["coefficient"]) > 0
         and float(stable_v3_lp_total_month["coefficient"]) > 0
         and float(stable_v3_lp_net_month["coefficient"]) > 0
+        and float(stable_v3_lp_origin_month["coefficient"]) > 0
         and float(stable_v3_lp_mint_month["p_value"]) < 0.01
         and float(stable_v3_lp_burn_month["p_value"]) < 0.01
         and float(stable_v3_lp_total_month["p_value"]) < 0.01
         and float(stable_v3_lp_net_month["p_value"]) < 0.01
+        and float(stable_v3_lp_origin_month["p_value"]) < 0.01
         and float(stable_v3_lp_net_month["coefficient_per_10pp_gap"])
         < float(stable_v3_lp_mint_month["coefficient_per_10pp_gap"])
         and float(stable_v3_lp_net_month["coefficient_per_10pp_gap"])
@@ -656,6 +686,14 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         and float(dai_v3_lp_net_month["p_value"]) < 0.01
         and float(usdc_v3_lp_net_month["p_value"]) < 0.01
         and float(usdt_v3_lp_net_month["p_value"]) < 0.05
+        and float(dai_v3_lp_origin_month["coefficient"]) > 0
+        and float(usdc_v3_lp_origin_month["coefficient"]) > 0
+        and float(usdt_v3_lp_origin_month["coefficient"]) > 0
+        and float(dai_v3_lp_origin_month["p_value"]) < 0.01
+        and float(usdc_v3_lp_origin_month["p_value"]) < 0.01
+        and float(usdt_v3_lp_origin_month["p_value"]) < 0.01
+        and float(usdt_v3_lp_origin_month["coefficient"])
+        > float(usdc_v3_lp_origin_month["coefficient"])
     ):
         raise ValueError("issuer-specific V3 LP-action contrast no longer holds")
     if not (
@@ -766,6 +804,8 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         f"\\newcommand{{\\LiqBehStableVThreeActionMonthSE}}{{{_unsigned_percent(float(stable_v3_lp_total_month['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehStableVThreeNetMintMonthCoef}}{{{_signed_pp(float(stable_v3_lp_net_month['coefficient_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehStableVThreeNetMintMonthSE}}{{{_unsigned_pp(float(stable_v3_lp_net_month['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVThreeOriginMonthCoef}}{{{_signed_percent(float(stable_v3_lp_origin_month['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVThreeOriginMonthSE}}{{{_unsigned_percent(float(stable_v3_lp_origin_month['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehDaiVThreeActionMonthCoef}}{{{_signed_percent(float(dai_v3_lp_total_month['coefficient_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehDaiVThreeActionMonthSE}}{{{_unsigned_percent(float(dai_v3_lp_total_month['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehUsdcVThreeActionMonthCoef}}{{{_signed_percent(float(usdc_v3_lp_total_month['coefficient_per_10pp_gap']))}}}",
@@ -790,6 +830,12 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         f"\\newcommand{{\\LiqBehUsdcVThreeNetMintMonthSE}}{{{_unsigned_pp(float(usdc_v3_lp_net_month['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehUsdtVThreeNetMintMonthCoef}}{{{_signed_pp(float(usdt_v3_lp_net_month['coefficient_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehUsdtVThreeNetMintMonthSE}}{{{_unsigned_pp(float(usdt_v3_lp_net_month['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehDaiVThreeOriginMonthCoef}}{{{_signed_percent(float(dai_v3_lp_origin_month['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehDaiVThreeOriginMonthSE}}{{{_unsigned_percent(float(dai_v3_lp_origin_month['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehUsdcVThreeOriginMonthCoef}}{{{_signed_percent(float(usdc_v3_lp_origin_month['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehUsdcVThreeOriginMonthSE}}{{{_unsigned_percent(float(usdc_v3_lp_origin_month['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehUsdtVThreeOriginMonthCoef}}{{{_signed_percent(float(usdt_v3_lp_origin_month['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehUsdtVThreeOriginMonthSE}}{{{_unsigned_percent(float(usdt_v3_lp_origin_month['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehUsdcGapCloseLongCoef}}{{{_signed_pp(float(usdc_gap_close_long['coefficient_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehUsdcGapCloseLongSE}}{{{_unsigned_pp(float(usdc_gap_close_long['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehDaiGapCloseLongCoef}}{{{_signed_pp(float(dai_gap_close_long['coefficient_per_10pp_gap']))}}}",
