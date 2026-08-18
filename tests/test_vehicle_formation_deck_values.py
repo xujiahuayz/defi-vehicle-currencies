@@ -119,6 +119,42 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
                 "stable_entry_route_share": 0.258,
             },
             {
+                "record_type": "entry_stable_candidate_persistence",
+                "horizon_days": 30,
+                "entry_year": 2026,
+                "entry_candidate_symbol": "USDC",
+                "primary_routes": None,
+                "stable_share": None,
+                "own_candidate_followup_share": 0.873,
+            },
+            {
+                "record_type": "entry_stable_candidate_persistence",
+                "horizon_days": 30,
+                "entry_year": 2026,
+                "entry_candidate_symbol": "USDT",
+                "primary_routes": None,
+                "stable_share": None,
+                "own_candidate_followup_share": 0.946,
+            },
+            {
+                "record_type": "entry_stable_candidate_persistence",
+                "horizon_days": 120,
+                "entry_year": 2026,
+                "entry_candidate_symbol": "USDC",
+                "primary_routes": None,
+                "stable_share": None,
+                "own_candidate_followup_share": 0.883,
+            },
+            {
+                "record_type": "entry_stable_candidate_persistence",
+                "horizon_days": 120,
+                "entry_year": 2026,
+                "entry_candidate_symbol": "USDT",
+                "primary_routes": None,
+                "stable_share": None,
+                "own_candidate_followup_share": 0.877,
+            },
+            {
                 "record_type": "entry_driver_regression",
                 "endpoint_class": "non_weth_endpoint",
                 "outcome": "stable_share",
@@ -148,4 +184,6 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
     assert "\\FormationNonWethEntryStableShareEnd" in rendered
     assert "\\FormationStableEntryTopTwoShareEnd" in rendered
     assert "99.6\\%" in rendered
+    assert "\\FormationUSDCEntryOwnThirty" in rendered
+    assert "94.6\\%" in rendered
     assert "\\FormationNonWethYearDriver" in rendered

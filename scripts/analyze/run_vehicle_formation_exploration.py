@@ -226,6 +226,120 @@ def entry_stable_candidate_summary(
     )
 
 
+def entry_stable_candidate_persistence(
+    horizon_days: int,
+    *,
+    pair_support_path: Path = PAIR_SUPPORT,
+    candidate_choices_path: Path = CANDIDATE_CHOICES,
+    sample_end: pd.Timestamp = SAMPLE_END,
+) -> pd.DataFrame:
+    """Measure whether the stable candidate used at entry keeps the stable role."""
+
+    if horizon_days <= 0:
+        raise ValueError("horizon_days must be positive")
+    pair_path = _sql_path(pair_support_path)
+    choices_path = _sql_path(candidate_choices_path)
+    years = ", ".join(str(year) for year in MAIN_ENTRY_YEARS)
+    sample_end_text = pd.Timestamp(sample_end).strftime("%Y-%m-%d")
+    return _read_sql(
+        f"""
+        WITH entries AS (
+            SELECT
+                date AS entry_date,
+                src,
+                tgt,
+                year(date)::INTEGER AS entry_year
+            FROM read_parquet('{pair_path}')
+            WHERE pair_entry_on_day
+              AND primary_choice_route_count > 0
+              AND stable_choice_route_count > 0
+              AND year(date) IN ({years})
+              AND strftime(date, '%m-%d') <= '06-30'
+              AND date + INTERVAL {int(horizon_days)} DAY <= DATE '{sample_end_text}'
+        ),
+        entry_stable AS (
+            SELECT
+                e.entry_date,
+                e.src,
+                e.tgt,
+                e.entry_year,
+                c.candidate_symbol,
+                sum(c.route_count)::DOUBLE AS entry_candidate_routes
+            FROM entries e
+            JOIN read_parquet('{choices_path}') c
+              ON c.date = e.entry_date
+             AND c.src = e.src
+             AND c.tgt = e.tgt
+            WHERE c.candidate_type = 'stable'
+              AND c.route_count > 0
+            GROUP BY 1, 2, 3, 4, 5
+        ),
+        entry_leaders AS (
+            SELECT *
+            FROM (
+                SELECT
+                    *,
+                    row_number() OVER (
+                        PARTITION BY entry_date, src, tgt
+                        ORDER BY entry_candidate_routes DESC, candidate_symbol
+                    ) AS rank
+                FROM entry_stable
+            )
+            WHERE rank = 1
+        ),
+        entry_weight AS (
+            SELECT
+                entry_year,
+                candidate_symbol AS entry_candidate_symbol,
+                count(*)::INTEGER AS pairs,
+                sum(entry_candidate_routes)::DOUBLE AS entry_candidate_routes
+            FROM entry_leaders
+            GROUP BY 1, 2
+        ),
+        followup AS (
+            SELECT
+                e.entry_year,
+                e.candidate_symbol AS entry_candidate_symbol,
+                sum(c.route_count)::DOUBLE AS stable_followup_routes,
+                sum(
+                    CASE
+                        WHEN c.candidate_symbol = e.candidate_symbol
+                            THEN c.route_count
+                        ELSE 0
+                    END
+                )::DOUBLE AS own_candidate_followup_routes
+            FROM entry_leaders e
+            JOIN read_parquet('{choices_path}') c
+              ON c.src = e.src
+             AND c.tgt = e.tgt
+             AND c.date BETWEEN e.entry_date
+                            AND e.entry_date + INTERVAL {int(horizon_days)} DAY
+            WHERE c.candidate_type = 'stable'
+              AND c.route_count > 0
+            GROUP BY 1, 2
+        )
+        SELECT
+            'entry_stable_candidate_persistence' AS record_type,
+            {int(horizon_days)}::INTEGER AS horizon_days,
+            f.entry_year,
+            f.entry_candidate_symbol,
+            e.pairs,
+            e.entry_candidate_routes,
+            f.stable_followup_routes,
+            f.own_candidate_followup_routes,
+            f.own_candidate_followup_routes / nullif(f.stable_followup_routes, 0)
+                AS own_candidate_followup_share,
+            'exploratory_stable_candidate_identity_persistence_not_causal'
+                AS interpretation
+        FROM followup f
+        JOIN entry_weight e USING (entry_year, entry_candidate_symbol)
+        WHERE f.stable_followup_routes > 0
+        ORDER BY f.entry_year, horizon_days, own_candidate_followup_share DESC,
+                 f.entry_candidate_symbol
+        """
+    )
+
+
 def entry_driver_panel(pair_support_path: Path = PAIR_SUPPORT) -> pd.DataFrame:
     """Return non-WETH entrant rows used by the birth-driver regression."""
 
@@ -553,6 +667,14 @@ def build_results(
         entry_follow_panel(horizon, pair_support_path=pair_support_path)
         for horizon in HORIZONS
     ]
+    candidate_persistence = [
+        entry_stable_candidate_persistence(
+            horizon,
+            pair_support_path=pair_support_path,
+            candidate_choices_path=candidate_choices_path,
+        )
+        for horizon in HORIZONS
+    ]
     summaries = [persistence_summary(panel) for panel in follow_panels]
     contrasts = [persistence_contrasts(panel) for panel in follow_panels]
     result = pd.concat(
@@ -560,6 +682,7 @@ def build_results(
             cohorts,
             endpoint_classes,
             stable_candidates,
+            *candidate_persistence,
             driver_regressions,
             *summaries,
             *contrasts,
@@ -567,7 +690,12 @@ def build_results(
         ignore_index=True,
         sort=False,
     )
-    for column in ("stable_share", "stable_dominant_pair_share", "stable_entry_route_share"):
+    for column in (
+        "stable_share",
+        "stable_dominant_pair_share",
+        "stable_entry_route_share",
+        "own_candidate_followup_share",
+    ):
         if column in result.columns:
             values = pd.to_numeric(result[column], errors="coerce")
             if ((values < -1e-12) | (values > 1 + 1e-12)).any():

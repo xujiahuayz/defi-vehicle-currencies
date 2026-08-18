@@ -6,6 +6,7 @@ import pytest
 from scripts.analyze.run_vehicle_formation_exploration import (
     entry_driver_panel,
     entry_follow_panel,
+    entry_stable_candidate_persistence,
     entry_stable_candidate_summary,
     endpoint_class,
     persistence_contrasts,
@@ -83,6 +84,26 @@ def candidate_choices_path(tmp_path):
                 "within_20pct_value_usd": 20.0,
             },
             {
+                "date": pd.Timestamp("2026-01-15"),
+                "src": "c",
+                "tgt": "d",
+                "candidate_symbol": "USDC",
+                "candidate_type": "stable",
+                "route_count": 6,
+                "within_20pct_routes": 6,
+                "within_20pct_value_usd": 60.0,
+            },
+            {
+                "date": pd.Timestamp("2026-01-15"),
+                "src": "c",
+                "tgt": "d",
+                "candidate_symbol": "USDT",
+                "candidate_type": "stable",
+                "route_count": 1,
+                "within_20pct_routes": 1,
+                "within_20pct_value_usd": 10.0,
+            },
+            {
                 "date": pd.Timestamp("2026-01-01"),
                 "src": "a",
                 "tgt": "b",
@@ -119,6 +140,24 @@ def test_entry_stable_candidate_summary_splits_stable_entry_routes(
     assert usdc["candidate_routes"] == 8
     assert usdc["stable_entry_routes"] == 10
     assert usdc["stable_entry_route_share"] == pytest.approx(0.8)
+
+
+def test_entry_stable_candidate_persistence_tracks_entry_candidate_identity(
+    pair_support_path, candidate_choices_path
+) -> None:
+    summary = entry_stable_candidate_persistence(
+        30,
+        pair_support_path=pair_support_path,
+        candidate_choices_path=candidate_choices_path,
+        sample_end=pd.Timestamp("2026-06-30"),
+    )
+    usdc = summary[
+        summary["entry_year"].eq(2026)
+        & summary["entry_candidate_symbol"].eq("USDC")
+    ].iloc[0]
+    assert usdc["stable_followup_routes"] == 17
+    assert usdc["own_candidate_followup_routes"] == 14
+    assert usdc["own_candidate_followup_share"] == pytest.approx(14 / 17)
 
 
 def test_entry_follow_panel_requires_complete_horizon(pair_support_path) -> None:
