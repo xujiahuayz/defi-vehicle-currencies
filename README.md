@@ -57,7 +57,8 @@ interaction, rolling native-only-to-stable turn-on hazards, observed
 mixed-risk-set rival checks, sticky incumbent vehicle regimes, USDC/USDT
 concentration at stable-entry, stable-candidate identity persistence,
 extra-hop gas economics, LP capital-use gaps, delayed/asymmetric LP
-rebalancing, LP extensive-margin behavior, and V2 capital predictability. A
+rebalancing, LP extensive-margin behavior, same-pool capital-chase screens,
+and V2 capital predictability. A
 result becomes headline evidence only if it is economically material,
 distinguishes at least one serious rival story, fits the literature contribution,
 and has a complete producer-to-deliverable path.

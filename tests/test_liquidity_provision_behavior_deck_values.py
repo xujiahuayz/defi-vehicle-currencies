@@ -181,6 +181,30 @@ def test_liquidity_behavior_values_render_from_guarded_rows() -> None:
             "standard_error_per_10pp_gap": 0.005,
             "p_value": 0.001,
         },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_same_pool_reallocation",
+            "horizon_days": 120,
+            "outcome": "future_log_pool_candidate_capital_change",
+            "predictor": "route_capital_gap_5",
+            "coefficient": 0.20,
+            "standard_error": 0.05,
+            "coefficient_per_10pp_gap": 0.020,
+            "standard_error_per_10pp_gap": 0.005,
+            "p_value": 0.001,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_same_pool_reallocation",
+            "horizon_days": 120,
+            "outcome": "future_log_pool_candidate_capital_change",
+            "predictor": "stable_total_route_capital_gap_5",
+            "coefficient": 0.05,
+            "standard_error": 0.08,
+            "coefficient_per_10pp_gap": 0.005,
+            "standard_error_per_10pp_gap": 0.008,
+            "p_value": 0.50,
+        },
     ]
     rendered = render_liquidity_provision_behavior_deck_values(pd.DataFrame(rows))
     assert "\\LiqBehWethCapitalLeaderDays" in rendered
@@ -192,4 +216,6 @@ def test_liquidity_behavior_values_render_from_guarded_rows() -> None:
     assert "\\LiqBehStableOverhangMonthCoef" in rendered
     assert "\\LiqBehStableVenueMonthCoef" in rendered
     assert "\\LiqBehStablePoolLongCoef" in rendered
+    assert "\\LiqBehSamePoolLongCoef" in rendered
+    assert "\\LiqBehStableSamePoolLongCoef" in rendered
     assert "5.0\\times" in rendered

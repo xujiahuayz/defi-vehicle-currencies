@@ -355,7 +355,7 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 % EVIDENCE-STATUS: exploratory descriptive allocation result
 % EVIDENCE-SOURCES: output/exhibits/liquidity_provision_behavior_exploration.jsonl; output/exhibits/liquidity_provision_behavior_support.jsonl; output/exhibits/liquidity_provision_behavior_deck_values.tex
 % SCIENTIFIC-BOUNDARY: V2 deposited-capital stock over five vehicle candidates; not provider inflow, active concentrated-liquidity depth, or executable quote size
-% ESTIMAND-BOUNDARY: daily five-candidate panel with route and V2 capital support; leader rows are same-day rankings, gap rows are within-day route-share minus capital-share associations, exact-horizon rows are future capital-share changes, and FE rows are contemporaneous level associations
+% ESTIMAND-BOUNDARY: daily five-candidate panel with route and V2 capital support; leader rows are same-day rankings, gap rows are within-day route-share minus capital-share associations, exact-horizon rows are future capital-share changes, same-pool rows follow pool-candidate capital, and FE rows are contemporaneous level associations
 % VISUAL-FUNCTION: capital-use split | three-stat allocation contrast | show that provider capital remains native-heavy while stablecoins carry excess vehicle use
 \begin{frame}{Provider capital stays native-heavy}
 \vspace{0.10cm}
@@ -378,9 +378,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.44cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.4}{9.4}\selectfont Stablecoins' route share rises from \LiqBehStableRouteShareBase{} to \LiqBehStableRouteShareEnd{} while capital share falls from \LiqBehStableCapitalShareBase{} to \LiqBehStableCapitalShareEnd{}. Adjustment is asymmetric and selective: overhangs shrink, venue reach rises, pool count does not.\par}
+{\fontsize{8.4}{9.4}\selectfont Stablecoins' route share rises while capital share falls. Adjustment is selective: overhangs shrink, venue reach rises, pool count does not, and same-pool stable capital response is \LiqBehStableSamePoolLongCoef{} (SE \LiqBehStableSamePoolLongSE{}).\par}
 \end{minipage}}
-\decknote{Daily five-candidate V2 panel over \LiqBehPanelDays{} supported days. Capital is deposited-capital stock. Stable route-minus-capital premium after controls: \LiqBehStableControlledGapCoef{} (SE \LiqBehStableControlledGapSE{}). A 10 pp stable gap predicts \LiqBehStableVenueMonthCoef{} log venue-count change at 30 days and \LiqBehStablePoolLongCoef{} log pool-count change at 120; overhang predicts \LiqBehStableOverhangMonthCoef{} capital-share change at 30. Descriptive.}
+\decknote{Daily five-candidate V2 panel over \LiqBehPanelDays{} days; capital is deposited-capital stock. Stable route share rises \LiqBehStableRouteShareBase{} to \LiqBehStableRouteShareEnd{} while capital share falls \LiqBehStableCapitalShareBase{} to \LiqBehStableCapitalShareEnd{}. Controlled stable premium: \LiqBehStableControlledGapCoef{} (SE \LiqBehStableControlledGapSE{}). Same-pool rows absorb pool-candidate/date effects; all-candidate 120-day coefficient \LiqBehSamePoolLongCoef{} (SE \LiqBehSamePoolLongSE{}). Descriptive.}
 \end{frame}
 
 % EVIDENCE-STATUS: current predictive mechanism result; the reciprocal rule records a non-pass
