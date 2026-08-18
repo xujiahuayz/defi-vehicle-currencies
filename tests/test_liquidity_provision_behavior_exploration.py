@@ -31,6 +31,7 @@ from scripts.analyze.run_liquidity_provision_behavior_exploration import (
     route_capital_gap_v3_fee_horizon_panel,
     route_capital_gap_v3_fee_incidence,
     route_capital_gap_v3_lp_action_horizon_panel,
+    route_capital_gap_v3_lp_action_candidate_specific,
     route_capital_gap_v3_lp_action_response,
     stable_basket_gap_horizon_panel,
     stable_basket_gap_portfolio_rebalancing,
@@ -734,6 +735,75 @@ def test_v3_lp_action_response_reports_stable_total() -> None:
     ].iloc[0]
     assert stable_mint["record_type"] == "route_capital_gap_v3_lp_action"
     assert stable_mint["coefficient"] > 0
+
+
+def test_v3_lp_action_candidate_specific_reports_issuer_responses() -> None:
+    rows = []
+    symbols = ["WETH", "WBTC", "USDC", "USDT", "DAI"]
+    action_slopes = {
+        "WETH": -0.1,
+        "WBTC": 0.1,
+        "USDC": 0.8,
+        "USDT": 1.8,
+        "DAI": 1.2,
+    }
+    net_slopes = {
+        "WETH": 0.0,
+        "WBTC": 0.0,
+        "USDC": 0.08,
+        "USDT": -0.10,
+        "DAI": 0.12,
+    }
+    for day_index, day in enumerate(pd.date_range("2025-01-01", periods=180, freq="D")):
+        date_effect = 0.001 * day_index
+        for symbol_index, symbol in enumerate(symbols):
+            gap = (
+                0.10 * math.sin(day_index / 11 + symbol_index / 3)
+                + 0.02 * (symbol_index - 2)
+            )
+            rows.append(
+                {
+                    "origin_date": day,
+                    "candidate_address": symbol.lower(),
+                    "candidate_symbol": symbol,
+                    "route_capital_gap_5": gap,
+                    "horizon_days": 30,
+                    "future_log1p_v3_mint_events": (
+                        action_slopes[symbol] * gap + date_effect + 0.02 * symbol_index
+                    ),
+                    "future_log1p_v3_burn_events": (
+                        0.9 * action_slopes[symbol] * gap
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                    "future_log1p_v3_total_lp_actions": (
+                        action_slopes[symbol] * gap + date_effect + 0.02 * symbol_index
+                    ),
+                    "future_v3_net_mint_event_balance": (
+                        net_slopes[symbol] * gap + date_effect + 0.02 * symbol_index
+                    ),
+                }
+            )
+    result = route_capital_gap_v3_lp_action_candidate_specific(
+        pd.DataFrame(rows),
+        min_observations=100,
+        min_clusters=20,
+    )
+    usdt_actions = result[
+        result["candidate_symbol"].eq("USDT")
+        & result["outcome"].eq("future_log1p_v3_total_lp_actions")
+    ].iloc[0]
+    usdc_actions = result[
+        result["candidate_symbol"].eq("USDC")
+        & result["outcome"].eq("future_log1p_v3_total_lp_actions")
+    ].iloc[0]
+    usdt_net = result[
+        result["candidate_symbol"].eq("USDT")
+        & result["outcome"].eq("future_v3_net_mint_event_balance")
+    ].iloc[0]
+    assert usdt_actions["record_type"] == "route_capital_gap_v3_lp_action_candidate_specific"
+    assert usdt_actions["coefficient"] > usdc_actions["coefficient"]
+    assert usdt_net["coefficient"] < 0
 
 
 def test_capital_concentration_panel_summarizes_top_pool_shares(sample) -> None:

@@ -1532,6 +1532,115 @@ def route_capital_gap_v3_lp_action_response(
     return pd.DataFrame(rows)
 
 
+def route_capital_gap_v3_lp_action_candidate_specific(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 1000,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Estimate candidate-specific V3 LP-action responses to route-capital gaps."""
+
+    rows: list[dict[str, object]] = []
+    outcomes = (
+        "future_log1p_v3_mint_events",
+        "future_log1p_v3_burn_events",
+        "future_log1p_v3_total_lp_actions",
+        "future_v3_net_mint_event_balance",
+    )
+    for horizon, group in panel.groupby("horizon_days", sort=True):
+        symbols = sorted(
+            str(symbol)
+            for symbol in group["candidate_symbol"].dropna().unique()
+        )
+        if not symbols:
+            continue
+        predictors = [
+            f"route_capital_gap_5_x_{symbol.lower()}" for symbol in symbols
+        ]
+        for outcome in outcomes:
+            data = (
+                group[
+                    [
+                        "origin_date",
+                        "candidate_address",
+                        "candidate_symbol",
+                        "route_capital_gap_5",
+                        outcome,
+                    ]
+                ]
+                .replace([np.inf, -np.inf], np.nan)
+                .dropna()
+                .copy()
+            )
+            for symbol, predictor in zip(symbols, predictors, strict=True):
+                data[predictor] = np.where(
+                    data["candidate_symbol"].eq(symbol),
+                    data["route_capital_gap_5"].astype(float),
+                    0.0,
+                )
+            residual = absorb_fixed_effects(
+                data[[outcome, *predictors]],
+                data["candidate_address"],
+                data["origin_date"],
+            )
+            fit = ols_clustered(
+                residual[outcome],
+                residual[predictors],
+                data["origin_date"],
+                add_constant=False,
+                absorbed_groups=(data["candidate_address"], data["origin_date"]),
+                min_observations=min_observations,
+                min_clusters=min_clusters,
+            )
+            for (
+                symbol,
+                predictor,
+                coefficient,
+                standard_error,
+                t_statistic,
+                p_value,
+            ) in zip(
+                symbols,
+                predictors,
+                fit.beta,
+                fit.standard_errors,
+                fit.t_statistics,
+                fit.p_values,
+                strict=True,
+            ):
+                coefficient = float(coefficient)
+                standard_error = float(standard_error)
+                rows.append(
+                    {
+                        "analysis_status": "exploratory_descriptive",
+                        "record_type": (
+                            "route_capital_gap_v3_lp_action_candidate_specific"
+                        ),
+                        "horizon_days": int(horizon),
+                        "outcome": outcome,
+                        "candidate_symbol": symbol,
+                        "predictor": predictor,
+                        "coefficient": coefficient,
+                        "standard_error": standard_error,
+                        "t_statistic": float(t_statistic),
+                        "p_value": float(p_value),
+                        "coefficient_per_10pp_gap": 0.10 * coefficient,
+                        "standard_error_per_10pp_gap": 0.10 * standard_error,
+                        "n_observations": int(fit.n_observations),
+                        "date_clusters": int(fit.n_clusters),
+                        "fixed_effects": "candidate_address+origin_date",
+                        "covariance": "origin_date_clustered",
+                        "event_source": "uniswap_v3_graph_mint_burn_events",
+                        "interpretation": (
+                            "candidate-specific future V3 mint/burn event-count "
+                            "association, not dollar-valued provider flow or causal "
+                            "LP response"
+                        ),
+                    }
+                )
+    return pd.DataFrame(rows)
+
+
 def within_day_gap_associations(panel: pd.DataFrame) -> pd.DataFrame:
     """Estimate whether stable candidates carry extra use relative to capital."""
 
@@ -2465,6 +2574,7 @@ def run(
             route_capital_gap_same_pool_reallocation(same_pool_panel),
             route_capital_gap_v3_fee_incidence(fee_incidence_panel),
             route_capital_gap_v3_lp_action_response(v3_lp_action_panel),
+            route_capital_gap_v3_lp_action_candidate_specific(v3_lp_action_panel),
         ],
         ignore_index=True,
     )

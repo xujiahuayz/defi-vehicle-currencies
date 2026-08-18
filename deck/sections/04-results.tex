@@ -19,6 +19,9 @@
 \IfFileExists{../output/exhibits/bridge_liquidity_deck_values.tex}{%
 \input{../output/exhibits/bridge_liquidity_deck_values.tex}%
 }{\PackageError{dvc-deck}{Missing generated bridge-liquidity values}{Run scripts/analyze/run_bridge_liquidity_dominance.py then scripts/tabulate/build_bridge_liquidity_deck_values.py.}}
+\IfFileExists{../output/exhibits/bridge_liquidity_feedback_deck_values.tex}{%
+\input{../output/exhibits/bridge_liquidity_feedback_deck_values.tex}%
+}{\PackageError{dvc-deck}{Missing generated bridge-feedback values}{Run scripts/analyze/run_bridge_liquidity_feedback.py then scripts/tabulate/build_bridge_liquidity_feedback_deck_values.py.}}
 \IfFileExists{../output/exhibits/vehicle_formation_deck_values.tex}{%
 \input{../output/exhibits/vehicle_formation_deck_values.tex}%
 }{\PackageError{dvc-deck}{Missing generated vehicle-formation values}{Run scripts/analyze/run_vehicle_formation_exploration.py then scripts/tabulate/build_vehicle_formation_deck_values.py.}}
@@ -419,6 +422,32 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \decknote{Five candidates; \BridgeLiquidityRows{} candidate rows, \BridgeLiquidityPairs{} pairs, \BridgeLiquidityDays{} days. Depth is the smaller prior-capital bridge leg. Reach uses same-day and prior-30-day routes. Stable-issuer rows use \BridgeLiquidityStableIssuerGroups{} DAI/USDC/USDT cells across \BridgeLiquidityStableIssuerPairs{} pairs. Association only.}
 \end{frame}
 
+% EVIDENCE-STATUS: provisional exploratory dynamic local-bridge feedback screen
+% EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_feedback.jsonl; output/exhibits/bridge_liquidity_feedback_support.jsonl; output/exhibits/bridge_liquidity_feedback_deck_values.tex
+% SCIENTIFIC-BOUNDARY: exact future calendar observations of the same source-candidate-target bridge; deposited-capital stock and realised route share only, not provider flows or active executable depth
+% ESTIMAND-BOUNDARY: same local bridge observed at the horizon; regressions absorb candidate and origin-date effects and cluster by ordered pair and date
+% VISUAL-FUNCTION: dynamic feedback | two-direction mechanism screen | show route use and local bridge depth predicting each other over time
+\begin{frame}{Vehicle markets show feedback, not only levels}
+\vspace{0.10cm}
+\begin{columns}[T,totalwidth=\textwidth]
+\begin{column}{0.45\textwidth}
+{\fontsize{26}{28}\selectfont\bfseries\color{ucldark}\BridgeFeedbackRouteToDepthLongLog}\par
+\vspace{0.10cm}
+{\small later log bridge-depth growth from a 10 pp higher current route share, 120 days\par}
+\end{column}
+\begin{column}{0.45\textwidth}
+{\fontsize{26}{28}\selectfont\bfseries\color{ucldark}\BridgeFeedbackDepthToRouteMonthCoef}\par
+\vspace{0.10cm}
+{\small later route-share growth per log point of current local depth, 30 days\par}
+\end{column}
+\end{columns}
+\vspace{0.35cm}
+\fcolorbox{rule}{panel}{\begin{minipage}{0.92\textwidth}
+{\fontsize{8.2}{9.2}\selectfont Route use predicts later bridge deepening, and depth predicts later route-share gains, on the same local source-candidate-target bridge. The long-horizon depth-growth screen uses \BridgeFeedbackLongRows{} rows across \BridgeFeedbackLongPairs{} ordered pairs.\par}
+\end{minipage}}
+\decknote{Provisional feedback screen. The 120-day coefficient is a log-depth change from a 10 percentage point route-share difference, with SE \BridgeFeedbackRouteToDepthLongLogSE{}. The 30-day route-share coefficient has SE \BridgeFeedbackDepthToRouteMonthSE{}. Regressions control for current depth or current route share, absorb candidate and origin-date effects, weight by five-candidate route count, and cluster by ordered pair and date. Association only, not provider-flow causality.}
+\end{frame}
+
 % EVIDENCE-STATUS: exploratory descriptive allocation result
 % EVIDENCE-SOURCES: output/exhibits/liquidity_provision_behavior_exploration.jsonl; output/exhibits/liquidity_provision_behavior_support.jsonl; output/exhibits/liquidity_provision_behavior_deck_values.tex
 % SCIENTIFIC-BOUNDARY: V2 deposited-capital stock over five vehicle candidates plus Uniswap v3 mint/burn event counts; not provider inflow, active concentrated-liquidity depth, or executable quote size
@@ -445,9 +474,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.44cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.4}{9.4}\selectfont Route share rises while stable capital share falls. A 10 pp stable shortfall predicts \LiqBehStableBasketGapLongCoef{} stable capital and \LiqBehWethBasketGapLongCoef{} WETH capital. In V3 it predicts both mints (\LiqBehStableVThreeMintMonthCoef{}) and burns (\LiqBehStableVThreeBurnMonthCoef{}), with only \LiqBehStableVThreeNetMintMonthCoef{} net mints.\par}
+{\fontsize{8.4}{9.4}\selectfont Route share rises while stable capital share falls. A 10 pp stable shortfall predicts \LiqBehStableBasketGapLongCoef{} stable capital and \LiqBehWethBasketGapLongCoef{} WETH capital. In V3, actions look like churn: USDT actions rise \LiqBehUsdtVThreeActionMonthCoef{} but net balance is \LiqBehUsdtVThreeNetMintMonthCoef{}, while DAI/USDC net balances are positive.\par}
 \end{minipage}}
-\decknote{Five-candidate V2 deposited-capital panel. Stable route share rises \LiqBehStableRouteShareBase{} to \LiqBehStableRouteShareEnd{} while capital share falls \LiqBehStableCapitalShareBase{} to \LiqBehStableCapitalShareEnd{}. Stable-basket rows use activity controls/HAC. Concentration: top-pool share \LiqBehStableTopPoolShareEnd{} vs \LiqBehNonstableTopPoolShareEnd{}. V3 action screen: \LiqBehVThreeLpActionRows{} candidate-date rows, candidate/date FE, mint and burn event counts rather than dollar provider flow.}
+\decknote{Five-candidate V2 deposited-capital panel. Stable route share rises \LiqBehStableRouteShareBase{} to \LiqBehStableRouteShareEnd{} while capital share falls \LiqBehStableCapitalShareBase{} to \LiqBehStableCapitalShareEnd{}. Stable-basket rows use activity controls/HAC. Concentration: top-pool share \LiqBehStableTopPoolShareEnd{} vs \LiqBehNonstableTopPoolShareEnd{}. V3 action screen: \LiqBehVThreeLpActionRows{} candidate-date rows, candidate/date FE, issuer-specific gap interactions, mint and burn event counts rather than dollar provider flow.}
 \end{frame}
 
 % EVIDENCE-STATUS: current predictive mechanism result; the reciprocal rule records a non-pass
