@@ -198,6 +198,28 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
                 "primary_routes": None,
                 "stable_share": None,
             },
+            {
+                "record_type": "entry_route_architecture_regression",
+                "endpoint_class": "non_weth_endpoint",
+                "outcome": "stable_share",
+                "predictor": "is_2026_x_direct_share",
+                "coefficient": 0.50,
+                "standard_error": 0.14,
+                "p_value": 0.001,
+                "primary_routes": None,
+                "stable_share": None,
+            },
+            {
+                "record_type": "entry_route_architecture_regression",
+                "endpoint_class": "non_weth_endpoint",
+                "outcome": "stable_share",
+                "predictor": "is_2026_x_complex_share",
+                "coefficient": 0.36,
+                "standard_error": 0.12,
+                "p_value": 0.002,
+                "primary_routes": None,
+                "stable_share": None,
+            },
         ]
     )
     rendered = render_vehicle_formation_deck_values(estimates)
@@ -212,3 +234,5 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
     assert "\\FormationStableHysteresisThirtyRetrade" in rendered
     assert "94.6\\%" in rendered
     assert "\\FormationNonWethYearDriver" in rendered
+    assert "\\FormationRouteArchDirectShareDriver" in rendered
+    assert "\\FormationRouteArchComplexShareDriver" in rendered

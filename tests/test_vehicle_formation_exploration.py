@@ -7,6 +7,7 @@ from scripts.analyze.run_vehicle_formation_exploration import (
     entry_driver_panel,
     entry_follow_panel,
     entry_regime_hysteresis,
+    entry_route_architecture_regressions,
     entry_stable_candidate_persistence,
     entry_stable_candidate_summary,
     endpoint_class,
@@ -233,4 +234,48 @@ def test_entry_driver_panel_adds_comparison_year_flag(pair_support_path) -> None
     panel = entry_driver_panel(pair_support_path)
     assert set(panel["entry_year"]) == {2024, 2026}
     assert "is_2026" in panel
+    assert "is_2026_x_direct_share" in panel
+    assert "is_2026_x_complex_share" in panel
     assert panel.loc[panel["entry_year"].eq(2026), "is_2026"].eq(1.0).all()
+
+
+def test_entry_route_architecture_regressions_publish_interactions() -> None:
+    rows = []
+    for day in range(1, 7):
+        for is_2026 in (0.0, 1.0):
+            for direct_share in (0.0, 0.5):
+                for complex_share in (0.0, 0.4):
+                    stable_endpoint = float(direct_share > 0)
+                    stable_share = (
+                        0.02
+                        + 0.03 * is_2026
+                        + 0.02 * stable_endpoint
+                        + 0.20 * complex_share
+                        + 0.15 * is_2026 * direct_share
+                    )
+                    rows.append(
+                        {
+                            "date": pd.Timestamp(
+                                f"{2024 + int(2 * is_2026)}-01-{day:02d}"
+                            ),
+                            "primary_routes": 10.0,
+                            "stable_share": stable_share,
+                            "stable_dominant_entry": float(stable_share > 0.05),
+                            "is_2026": is_2026,
+                            "stable_endpoint": stable_endpoint,
+                            "is_2026_x_stable_endpoint": is_2026 * stable_endpoint,
+                            "log_entry_routes": 1.0 + direct_share + complex_share,
+                            "direct_share": direct_share,
+                            "complex_share": complex_share,
+                            "is_2026_x_direct_share": is_2026 * direct_share,
+                            "is_2026_x_complex_share": is_2026 * complex_share,
+                        }
+                    )
+    result = entry_route_architecture_regressions(
+        pd.DataFrame(rows), min_observations=10, min_clusters=2
+    )
+    assert {
+        "is_2026_x_direct_share",
+        "is_2026_x_complex_share",
+    }.issubset(set(result["predictor"]))
+    assert result["record_type"].eq("entry_route_architecture_regression").all()

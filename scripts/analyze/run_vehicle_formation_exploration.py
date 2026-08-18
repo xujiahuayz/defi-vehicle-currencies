@@ -42,6 +42,16 @@ ENTRY_DRIVER_PREDICTORS = (
     "direct_share",
     "complex_share",
 )
+ENTRY_ARCHITECTURE_PREDICTORS = (
+    "is_2026",
+    "stable_endpoint",
+    "is_2026_x_stable_endpoint",
+    "log_entry_routes",
+    "direct_share",
+    "complex_share",
+    "is_2026_x_direct_share",
+    "is_2026_x_complex_share",
+)
 
 
 def _sql_path(path: Path) -> str:
@@ -385,6 +395,8 @@ def entry_driver_panel(pair_support_path: Path = PAIR_SUPPORT) -> pd.DataFrame:
     market_routes = panel["market_routes"].replace(0, np.nan)
     panel["direct_share"] = (panel["direct_routes"] / market_routes).fillna(0.0).clip(0.0, 1.0)
     panel["complex_share"] = (panel["complex_routes"] / market_routes).fillna(0.0).clip(0.0, 1.0)
+    panel["is_2026_x_direct_share"] = panel["is_2026"] * panel["direct_share"]
+    panel["is_2026_x_complex_share"] = panel["is_2026"] * panel["complex_share"]
     return panel
 
 
@@ -430,6 +442,60 @@ def entry_driver_regressions(panel: pd.DataFrame) -> pd.DataFrame:
                     "covariance_id": "entry_date_cluster_cr1",
                     "controls": ",".join(ENTRY_DRIVER_PREDICTORS),
                     "interpretation": "exploratory_non_weth_entry_driver_not_causal",
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def entry_route_architecture_regressions(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 1000,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Fit 2026-by-route-architecture screens for stable birth."""
+
+    rows: list[dict[str, object]] = []
+    for outcome in ("stable_share", "stable_dominant_entry"):
+        required = [outcome, "date", "primary_routes", *ENTRY_ARCHITECTURE_PREDICTORS]
+        data = panel.loc[:, required].replace([np.inf, -np.inf], np.nan).dropna()
+        fit = ols_clustered(
+            data[outcome],
+            data[list(ENTRY_ARCHITECTURE_PREDICTORS)],
+            data["date"],
+            weights=data["primary_routes"],
+            min_observations=min_observations,
+            min_clusters=min_clusters,
+        )
+        for name, beta, se, t_stat, p_value in zip(
+            ("constant", *ENTRY_ARCHITECTURE_PREDICTORS),
+            fit.beta,
+            fit.standard_errors,
+            fit.t_statistics,
+            fit.p_values,
+            strict=True,
+        ):
+            rows.append(
+                {
+                    "record_type": "entry_route_architecture_regression",
+                    "entry_year": None,
+                    "endpoint_class": "non_weth_endpoint",
+                    "outcome": outcome,
+                    "predictor": name,
+                    "coefficient": float(beta),
+                    "coefficient_pp": 100.0 * float(beta),
+                    "standard_error": float(se),
+                    "standard_error_pp": 100.0 * float(se),
+                    "t_statistic": float(t_stat),
+                    "p_value": float(p_value),
+                    "observations": int(fit.n_observations),
+                    "entry_date_clusters": int(fit.n_clusters),
+                    "weighted_by": "entry_primary_choice_routes",
+                    "covariance_id": "entry_date_cluster_cr1",
+                    "controls": ",".join(ENTRY_ARCHITECTURE_PREDICTORS),
+                    "interpretation": (
+                        "exploratory_2026_route_architecture_driver_not_causal"
+                    ),
                 }
             )
     return pd.DataFrame(rows)
@@ -753,6 +819,7 @@ def build_results(
     )
     driver_panel = entry_driver_panel(pair_support_path)
     driver_regressions = entry_driver_regressions(driver_panel)
+    architecture_regressions = entry_route_architecture_regressions(driver_panel)
     follow_panels = [
         entry_follow_panel(horizon, pair_support_path=pair_support_path)
         for horizon in HORIZONS
@@ -778,6 +845,7 @@ def build_results(
             stable_candidates,
             *candidate_persistence,
             driver_regressions,
+            architecture_regressions,
             *summaries,
             *contrasts,
             *hysteresis,

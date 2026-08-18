@@ -180,6 +180,20 @@ def render_vehicle_formation_deck_values(estimates: pd.DataFrame) -> str:
         outcome="stable_share",
         predictor="is_2026_x_stable_endpoint",
     )
+    route_direct_2026_driver = _one(
+        estimates,
+        record_type="entry_route_architecture_regression",
+        endpoint_class="non_weth_endpoint",
+        outcome="stable_share",
+        predictor="is_2026_x_direct_share",
+    )
+    route_complex_2026_driver = _one(
+        estimates,
+        record_type="entry_route_architecture_regression",
+        endpoint_class="non_weth_endpoint",
+        outcome="stable_share",
+        predictor="is_2026_x_complex_share",
+    )
     values = [
         float(cohort_2024["stable_share"]),
         float(cohort_2026["stable_share"]),
@@ -206,6 +220,8 @@ def render_vehicle_formation_deck_values(estimates: pd.DataFrame) -> str:
         float(usdt_2026_own_120["own_candidate_followup_share"]),
         float(non_weth_year_driver["coefficient"]),
         float(non_weth_stable_endpoint_driver["coefficient"]),
+        float(route_direct_2026_driver["coefficient"]),
+        float(route_complex_2026_driver["coefficient"]),
     ]
     if not all(math.isfinite(value) for value in values):
         raise ValueError("formation deck values contain nonfinite cells")
@@ -216,6 +232,13 @@ def render_vehicle_formation_deck_values(estimates: pd.DataFrame) -> str:
         and float(non_weth_stable_endpoint_driver["coefficient"]) > 0
     ):
         raise ValueError("non-WETH entry-driver coefficients are no longer positive")
+    if not (
+        float(route_direct_2026_driver["coefficient"]) > 0
+        and float(route_complex_2026_driver["coefficient"]) > 0
+        and float(route_direct_2026_driver["p_value"]) < 0.01
+        and float(route_complex_2026_driver["p_value"]) < 0.01
+    ):
+        raise ValueError("2026 route-architecture entry-driver pattern no longer holds")
     top_two_stable_entry_share = float(usdc_2026_entry["stable_entry_route_share"]) + float(
         usdt_2026_entry["stable_entry_route_share"]
     )
@@ -272,6 +295,10 @@ def render_vehicle_formation_deck_values(estimates: pd.DataFrame) -> str:
         f"\\newcommand{{\\FormationNonWethYearDriverSE}}{{{_unsigned_pp(float(non_weth_year_driver['standard_error']))}}}",
         f"\\newcommand{{\\FormationNonWethStableEndpointDriver}}{{{_signed_pp(float(non_weth_stable_endpoint_driver['coefficient']))}}}",
         f"\\newcommand{{\\FormationNonWethStableEndpointDriverSE}}{{{_unsigned_pp(float(non_weth_stable_endpoint_driver['standard_error']))}}}",
+        f"\\newcommand{{\\FormationRouteArchDirectShareDriver}}{{{_signed_pp(float(route_direct_2026_driver['coefficient']))}}}",
+        f"\\newcommand{{\\FormationRouteArchDirectShareDriverSE}}{{{_unsigned_pp(float(route_direct_2026_driver['standard_error']))}}}",
+        f"\\newcommand{{\\FormationRouteArchComplexShareDriver}}{{{_signed_pp(float(route_complex_2026_driver['coefficient']))}}}",
+        f"\\newcommand{{\\FormationRouteArchComplexShareDriverSE}}{{{_unsigned_pp(float(route_complex_2026_driver['standard_error']))}}}",
     ]
     return "\n".join(lines) + "\n"
 
