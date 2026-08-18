@@ -501,6 +501,48 @@ def test_liquidity_behavior_values_render_from_guarded_rows() -> None:
         },
         {
             "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_v3_lp_action_activity_control",
+            "horizon_days": 30,
+            "outcome": "future_log1p_v3_total_origin_count",
+            "predictor": "stable_total_route_capital_gap_5",
+            "coefficient": 0.48,
+            "standard_error": 0.07,
+            "coefficient_per_10pp_gap": 0.048,
+            "standard_error_per_10pp_gap": 0.007,
+            "p_value": 0.001,
+            "n_observations": 2000,
+            "date_clusters": 400,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_v3_lp_action_activity_control",
+            "horizon_days": 120,
+            "outcome": "future_log1p_v3_total_origin_count",
+            "predictor": "stable_total_route_capital_gap_5",
+            "coefficient": 0.60,
+            "standard_error": 0.09,
+            "coefficient_per_10pp_gap": 0.060,
+            "standard_error_per_10pp_gap": 0.009,
+            "p_value": 0.001,
+            "n_observations": 2000,
+            "date_clusters": 400,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "route_capital_gap_v3_lp_action_activity_control",
+            "horizon_days": 120,
+            "outcome": "future_log1p_v3_total_lp_actions",
+            "predictor": "stable_total_route_capital_gap_5",
+            "coefficient": 0.76,
+            "standard_error": 0.11,
+            "coefficient_per_10pp_gap": 0.076,
+            "standard_error_per_10pp_gap": 0.011,
+            "p_value": 0.001,
+            "n_observations": 2000,
+            "date_clusters": 400,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
             "record_type": "route_capital_gap_v3_lp_action_candidate_specific",
             "horizon_days": 30,
             "outcome": "future_log1p_v3_total_lp_actions",
@@ -862,6 +904,7 @@ def test_liquidity_behavior_values_render_from_guarded_rows() -> None:
     assert "\\LiqBehStableVThreeBurnMonthCoef" in rendered
     assert "\\LiqBehStableVThreeNetMintMonthCoef" in rendered
     assert "\\LiqBehStableVThreeOriginMonthCoef" in rendered
+    assert "\\LiqBehStableVThreeOriginActivityLongCoef" in rendered
     assert "\\LiqBehUsdtVThreeActionMonthCoef" in rendered
     assert "\\LiqBehUsdtVThreeMintMonthCoef" in rendered
     assert "\\LiqBehUsdtVThreeBurnMonthCoef" in rendered

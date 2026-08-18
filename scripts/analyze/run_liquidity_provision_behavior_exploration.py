@@ -1830,6 +1830,7 @@ def route_capital_gap_v3_lp_action_horizon_panel(
         "v3_mint_origin_count",
         "v3_burn_origin_count",
     ]
+    origin_action_columns = [f"origin_{column}" for column in action_columns]
     if actions.empty:
         action_frame = pd.DataFrame(
             columns=["origin_date", "candidate_address", *action_columns]
@@ -1848,6 +1849,9 @@ def route_capital_gap_v3_lp_action_horizon_panel(
             )[action_columns]
             .sum()
         )
+    origin_action_frame = action_frame.rename(
+        columns={column: f"origin_{column}" for column in action_columns}
+    )
 
     horizon_rows: list[pd.DataFrame] = []
     max_horizon = max(horizons)
@@ -1875,6 +1879,13 @@ def route_capital_gap_v3_lp_action_horizon_panel(
             ["origin_date", *[f"{column}_cumulative" for column in action_columns]]
         ]
         origin = candidate_base.merge(
+            origin_action_frame,
+            on=["origin_date", "candidate_address"],
+            how="left",
+            validate="one_to_one",
+        )
+        origin[origin_action_columns] = origin[origin_action_columns].fillna(0.0)
+        origin = origin.merge(
             cumulative,
             on="origin_date",
             how="left",
@@ -1921,6 +1932,16 @@ def route_capital_gap_v3_lp_action_horizon_panel(
         panel["future_v3_mint_origin_count"].astype(float)
         + panel["future_v3_burn_origin_count"].astype(float)
     )
+    panel["origin_v3_total_origin_count"] = (
+        panel["origin_v3_mint_origin_count"].astype(float)
+        + panel["origin_v3_burn_origin_count"].astype(float)
+    )
+    panel["origin_log1p_v3_total_lp_actions"] = np.log1p(
+        panel["origin_v3_total_lp_actions"].astype(float)
+    )
+    panel["origin_log1p_v3_total_origin_count"] = np.log1p(
+        panel["origin_v3_total_origin_count"].astype(float)
+    )
     panel["future_log1p_v3_mint_origin_count"] = np.log1p(
         panel["future_v3_mint_origin_count"].astype(float)
     )
@@ -1941,6 +1962,8 @@ def route_capital_gap_v3_lp_action_horizon_panel(
             "future_log1p_v3_mint_origin_count",
             "future_log1p_v3_burn_origin_count",
             "future_log1p_v3_total_origin_count",
+            "origin_log1p_v3_total_lp_actions",
+            "origin_log1p_v3_total_origin_count",
         ]
     )
 
@@ -2062,6 +2085,156 @@ def route_capital_gap_v3_lp_action_response(
                         "stable-candidate future V3 mint/burn event-count or "
                         "provider-day association, not dollar-valued provider "
                         "flow or causal LP response"
+                    ),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def route_capital_gap_v3_lp_action_activity_control(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 1000,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Test V3 LP-action response net of current candidate action activity."""
+
+    rows: list[dict[str, object]] = []
+    outcomes = (
+        "future_log1p_v3_total_lp_actions",
+        "future_log1p_v3_total_origin_count",
+    )
+    controls = (
+        "route_capital_gap_5",
+        "route_capital_gap_5_x_stable",
+        "origin_log1p_v3_total_lp_actions",
+        "origin_log1p_v3_total_origin_count",
+    )
+    required = {
+        "origin_date",
+        "candidate_address",
+        "is_stable",
+        "route_capital_gap_5",
+        "origin_log1p_v3_total_lp_actions",
+        "origin_log1p_v3_total_origin_count",
+        *outcomes,
+    }
+    missing = sorted(required - set(panel.columns))
+    if missing:
+        raise ValueError(f"V3 LP-action panel lacks activity-control columns: {missing}")
+    for horizon, group in panel.groupby("horizon_days", sort=True):
+        for outcome in outcomes:
+            data = (
+                group[
+                    [
+                        "origin_date",
+                        "candidate_address",
+                        "is_stable",
+                        "route_capital_gap_5",
+                        "origin_log1p_v3_total_lp_actions",
+                        "origin_log1p_v3_total_origin_count",
+                        outcome,
+                    ]
+                ]
+                .replace([np.inf, -np.inf], np.nan)
+                .dropna()
+                .copy()
+            )
+            data["route_capital_gap_5_x_stable"] = (
+                data["route_capital_gap_5"].astype(float)
+                * data["is_stable"].astype(float)
+            )
+            residual = absorb_fixed_effects(
+                data[[outcome, *controls]],
+                data["candidate_address"],
+                data["origin_date"],
+            )
+            fit = ols_clustered(
+                residual[outcome],
+                residual[list(controls)],
+                data["origin_date"],
+                add_constant=False,
+                absorbed_groups=(data["candidate_address"], data["origin_date"]),
+                min_observations=min_observations,
+                min_clusters=min_clusters,
+            )
+            for predictor, coefficient, standard_error, t_statistic, p_value in zip(
+                controls,
+                fit.beta,
+                fit.standard_errors,
+                fit.t_statistics,
+                fit.p_values,
+                strict=True,
+            ):
+                coefficient = float(coefficient)
+                standard_error = float(standard_error)
+                rows.append(
+                    {
+                        "analysis_status": "exploratory_descriptive",
+                        "record_type": (
+                            "route_capital_gap_v3_lp_action_activity_control"
+                        ),
+                        "horizon_days": int(horizon),
+                        "outcome": outcome,
+                        "predictor": predictor,
+                        "coefficient": coefficient,
+                        "standard_error": standard_error,
+                        "t_statistic": float(t_statistic),
+                        "p_value": float(p_value),
+                        "coefficient_per_10pp_gap": (
+                            0.10 * coefficient
+                            if predictor.startswith("route_capital_gap_5")
+                            else np.nan
+                        ),
+                        "standard_error_per_10pp_gap": (
+                            0.10 * standard_error
+                            if predictor.startswith("route_capital_gap_5")
+                            else np.nan
+                        ),
+                        "n_observations": int(fit.n_observations),
+                        "date_clusters": int(fit.n_clusters),
+                        "fixed_effects": "candidate_address+origin_date",
+                        "covariance": "origin_date_clustered",
+                        "activity_controls": (
+                            "origin_log1p_v3_total_lp_actions+"
+                            "origin_log1p_v3_total_origin_count"
+                        ),
+                        "event_source": "uniswap_v3_graph_mint_burn_events",
+                        "interpretation": (
+                            "future V3 LP action or provider-day association "
+                            "net of current candidate action activity; not "
+                            "dollar-valued provider flow or causal LP response"
+                        ),
+                    }
+                )
+            stable_total = linear_contrast(fit, [1.0, 1.0, 0.0, 0.0])
+            rows.append(
+                {
+                    "analysis_status": "exploratory_descriptive",
+                    "record_type": "route_capital_gap_v3_lp_action_activity_control",
+                    "horizon_days": int(horizon),
+                    "outcome": outcome,
+                    "predictor": "stable_total_route_capital_gap_5",
+                    "coefficient": stable_total.estimate,
+                    "standard_error": stable_total.standard_error,
+                    "t_statistic": stable_total.t_statistic,
+                    "p_value": stable_total.p_value,
+                    "coefficient_per_10pp_gap": 0.10 * stable_total.estimate,
+                    "standard_error_per_10pp_gap": 0.10
+                    * stable_total.standard_error,
+                    "n_observations": int(fit.n_observations),
+                    "date_clusters": int(fit.n_clusters),
+                    "fixed_effects": "candidate_address+origin_date",
+                    "covariance": "origin_date_clustered",
+                    "activity_controls": (
+                        "origin_log1p_v3_total_lp_actions+"
+                        "origin_log1p_v3_total_origin_count"
+                    ),
+                    "event_source": "uniswap_v3_graph_mint_burn_events",
+                    "interpretation": (
+                        "stable-candidate future V3 LP action or provider-day "
+                        "association net of current candidate action activity; "
+                        "not dollar-valued provider flow or causal LP response"
                     ),
                 }
             )
@@ -3118,6 +3291,7 @@ def run(
             route_capital_gap_pool_entry_response(pool_entry_panel),
             route_capital_gap_v3_fee_incidence(fee_incidence_panel),
             route_capital_gap_v3_lp_action_response(v3_lp_action_panel),
+            route_capital_gap_v3_lp_action_activity_control(v3_lp_action_panel),
             route_capital_gap_v3_lp_action_candidate_specific(v3_lp_action_panel),
         ],
         ignore_index=True,

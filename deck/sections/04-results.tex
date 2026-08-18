@@ -474,9 +474,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.44cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.4}{9.4}\selectfont Stable route share rises while capital share falls. A 10 pp stable shortfall moves capital rank \LiqBehStableCapitalRankLongCoef{} by 120 days and incumbent-pool capital rises \LiqBehStablePoolEntryIncumbentLongCoef{}, but same-pool fee yield moves only \LiqBehStableFeeYieldLongCoef{}. USDT V3 actions rise, provider-days \LiqBehUsdtVThreeOriginMonthCoef{}, net balance \LiqBehUsdtVThreeNetMintMonthCoef{}.\par}
+{\fontsize{8.4}{9.4}\selectfont Stable route share rises as capital share falls. A 10 pp stable shortfall moves capital rank \LiqBehStableCapitalRankLongCoef{} by 120 days and incumbent capital \LiqBehStablePoolEntryIncumbentLongCoef{}; same-pool fee yield: \LiqBehStableFeeYieldLongCoef{}. Net current V3 activity, provider-days still rise \LiqBehStableVThreeOriginActivityLongCoef{}; USDT net balance \LiqBehUsdtVThreeNetMintMonthCoef{}.\par}
 \end{minipage}}
-\decknote{Five-candidate V2 capital panel. Rank rows order candidates within origin day and exact horizon; positive means nearer top share. Pool split is candidate/date FE over exact-state V2 pool capital. V3: \LiqBehVThreeLpActionRows{} candidate-date mint/burn rows; origin counts are provider-days, not unique LPs; fee-yield uses processed fees over TVL.}
+\decknote{Five-candidate V2 capital panel. Rank rows order candidates within day/horizon. Pool split uses candidate/date FE over V2 pool capital. V3 rows use \LiqBehVThreeLpActionRows{} mint/burn records; origin counts are provider-days, not unique LPs; fee yield uses fees over TVL.}
 \end{frame}
 
 % EVIDENCE-STATUS: current predictive mechanism result; the reciprocal rule records a non-pass

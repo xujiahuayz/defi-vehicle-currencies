@@ -35,6 +35,7 @@ from scripts.analyze.run_liquidity_provision_behavior_exploration import (
     route_capital_gap_v3_fee_horizon_panel,
     route_capital_gap_v3_fee_incidence,
     route_capital_gap_v3_lp_action_horizon_panel,
+    route_capital_gap_v3_lp_action_activity_control,
     route_capital_gap_v3_lp_action_candidate_specific,
     route_capital_gap_v3_lp_action_response,
     stable_basket_gap_horizon_panel,
@@ -848,6 +849,10 @@ def test_v3_lp_action_horizon_panel_sums_future_actions() -> None:
     assert row["future_v3_total_origin_count"] == 3
     assert row["future_log1p_v3_total_origin_count"] > 0
     assert row["future_v3_net_mint_event_balance"] > 0
+    origin_row = panel[panel["origin_date"].eq(pd.Timestamp("2025-01-02"))].iloc[0]
+    assert origin_row["origin_v3_total_lp_actions"] == 3
+    assert origin_row["origin_v3_total_origin_count"] == 3
+    assert origin_row["origin_log1p_v3_total_origin_count"] > 0
 
 
 def test_v3_lp_action_response_reports_stable_total() -> None:
@@ -929,6 +934,65 @@ def test_v3_lp_action_response_reports_stable_total() -> None:
         & result["outcome"].eq("future_log1p_v3_total_origin_count")
     ].iloc[0]
     assert stable_origin["coefficient"] > 0
+
+
+def test_v3_lp_action_activity_control_reports_stable_total() -> None:
+    rows = []
+    symbols = ["WETH", "WBTC", "USDC", "USDT", "DAI"]
+    for day_index, day in enumerate(pd.date_range("2025-01-01", periods=180, freq="D")):
+        date_effect = 0.001 * day_index
+        for symbol_index, symbol in enumerate(symbols):
+            is_stable = float(symbol in {"DAI", "USDC", "USDT"})
+            gap = (
+                0.10 * math.sin(day_index / 11 + symbol_index / 3)
+                + 0.02 * (symbol_index - 2)
+            )
+            origin_actions = 0.2 + 0.02 * ((day_index + symbol_index) % 7)
+            origin_origins = 0.3 + 0.03 * ((day_index + 2 * symbol_index) % 5)
+            rows.append(
+                {
+                    "origin_date": day,
+                    "candidate_address": symbol.lower(),
+                    "candidate_symbol": symbol,
+                    "is_stable": is_stable,
+                    "route_capital_gap_5": gap,
+                    "horizon_days": 30,
+                    "origin_log1p_v3_total_lp_actions": origin_actions,
+                    "origin_log1p_v3_total_origin_count": origin_origins,
+                    "future_log1p_v3_total_lp_actions": (
+                        0.02 * gap
+                        + 0.06 * gap * is_stable
+                        + 0.5 * origin_actions
+                        + 0.2 * origin_origins
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                    "future_log1p_v3_total_origin_count": (
+                        0.01 * gap
+                        + 0.05 * gap * is_stable
+                        + 0.2 * origin_actions
+                        + 0.6 * origin_origins
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                }
+            )
+    result = route_capital_gap_v3_lp_action_activity_control(
+        pd.DataFrame(rows),
+        min_observations=100,
+        min_clusters=20,
+    )
+    stable_origin = result[
+        result["predictor"].eq("stable_total_route_capital_gap_5")
+        & result["outcome"].eq("future_log1p_v3_total_origin_count")
+    ].iloc[0]
+
+    assert (
+        stable_origin["record_type"]
+        == "route_capital_gap_v3_lp_action_activity_control"
+    )
+    assert stable_origin["coefficient"] > 0
+    assert stable_origin["activity_controls"].startswith("origin_log1p_v3")
 
 
 def test_v3_lp_action_candidate_specific_reports_issuer_responses() -> None:

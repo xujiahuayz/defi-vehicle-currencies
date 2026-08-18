@@ -516,6 +516,27 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         outcome="future_log1p_v3_total_origin_count",
         candidate_symbol="USDT",
     )
+    stable_v3_lp_activity_origin_month = _single(
+        estimates,
+        record_type="route_capital_gap_v3_lp_action_activity_control",
+        horizon_days=30,
+        outcome="future_log1p_v3_total_origin_count",
+        predictor="stable_total_route_capital_gap_5",
+    )
+    stable_v3_lp_activity_origin_long = _single(
+        estimates,
+        record_type="route_capital_gap_v3_lp_action_activity_control",
+        horizon_days=120,
+        outcome="future_log1p_v3_total_origin_count",
+        predictor="stable_total_route_capital_gap_5",
+    )
+    stable_v3_lp_activity_action_long = _single(
+        estimates,
+        record_type="route_capital_gap_v3_lp_action_activity_control",
+        horizon_days=120,
+        outcome="future_log1p_v3_total_lp_actions",
+        predictor="stable_total_route_capital_gap_5",
+    )
     usdc_gap_close_long = _single(
         estimates,
         record_type="route_capital_gap_candidate_specific",
@@ -655,6 +676,16 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         < float(stable_v3_lp_burn_month["coefficient_per_10pp_gap"])
     ):
         raise ValueError("stable V3 LP-action response no longer holds")
+    if not (
+        float(stable_v3_lp_activity_origin_month["coefficient"]) > 0
+        and float(stable_v3_lp_activity_origin_long["coefficient"]) > 0
+        and float(stable_v3_lp_activity_action_long["coefficient"]) > 0
+        and float(stable_v3_lp_activity_origin_month["p_value"]) < 0.01
+        and float(stable_v3_lp_activity_origin_long["p_value"]) < 0.01
+        and float(stable_v3_lp_activity_action_long["p_value"]) < 0.01
+        and float(stable_v3_lp_activity_origin_long["n_observations"]) > 1000
+    ):
+        raise ValueError("activity-controlled V3 LP-action response no longer holds")
     if not (
         float(dai_v3_lp_total_month["coefficient"]) > 0
         and float(usdc_v3_lp_total_month["coefficient"]) > 0
@@ -806,6 +837,10 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         f"\\newcommand{{\\LiqBehStableVThreeNetMintMonthSE}}{{{_unsigned_pp(float(stable_v3_lp_net_month['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehStableVThreeOriginMonthCoef}}{{{_signed_percent(float(stable_v3_lp_origin_month['coefficient_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehStableVThreeOriginMonthSE}}{{{_unsigned_percent(float(stable_v3_lp_origin_month['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVThreeOriginActivityMonthCoef}}{{{_signed_percent(float(stable_v3_lp_activity_origin_month['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVThreeOriginActivityMonthSE}}{{{_unsigned_percent(float(stable_v3_lp_activity_origin_month['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVThreeOriginActivityLongCoef}}{{{_signed_percent(float(stable_v3_lp_activity_origin_long['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVThreeOriginActivityLongSE}}{{{_unsigned_percent(float(stable_v3_lp_activity_origin_long['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehDaiVThreeActionMonthCoef}}{{{_signed_percent(float(dai_v3_lp_total_month['coefficient_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehDaiVThreeActionMonthSE}}{{{_unsigned_percent(float(dai_v3_lp_total_month['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehUsdcVThreeActionMonthCoef}}{{{_signed_percent(float(usdc_v3_lp_total_month['coefficient_per_10pp_gap']))}}}",
