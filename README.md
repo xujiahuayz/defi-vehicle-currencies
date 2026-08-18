@@ -19,35 +19,47 @@ The compact workflow graph lives here. The durable claim-state graph is in
 grind/watchdog machinery no longer owns workflow state; these repo files do.
 
 ```text
-question and literature                  done
-  → definitions and estimands            done
-  → retained raw data                    Studio is canonical owner; raw sync active
-  → cleaned and analysis-ready data      ready for the two active claim families
-  → registered baseline analysis         done; findings check green
-  → baseline paper and deck              build cleanly from registered claims
-  → I result-search loop                 ACTIVE
-       1. propose mechanism/framing
-       2. find or build eligible inputs
-       3. run exploratory experiments
-       4. triage economic magnitude, rival explanations, and literature fit
-       5. if not JFE-substantial: revise mechanism/data/spec and keep looking
-       6. if JFE-substantial: lock claim, rebuild, and move into paper/deck
-       ↺ loops over making of dominance, liquidity provision, and motivation
-  → revised paper and deck               only after expanded results survive triage
-  → submission freeze                    only after final conformance and rewrite
+question and literature                    done
+  → definitions and estimands              done
+  → retained raw data                      Studio is canonical owner; raw sync active
+  → cleaned and analysis-ready data        ready for the two active claim families
+  → registered baseline analysis           done; findings check green
+  → presentable paper/deck trunk           ALWAYS ON; rebuild after admitted changes
+        status labels                      provisional / registered / confirmed
+        review snapshots                   versioned and shareable while work continues
+
+        ╔════════════════ parallel research loops ════════════════╗
+        ║ I1 mechanism search: dominance drivers, LP behavior     ║
+        ║ I2 input build: make eligible panels/releases           ║
+        ║ I3 experiments: run exploratory and robustness variants ║
+        ║ I4 triage: magnitude, rivals, literature, framing       ║
+        ║ I5 draft integration: add provisional results visibly   ║
+        ║ I6 review loop: send snapshot, collect comments, revise ║
+        ║ weak result/comment unresolved ────────────────↺ I1/I2  ║
+        ║ strong result/comment resolved ─→ upgrade claim status  ║
+        ╚══════════════════════════════════════════════════════════╝
+
+  → convergence candidate                  when paper/deck and comments stabilize
+  → submission freeze                      only after final conformance and rewrite
 ```
 
 The detailed claim state is in [`docs/findings/`](docs/findings/README.md). The
 two active confirmatory families are the vehicle-role transition and V2
 deposited-capital predictability. They make the current paper measurable and
-reproducible, but not yet submission-ready. The current research node is an
-iterative search loop: keep looking until the repository contains substantive
-mechanism evidence around the making of vehicle dominance and liquidity provision
-behavior. A result exits the loop only if it is economically material,
-distinguishes at least one serious rival story, fits the literature contribution,
-and has a complete producer-to-deliverable path. Routing maturation, direct-cost
-dominance, rent incidence, provider behavior, and persistence are supporting,
-withheld, or expansion work until they pass that bar.
+reproducible, but not yet submission-ready. The current research mode is
+parallel: keep the paper and slides presentable at all times, integrate
+provisional results with explicit status labels, send versioned review snapshots
+when useful, and keep searching while comments are outstanding. A result becomes
+headline evidence only if it is economically material, distinguishes at least one
+serious rival story, fits the literature contribution, and has a complete
+producer-to-deliverable path. Routing maturation, direct-cost dominance, rent
+incidence, provider behavior, and persistence are supporting, withheld, or
+expansion work until they pass that bar.
+
+Parallel work should use named Git branches or small focused commits on `main`.
+Ad hoc sibling folders such as `-d3` or `-backup` are not workflow state. A
+temporary worktree is acceptable only when a named branch or heavy isolated run
+needs it, and it must not become a second project truth.
 
 ## Scientific workflow
 

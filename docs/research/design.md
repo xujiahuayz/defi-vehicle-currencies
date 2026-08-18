@@ -9,10 +9,12 @@ the present paper.
 ## Current expansion agenda
 
 The executable gate is green for the two registered baseline families, but the
-research target is now stronger than measurement. The open node is an iterative
-search loop: propose mechanisms, find or build eligible inputs, run exploratory
-experiments, triage the result against the JFE bar, and keep looking if the
-result is weak, merely measurable, or too close to existing literature.
+research target is now stronger than measurement. The open mode is parallel:
+keep a presentable paper and deck, send versioned review snapshots when useful,
+and continue mechanism search, input building, experiments, and comment response
+at the same time. A weak, merely measurable, or literature-incremental result
+loops back to more search; it does not stop the paper and slides from being
+rebuilt.
 
 Priority experiments:
 
@@ -34,11 +36,13 @@ Priority experiments:
    currency because direct execution is expensive or unavailable. The analogy is
    motivation only; it should not substitute for the DEX evidence.
 
-Exit rule: a result leaves exploration only if it is economically material,
-survives a serious rival explanation, clarifies the contribution relative to the
-literature, and can be rebuilt into the paper and deck from declared inputs. If
-those conditions are not met, the workflow loops back to mechanism search and
-additional experiments rather than proceeding to submission freeze.
+Draft rule: provisional results may enter the paper and deck if they are clearly
+labelled and rebuildable enough for review. Claim-status upgrades are separate:
+a result becomes headline evidence only if it is economically material, survives
+a serious rival explanation, clarifies the contribution relative to the
+literature, and can be rebuilt from declared inputs. If those conditions are not
+met, the workflow loops back to mechanism search and additional experiments
+while the current draft remains presentable.
 
 ## Question and contribution
 
