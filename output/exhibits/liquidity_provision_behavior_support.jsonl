@@ -1,0 +1,1 @@
+{"analysis_status": "exploratory_descriptive", "candidate_count": 5, "candidate_day_rows": 11195, "days": 2239, "first_date": "2020-05-14", "input": "data/processed/liquidity_capital_v2_candidate_day.parquet", "last_date": "2026-06-30", "quantity": "V2 deposited-capital stock, not provider flows", "record_type": "support", "stable_symbols": "DAI,USDC,USDT"}

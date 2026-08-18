@@ -10,6 +10,7 @@ belongs in `../plot/` or `../tabulate/`.
 | `run_excess_use_date_fe_ladder.py` | date-FE ladder and screens; paper/deck and figure inputs |
 | `run_integration_date_fe_ladder.py` | integration ladder; paper/deck values |
 | `run_liquidity_capital_v2_predictability.py` | V2 predictability results, support, and table; paper/deck |
+| `run_liquidity_provision_behavior_exploration.py` | exploratory V2 capital-allocation and vehicle-use behavior |
 | `run_mechanism_expansion_exploration.py` | provisional JFE-expansion mechanism regressions and formation summaries |
 | `run_route_heterogeneity.py` | WETH-eligibility and route-scope results plus deck values |
 | `run_usdt_integration_decomposition_e0.py` | USDT transition decomposition; pair-decomposition values |
