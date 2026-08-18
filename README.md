@@ -57,10 +57,12 @@ interaction, rolling native-only-to-stable turn-on hazards, same-day and
 prior-30-day candidate-network reach inside observed mixed-risk-set rival checks, sticky incumbent vehicle regimes, USDC/USDT
 concentration at stable-entry, stable-candidate identity persistence, USDC/SVB
 stress-window identity persistence,
-extra-hop gas economics and route-level fixed-toll feasibility, LP capital-use gaps, stable-basket portfolio
-rebalancing, delayed/asymmetric LP rebalancing, stable-candidate LP response heterogeneity, LP extensive-margin
-behavior, same-pool capital-chase screens, bounded V3 fee/rent-incidence
-screens, and V2 capital predictability. A
+extra-hop gas economics and route-level fixed-toll feasibility, LP capital-use
+gaps, stable-basket portfolio rebalancing, delayed/asymmetric LP rebalancing,
+stable-candidate LP response heterogeneity, LP extensive-margin behavior, V2
+pool-capital concentration/fragmentation, same-pool capital-chase screens,
+bounded V3 fee/rent-incidence screens, V3 mint/burn action-count responses, and
+V2 capital predictability. A
 result becomes headline evidence only if it is economically material,
 distinguishes at least one serious rival story, fits the literature contribution,
 and has a complete producer-to-deliverable path.

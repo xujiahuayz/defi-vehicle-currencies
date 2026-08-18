@@ -96,10 +96,12 @@ vehicle regimes, USDC/USDT concentration at stable-entry, stable-candidate
 identity persistence, USDC/SVB stress-window identity persistence, extra-hop gas
 economics and route-level fixed-toll feasibility, the V2 liquidity
 route-minus-capital gap, stable-basket portfolio rebalancing, delayed/asymmetric
-LP rebalancing, and LP stable-candidate response heterogeneity, venue-footprint/pool-count
-extensive-margin behavior, plus a same-pool LP capital-chase rival screen and
-bounded V3 fee/rent-incidence screen. The deck also carries the traditional-FX
-route analogy as motivation. These layers strengthen the
+LP rebalancing, LP stable-candidate response heterogeneity, venue-footprint and
+pool-count extensive-margin behavior, V2 pool-capital concentration and
+fragmentation, plus same-pool LP capital-chase rival screens, bounded V3
+fee/rent-incidence screens, and V3 mint/burn action-count responses. The deck
+also carries the traditional-FX route analogy as motivation. These layers
+strengthen the
 mechanism story but do not change the registered confirmatory claim set.
 
 Routing maturation, full same-state direct-cost dominance, the joint V2/V3
@@ -160,7 +162,7 @@ and the lock.
 
 The current branch compiles a 51-page paper and a 43-page deck after the
 provisional mechanism reruns. The paper and deck compile with zero undefined
-references. The repository passes 679 pytest tests, the findings gate, and every
+references. The repository passes 684 pytest tests, the findings gate, and every
 blocking conformance check. There is one manuscript under `paper/` and one
 presentation under `deck/`; Git history is the archive.
 

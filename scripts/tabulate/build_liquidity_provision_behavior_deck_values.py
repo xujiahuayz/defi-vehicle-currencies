@@ -200,6 +200,52 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         outcome="future_log_pool_count_change",
         predictor="stable_total_route_capital_gap_5",
     )
+    stable_concentration_base = _single(
+        estimates,
+        record_type="capital_concentration_year",
+        year=BASELINE_YEAR,
+        candidate_group="stable_candidates",
+    )
+    stable_concentration_end = _single(
+        estimates,
+        record_type="capital_concentration_year",
+        year=COMPARISON_YEAR,
+        candidate_group="stable_candidates",
+    )
+    nonstable_concentration_end = _single(
+        estimates,
+        record_type="capital_concentration_year",
+        year=COMPARISON_YEAR,
+        candidate_group="nonstable_candidates",
+    )
+    stable_top_pool_long = _single(
+        estimates,
+        record_type="route_capital_gap_concentration_response",
+        horizon_days=120,
+        outcome="future_top_pool_share_change",
+        predictor="stable_total_route_capital_gap_5",
+    )
+    stable_hhi_long = _single(
+        estimates,
+        record_type="route_capital_gap_concentration_response",
+        horizon_days=120,
+        outcome="future_pool_hhi_change",
+        predictor="stable_total_route_capital_gap_5",
+    )
+    stable_effective_pool_long = _single(
+        estimates,
+        record_type="route_capital_gap_concentration_response",
+        horizon_days=120,
+        outcome="future_log_effective_pool_count_change",
+        predictor="stable_total_route_capital_gap_5",
+    )
+    stable_raw_pool_long = _single(
+        estimates,
+        record_type="route_capital_gap_concentration_response",
+        horizon_days=120,
+        outcome="future_pool_count_change",
+        predictor="stable_total_route_capital_gap_5",
+    )
     same_pool_long = _single(
         estimates,
         record_type="route_capital_gap_same_pool_reallocation",
@@ -258,6 +304,27 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         record_type="route_capital_gap_v3_fee_incidence",
         horizon_days=120,
         outcome="future_log_volume_change",
+        predictor="stable_total_route_capital_gap_5",
+    )
+    stable_v3_lp_mint_month = _single(
+        estimates,
+        record_type="route_capital_gap_v3_lp_action",
+        horizon_days=30,
+        outcome="future_log1p_v3_mint_events",
+        predictor="stable_total_route_capital_gap_5",
+    )
+    stable_v3_lp_total_month = _single(
+        estimates,
+        record_type="route_capital_gap_v3_lp_action",
+        horizon_days=30,
+        outcome="future_log1p_v3_total_lp_actions",
+        predictor="stable_total_route_capital_gap_5",
+    )
+    stable_v3_lp_net_month = _single(
+        estimates,
+        record_type="route_capital_gap_v3_lp_action",
+        horizon_days=30,
+        outcome="future_v3_net_mint_event_balance",
         predictor="stable_total_route_capital_gap_5",
     )
     usdc_gap_close_long = _single(
@@ -321,6 +388,19 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
     ):
         raise ValueError("stable extensive-margin pattern no longer holds")
     if not (
+        float(stable_concentration_end["capital_weighted_top_pool_share"])
+        > float(stable_concentration_base["capital_weighted_top_pool_share"])
+        and float(stable_concentration_end["capital_weighted_top_pool_share"])
+        > float(nonstable_concentration_end["capital_weighted_top_pool_share"])
+        and float(stable_top_pool_long["coefficient"]) > 0
+        and float(stable_hhi_long["coefficient"]) > 0
+        and float(stable_effective_pool_long["coefficient"]) < 0
+        and float(stable_raw_pool_long["coefficient"]) > 0
+        and float(stable_hhi_long["p_value"]) < 0.05
+        and float(stable_effective_pool_long["p_value"]) < 0.05
+    ):
+        raise ValueError("stable capital-concentration pattern no longer holds")
+    if not (
         float(same_pool_long["coefficient"]) > 0
         and float(same_pool_long["p_value"]) < 0.01
         and float(stable_same_pool_long["p_value"]) > 0.10
@@ -346,6 +426,15 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         and abs(float(stable_volume_long["coefficient_per_10pp_gap"])) < 0.03
     ):
         raise ValueError("stable V3 fee-incidence non-result no longer holds")
+    if not (
+        float(stable_v3_lp_mint_month["coefficient"]) > 0
+        and float(stable_v3_lp_total_month["coefficient"]) > 0
+        and float(stable_v3_lp_net_month["coefficient"]) > 0
+        and float(stable_v3_lp_mint_month["p_value"]) < 0.01
+        and float(stable_v3_lp_total_month["p_value"]) < 0.01
+        and float(stable_v3_lp_net_month["p_value"]) < 0.01
+    ):
+        raise ValueError("stable V3 LP-action response no longer holds")
     if not (
         float(usdc_gap_close_long["coefficient"]) > float(usdt_gap_close_long["coefficient"])
         and float(dai_gap_close_long["coefficient"]) > float(usdc_gap_close_long["coefficient"])
@@ -395,6 +484,17 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         f"\\newcommand{{\\LiqBehStableVenueLongSE}}{{{_unsigned_percent(float(stable_venue_long['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehStablePoolLongCoef}}{{{_signed_percent(float(stable_pool_long['coefficient_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehStablePoolLongSE}}{{{_unsigned_percent(float(stable_pool_long['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableTopPoolShareEnd}}{{{_pct(float(stable_concentration_end['capital_weighted_top_pool_share']))}}}",
+        f"\\newcommand{{\\LiqBehNonstableTopPoolShareEnd}}{{{_pct(float(nonstable_concentration_end['capital_weighted_top_pool_share']))}}}",
+        f"\\newcommand{{\\LiqBehStableTopPoolShareChange}}{{{_signed_pp(float(stable_concentration_end['capital_weighted_top_pool_share']) - float(stable_concentration_base['capital_weighted_top_pool_share']), decimals=1)}}}",
+        f"\\newcommand{{\\LiqBehStableTopPoolLongCoef}}{{{_signed_pp(float(stable_top_pool_long['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableTopPoolLongSE}}{{{_unsigned_pp(float(stable_top_pool_long['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableHhiLongCoef}}{{{_signed_pp(float(stable_hhi_long['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableHhiLongSE}}{{{_unsigned_pp(float(stable_hhi_long['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableEffectivePoolsLongCoef}}{{{_signed_percent(float(stable_effective_pool_long['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableEffectivePoolsLongSE}}{{{_unsigned_percent(float(stable_effective_pool_long['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableRawPoolLongCoef}}{{{_signed_decimal(float(stable_raw_pool_long['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableRawPoolLongSE}}{{{_unsigned_decimal(float(stable_raw_pool_long['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehSamePoolLongCoef}}{{{_signed_percent(float(same_pool_long['coefficient_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehSamePoolLongSE}}{{{_unsigned_percent(float(same_pool_long['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehStableSamePoolLongCoef}}{{{_signed_percent(float(stable_same_pool_long['coefficient_per_10pp_gap']))}}}",
@@ -413,6 +513,14 @@ def render_liquidity_provision_behavior_deck_values(estimates: pd.DataFrame) -> 
         f"\\newcommand{{\\LiqBehStableFeeLongSE}}{{{_unsigned_percent(float(stable_fee_long['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehStableVolumeLongCoef}}{{{_signed_percent(float(stable_volume_long['coefficient_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehStableVolumeLongSE}}{{{_unsigned_percent(float(stable_volume_long['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehVThreeLpActionRows}}{{{_integer(int(stable_v3_lp_mint_month['n_observations']))}}}",
+        f"\\newcommand{{\\LiqBehVThreeLpActionDays}}{{{_integer(int(stable_v3_lp_mint_month['date_clusters']))}}}",
+        f"\\newcommand{{\\LiqBehStableVThreeMintMonthCoef}}{{{_signed_percent(float(stable_v3_lp_mint_month['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVThreeMintMonthSE}}{{{_unsigned_percent(float(stable_v3_lp_mint_month['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVThreeActionMonthCoef}}{{{_signed_percent(float(stable_v3_lp_total_month['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVThreeActionMonthSE}}{{{_unsigned_percent(float(stable_v3_lp_total_month['standard_error_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVThreeNetMintMonthCoef}}{{{_signed_pp(float(stable_v3_lp_net_month['coefficient_per_10pp_gap']))}}}",
+        f"\\newcommand{{\\LiqBehStableVThreeNetMintMonthSE}}{{{_unsigned_pp(float(stable_v3_lp_net_month['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehUsdcGapCloseLongCoef}}{{{_signed_pp(float(usdc_gap_close_long['coefficient_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehUsdcGapCloseLongSE}}{{{_unsigned_pp(float(usdc_gap_close_long['standard_error_per_10pp_gap']))}}}",
         f"\\newcommand{{\\LiqBehDaiGapCloseLongCoef}}{{{_signed_pp(float(dai_gap_close_long['coefficient_per_10pp_gap']))}}}",

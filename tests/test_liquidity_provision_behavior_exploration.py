@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import math
+import gzip
+import json
 import tempfile
 from pathlib import Path
 
@@ -9,7 +11,9 @@ import pytest
 
 from scripts.analyze.run_liquidity_provision_behavior_exploration import (
     annual_stable_allocation,
+    capital_concentration_summaries,
     capital_use_gap_summaries,
+    candidate_capital_concentration_panel,
     candidate_share_gap_panel,
     daily_leader_alignment,
     daily_capital_use_gaps,
@@ -17,6 +21,8 @@ from scripts.analyze.run_liquidity_provision_behavior_exploration import (
     route_capital_gap_candidate_specific,
     route_capital_gap_closing,
     route_capital_gap_closing_stable_interactions,
+    route_capital_gap_concentration_horizon_panel,
+    route_capital_gap_concentration_response,
     route_capital_gap_extensive_margin_panel,
     route_capital_gap_extensive_margins,
     route_capital_gap_horizon_panel,
@@ -24,10 +30,16 @@ from scripts.analyze.run_liquidity_provision_behavior_exploration import (
     route_capital_gap_same_pool_reallocation,
     route_capital_gap_v3_fee_horizon_panel,
     route_capital_gap_v3_fee_incidence,
+    route_capital_gap_v3_lp_action_horizon_panel,
+    route_capital_gap_v3_lp_action_response,
     stable_basket_gap_horizon_panel,
     stable_basket_gap_portfolio_rebalancing,
     supported_candidate_days,
     within_day_gap_associations,
+)
+from scripts.process.build_v3_lp_action_candidate_daily import (
+    load_raw_uniswap_v3_lp_actions,
+    v3_pool_candidate_links,
 )
 
 
@@ -551,6 +563,306 @@ def test_v3_fee_incidence_reports_stable_total() -> None:
     ].iloc[0]
     assert stable_total["record_type"] == "route_capital_gap_v3_fee_incidence"
     assert stable_total["coefficient"] > 0
+
+
+def _write_v3_event(path: Path, *, pool: str, timestamp: int, origin: str) -> None:
+    event = {
+        "id": f"{pool}-{timestamp}",
+        "timestamp": str(timestamp),
+        "pool": {"id": pool},
+        "owner": origin,
+        "origin": origin,
+        "amount": "1",
+        "amount0": "1",
+        "amount1": "1",
+        "tickLower": "0",
+        "tickUpper": "1",
+        "logIndex": "0",
+    }
+    with gzip.open(path, "wt", encoding="utf-8") as handle:
+        handle.write(json.dumps(event) + "\n")
+
+
+def test_v3_lp_action_loader_counts_candidate_mint_and_burn_events() -> None:
+    fee_rows = pd.DataFrame(
+        [
+            {
+                "origin_date": pd.Timestamp("2025-01-01"),
+                "pool": "pool-a",
+                "token0_address": "usdc",
+                "token0_symbol": "USDC",
+                "token1_address": "weth",
+                "token1_symbol": "WETH",
+                "fees_usd": 10.0,
+                "volume_usd": 100.0,
+                "tvl_usd": 1_000.0,
+            }
+        ]
+    )
+    with tempfile.TemporaryDirectory() as tmpdir:
+        root = Path(tmpdir)
+        event_dir = root / "events"
+        event_dir.mkdir()
+        fee_path = root / "fees.parquet"
+        fee_rows.to_parquet(fee_path, index=False)
+        _write_v3_event(
+            event_dir / "uniswap_v3_mints_20250101.jsonl.gz",
+            pool="pool-a",
+            timestamp=1_735_689_600,
+            origin="lp-1",
+        )
+        _write_v3_event(
+            event_dir / "uniswap_v3_burns_20250101.jsonl.gz",
+            pool="pool-a",
+            timestamp=1_735_689_600,
+            origin="lp-2",
+        )
+        links = v3_pool_candidate_links(
+            fee_panel_path=fee_path,
+            candidate_addresses={"usdc"},
+        )
+        actions, support = load_raw_uniswap_v3_lp_actions(
+            event_dir=event_dir,
+            pool_candidates=links,
+        )
+    row = actions.iloc[0]
+    assert row["candidate_symbol"] == "USDC"
+    assert row["v3_mint_events"] == 1
+    assert row["v3_burn_events"] == 1
+    assert row["v3_mint_origin_count"] == 1
+    assert support["matched_candidate_event_assignments"] == 2
+
+
+def test_v3_lp_action_horizon_panel_sums_future_actions() -> None:
+    share_gap = pd.DataFrame(
+        [
+            {
+                "origin_date": pd.Timestamp("2025-01-01"),
+                "candidate_address": "usdc",
+                "candidate_symbol": "USDC",
+                "route_capital_gap_5": 0.2,
+                "is_stable": 1.0,
+            },
+            {
+                "origin_date": pd.Timestamp("2025-01-02"),
+                "candidate_address": "usdc",
+                "candidate_symbol": "USDC",
+                "route_capital_gap_5": 0.1,
+                "is_stable": 1.0,
+            },
+        ]
+    )
+    actions = pd.DataFrame(
+        [
+            {
+                "origin_date": pd.Timestamp("2025-01-02"),
+                "candidate_address": "usdc",
+                "candidate_symbol": "USDC",
+                "v3_mint_events": 2,
+                "v3_burn_events": 1,
+                "v3_total_lp_actions": 3,
+                "v3_net_mint_events": 1,
+                "v3_mint_origin_count": 2,
+                "v3_burn_origin_count": 1,
+            }
+        ]
+    )
+    panel = route_capital_gap_v3_lp_action_horizon_panel(
+        share_gap,
+        actions=actions,
+        horizons=(1,),
+    )
+    row = panel[panel["origin_date"].eq(pd.Timestamp("2025-01-01"))].iloc[0]
+    assert row["future_v3_mint_events"] == 2
+    assert row["future_v3_burn_events"] == 1
+    assert row["future_v3_net_mint_event_balance"] > 0
+
+
+def test_v3_lp_action_response_reports_stable_total() -> None:
+    rows = []
+    symbols = ["WETH", "WBTC", "USDC", "USDT", "DAI"]
+    for day_index, day in enumerate(pd.date_range("2025-01-01", periods=180, freq="D")):
+        date_effect = 0.001 * day_index
+        for symbol_index, symbol in enumerate(symbols):
+            is_stable = float(symbol in {"DAI", "USDC", "USDT"})
+            gap = (
+                0.10 * math.sin(day_index / 11 + symbol_index / 3)
+                + 0.02 * (symbol_index - 2)
+            )
+            rows.append(
+                {
+                    "origin_date": day,
+                    "candidate_address": symbol.lower(),
+                    "candidate_symbol": symbol,
+                    "is_stable": is_stable,
+                    "route_capital_gap_5": gap,
+                    "horizon_days": 30,
+                    "future_log1p_v3_mint_events": (
+                        0.03 * gap
+                        + 0.08 * gap * is_stable
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                    "future_log1p_v3_burn_events": (
+                        0.01 * gap
+                        + 0.02 * gap * is_stable
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                    "future_log1p_v3_total_lp_actions": (
+                        0.02 * gap
+                        + 0.05 * gap * is_stable
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                    "future_v3_net_mint_event_balance": (
+                        0.01 * gap
+                        + 0.04 * gap * is_stable
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                }
+            )
+    result = route_capital_gap_v3_lp_action_response(
+        pd.DataFrame(rows),
+        min_observations=100,
+        min_clusters=20,
+    )
+    stable_mint = result[
+        result["predictor"].eq("stable_total_route_capital_gap_5")
+        & result["outcome"].eq("future_log1p_v3_mint_events")
+    ].iloc[0]
+    assert stable_mint["record_type"] == "route_capital_gap_v3_lp_action"
+    assert stable_mint["coefficient"] > 0
+
+
+def test_capital_concentration_panel_summarizes_top_pool_shares(sample) -> None:
+    share_gap = candidate_share_gap_panel(sample)
+    rows = []
+    for day in ("20240101", "20260101"):
+        rows.extend(
+            [
+                {
+                    "day": int(day),
+                    "candidate_address": "weth",
+                    "candidate_symbol_raw": "WETH",
+                    "pool": "weth-a",
+                    "venue": "uniswap_v2",
+                    "candidate_capital_usd": 80.0,
+                    "quantity_kind": "deposited_capital",
+                    "capital_validation_status": "exact_state_current",
+                },
+                {
+                    "day": int(day),
+                    "candidate_address": "weth",
+                    "candidate_symbol_raw": "WETH",
+                    "pool": "weth-b",
+                    "venue": "sushiswap_v2",
+                    "candidate_capital_usd": 20.0,
+                    "quantity_kind": "deposited_capital",
+                    "capital_validation_status": "exact_state_current",
+                },
+                {
+                    "day": int(day),
+                    "candidate_address": "usdc",
+                    "candidate_symbol_raw": "USDC",
+                    "pool": "usdc-a",
+                    "venue": "uniswap_v2",
+                    "candidate_capital_usd": 18.0,
+                    "quantity_kind": "deposited_capital",
+                    "capital_validation_status": "exact_state_current",
+                },
+                {
+                    "day": int(day),
+                    "candidate_address": "usdc",
+                    "candidate_symbol_raw": "USDC",
+                    "pool": "usdc-b",
+                    "venue": "sushiswap_v2",
+                    "candidate_capital_usd": 2.0,
+                    "quantity_kind": "deposited_capital",
+                    "capital_validation_status": "exact_state_current",
+                },
+            ]
+        )
+    with tempfile.TemporaryDirectory() as tmpdir:
+        path = Path(tmpdir) / "pool_candidates.parquet"
+        pd.DataFrame(rows).to_parquet(path, index=False)
+        panel = candidate_capital_concentration_panel(
+            share_gap,
+            pool_candidate_path=path,
+        )
+    usdc = panel[panel["candidate_symbol"].eq("USDC")].iloc[0]
+    assert usdc["top_pool_share"] == pytest.approx(0.9)
+    assert usdc["pool_hhi"] == pytest.approx(0.82)
+    summaries = capital_concentration_summaries(panel)
+    stable = summaries[
+        summaries["record_type"].eq("capital_concentration_year")
+        & summaries["candidate_group"].eq("stable_candidates")
+    ].iloc[0]
+    assert stable["capital_weighted_top_pool_share"] == pytest.approx(0.9)
+
+
+def test_route_capital_gap_concentration_response_reports_stable_total() -> None:
+    rows = []
+    symbols = ["WETH", "WBTC", "USDC", "USDT", "DAI"]
+    for day_index, day in enumerate(pd.date_range("2024-01-01", periods=180, freq="D")):
+        date_effect = 0.001 * day_index
+        for symbol_index, symbol in enumerate(symbols):
+            is_stable = float(symbol in {"DAI", "USDC", "USDT"})
+            gap = (
+                0.10 * math.sin(day_index / 11 + symbol_index / 3)
+                + 0.02 * (symbol_index - 2)
+            )
+            rows.append(
+                {
+                    "origin_date": day,
+                    "candidate_address": symbol.lower(),
+                    "candidate_symbol": symbol,
+                    "is_stable": is_stable,
+                    "route_capital_gap_5": gap,
+                    "horizon_days": 120,
+                    "future_top_pool_share_change": (
+                        -0.01 * gap
+                        + 0.07 * gap * is_stable
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                    "future_pool_hhi_change": (
+                        -0.01 * gap
+                        + 0.08 * gap * is_stable
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                    "future_log_effective_pool_count_change": (
+                        0.01 * gap
+                        - 0.07 * gap * is_stable
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                    "future_pool_count_change": (
+                        0.01 * gap
+                        + 0.03 * gap * is_stable
+                        + date_effect
+                        + 0.02 * symbol_index
+                    ),
+                }
+            )
+    result = route_capital_gap_concentration_response(
+        pd.DataFrame(rows),
+        min_observations=100,
+        min_clusters=20,
+    )
+    stable_hhi = result[
+        result["predictor"].eq("stable_total_route_capital_gap_5")
+        & result["outcome"].eq("future_pool_hhi_change")
+    ].iloc[0]
+    stable_effective = result[
+        result["predictor"].eq("stable_total_route_capital_gap_5")
+        & result["outcome"].eq("future_log_effective_pool_count_change")
+    ].iloc[0]
+    assert stable_hhi["record_type"] == "route_capital_gap_concentration_response"
+    assert stable_hhi["coefficient"] > 0
+    assert stable_effective["coefficient"] < 0
 
 
 def test_extensive_margin_panel_attaches_future_pool_and_venue_counts() -> None:

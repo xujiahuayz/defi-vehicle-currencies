@@ -32,6 +32,7 @@ CANDIDATE_DAY_INPUT = REPO_ROOT / "data/processed/liquidity_capital_v2_candidate
 EXACT_HORIZON_INPUT = REPO_ROOT / "data/processed/liquidity_capital_v2_exact_horizons.parquet"
 POOL_CANDIDATE_CAPITAL_INPUT = REPO_ROOT / "data/processed/pool_candidate_capital_daily.parquet"
 V3_POOL_DAY_FEES_INPUT = REPO_ROOT / "data/processed/v3_pool_day_fees.parquet"
+V3_LP_ACTION_INPUT = REPO_ROOT / "data/processed/v3_lp_action_candidate_daily.parquet"
 RESULT_OUTPUT = OUTPUT_DIR / "exhibits/liquidity_provision_behavior_exploration.jsonl"
 SUPPORT_OUTPUT = OUTPUT_DIR / "exhibits/liquidity_provision_behavior_support.jsonl"
 
@@ -44,6 +45,7 @@ INPUTS = [
     "data/processed/liquidity_capital_v2_exact_horizons.parquet",
     "data/processed/pool_candidate_capital_daily.parquet",
     "data/processed/v3_pool_day_fees.parquet",
+    "data/processed/v3_lp_action_candidate_daily.parquet",
 ]
 STABLE_SYMBOLS = frozenset({"DAI", "USDC", "USDT"})
 WETH_SYMBOL = "WETH"
@@ -66,6 +68,7 @@ GAP_ASYMMETRY_PREDICTORS = (
     "positive_route_capital_gap_5_x_stable",
     "negative_route_capital_gap_5_x_stable",
 )
+V3_LP_ACTION_HORIZONS = (7, 30, 120)
 
 
 def load_candidate_day(path: Path = CANDIDATE_DAY_INPUT) -> pd.DataFrame:
@@ -477,6 +480,338 @@ def route_capital_gap_extensive_margins(
                     "covariance": "origin_date_clustered",
                     "interpretation": (
                         "stable-candidate total pool-or-venue reach association, "
+                        "not causal provider-flow timing"
+                    ),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def candidate_capital_concentration_panel(
+    share_gap_panel: pd.DataFrame,
+    *,
+    pool_candidate_path: Path = POOL_CANDIDATE_CAPITAL_INPUT,
+) -> pd.DataFrame:
+    """Attach pool-level capital concentration to candidate-day gaps."""
+
+    required = {
+        "origin_date",
+        "candidate_address",
+        "candidate_symbol",
+        "route_capital_gap_5",
+        "is_stable",
+        "v2_deposited_capital_usd",
+    }
+    missing = sorted(required - set(share_gap_panel.columns))
+    if missing:
+        raise ValueError(f"share-gap panel lacks concentration columns: {missing}")
+    connection = duckdb.connect()
+    try:
+        concentration = connection.execute(
+            """
+            WITH pool_day AS (
+                SELECT
+                    strptime(CAST(day AS VARCHAR), '%Y%m%d')::DATE AS origin_date,
+                    lower(candidate_address) AS candidate_address,
+                    count(DISTINCT pool)::DOUBLE AS pool_count,
+                    count(DISTINCT venue)::DOUBLE AS venue_count,
+                    sum(candidate_capital_usd)::DOUBLE AS pool_candidate_capital_usd,
+                    max(candidate_capital_usd)::DOUBLE AS top_pool_capital_usd,
+                    sum(candidate_capital_usd * candidate_capital_usd)::DOUBLE
+                        AS squared_capital_usd
+                FROM read_parquet(?)
+                WHERE quantity_kind = 'deposited_capital'
+                  AND capital_validation_status = 'exact_state_current'
+                  AND candidate_capital_usd > 0
+                GROUP BY 1, 2
+            )
+            SELECT
+                origin_date,
+                candidate_address,
+                pool_count,
+                venue_count,
+                pool_candidate_capital_usd,
+                top_pool_capital_usd
+                    / nullif(pool_candidate_capital_usd, 0) AS top_pool_share,
+                squared_capital_usd
+                    / nullif(pool_candidate_capital_usd * pool_candidate_capital_usd, 0)
+                    AS pool_hhi,
+                1.0 / (
+                    squared_capital_usd
+                    / nullif(pool_candidate_capital_usd * pool_candidate_capital_usd, 0)
+                ) AS effective_pool_count
+            FROM pool_day
+            """,
+            [str(pool_candidate_path)],
+        ).fetchdf()
+    finally:
+        connection.close()
+    if concentration.empty:
+        raise ValueError("pool-candidate capital concentration panel is empty")
+    concentration["origin_date"] = pd.to_datetime(
+        concentration["origin_date"]
+    ).dt.normalize()
+    concentration["candidate_address"] = (
+        concentration["candidate_address"].astype(str).str.lower()
+    )
+    base = share_gap_panel[list(required)].copy()
+    base["origin_date"] = pd.to_datetime(base["origin_date"]).dt.normalize()
+    base["candidate_address"] = base["candidate_address"].astype(str).str.lower()
+    panel = base.merge(
+        concentration,
+        on=["origin_date", "candidate_address"],
+        how="inner",
+        validate="one_to_one",
+    )
+    numeric = [
+        "route_capital_gap_5",
+        "v2_deposited_capital_usd",
+        "pool_count",
+        "venue_count",
+        "top_pool_share",
+        "pool_hhi",
+        "effective_pool_count",
+    ]
+    panel = panel.replace([np.inf, -np.inf], np.nan).dropna(subset=numeric)
+    if panel.empty:
+        raise ValueError("pool-candidate concentration panel lost all rows")
+    return panel
+
+
+def capital_concentration_summaries(panel: pd.DataFrame) -> pd.DataFrame:
+    """Summarize stable versus non-stable pool-capital concentration by year."""
+
+    rows: list[dict[str, object]] = []
+    sample = panel.copy()
+    sample["year"] = pd.to_datetime(sample["origin_date"]).dt.year.astype(int)
+    for (year, is_stable), group in sample.groupby(["year", "is_stable"], sort=True):
+        weight = group["v2_deposited_capital_usd"].astype(float)
+        if float(weight.sum()) <= 0:
+            continue
+        rows.append(
+            {
+                "analysis_status": "exploratory_descriptive",
+                "record_type": "capital_concentration_year",
+                "year": int(year),
+                "candidate_group": "stable_candidates"
+                if float(is_stable) == 1.0
+                else "nonstable_candidates",
+                "candidate_day_rows": int(len(group)),
+                "days": int(group["origin_date"].nunique()),
+                "capital_share": float(weight.sum() / sample.loc[sample["year"].eq(year), "v2_deposited_capital_usd"].sum()),
+                "capital_weighted_top_pool_share": float(
+                    np.average(group["top_pool_share"].astype(float), weights=weight)
+                ),
+                "capital_weighted_pool_hhi": float(
+                    np.average(group["pool_hhi"].astype(float), weights=weight)
+                ),
+                "mean_top_pool_share": float(group["top_pool_share"].mean()),
+                "mean_pool_hhi": float(group["pool_hhi"].mean()),
+                "mean_effective_pool_count": float(
+                    group["effective_pool_count"].mean()
+                ),
+                "median_effective_pool_count": float(
+                    group["effective_pool_count"].median()
+                ),
+                "mean_pool_count": float(group["pool_count"].mean()),
+                "median_pool_count": float(group["pool_count"].median()),
+                "interpretation": (
+                    "pool-level deposited-capital concentration, not provider "
+                    "ownership or LP return concentration"
+                ),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def route_capital_gap_concentration_horizon_panel(
+    concentration_panel: pd.DataFrame,
+    *,
+    horizons: tuple[int, ...] = (30, 120),
+) -> pd.DataFrame:
+    """Attach current route-capital gaps to future concentration changes."""
+
+    current = concentration_panel[
+        [
+            "origin_date",
+            "candidate_address",
+            "candidate_symbol",
+            "is_stable",
+            "route_capital_gap_5",
+            "top_pool_share",
+            "pool_hhi",
+            "effective_pool_count",
+            "pool_count",
+        ]
+    ].copy()
+    rows: list[pd.DataFrame] = []
+    target_columns = [
+        "origin_date",
+        "candidate_address",
+        "top_pool_share",
+        "pool_hhi",
+        "effective_pool_count",
+        "pool_count",
+    ]
+    for horizon in horizons:
+        target = concentration_panel[target_columns].copy()
+        target["origin_date"] = target["origin_date"] - pd.Timedelta(days=horizon)
+        joined = current.merge(
+            target,
+            on=["origin_date", "candidate_address"],
+            how="inner",
+            suffixes=("", "_target"),
+            validate="one_to_one",
+        )
+        if joined.empty:
+            continue
+        joined["horizon_days"] = int(horizon)
+        joined["future_top_pool_share_change"] = (
+            joined["top_pool_share_target"] - joined["top_pool_share"]
+        )
+        joined["future_pool_hhi_change"] = (
+            joined["pool_hhi_target"] - joined["pool_hhi"]
+        )
+        joined["future_log_effective_pool_count_change"] = (
+            np.log(joined["effective_pool_count_target"].astype(float))
+            - np.log(joined["effective_pool_count"].astype(float))
+        )
+        joined["future_pool_count_change"] = (
+            joined["pool_count_target"] - joined["pool_count"]
+        )
+        rows.append(joined)
+    if not rows:
+        raise ValueError("route-capital concentration horizon panel is empty")
+    out = pd.concat(rows, ignore_index=True, sort=False)
+    required = [
+        "route_capital_gap_5",
+        "is_stable",
+        "future_top_pool_share_change",
+        "future_pool_hhi_change",
+        "future_log_effective_pool_count_change",
+        "future_pool_count_change",
+    ]
+    out = out.replace([np.inf, -np.inf], np.nan).dropna(subset=required)
+    if out.empty:
+        raise ValueError("route-capital concentration horizon panel lost all rows")
+    return out
+
+
+def route_capital_gap_concentration_response(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 1000,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Test whether route-capital gaps predict future capital concentration."""
+
+    rows: list[dict[str, object]] = []
+    outcomes = (
+        "future_top_pool_share_change",
+        "future_pool_hhi_change",
+        "future_log_effective_pool_count_change",
+        "future_pool_count_change",
+    )
+    for horizon, group in panel.groupby("horizon_days", sort=True):
+        for outcome in outcomes:
+            data = (
+                group[
+                    [
+                        "origin_date",
+                        "candidate_address",
+                        "is_stable",
+                        "route_capital_gap_5",
+                        outcome,
+                    ]
+                ]
+                .replace([np.inf, -np.inf], np.nan)
+                .dropna()
+                .copy()
+            )
+            data["route_capital_gap_5_x_stable"] = (
+                data["route_capital_gap_5"].astype(float)
+                * data["is_stable"].astype(float)
+            )
+            residual = absorb_fixed_effects(
+                data[
+                    [
+                        outcome,
+                        "route_capital_gap_5",
+                        "route_capital_gap_5_x_stable",
+                    ]
+                ],
+                data["candidate_address"],
+                data["origin_date"],
+            )
+            fit = ols_clustered(
+                residual[outcome],
+                residual[["route_capital_gap_5", "route_capital_gap_5_x_stable"]],
+                data["origin_date"],
+                add_constant=False,
+                absorbed_groups=(data["candidate_address"], data["origin_date"]),
+                min_observations=min_observations,
+                min_clusters=min_clusters,
+            )
+            for predictor, coefficient, standard_error, t_statistic, p_value in zip(
+                ("route_capital_gap_5", "route_capital_gap_5_x_stable"),
+                fit.beta,
+                fit.standard_errors,
+                fit.t_statistics,
+                fit.p_values,
+                strict=True,
+            ):
+                coefficient = float(coefficient)
+                standard_error = float(standard_error)
+                rows.append(
+                    {
+                        "analysis_status": "exploratory_descriptive",
+                        "record_type": "route_capital_gap_concentration_response",
+                        "horizon_days": int(horizon),
+                        "outcome": outcome,
+                        "predictor": predictor,
+                        "coefficient": coefficient,
+                        "standard_error": standard_error,
+                        "t_statistic": float(t_statistic),
+                        "p_value": float(p_value),
+                        "coefficient_per_10pp_gap": 0.10 * coefficient,
+                        "standard_error_per_10pp_gap": 0.10 * standard_error,
+                        "coefficient_per_10pp_gap_percent": 10.0 * coefficient,
+                        "standard_error_per_10pp_gap_percent": 10.0 * standard_error,
+                        "n_observations": int(fit.n_observations),
+                        "date_clusters": int(fit.n_clusters),
+                        "fixed_effects": "candidate_address+origin_date",
+                        "covariance": "origin_date_clustered",
+                        "interpretation": (
+                            "temporally ordered pool-capital concentration "
+                            "association, not causal provider-flow timing"
+                        ),
+                    }
+                )
+            stable_total = linear_contrast(fit, [1.0, 1.0])
+            rows.append(
+                {
+                    "analysis_status": "exploratory_descriptive",
+                    "record_type": "route_capital_gap_concentration_response",
+                    "horizon_days": int(horizon),
+                    "outcome": outcome,
+                    "predictor": "stable_total_route_capital_gap_5",
+                    "coefficient": stable_total.estimate,
+                    "standard_error": stable_total.standard_error,
+                    "t_statistic": stable_total.t_statistic,
+                    "p_value": stable_total.p_value,
+                    "coefficient_per_10pp_gap": 0.10 * stable_total.estimate,
+                    "standard_error_per_10pp_gap": 0.10
+                    * stable_total.standard_error,
+                    "coefficient_per_10pp_gap_percent": 10.0
+                    * stable_total.estimate,
+                    "standard_error_per_10pp_gap_percent": 10.0
+                    * stable_total.standard_error,
+                    "n_observations": int(fit.n_observations),
+                    "date_clusters": int(fit.n_clusters),
+                    "fixed_effects": "candidate_address+origin_date",
+                    "covariance": "origin_date_clustered",
+                    "interpretation": (
+                        "stable-candidate pool-capital concentration association, "
                         "not causal provider-flow timing"
                     ),
                 }
@@ -916,6 +1251,281 @@ def route_capital_gap_v3_fee_incidence(
                     "interpretation": (
                         "stable-candidate same-pool V3 fee and volume association, "
                         "not causal rent incidence"
+                    ),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def load_v3_lp_actions(path: Path = V3_LP_ACTION_INPUT) -> pd.DataFrame:
+    """Load the processed Uniswap V3 mint/burn action-count panel."""
+
+    frame = pd.read_parquet(path)
+    required = {
+        "origin_date",
+        "candidate_address",
+        "candidate_symbol",
+        "v3_mint_events",
+        "v3_burn_events",
+        "v3_total_lp_actions",
+        "v3_net_mint_events",
+        "v3_mint_origin_count",
+        "v3_burn_origin_count",
+    }
+    missing = sorted(required - set(frame.columns))
+    if missing:
+        raise ValueError(f"V3 LP-action panel lacks columns: {missing}")
+    frame = frame.copy()
+    frame["origin_date"] = pd.to_datetime(frame["origin_date"]).dt.normalize()
+    frame["candidate_address"] = frame["candidate_address"].astype(str).str.lower()
+    frame["candidate_symbol"] = frame["candidate_symbol"].astype(str)
+    return frame
+
+
+def route_capital_gap_v3_lp_action_horizon_panel(
+    share_gap_panel: pd.DataFrame,
+    *,
+    actions: pd.DataFrame,
+    horizons: tuple[int, ...] = V3_LP_ACTION_HORIZONS,
+) -> pd.DataFrame:
+    """Attach future Uniswap V3 mint/burn action counts to route-capital gaps."""
+
+    if not horizons:
+        raise ValueError("at least one V3 LP-action horizon is required")
+    required = {
+        "origin_date",
+        "candidate_address",
+        "candidate_symbol",
+        "route_capital_gap_5",
+        "is_stable",
+    }
+    missing = sorted(required - set(share_gap_panel.columns))
+    if missing:
+        raise ValueError(f"share-gap panel lacks V3 LP-action columns: {missing}")
+    base = share_gap_panel[list(required)].copy()
+    base["origin_date"] = pd.to_datetime(base["origin_date"]).dt.normalize()
+    base["candidate_address"] = base["candidate_address"].astype(str).str.lower()
+    base["candidate_symbol"] = base["candidate_symbol"].astype(str)
+    action_columns = [
+        "v3_mint_events",
+        "v3_burn_events",
+        "v3_total_lp_actions",
+        "v3_net_mint_events",
+        "v3_mint_origin_count",
+        "v3_burn_origin_count",
+    ]
+    if actions.empty:
+        action_frame = pd.DataFrame(
+            columns=["origin_date", "candidate_address", *action_columns]
+        )
+    else:
+        action_frame = actions.copy()
+        action_frame["origin_date"] = pd.to_datetime(
+            action_frame["origin_date"]
+        ).dt.normalize()
+        action_frame["candidate_address"] = (
+            action_frame["candidate_address"].astype(str).str.lower()
+        )
+        action_frame = (
+            action_frame.groupby(
+                ["origin_date", "candidate_address"], as_index=False, sort=True
+            )[action_columns]
+            .sum()
+        )
+
+    horizon_rows: list[pd.DataFrame] = []
+    max_horizon = max(horizons)
+    for candidate_address, candidate_base in base.groupby(
+        "candidate_address", sort=True
+    ):
+        candidate_base = candidate_base.sort_values("origin_date").copy()
+        start = candidate_base["origin_date"].min()
+        end = candidate_base["origin_date"].max() + pd.Timedelta(days=max_horizon)
+        calendar = pd.DataFrame(
+            {
+                "origin_date": pd.date_range(start, end, freq="D"),
+                "candidate_address": candidate_address,
+            }
+        )
+        calendar = calendar.merge(
+            action_frame[action_frame["candidate_address"].eq(candidate_address)],
+            on=["origin_date", "candidate_address"],
+            how="left",
+        )
+        calendar[action_columns] = calendar[action_columns].fillna(0.0)
+        for column in action_columns:
+            calendar[f"{column}_cumulative"] = calendar[column].cumsum()
+        cumulative = calendar[
+            ["origin_date", *[f"{column}_cumulative" for column in action_columns]]
+        ]
+        origin = candidate_base.merge(
+            cumulative,
+            on="origin_date",
+            how="left",
+            validate="one_to_one",
+        )
+        for horizon in horizons:
+            target = cumulative.copy()
+            target["origin_date"] = target["origin_date"] - pd.Timedelta(
+                days=horizon
+            )
+            joined = origin.merge(
+                target,
+                on="origin_date",
+                how="inner",
+                suffixes=("", "_target"),
+                validate="one_to_one",
+            )
+            if joined.empty:
+                continue
+            joined["horizon_days"] = int(horizon)
+            for column in action_columns:
+                joined[f"future_{column}"] = (
+                    joined[f"{column}_cumulative_target"]
+                    - joined[f"{column}_cumulative"]
+                )
+            horizon_rows.append(joined)
+    if not horizon_rows:
+        raise ValueError("V3 LP-action horizon panel is empty")
+    panel = pd.concat(horizon_rows, ignore_index=True, sort=False)
+    panel["future_log1p_v3_mint_events"] = np.log1p(
+        panel["future_v3_mint_events"].astype(float)
+    )
+    panel["future_log1p_v3_burn_events"] = np.log1p(
+        panel["future_v3_burn_events"].astype(float)
+    )
+    panel["future_log1p_v3_total_lp_actions"] = np.log1p(
+        panel["future_v3_total_lp_actions"].astype(float)
+    )
+    panel["future_v3_net_mint_event_balance"] = (
+        panel["future_v3_net_mint_events"].astype(float)
+        / panel["future_v3_total_lp_actions"].astype(float).add(1.0)
+    )
+    return panel.replace([np.inf, -np.inf], np.nan).dropna(
+        subset=[
+            "route_capital_gap_5",
+            "is_stable",
+            "future_log1p_v3_mint_events",
+            "future_log1p_v3_burn_events",
+            "future_log1p_v3_total_lp_actions",
+            "future_v3_net_mint_event_balance",
+        ]
+    )
+
+
+def route_capital_gap_v3_lp_action_response(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 1000,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Test whether route-capital gaps predict later V3 mint/burn actions."""
+
+    rows: list[dict[str, object]] = []
+    outcomes = (
+        "future_log1p_v3_mint_events",
+        "future_log1p_v3_burn_events",
+        "future_log1p_v3_total_lp_actions",
+        "future_v3_net_mint_event_balance",
+    )
+    for horizon, group in panel.groupby("horizon_days", sort=True):
+        for outcome in outcomes:
+            data = (
+                group[
+                    [
+                        "origin_date",
+                        "candidate_address",
+                        "is_stable",
+                        "route_capital_gap_5",
+                        outcome,
+                    ]
+                ]
+                .replace([np.inf, -np.inf], np.nan)
+                .dropna()
+                .copy()
+            )
+            data["route_capital_gap_5_x_stable"] = (
+                data["route_capital_gap_5"].astype(float)
+                * data["is_stable"].astype(float)
+            )
+            residual = absorb_fixed_effects(
+                data[
+                    [
+                        outcome,
+                        "route_capital_gap_5",
+                        "route_capital_gap_5_x_stable",
+                    ]
+                ],
+                data["candidate_address"],
+                data["origin_date"],
+            )
+            fit = ols_clustered(
+                residual[outcome],
+                residual[["route_capital_gap_5", "route_capital_gap_5_x_stable"]],
+                data["origin_date"],
+                add_constant=False,
+                absorbed_groups=(data["candidate_address"], data["origin_date"]),
+                min_observations=min_observations,
+                min_clusters=min_clusters,
+            )
+            for predictor, coefficient, standard_error, t_statistic, p_value in zip(
+                ("route_capital_gap_5", "route_capital_gap_5_x_stable"),
+                fit.beta,
+                fit.standard_errors,
+                fit.t_statistics,
+                fit.p_values,
+                strict=True,
+            ):
+                coefficient = float(coefficient)
+                standard_error = float(standard_error)
+                rows.append(
+                    {
+                        "analysis_status": "exploratory_descriptive",
+                        "record_type": "route_capital_gap_v3_lp_action",
+                        "horizon_days": int(horizon),
+                        "outcome": outcome,
+                        "predictor": predictor,
+                        "coefficient": coefficient,
+                        "standard_error": standard_error,
+                        "t_statistic": float(t_statistic),
+                        "p_value": float(p_value),
+                        "coefficient_per_10pp_gap": 0.10 * coefficient,
+                        "standard_error_per_10pp_gap": 0.10 * standard_error,
+                        "n_observations": int(fit.n_observations),
+                        "date_clusters": int(fit.n_clusters),
+                        "fixed_effects": "candidate_address+origin_date",
+                        "covariance": "origin_date_clustered",
+                        "event_source": "uniswap_v3_graph_mint_burn_events",
+                        "interpretation": (
+                            "future V3 mint/burn event-count association, not "
+                            "dollar-valued provider flow or causal LP response"
+                        ),
+                    }
+                )
+            stable_total = linear_contrast(fit, [1.0, 1.0])
+            rows.append(
+                {
+                    "analysis_status": "exploratory_descriptive",
+                    "record_type": "route_capital_gap_v3_lp_action",
+                    "horizon_days": int(horizon),
+                    "outcome": outcome,
+                    "predictor": "stable_total_route_capital_gap_5",
+                    "coefficient": stable_total.estimate,
+                    "standard_error": stable_total.standard_error,
+                    "t_statistic": stable_total.t_statistic,
+                    "p_value": stable_total.p_value,
+                    "coefficient_per_10pp_gap": 0.10 * stable_total.estimate,
+                    "standard_error_per_10pp_gap": 0.10
+                    * stable_total.standard_error,
+                    "n_observations": int(fit.n_observations),
+                    "date_clusters": int(fit.n_clusters),
+                    "fixed_effects": "candidate_address+origin_date",
+                    "covariance": "origin_date_clustered",
+                    "event_source": "uniswap_v3_graph_mint_burn_events",
+                    "interpretation": (
+                        "stable-candidate future V3 mint/burn event-count "
+                        "association, not dollar-valued provider flow or causal "
+                        "LP response"
                     ),
                 }
             )
@@ -1752,30 +2362,64 @@ def level_associations(sample: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def support_rows(sample: pd.DataFrame) -> pd.DataFrame:
-    return pd.DataFrame(
-        [
+def support_rows(
+    sample: pd.DataFrame,
+    *,
+    v3_lp_actions: pd.DataFrame | None = None,
+) -> pd.DataFrame:
+    rows: list[dict[str, object]] = [
+        {
+            "record_type": "support",
+            "analysis_status": "exploratory_descriptive",
+            "input": str(CANDIDATE_DAY_INPUT.relative_to(REPO_ROOT)),
+            "exact_horizon_input": str(EXACT_HORIZON_INPUT.relative_to(REPO_ROOT)),
+            "pool_candidate_capital_input": str(
+                POOL_CANDIDATE_CAPITAL_INPUT.relative_to(REPO_ROOT)
+            ),
+            "v3_pool_day_fee_input": str(
+                V3_POOL_DAY_FEES_INPUT.relative_to(REPO_ROOT)
+            ),
+            "v3_lp_action_candidate_input": str(
+                V3_LP_ACTION_INPUT.relative_to(REPO_ROOT)
+            ),
+            "candidate_day_rows": int(len(sample)),
+            "days": int(sample["origin_date"].nunique()),
+            "candidate_count": int(sample["candidate_symbol"].nunique()),
+            "first_date": sample["origin_date"].min().strftime("%Y-%m-%d"),
+            "last_date": sample["origin_date"].max().strftime("%Y-%m-%d"),
+            "stable_symbols": ",".join(sorted(STABLE_SYMBOLS)),
+            "quantity": (
+                "V2 deposited-capital stock plus Uniswap V3 mint/burn event "
+                "counts; no dollar-valued provider flows"
+            ),
+        }
+    ]
+    if v3_lp_actions is not None:
+        rows.append(
             {
-                "record_type": "support",
+                "record_type": "v3_lp_action_input_support",
                 "analysis_status": "exploratory_descriptive",
-                "input": str(CANDIDATE_DAY_INPUT.relative_to(REPO_ROOT)),
-                "exact_horizon_input": str(EXACT_HORIZON_INPUT.relative_to(REPO_ROOT)),
-                "pool_candidate_capital_input": str(
-                    POOL_CANDIDATE_CAPITAL_INPUT.relative_to(REPO_ROOT)
+                "input": str(V3_LP_ACTION_INPUT.relative_to(REPO_ROOT)),
+                "candidate_day_action_rows": int(len(v3_lp_actions)),
+                "days": int(v3_lp_actions["origin_date"].nunique())
+                if not v3_lp_actions.empty
+                else 0,
+                "candidate_count": int(v3_lp_actions["candidate_address"].nunique())
+                if not v3_lp_actions.empty
+                else 0,
+                "first_date": v3_lp_actions["origin_date"].min().strftime("%Y-%m-%d")
+                if not v3_lp_actions.empty
+                else None,
+                "last_date": v3_lp_actions["origin_date"].max().strftime("%Y-%m-%d")
+                if not v3_lp_actions.empty
+                else None,
+                "quantity": (
+                    "processed Uniswap V3 mint/burn event counts by vehicle "
+                    "candidate and day, not dollar-valued provider flows"
                 ),
-                "v3_pool_day_fee_input": str(
-                    V3_POOL_DAY_FEES_INPUT.relative_to(REPO_ROOT)
-                ),
-                "candidate_day_rows": int(len(sample)),
-                "days": int(sample["origin_date"].nunique()),
-                "candidate_count": int(sample["candidate_symbol"].nunique()),
-                "first_date": sample["origin_date"].min().strftime("%Y-%m-%d"),
-                "last_date": sample["origin_date"].max().strftime("%Y-%m-%d"),
-                "stable_symbols": ",".join(sorted(STABLE_SYMBOLS)),
-                "quantity": "V2 deposited-capital stock, not provider flows",
             }
-        ]
-    )
+        )
+    return pd.DataFrame(rows)
 
 
 def run(
@@ -1790,9 +2434,18 @@ def run(
     daily_gaps = daily_capital_use_gaps(sample)
     share_gap_panel = candidate_share_gap_panel(sample)
     extensive_margin_panel = route_capital_gap_extensive_margin_panel(sample)
+    concentration_panel = candidate_capital_concentration_panel(share_gap_panel)
+    concentration_horizon_panel = route_capital_gap_concentration_horizon_panel(
+        concentration_panel
+    )
     stable_basket_panel = stable_basket_gap_horizon_panel(sample)
     same_pool_panel = route_capital_gap_pool_candidate_horizon_panel(share_gap_panel)
     fee_incidence_panel = route_capital_gap_v3_fee_horizon_panel(share_gap_panel)
+    v3_lp_actions = load_v3_lp_actions()
+    v3_lp_action_panel = route_capital_gap_v3_lp_action_horizon_panel(
+        share_gap_panel,
+        actions=v3_lp_actions,
+    )
     result = pd.concat(
         [
             annual_stable_allocation(sample),
@@ -1807,14 +2460,26 @@ def run(
             route_capital_gap_asymmetry(exact_panel),
             stable_basket_gap_portfolio_rebalancing(stable_basket_panel),
             route_capital_gap_extensive_margins(extensive_margin_panel),
+            capital_concentration_summaries(concentration_panel),
+            route_capital_gap_concentration_response(concentration_horizon_panel),
             route_capital_gap_same_pool_reallocation(same_pool_panel),
             route_capital_gap_v3_fee_incidence(fee_incidence_panel),
+            route_capital_gap_v3_lp_action_response(v3_lp_action_panel),
         ],
         ignore_index=True,
     )
     write_exhibit(result, output_path, code_sources=CODE_SOURCES, inputs=INPUTS)
-    write_exhibit(support_rows(sample), support_path, code_sources=CODE_SOURCES, inputs=INPUTS)
-    print(f"wrote {len(result)} liquidity-provision behavior rows and 1 support row")
+    support = support_rows(sample, v3_lp_actions=v3_lp_actions)
+    write_exhibit(
+        support,
+        support_path,
+        code_sources=CODE_SOURCES,
+        inputs=INPUTS,
+    )
+    print(
+        f"wrote {len(result):,} liquidity-provision behavior rows and "
+        f"{len(support):,} support rows"
+    )
     return 0
 
 

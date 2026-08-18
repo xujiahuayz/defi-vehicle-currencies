@@ -387,8 +387,8 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 
 % EVIDENCE-STATUS: exploratory descriptive allocation result
 % EVIDENCE-SOURCES: output/exhibits/liquidity_provision_behavior_exploration.jsonl; output/exhibits/liquidity_provision_behavior_support.jsonl; output/exhibits/liquidity_provision_behavior_deck_values.tex
-% SCIENTIFIC-BOUNDARY: V2 deposited-capital stock over five vehicle candidates; not provider inflow, active concentrated-liquidity depth, or executable quote size
-% ESTIMAND-BOUNDARY: daily five-candidate panel with route and V2 capital support; leader rows are same-day rankings, gap rows are within-day route-share minus capital-share associations, exact-horizon rows are future capital-share changes, stable-basket rows aggregate DAI/USDC/USDT and use 30-day calendar HAC with activity controls, same-pool rows follow pool-candidate capital, fee rows follow processed V3 pool-day fees and volume, and FE rows are contemporaneous level associations
+% SCIENTIFIC-BOUNDARY: V2 deposited-capital stock over five vehicle candidates plus Uniswap v3 mint/burn event counts; not provider inflow, active concentrated-liquidity depth, or executable quote size
+% ESTIMAND-BOUNDARY: daily five-candidate panel with route and V2 capital support; leader rows are same-day rankings, gap rows are within-day route-share minus capital-share associations, exact-horizon rows are future capital-share changes, stable-basket rows aggregate DAI/USDC/USDT and use 30-day calendar HAC with activity controls, same-pool rows follow pool-candidate capital, fee rows follow processed V3 pool-day fees and volume, V3 LP-action rows follow raw mint/burn event counts through processed pool metadata, and FE rows are contemporaneous level associations
 % VISUAL-FUNCTION: capital-use split | three-stat allocation contrast | show that provider capital remains native-heavy while stablecoins carry excess vehicle use
 \begin{frame}{Provider capital stays native-heavy}
 \vspace{0.10cm}
@@ -411,9 +411,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.44cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.4}{9.4}\selectfont Stablecoins' route share rises while capital share falls. A 10 pp stable-basket shortfall predicts \LiqBehStableBasketGapLongCoef{} stable capital share and \LiqBehWethBasketGapLongCoef{} WETH capital share over 120 days; WBTC barely moves (\LiqBehWbtcBasketGapLongCoef{}).\par}
+{\fontsize{8.4}{9.4}\selectfont Route share rises while stable capital share falls. A 10 pp stable shortfall predicts \LiqBehStableBasketGapLongCoef{} stable capital, \LiqBehWethBasketGapLongCoef{} WETH capital, and \LiqBehStableVThreeMintMonthCoef{} future V3 mint events.\par}
 \end{minipage}}
-\decknote{Daily five-candidate V2 panel over \LiqBehPanelDays{} days; capital is deposited-capital stock. Stable route share rises \LiqBehStableRouteShareBase{} to \LiqBehStableRouteShareEnd{} while capital share falls \LiqBehStableCapitalShareBase{} to \LiqBehStableCapitalShareEnd{}. Stable-basket rebalancing rows include log total route and capital controls, with 30-day calendar HAC. Same-pool rows absorb pool-candidate/date effects; all-candidate 120-day coefficient \LiqBehSamePoolLongCoef{} (SE \LiqBehSamePoolLongSE{}). Descriptive.}
+\decknote{Five-candidate V2 deposited-capital panel. Stable route share rises \LiqBehStableRouteShareBase{} to \LiqBehStableRouteShareEnd{} while capital share falls \LiqBehStableCapitalShareBase{} to \LiqBehStableCapitalShareEnd{}. Stable-basket rows use activity controls/HAC. Concentration: top-pool share \LiqBehStableTopPoolShareEnd{} vs \LiqBehNonstableTopPoolShareEnd{}. V3 action screen: \LiqBehVThreeLpActionRows{} candidate-date rows, candidate/date FE, event counts not dollar provider flow.}
 \end{frame}
 
 % EVIDENCE-STATUS: current predictive mechanism result; the reciprocal rule records a non-pass
