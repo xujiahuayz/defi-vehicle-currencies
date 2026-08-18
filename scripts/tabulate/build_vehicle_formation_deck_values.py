@@ -194,6 +194,31 @@ def render_vehicle_formation_deck_values(estimates: pd.DataFrame) -> str:
         outcome="stable_share",
         predictor="is_2026_x_complex_share",
     )
+    secure_stable_2026 = _one(
+        estimates,
+        record_type="entry_secure_volume_class",
+        entry_year=2026,
+        secure_volume_class="stable_endpoint",
+    )
+    secure_other_2026 = _one(
+        estimates,
+        record_type="entry_secure_volume_class",
+        entry_year=2026,
+        secure_volume_class="other_non_weth_endpoint",
+    )
+    secure_gap_change = _one(
+        estimates,
+        record_type="entry_secure_volume_gap_change",
+        baseline_year=2024,
+        comparison_year=2026,
+    )
+    secure_volume_driver = _one(
+        estimates,
+        record_type="entry_secure_volume_regression",
+        endpoint_class="non_weth_endpoint",
+        outcome="stable_share",
+        predictor="is_2026_x_stable_endpoint",
+    )
     values = [
         float(cohort_2024["stable_share"]),
         float(cohort_2026["stable_share"]),
@@ -222,6 +247,11 @@ def render_vehicle_formation_deck_values(estimates: pd.DataFrame) -> str:
         float(non_weth_stable_endpoint_driver["coefficient"]),
         float(route_direct_2026_driver["coefficient"]),
         float(route_complex_2026_driver["coefficient"]),
+        float(secure_stable_2026["stable_share"]),
+        float(secure_other_2026["stable_share"]),
+        float(secure_stable_2026["route_mass_share"]),
+        float(secure_gap_change["gap_change"]),
+        float(secure_volume_driver["coefficient"]),
     ]
     if not all(math.isfinite(value) for value in values):
         raise ValueError("formation deck values contain nonfinite cells")
@@ -239,6 +269,14 @@ def render_vehicle_formation_deck_values(estimates: pd.DataFrame) -> str:
         and float(route_complex_2026_driver["p_value"]) < 0.01
     ):
         raise ValueError("2026 route-architecture entry-driver pattern no longer holds")
+    if not (
+        float(secure_stable_2026["stable_share"])
+        > float(secure_other_2026["stable_share"])
+        and float(secure_gap_change["gap_change"]) > 0
+        and float(secure_volume_driver["coefficient"]) > 0
+        and float(secure_volume_driver["p_value"]) < 0.05
+    ):
+        raise ValueError("stable-endpoint secure-volume entry pattern no longer holds")
     top_two_stable_entry_share = float(usdc_2026_entry["stable_entry_route_share"]) + float(
         usdt_2026_entry["stable_entry_route_share"]
     )
@@ -299,6 +337,12 @@ def render_vehicle_formation_deck_values(estimates: pd.DataFrame) -> str:
         f"\\newcommand{{\\FormationRouteArchDirectShareDriverSE}}{{{_unsigned_pp(float(route_direct_2026_driver['standard_error']))}}}",
         f"\\newcommand{{\\FormationRouteArchComplexShareDriver}}{{{_signed_pp(float(route_complex_2026_driver['coefficient']))}}}",
         f"\\newcommand{{\\FormationRouteArchComplexShareDriverSE}}{{{_unsigned_pp(float(route_complex_2026_driver['standard_error']))}}}",
+        f"\\newcommand{{\\FormationSecureStableEndpointShareEnd}}{{{_pct(float(secure_stable_2026['stable_share']))}}}",
+        f"\\newcommand{{\\FormationSecureOtherEndpointShareEnd}}{{{_pct(float(secure_other_2026['stable_share']))}}}",
+        f"\\newcommand{{\\FormationSecureStableEndpointMassEnd}}{{{_pct(float(secure_stable_2026['route_mass_share']))}}}",
+        f"\\newcommand{{\\FormationSecureGapChange}}{{{_signed_pp(float(secure_gap_change['gap_change']))}}}",
+        f"\\newcommand{{\\FormationSecureVolumeDriver}}{{{_signed_pp(float(secure_volume_driver['coefficient']))}}}",
+        f"\\newcommand{{\\FormationSecureVolumeDriverSE}}{{{_unsigned_pp(float(secure_volume_driver['standard_error']))}}}",
     ]
     return "\n".join(lines) + "\n"
 

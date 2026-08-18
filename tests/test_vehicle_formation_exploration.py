@@ -8,6 +8,8 @@ from scripts.analyze.run_vehicle_formation_exploration import (
     entry_follow_panel,
     entry_regime_hysteresis,
     entry_route_architecture_regressions,
+    entry_secure_volume_regressions,
+    entry_secure_volume_summary,
     entry_stable_candidate_persistence,
     entry_stable_candidate_summary,
     endpoint_class,
@@ -230,6 +232,35 @@ def test_endpoint_class_separates_weth_from_other_stable_endpoints() -> None:
     )
 
 
+def test_entry_secure_volume_summary_excludes_weth_and_reports_gap_change(tmp_path) -> None:
+    stable = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+    weth = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+    other = "0x1111111111111111111111111111111111111111"
+    frame = pd.DataFrame(
+        [
+            _row("2024-01-01", stable, other, entry=True, stable=2, native=8),
+            _row("2024-01-02", other, other[::-1], entry=True, stable=0, native=10),
+            _row("2026-01-01", stable, other[::-1], entry=True, stable=6, native=4),
+            _row("2026-01-02", other, other, entry=True, stable=1, native=9),
+            _row("2026-01-03", weth, other, entry=True, stable=10, native=0),
+        ]
+    )
+    path = tmp_path / "secure_volume.parquet"
+    frame.to_parquet(path, index=False)
+
+    summary = entry_secure_volume_summary(path)
+    stable_2026 = summary[
+        summary["record_type"].eq("entry_secure_volume_class")
+        & summary["entry_year"].eq(2026)
+        & summary["secure_volume_class"].eq("stable_endpoint")
+    ].iloc[0]
+    change = summary[summary["record_type"].eq("entry_secure_volume_gap_change")].iloc[0]
+
+    assert stable_2026["stable_share"] == pytest.approx(0.6)
+    assert stable_2026["route_mass_share"] == pytest.approx(0.5)
+    assert change["gap_change"] == pytest.approx(0.3)
+
+
 def test_entry_driver_panel_adds_comparison_year_flag(pair_support_path) -> None:
     panel = entry_driver_panel(pair_support_path)
     assert set(panel["entry_year"]) == {2024, 2026}
@@ -279,3 +310,49 @@ def test_entry_route_architecture_regressions_publish_interactions() -> None:
         "is_2026_x_complex_share",
     }.issubset(set(result["predictor"]))
     assert result["record_type"].eq("entry_route_architecture_regression").all()
+
+
+def test_entry_secure_volume_regressions_publish_conditional_driver() -> None:
+    rows = []
+    for day in range(1, 8):
+        for is_2026 in (0.0, 1.0):
+            for stable_endpoint in (0.0, 1.0):
+                for direct_share in (0.0, 0.5):
+                    for complex_share in (0.0, 0.3):
+                        stable_share = (
+                            0.01
+                            + 0.04 * is_2026
+                            + 0.02 * stable_endpoint
+                            + 0.04 * is_2026 * stable_endpoint
+                            + 0.12 * complex_share
+                            + 0.10 * is_2026 * direct_share
+                        )
+                        rows.append(
+                            {
+                                "date": pd.Timestamp(
+                                    f"{2024 + int(2 * is_2026)}-01-{day:02d}"
+                                ),
+                                "primary_routes": 10.0,
+                                "stable_share": stable_share,
+                                "stable_dominant_entry": float(stable_share > 0.05),
+                                "is_2026": is_2026,
+                                "stable_endpoint": stable_endpoint,
+                                "is_2026_x_stable_endpoint": (
+                                    is_2026 * stable_endpoint
+                                ),
+                                "log_entry_routes": 1.0 + 0.01 * day,
+                                "direct_share": direct_share,
+                                "complex_share": complex_share,
+                                "is_2026_x_direct_share": is_2026 * direct_share,
+                                "is_2026_x_complex_share": is_2026 * complex_share,
+                            }
+                        )
+    result = entry_secure_volume_regressions(
+        pd.DataFrame(rows), min_observations=10, min_clusters=2
+    )
+    driver = result[
+        result["outcome"].eq("stable_share")
+        & result["predictor"].eq("is_2026_x_stable_endpoint")
+    ].iloc[0]
+    assert result["record_type"].eq("entry_secure_volume_regression").all()
+    assert driver["coefficient"] > 0

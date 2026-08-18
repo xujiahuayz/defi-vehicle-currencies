@@ -52,6 +52,16 @@ ENTRY_ARCHITECTURE_PREDICTORS = (
     "is_2026_x_direct_share",
     "is_2026_x_complex_share",
 )
+ENTRY_SECURE_VOLUME_PREDICTORS = (
+    "is_2026",
+    "stable_endpoint",
+    "is_2026_x_stable_endpoint",
+    "log_entry_routes",
+    "direct_share",
+    "complex_share",
+    "is_2026_x_direct_share",
+    "is_2026_x_complex_share",
+)
 
 
 def _sql_path(path: Path) -> str:
@@ -168,6 +178,112 @@ def entry_endpoint_class_summary(pair_support_path: Path = PAIR_SUPPORT) -> pd.D
             }
         )
     return pd.DataFrame(rows)
+
+
+def entry_secure_volume_summary(pair_support_path: Path = PAIR_SUPPORT) -> pd.DataFrame:
+    """Split non-WETH entrants by whether a stablecoin is already an endpoint.
+
+    This is the entrant analogue of the secure-volume idea in vehicle-currency
+    theory: an asset with demand at one side of a corridor has an easier path to
+    becoming the intermediary for other trades. WETH endpoints are excluded
+    because the native-versus-stable vehicle is mechanically settled there.
+    """
+
+    path = _sql_path(pair_support_path)
+    years = ", ".join(str(year) for year in MAIN_ENTRY_YEARS)
+    entries = _read_sql(
+        f"""
+        SELECT
+            date,
+            src,
+            tgt,
+            year(date)::INTEGER AS entry_year,
+            primary_choice_route_count::DOUBLE AS primary_routes,
+            stable_choice_route_count::DOUBLE AS stable_routes,
+            native_choice_route_count::DOUBLE AS native_routes
+        FROM read_parquet('{path}')
+        WHERE pair_entry_on_day
+          AND primary_choice_route_count > 0
+          AND year(date) IN ({years})
+          AND strftime(date, '%m-%d') <= '06-30'
+        """
+    )
+    entries["endpoint_class"] = [
+        endpoint_class(src, tgt) for src, tgt in zip(entries["src"], entries["tgt"])
+    ]
+    non_weth = entries[~entries["endpoint_class"].eq("weth_endpoint")].copy()
+    non_weth["secure_volume_class"] = np.where(
+        non_weth["endpoint_class"].eq("stable_endpoint"),
+        "stable_endpoint",
+        "other_non_weth_endpoint",
+    )
+    total_by_year = non_weth.groupby("entry_year")["primary_routes"].sum()
+    rows: list[dict[str, object]] = []
+    for (year, class_name), group in non_weth.groupby(
+        ["entry_year", "secure_volume_class"], sort=True
+    ):
+        primary_routes = float(group["primary_routes"].sum())
+        stable_routes = float(group["stable_routes"].sum())
+        native_routes = float(group["native_routes"].sum())
+        rows.append(
+            {
+                "record_type": "entry_secure_volume_class",
+                "entry_year": int(year),
+                "secure_volume_class": str(class_name),
+                "pairs": int(len(group)),
+                "primary_routes": primary_routes,
+                "stable_routes": stable_routes,
+                "native_routes": native_routes,
+                "stable_share": stable_routes / primary_routes,
+                "stable_dominant_pair_share": float(
+                    (group["stable_routes"] > group["native_routes"]).mean()
+                ),
+                "route_mass_share": primary_routes / float(total_by_year.loc[year]),
+                "interpretation": (
+                    "exploratory_secure_volume_entry_split_not_causal"
+                ),
+            }
+        )
+    summary = pd.DataFrame(rows)
+    gap_rows: list[dict[str, object]] = []
+    by_year: dict[int, float] = {}
+    for year, group in summary.groupby("entry_year", sort=True):
+        stable = group[group["secure_volume_class"].eq("stable_endpoint")]
+        other = group[group["secure_volume_class"].eq("other_non_weth_endpoint")]
+        if len(stable) == 1 and len(other) == 1:
+            gap = float(stable.iloc[0]["stable_share"] - other.iloc[0]["stable_share"])
+            by_year[int(year)] = gap
+            gap_rows.append(
+                {
+                    "record_type": "entry_secure_volume_gap",
+                    "entry_year": int(year),
+                    "stable_endpoint_stable_share": float(
+                        stable.iloc[0]["stable_share"]
+                    ),
+                    "other_non_weth_stable_share": float(
+                        other.iloc[0]["stable_share"]
+                    ),
+                    "stable_share_gap": gap,
+                    "interpretation": (
+                        "stable_endpoint_minus_other_non_weth_entry_share"
+                    ),
+                }
+            )
+    if BASELINE_YEAR in by_year and COMPARISON_YEAR in by_year:
+        gap_rows.append(
+            {
+                "record_type": "entry_secure_volume_gap_change",
+                "baseline_year": BASELINE_YEAR,
+                "comparison_year": COMPARISON_YEAR,
+                "baseline_gap": by_year[BASELINE_YEAR],
+                "comparison_gap": by_year[COMPARISON_YEAR],
+                "gap_change": by_year[COMPARISON_YEAR] - by_year[BASELINE_YEAR],
+                "interpretation": (
+                    "descriptive_change_in_stable_endpoint_entry_gap"
+                ),
+            }
+        )
+    return pd.concat([summary, pd.DataFrame(gap_rows)], ignore_index=True, sort=False)
 
 
 def entry_stable_candidate_summary(
@@ -501,6 +617,60 @@ def entry_route_architecture_regressions(
     return pd.DataFrame(rows)
 
 
+def entry_secure_volume_regressions(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 1000,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Fit secure-volume screens conditional on entry route architecture."""
+
+    rows: list[dict[str, object]] = []
+    for outcome in ("stable_share", "stable_dominant_entry"):
+        required = [outcome, "date", "primary_routes", *ENTRY_SECURE_VOLUME_PREDICTORS]
+        data = panel.loc[:, required].replace([np.inf, -np.inf], np.nan).dropna()
+        fit = ols_clustered(
+            data[outcome],
+            data[list(ENTRY_SECURE_VOLUME_PREDICTORS)],
+            data["date"],
+            weights=data["primary_routes"],
+            min_observations=min_observations,
+            min_clusters=min_clusters,
+        )
+        for name, beta, se, t_stat, p_value in zip(
+            ("constant", *ENTRY_SECURE_VOLUME_PREDICTORS),
+            fit.beta,
+            fit.standard_errors,
+            fit.t_statistics,
+            fit.p_values,
+            strict=True,
+        ):
+            rows.append(
+                {
+                    "record_type": "entry_secure_volume_regression",
+                    "entry_year": None,
+                    "endpoint_class": "non_weth_endpoint",
+                    "outcome": outcome,
+                    "predictor": name,
+                    "coefficient": float(beta),
+                    "coefficient_pp": 100.0 * float(beta),
+                    "standard_error": float(se),
+                    "standard_error_pp": 100.0 * float(se),
+                    "t_statistic": float(t_stat),
+                    "p_value": float(p_value),
+                    "observations": int(fit.n_observations),
+                    "entry_date_clusters": int(fit.n_clusters),
+                    "weighted_by": "entry_primary_choice_routes",
+                    "covariance_id": "entry_date_cluster_cr1",
+                    "controls": ",".join(ENTRY_SECURE_VOLUME_PREDICTORS),
+                    "interpretation": (
+                        "exploratory_secure_volume_entry_driver_not_causal"
+                    ),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
 def entry_follow_panel(
     horizon_days: int,
     *,
@@ -813,6 +983,7 @@ def build_results(
         raise FileNotFoundError(candidate_choices_path)
     cohorts = entry_cohorts(pair_support_path)
     endpoint_classes = entry_endpoint_class_summary(pair_support_path)
+    secure_volume = entry_secure_volume_summary(pair_support_path)
     stable_candidates = entry_stable_candidate_summary(
         pair_support_path=pair_support_path,
         candidate_choices_path=candidate_choices_path,
@@ -820,6 +991,7 @@ def build_results(
     driver_panel = entry_driver_panel(pair_support_path)
     driver_regressions = entry_driver_regressions(driver_panel)
     architecture_regressions = entry_route_architecture_regressions(driver_panel)
+    secure_volume_regressions = entry_secure_volume_regressions(driver_panel)
     follow_panels = [
         entry_follow_panel(horizon, pair_support_path=pair_support_path)
         for horizon in HORIZONS
@@ -842,10 +1014,12 @@ def build_results(
         [
             cohorts,
             endpoint_classes,
+            secure_volume,
             stable_candidates,
             *candidate_persistence,
             driver_regressions,
             architecture_regressions,
+            secure_volume_regressions,
             *summaries,
             *contrasts,
             *hysteresis,

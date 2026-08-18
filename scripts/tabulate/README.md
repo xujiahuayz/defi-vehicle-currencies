@@ -33,6 +33,7 @@ analysis exhibit that supplies each value.
 | `build_liquidity_capital_v2_deck_values.py` | V2 mechanism macros |
 | `build_liquidity_provision_behavior_deck_values.py` | exploratory liquidity behavior macros |
 | `build_vehicle_formation_deck_values.py` | exploratory market-formation macros |
+| `build_vehicle_market_size_deck_values.py` | exploratory market-size vehicle-use macros |
 | `build_v1_architecture_deck_values.py` | V1 mandate and V2 routing facts |
 
 Each generated file has one owner. Inline empirical tables should be moved to a

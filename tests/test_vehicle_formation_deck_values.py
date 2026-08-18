@@ -220,6 +220,39 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
                 "primary_routes": None,
                 "stable_share": None,
             },
+            {
+                "record_type": "entry_secure_volume_class",
+                "entry_year": 2026,
+                "secure_volume_class": "stable_endpoint",
+                "primary_routes": 35,
+                "stable_share": 0.18,
+                "route_mass_share": 0.16,
+            },
+            {
+                "record_type": "entry_secure_volume_class",
+                "entry_year": 2026,
+                "secure_volume_class": "other_non_weth_endpoint",
+                "primary_routes": 142,
+                "stable_share": 0.05,
+                "route_mass_share": 0.84,
+            },
+            {
+                "record_type": "entry_secure_volume_gap_change",
+                "baseline_year": 2024,
+                "comparison_year": 2026,
+                "gap_change": 0.10,
+            },
+            {
+                "record_type": "entry_secure_volume_regression",
+                "endpoint_class": "non_weth_endpoint",
+                "outcome": "stable_share",
+                "predictor": "is_2026_x_stable_endpoint",
+                "coefficient": 0.024,
+                "standard_error": 0.010,
+                "p_value": 0.02,
+                "primary_routes": None,
+                "stable_share": None,
+            },
         ]
     )
     rendered = render_vehicle_formation_deck_values(estimates)
@@ -236,3 +269,6 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
     assert "\\FormationNonWethYearDriver" in rendered
     assert "\\FormationRouteArchDirectShareDriver" in rendered
     assert "\\FormationRouteArchComplexShareDriver" in rendered
+    assert "\\FormationSecureStableEndpointShareEnd" in rendered
+    assert "$+10.0$ pp" in rendered
+    assert "\\FormationSecureVolumeDriver" in rendered
