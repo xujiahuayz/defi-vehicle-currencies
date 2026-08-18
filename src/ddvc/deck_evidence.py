@@ -56,7 +56,7 @@ AUDIENCE_JARGON = {
 # delivered deck.  Numerals are deliberately not words: axis ticks, cell values
 # and estimates are exhibit apparatus, and a chart is not made denser by having
 # a longer y axis.  The repeated footline is subtracted before counting.
-DECK_FOOTER = "Vehicle Currency Rotation"
+DECK_FOOTER = "Making Dominant Vehicle Currencies"
 DENSITY_WORD = re.compile(r"[A-Za-z][A-Za-z'’\-]*")
 DENSITY_LEDGER_FIELDS = (
     "schema_version",
