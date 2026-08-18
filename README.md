@@ -23,11 +23,12 @@ instructions in a provider-specific file.
 
 ## Repository ownership and the `ddvc` name
 
-There is one active checkout: `defi-vehicle-currencies`. The sibling
-`defi-dominant-currency` checkout is retired and contains no data; its recovered
-raw files live under `data/raw/archive/`. The `src/ddvc/` directory is the
-project's Python package namespace (short for the project's internal name), not
-an additional DVC repository or data store. A directory named
+There is one project checkout on each machine: `defi-vehicle-currencies`. The
+retired `defi-dominant-currency` checkout has been removed from the projects
+directory; its Git history remains on its remote and its recovered raw files live
+under `data/raw/archive/`. The `src/ddvc/` directory is the project's Python
+package namespace (short for the project's internal name), not an additional DVC
+repository or data store. A directory named
 `defi-vehicle-currencies-backups` under the raw archive is retained source data,
 not a second checkout. Studio is the canonical raw-data owner; M3 is the
 build/review checkout and need not hold a byte-for-byte copy of Studio's full

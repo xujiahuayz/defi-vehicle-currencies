@@ -79,7 +79,8 @@ an unchanged-pass counter.
   the complete Ethereum boundary and the explicit
   `data/raw/ethereum/rpc_cache/`. It has no raw symlinks. The recovered backup
   folder is inside `data/raw/archive/defi-vehicle-currencies-backups/`; the
-  retired sibling data tree is empty and no top-level backup checkout remains.
+  retired sibling checkout has been removed from the projects directory and no
+  top-level backup checkout remains.
 - The hidden `.git/ddvc-runtime` caches and stale provisional/manifests were
   removed from both checkouts (recoverable copies are in each machine's Trash).
   Raw RPC cache records were moved into `data/raw/ethereum/rpc_cache/` before the
