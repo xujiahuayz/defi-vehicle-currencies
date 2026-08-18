@@ -20,7 +20,7 @@ B literature and contribution          DONE for current paper
   |
 C definitions and estimands            DONE
   |
-D raw data and reconstruction           CURRENT-REPO OWNERSHIP DONE; RAW MIRROR IN PROGRESS
+  D raw data and reconstruction           STUDIO CANONICAL OWNER; M3 BUILD COPY INTENTIONALLY PARTIAL
   |
 D3 purpose-built analysis inputs        READY ON BOTH HOSTS FOR ACTIVE CLAIMS
   |
@@ -52,10 +52,12 @@ working paper and deck hostage and must not be presented as established findings
 
 ## Current blockers
 
-- Finish the full raw mirror between M3 and Studio in the background; the active
-  three-input claim perimeter is already present on both hosts.
-- Complete the final test/build check, commit and push `main`, then fast-forward
-  the clean Studio checkout.
+- The Studio checkout is the canonical raw-data owner. Its raw boundary is
+  complete and is not duplicated byte-for-byte onto M3 because the only route
+  between the hosts is a heavily throttled relay. M3 retains the code, generated
+  deliverables, and the active processed inputs needed for review.
+- Studio has no LaTeX toolchain; the final paper/deck compile gate is therefore
+  run on M3, while Studio stores the same source and already-built PDFs.
 
 The executable check is:
 
@@ -69,20 +71,20 @@ an unchanged-pass counter.
 
 ## Data consolidation state
 
-- M3 current repository: about 86 GB of raw data, 94,666 raw files, all regular
-  files, no raw symlinks. The 81 GB previously hidden behind links to
-  `defi-dominant-currency` were moved into this repository. Remaining unique raw
-  evidence from that checkout is retained under
-  `data/raw/archive/defi-dominant-currency/`; unconsumed derived data were removed.
-- Studio current repository: about 155 GB and 314,806 regular raw files, including
-  the roughly 62 GB Ethereum boundary absent on the M3. It has no raw symlinks.
-  The remaining 411 MB of unique retired-repository raw evidence were moved under
-  `data/raw/archive/defi-dominant-currency/studio-remaining-20260818/`, and the
-  retired sibling data tree is empty.
-- Cross-machine raw equality is not yet achieved because the Studio is reachable
-  only through an unstable relay. Scientific work can proceed on the Studio, which
-  owns the fuller raw boundary, while resumable path-and-size transfers fill the
-  M3 copy.
+- M3 current repository: about 87 GB of raw data, all regular files and no raw
+  symlinks. The data recovered from `defi-dominant-currency` were moved into this
+  repository; unconsumed derived data were removed. M3 is the TeX/build and review
+  host, not the canonical raw store.
+- Studio current repository: about 158 GB and 700,412 regular raw files, including
+  the complete Ethereum boundary and the explicit
+  `data/raw/ethereum/rpc_cache/`. It has no raw symlinks. The recovered backup
+  folder is inside `data/raw/archive/defi-vehicle-currencies-backups/`; the
+  retired sibling data tree is empty and no top-level backup checkout remains.
+- The hidden `.git/ddvc-runtime` caches and stale provisional/manifests were
+  removed from both checkouts (recoverable copies are in each machine's Trash).
+  Raw RPC cache records were moved into `data/raw/ethereum/rpc_cache/` before the
+  runtime cleanup. Cross-machine raw equality is intentionally not claimed: Studio
+  is the owner and M3's smaller copy is a working/build copy.
 
 ## Definition guards
 
@@ -98,7 +100,9 @@ an unchanged-pass counter.
 
 ## Deliverable state
 
-The M3 now compiles a 47-page paper and a 37-page deck after both registered
-reruns. The paper log is clean; the deck's result pages were visually inspected
-and its two layout overflows corrected. There is one manuscript under `paper/`
-and one presentation under `deck/`; Git history is the archive.
+The M3 compiles a 47-page paper and a 37-page deck after both registered reruns.
+The paper log is clean; the deck's result pages were visually inspected and its
+two layout overflows corrected. Studio contains the same source and PDFs and
+passes the findings freeze plus the full repository test suite. There is one
+manuscript under `paper/` and one presentation under `deck/`; Git history is the
+archive.
