@@ -5,15 +5,17 @@
 \begin{frame}{The route sample and architecture supplement answer different questions}
 \evidencekicker{Data}
 \vspace{0.18cm}
-\begin{tikzpicture}[x=0.98cm,y=0.80cm]
+\begin{tikzpicture}[x=0.98cm,y=0.76cm]
 \draw[rule,line width=2pt] (0,0) -- (11.9,0);
-\foreach \x/\year in {0/2020,2/2021,4/2022,6/2023,8/2024,10/2025,11.9/2026}{\fill[ucldark] (\x,0) circle (2.3pt); \node[below,font=\small] at (\x,-0.15) {\year};}
-\draw[uclbright,line width=1pt] (0.75,0.12)--(0.75,1.05);
-\node[above,align=center,font=\small] at (0.75,1.05) {V2: arbitrary atomic pairs};
-\draw[native,line width=1pt] (2.10,0.12)--(2.10,1.65);
-\node[above,align=center,font=\small] at (3.00,1.65) {V3: concentrated liquidity};
-\draw[stable,line width=1pt] (10.05,0.12)--(10.05,1.05);
-\node[above,align=center,font=\small] at (10.05,1.05) {V4: singleton};
+\draw[accent,line width=1pt] (1.24,0.12)--(1.24,1.12)--(0.95,1.12);
+\node[above,align=center,font=\small] at (0.95,1.12) {V1: forced ETH paths};
+\draw[uclbright,line width=1pt] (3.48,-0.12)--(3.48,-1.02);
+\node[below,align=center,font=\small] at (3.48,-1.02) {V2: arbitrary atomic pairs};
+\draw[native,line width=1pt] (4.97,0.12)--(4.97,1.12)--(5.35,1.12);
+\node[above,align=center,font=\small] at (5.35,1.12) {V3: concentrated liquidity};
+\draw[stable,line width=1pt] (10.53,-0.12)--(10.53,-1.02);
+\node[below,align=center,font=\small] at (10.53,-1.02) {V4: singleton};
+\foreach \x/\year in {0/2018,1.49/2019,2.98/2020,4.46/2021,5.95/2022,7.44/2023,8.93/2024,10.41/2025,11.9/2026}{\fill[ucldark] (\x,0) circle (2.3pt); \node[below,fill=white,inner sep=1pt,font=\scriptsize] at (\x,-0.15) {\year};}
 \end{tikzpicture}
 \vspace{0.12cm}
 \begin{columns}[T,totalwidth=\textwidth]
