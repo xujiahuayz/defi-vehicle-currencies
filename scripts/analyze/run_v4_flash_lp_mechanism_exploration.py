@@ -48,6 +48,8 @@ OUTCOMES = (
     "future_net_add_flow_balance",
     "future_delta_log1p_tvl_usd",
     "future_log1p_lp_actions",
+    "future_narrow_medium_flow_value_share",
+    "future_broad_flow_value_share",
     "future_narrow_medium_action_share",
     "future_wide_very_wide_action_share",
     "future_full_range_action_share",
@@ -120,6 +122,8 @@ def load_inputs(
             "v4_gross_lp_flow_usd_screened",
             "v4_add_lp_flow_usd_screened",
             "v4_remove_lp_flow_usd_screened",
+            "v4_narrow_medium_flow_usd_screened",
+            "v4_broad_flow_usd_screened",
             "v4_lp_flow_screened_assignments",
         },
         "V4 LP-flow panel",
@@ -166,6 +170,8 @@ def build_mechanism_panel(
         "v4_gross_lp_flow_usd_screened",
         "v4_add_lp_flow_usd_screened",
         "v4_remove_lp_flow_usd_screened",
+        "v4_narrow_medium_flow_usd_screened",
+        "v4_broad_flow_usd_screened",
         "v4_lp_flow_screened_assignments",
     ]
     action_columns = [
@@ -248,6 +254,8 @@ def build_mechanism_panel(
         "v4_gross_lp_flow_usd_screened",
         "v4_add_lp_flow_usd_screened",
         "v4_remove_lp_flow_usd_screened",
+        "v4_narrow_medium_flow_usd_screened",
+        "v4_broad_flow_usd_screened",
         "v4_total_lp_actions",
         "v4_add_events",
         "v4_remove_events",
@@ -300,6 +308,17 @@ def build_mechanism_panel(
         panel["future_v4_add_lp_flow_usd_screened"]
         - panel["future_v4_remove_lp_flow_usd_screened"]
     ) / (panel["future_v4_gross_lp_flow_usd_screened"] + 1.0)
+    gross_flow = panel["future_v4_gross_lp_flow_usd_screened"].astype(float)
+    panel["future_narrow_medium_flow_value_share"] = np.where(
+        gross_flow > 0,
+        panel["future_v4_narrow_medium_flow_usd_screened"].astype(float) / gross_flow,
+        np.nan,
+    )
+    panel["future_broad_flow_value_share"] = np.where(
+        gross_flow > 0,
+        panel["future_v4_broad_flow_usd_screened"].astype(float) / gross_flow,
+        np.nan,
+    )
     panel["future_narrow_medium_action_share"] = (
         panel["future_v4_narrow_range_events"] + panel["future_v4_medium_range_events"]
     ) / (panel["future_v4_total_lp_actions"] + 1.0)

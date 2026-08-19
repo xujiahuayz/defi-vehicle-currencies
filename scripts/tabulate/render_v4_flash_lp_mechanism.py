@@ -21,8 +21,10 @@ OUTCOMES = {
     "future_log1p_gross_lp_flow_usd": ("Future LP flow", "log pts"),
     "future_delta_log1p_tvl_usd": ("Candidate-linked TVL", "log pts"),
     "future_log1p_lp_actions": ("LP actions", "log pts"),
-    "future_narrow_medium_action_share": ("Narrow/medium ranges", "pp"),
-    "future_wide_very_wide_action_share": ("Wide/very-wide ranges", "pp"),
+    "future_narrow_medium_flow_value_share": ("Flow narrow/medium", "pp"),
+    "future_broad_flow_value_share": ("Flow broad", "pp"),
+    "future_narrow_medium_action_share": ("Action narrow/medium", "pp"),
+    "future_wide_very_wide_action_share": ("Action wide/very-wide", "pp"),
 }
 
 
@@ -40,6 +42,8 @@ def _effect(row: pd.Series) -> tuple[float, float]:
     coefficient = float(row["coefficient"])
     standard_error = float(row["standard_error"])
     if row["outcome"] in {
+        "future_narrow_medium_flow_value_share",
+        "future_broad_flow_value_share",
         "future_narrow_medium_action_share",
         "future_wide_very_wide_action_share",
     }:
@@ -105,9 +109,10 @@ def render_v4_flash_lp_mechanism(results: pd.DataFrame) -> str:
         raise ValueError("V4 mechanism table mixes control sets")
 
     rows: list[str] = []
+    outcome_count = len(OUTCOMES)
     rows.append(
         r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}X"
-        r"*{5}{>{\centering\arraybackslash}X}@{}}"
+        + f"*{{{outcome_count}}}{{>{{\\centering\\arraybackslash}}X}}@{{}}}}"
     )
     rows.append(r"\toprule")
     rows.append(
@@ -132,12 +137,12 @@ def render_v4_flash_lp_mechanism(results: pd.DataFrame) -> str:
         raise ValueError("V4 mechanism table mixes observation or cluster counts")
     rows.append(
         "Observations / date clusters & "
-        + r"\multicolumn{5}{r}{"
+        + rf"\multicolumn{{{outcome_count}}}{{r}}{{"
         + f"{observations[0]:,} / {clusters[0]:,}"
         + r"} \\"
     )
-    rows.append(r"Candidate and date effects & \multicolumn{5}{r}{Yes} \\")
-    rows.append(r"Origin-day activity controls & \multicolumn{5}{r}{Yes} \\")
+    rows.append(rf"Candidate and date effects & \multicolumn{{{outcome_count}}}{{r}}{{Yes}} \\")
+    rows.append(rf"Origin-day activity controls & \multicolumn{{{outcome_count}}}{{r}}{{Yes}} \\")
     rows.append(r"\bottomrule")
     rows.append(r"\end{tabularx}")
     rows.append("")

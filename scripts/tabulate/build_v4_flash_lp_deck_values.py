@@ -84,6 +84,16 @@ def render_v4_flash_lp_deck_values(estimates: pd.DataFrame) -> str:
         predictor="internal_tx_share",
         outcome="future_wide_very_wide_action_share",
     )
+    internal_flow_narrow = _row(
+        estimates,
+        predictor="internal_tx_share",
+        outcome="future_narrow_medium_flow_value_share",
+    )
+    internal_flow_broad = _row(
+        estimates,
+        predictor="internal_tx_share",
+        outcome="future_broad_flow_value_share",
+    )
     multileg_narrow = _row(
         estimates,
         predictor="multi_leg_tx_share",
@@ -94,15 +104,47 @@ def render_v4_flash_lp_deck_values(estimates: pd.DataFrame) -> str:
         predictor="multi_leg_tx_share",
         outcome="future_wide_very_wide_action_share",
     )
+    multileg_flow_narrow = _row(
+        estimates,
+        predictor="multi_leg_tx_share",
+        outcome="future_narrow_medium_flow_value_share",
+    )
+    multileg_flow_broad = _row(
+        estimates,
+        predictor="multi_leg_tx_share",
+        outcome="future_broad_flow_value_share",
+    )
+    netting_flow_narrow = _row(
+        estimates,
+        predictor="netting_reduction_share",
+        outcome="future_narrow_medium_flow_value_share",
+    )
+    netting_flow_broad = _row(
+        estimates,
+        predictor="netting_reduction_share",
+        outcome="future_broad_flow_value_share",
+    )
     if not (
         float(internal_narrow["effect_per_10pp_predictor"]) < 0
         and float(internal_wide["effect_per_10pp_predictor"]) > 0
+        and float(internal_flow_narrow["effect_per_10pp_predictor"]) > 0
+        and float(internal_flow_broad["effect_per_10pp_predictor"]) < 0
         and float(multileg_narrow["effect_per_10pp_predictor"]) < 0
         and float(multileg_wide["effect_per_10pp_predictor"]) > 0
+        and float(multileg_flow_narrow["effect_per_10pp_predictor"]) > 0
+        and float(multileg_flow_broad["effect_per_10pp_predictor"]) < 0
+        and float(netting_flow_narrow["effect_per_10pp_predictor"]) > 0
+        and float(netting_flow_broad["effect_per_10pp_predictor"]) < 0
         and float(internal_narrow["p_value"]) < 0.01
         and float(internal_wide["p_value"]) < 0.01
+        and float(internal_flow_narrow["p_value"]) < 0.01
+        and float(internal_flow_broad["p_value"]) < 0.01
         and float(multileg_narrow["p_value"]) < 0.01
         and float(multileg_wide["p_value"]) < 0.01
+        and float(multileg_flow_narrow["p_value"]) < 0.01
+        and float(multileg_flow_broad["p_value"]) < 0.01
+        and float(netting_flow_narrow["p_value"]) < 0.01
+        and float(netting_flow_broad["p_value"]) < 0.01
         and int(internal_wide["n_observations"]) > 1_000
     ):
         raise ValueError("V4 flash-LP range-allocation headline no longer holds")
@@ -114,10 +156,22 @@ def render_v4_flash_lp_deck_values(estimates: pd.DataFrame) -> str:
         f"\\newcommand{{\\VFourFlashInternalNarrowLongSE}}{{{_unsigned_pp(0.1 * float(internal_narrow['standard_error']))}}}",
         f"\\newcommand{{\\VFourFlashInternalWideLongCoef}}{{{_signed_pp(float(internal_wide['effect_per_10pp_predictor']))}}}",
         f"\\newcommand{{\\VFourFlashInternalWideLongSE}}{{{_unsigned_pp(0.1 * float(internal_wide['standard_error']))}}}",
+        f"\\newcommand{{\\VFourFlashInternalFlowNarrowLongCoef}}{{{_signed_pp(float(internal_flow_narrow['effect_per_10pp_predictor']))}}}",
+        f"\\newcommand{{\\VFourFlashInternalFlowNarrowLongSE}}{{{_unsigned_pp(0.1 * float(internal_flow_narrow['standard_error']))}}}",
+        f"\\newcommand{{\\VFourFlashInternalFlowBroadLongCoef}}{{{_signed_pp(float(internal_flow_broad['effect_per_10pp_predictor']))}}}",
+        f"\\newcommand{{\\VFourFlashInternalFlowBroadLongSE}}{{{_unsigned_pp(0.1 * float(internal_flow_broad['standard_error']))}}}",
         f"\\newcommand{{\\VFourFlashMultilegNarrowLongCoef}}{{{_signed_pp(float(multileg_narrow['effect_per_10pp_predictor']))}}}",
         f"\\newcommand{{\\VFourFlashMultilegNarrowLongSE}}{{{_unsigned_pp(0.1 * float(multileg_narrow['standard_error']))}}}",
         f"\\newcommand{{\\VFourFlashMultilegWideLongCoef}}{{{_signed_pp(float(multileg_wide['effect_per_10pp_predictor']))}}}",
         f"\\newcommand{{\\VFourFlashMultilegWideLongSE}}{{{_unsigned_pp(0.1 * float(multileg_wide['standard_error']))}}}",
+        f"\\newcommand{{\\VFourFlashMultilegFlowNarrowLongCoef}}{{{_signed_pp(float(multileg_flow_narrow['effect_per_10pp_predictor']))}}}",
+        f"\\newcommand{{\\VFourFlashMultilegFlowNarrowLongSE}}{{{_unsigned_pp(0.1 * float(multileg_flow_narrow['standard_error']))}}}",
+        f"\\newcommand{{\\VFourFlashMultilegFlowBroadLongCoef}}{{{_signed_pp(float(multileg_flow_broad['effect_per_10pp_predictor']))}}}",
+        f"\\newcommand{{\\VFourFlashMultilegFlowBroadLongSE}}{{{_unsigned_pp(0.1 * float(multileg_flow_broad['standard_error']))}}}",
+        f"\\newcommand{{\\VFourFlashNettingFlowNarrowLongCoef}}{{{_signed_pp(float(netting_flow_narrow['effect_per_10pp_predictor']))}}}",
+        f"\\newcommand{{\\VFourFlashNettingFlowNarrowLongSE}}{{{_unsigned_pp(0.1 * float(netting_flow_narrow['standard_error']))}}}",
+        f"\\newcommand{{\\VFourFlashNettingFlowBroadLongCoef}}{{{_signed_pp(float(netting_flow_broad['effect_per_10pp_predictor']))}}}",
+        f"\\newcommand{{\\VFourFlashNettingFlowBroadLongSE}}{{{_unsigned_pp(0.1 * float(netting_flow_broad['standard_error']))}}}",
     ]
     return "\n".join(lines) + "\n"
 

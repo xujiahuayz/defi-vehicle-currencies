@@ -42,6 +42,16 @@ def _complete_rows() -> list[dict[str, object]]:
             effect=0.029,
         ),
         _row(
+            predictor="internal_tx_share",
+            outcome="future_narrow_medium_flow_value_share",
+            effect=0.014,
+        ),
+        _row(
+            predictor="internal_tx_share",
+            outcome="future_broad_flow_value_share",
+            effect=-0.014,
+        ),
+        _row(
             predictor="multi_leg_tx_share",
             outcome="future_narrow_medium_action_share",
             effect=-0.019,
@@ -51,6 +61,26 @@ def _complete_rows() -> list[dict[str, object]]:
             outcome="future_wide_very_wide_action_share",
             effect=0.018,
         ),
+        _row(
+            predictor="multi_leg_tx_share",
+            outcome="future_narrow_medium_flow_value_share",
+            effect=0.012,
+        ),
+        _row(
+            predictor="multi_leg_tx_share",
+            outcome="future_broad_flow_value_share",
+            effect=-0.012,
+        ),
+        _row(
+            predictor="netting_reduction_share",
+            outcome="future_narrow_medium_flow_value_share",
+            effect=0.012,
+        ),
+        _row(
+            predictor="netting_reduction_share",
+            outcome="future_broad_flow_value_share",
+            effect=-0.012,
+        ),
     ]
 
 
@@ -59,9 +89,12 @@ def test_v4_flash_lp_deck_values_render_range_reallocation() -> None:
 
     assert "\\VFourFlashInternalNarrowLongCoef" in rendered
     assert "\\VFourFlashInternalWideLongCoef" in rendered
+    assert "\\VFourFlashInternalFlowNarrowLongCoef" in rendered
+    assert "\\VFourFlashNettingFlowBroadLongCoef" in rendered
     assert "\\VFourFlashMultilegWideLongCoef" in rendered
     assert "$-2.40$ pp" in rendered
     assert "$+2.90$ pp" in rendered
+    assert "$+1.40$ pp" in rendered
 
 
 def test_v4_flash_lp_deck_values_reject_missing_wide_result() -> None:

@@ -40,6 +40,8 @@ def _complete_rows() -> list[dict[str, object]]:
         "future_log1p_gross_lp_flow_usd",
         "future_delta_log1p_tvl_usd",
         "future_log1p_lp_actions",
+        "future_narrow_medium_flow_value_share",
+        "future_broad_flow_value_share",
         "future_narrow_medium_action_share",
         "future_wide_very_wide_action_share",
     )
@@ -65,10 +67,12 @@ def test_v4_flash_lp_mechanism_table_scales_coefficients() -> None:
     assert "Multi-leg transaction share" in rendered
     assert "Gross-to-net reduction share" in rendered
     assert "Future LP flow (log pts)" in rendered
-    assert "Narrow/medium ranges (pp)" in rendered
-    assert "Wide/very-wide ranges (pp)" in rendered
+    assert "Flow narrow/medium (pp)" in rendered
+    assert "Flow broad (pp)" in rendered
+    assert "Action narrow/medium (pp)" in rendered
+    assert "Action wide/very-wide (pp)" in rendered
     assert "$+0.010^{***}$" in rendered
-    assert "$+5.000^{**}$" in rendered
+    assert "$+7.000^{**}$" in rendered
     assert "2,015 / 403" in rendered
 
 
