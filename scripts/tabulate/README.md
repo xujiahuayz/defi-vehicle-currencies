@@ -22,6 +22,7 @@ Captions, labels, placement, and interpretation stay in the paper/deck source.
 | `render_v4_flash_gap_flow_interactions.py` | `v4_flash_gap_flow_interactions.tex/.pdf` | `tab:v4-flash-gap-flow` |
 | `render_v3_v4_lp_protocol_contrast.py` | `v3_v4_lp_protocol_contrast.tex/.pdf` | `tab:v3-v4-lp-protocol` |
 | `render_v3_v4_lp_flow_protocol_contrast.py` | `v3_v4_lp_flow_protocol_contrast.tex/.pdf` | `tab:v3-v4-lp-flow-protocol` |
+| `render_v3_v4_tvl_protocol_contrast.py` | `v3_v4_tvl_protocol_contrast.tex/.pdf` | `tab:v3-v4-tvl-protocol` |
 | `render_venue_coverage.py` | `venue_coverage.tex/.pdf` | `tab:app:venues` |
 
 The remaining active manuscript tables are intentionally inline because each is
@@ -45,6 +46,7 @@ analysis exhibit that supplies each value.
 | `build_v4_flash_gap_deck_values.py` | V4 stable-shortfall flash-accounting interaction macros |
 | `build_v3_v4_lp_protocol_deck_values.py` | V3/V4 same-candidate-date LP protocol-contrast macros |
 | `build_v3_v4_lp_flow_protocol_deck_values.py` | V3/V4 same-candidate-date LP-flow protocol-contrast macros |
+| `build_v3_v4_tvl_protocol_deck_values.py` | V3/V4 same-candidate-date reported-TVL protocol-contrast macros |
 | `build_bridge_liquidity_feedback_deck_values.py` | local bridge-depth feedback macros |
 | `build_stable_stress_event_deck_values.py` | USDC/SVB stable-identity stress-screen macros |
 | `build_vehicle_formation_deck_values.py` | exploratory market-formation macros |
