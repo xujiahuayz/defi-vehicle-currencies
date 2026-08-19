@@ -38,6 +38,10 @@ def test_route_binding_matches_current_display_values_and_excludes_other_lanes()
     text = OUTPUT.read_text(encoding="utf-8")
     for expected in (
         r"\newcommand{\StableCountBase}{16.9\%}",
+        r"\newcommand{\RoutePanelRawSwaps}{472 million}",
+        r"\newcommand{\RoutePanelCalendarDates}{2,332}",
+        r"\newcommand{\RoutePanelDeploymentCount}{8}",
+        r"\newcommand{\RoutePanelSpan}{February 2020--June 2026}",
         r"\newcommand{\StableCountEnd}{42.3\%}",
         r"\newcommand{\StableValueBase}{32.7\%}",
         r"\newcommand{\StableValueEnd}{76.5\%}",

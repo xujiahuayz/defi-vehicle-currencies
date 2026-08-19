@@ -10,6 +10,7 @@ from ddvc.deck_evidence import (
     audit_deck_sources,
     rendered_page_density,
 )
+from ddvc.latex_text import strip_latex_comments
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -291,6 +292,9 @@ def test_deck_states_units_scopes_and_primary_protocol_sources() -> None:
     objects = (ROOT / "deck" / "sections" / "02-objects.tex").read_text(
         encoding="utf-8"
     )
+    identification = (ROOT / "deck" / "sections" / "01-identification.tex").read_text(
+        encoding="utf-8"
+    )
     appendix = (ROOT / "deck" / "sections" / "90-appendix.tex").read_text(
         encoding="utf-8"
     )
@@ -298,17 +302,24 @@ def test_deck_states_units_scopes_and_primary_protocol_sources() -> None:
         ROOT / "deck" / "assets" / "vehicle-transition-pair-decomposition.tex"
     ).read_text(encoding="utf-8")
 
-    assert "Count weights every route equally" in results
-    assert "value requires agreement among source" in results
+    assert "Routed value requires agreement among source" in results
     assert "descriptive within-day associations" in results
     assert "native-WETH-versus-stablecoin routes" in results
     assert "common month-days" in results
     assert "Matched markets" not in decomposition
     assert "Within-ultimate-pair change" in decomposition
 
+    visible_identification = strip_latex_comments(identification)
+    assert "\\RoutePanelRawSwaps" in visible_identification
+    assert "\\RoutePanelCalendarDates" in visible_identification
+    assert "\\RoutePanelDeploymentCount" in visible_identification
+    assert "Uniswap v2, v3, and v4" in visible_identification
+    assert "SushiSwap v2 and v3" in visible_identification
+    assert "Curve; Balancer; and Fluid" in visible_identification
+    assert "Uniswap v1 enters the separate protocol-architecture analysis" in visible_identification
     assert "Main route sample" in objects
-    assert "V1/V2 architecture supplement" in objects
-    assert "Curve, and Balancer route perimeter" in objects
+    assert "SushiSwap v2/v3" in objects
+    assert "Fluid" in objects
 
     assert "https://app.uniswap.org/whitepaper-v4.pdf" in appendix
     assert "add-usdc-as-a-collateral-type-2020-03-17" in appendix
@@ -330,15 +341,20 @@ def test_deck_mechanism_sequence_separates_route_settlement_and_capital() -> Non
         ROOT / "deck" / "assets" / "liquidity-quantity-cross-section.tex"
     ).read_text(encoding="utf-8")
 
-    assert "Higher capital predicts lower vehicle use at longer horizons" in results
-    assert "Vehicle use barely changes subsequent capital" in results
-    assert "Deposited capital at" in results
-    assert "\\LiqPredCapRouteDayCoef" in results
-    assert "\\LiqPredRouteCapDayCoef" in results
-    assert "\\LiqPredLongCapRouteCoef" in results
-    assert "Coefficients are predictive associations" in results
-    assert "candidate-day" not in results
-    assert "exact 1-, 7-, 30-, and 120-day horizons" not in results
+    visible_results = strip_latex_comments(results)
+    assert "Higher capital predicts lower vehicle use at longer horizons" not in visible_results
+    assert "Vehicle use barely changes subsequent capital" not in visible_results
+    assert "RETIRED CORE CAPITAL-PREDICTION FRAME" in results
+    assert "Holm-adjusted q=0.17" in results
+    assert "120-day estimate is a sensitivity result" in results
+    assert "Deposited capital at" not in visible_results
+    assert "\\LiqPredCapRouteDayCoef" not in visible_results
+    assert "\\LiqPredRouteCapDayCoef" not in visible_results
+    assert "\\LiqPredLongCapRouteCoef" not in visible_results
+    assert "\\BridgeLiquidityHorseRaceDepthCoef" in visible_results
+    assert "per log point of weaker-leg deposited capital" in visible_results
+    assert "candidate-day" not in visible_results
+    assert "exact 1-, 7-, 30-, and 120-day horizons" not in visible_results
 
     assert "inventory: exact token holdings" in liquidity_asset
     assert "deposited capital: independently valued holdings" in liquidity_asset

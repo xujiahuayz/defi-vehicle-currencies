@@ -83,8 +83,35 @@ the conflict.
 ## Paper prose
 
 - The paper is organized around one economic object: continuous vehicle
-  dominance in routed decentralized exchange. Other objects earn space by
+  dominance in routed decentralised exchange. Other objects earn space by
   testing or qualifying that central object.
+- Use **dominance** for a share-based role measure, **level** or **volume** for
+  absolute activity, and **vehicle status** for the binary extensive margin.
+  The compact description of the decomposition is that aggregate stablecoin
+  dominance changes through net vehicle substitution within continuing
+  ultimate pairs and through reallocation of routed activity across ultimate
+  pairs. Do not make “dominance,” “share,” and “volume” interchangeable merely
+  to vary the prose.
+- Keep one result spine in the abstract and the introduction: state the
+  aggregate change in stablecoin dominance, then the net within-continuing-pair
+  result, then the positive margins that account for the aggregate change.
+  Gross two-way movements may qualify the net result, but they must not make the
+  reader lose the distinction between the aggregate change and its sources.
+  Liquidity or persistence evidence follows only after this decomposition is
+  clear.
+- Name the empirical setting as decentralised finance (DeFi) or decentralised
+  exchange early enough for the opening to meet the title before route mechanics
+  begin. This is a paragraph-function rule, not a required first sentence or a
+  fixed word position.
+- Introduce an observed route by first saying what it reveals and why that
+  information answers the question. Attach the pool-route versus user-instruction
+  boundary when the route is first interpreted; do not make a qualification
+  carry the opening before the reader knows the object it qualifies.
+- Discuss quoting, invoicing, funding, settlement, or other currency functions
+  in the introduction only when the comparison locates the route-based object or
+  prevents a genuine conceptual confusion. Put that compact boundary after the
+  vehicle measure has been introduced. A catalogue of adjacent currency roles is
+  not part of the data or findings preview.
 - Evidence rises in formality: definition and institutional perimeter, sample
   and support, validation of contested measures, visible descriptive fact,
   conditioned estimate, discriminating mechanism or rival, then implication.
@@ -97,6 +124,37 @@ the conflict.
 - Main-text limitations must travel with the result they can change. Do not hide
   support loss, construct disagreement, the strongest falsifier, or a limitation
   that changes sign or interpretation in the appendix.
+- The abstract contains no exhibit callouts or reported standard errors. The
+  introduction normally previews magnitudes and inference in prose and leaves
+  panel, column, and standard-error lookup to the results section. In the local
+  fourteen-paper JFE corpus, no introduction reports a standard error and only
+  two cite any exhibit; those two references point to an appendix robustness
+  result and a conceptual figure. An introduction-level exhibit reference is
+  therefore exceptional and must shorten a necessary lookup or introduce an
+  exhibit that is itself part of the opening argument. This exception is why the
+  rule is not a lexical ban on “Table,” “Panel,” or “Figure.”
+- Do not repeat table-reported standard errors or confidence intervals in the
+  narrative. Preserve a confidence bound when the bound is the economic result,
+  and report uncertainty in prose when no exhibit displays it.
+- Introduce an economic class before a named member when the result is about the
+  class: stablecoins first, then USDC or USDT as members or sources of
+  heterogeneity. A named token may lead when that token is itself the estimand,
+  episode, or institutional case. Do not let a prominent member silently stand
+  in for the class.
+- Paragraph transitions must identify the object on both sides of a change in
+  subject. Especially at the literature-to-design and setting-to-contribution
+  transitions, state the unresolved question and the empirical opportunity
+  before switching to “we.” Replace pronouns or demonstratives whose antecedent
+  could refer to this paper, a cited paper, a market, or a location with the
+  relevant noun.
+- Present contributions through the economic findings and what the route data
+  make observable. Do not use a stock “we make three contributions” paragraph or
+  count a different dataset as a contribution by itself. Sequencing words remain
+  available when they help the argument: seven of the fourteen local JFE
+  introductions use a First/Second/Third sequence, typically to organize
+  findings, questions, views, or mechanisms, while none announces “three
+  contributions.” The data contribution is the otherwise-unobserved economic
+  object or validation the data make possible.
 - Captions and notes must be portable: object, unit, sample, weighting, support,
   uncertainty, and interpretation boundary should be visible without making the
   reader search through prose.
@@ -110,6 +168,12 @@ the conflict.
   notation, while square brackets identify units or scaling.
 - Define percentage points (pp) at first use in both the paper and the deck;
   use the abbreviation thereafter only where compact table labels benefit.
+- Interpret a share-on-share coefficient in one-percentage-point units when that
+  yields a readable number. Scaling an effect to 10 percentage points or one
+  standard deviation is appropriate only when that increment is economically
+  meaningful or materially easier to read; state the increment once and never
+  use rescaling to make an effect look larger. Keep the coefficient's underlying
+  unit recoverable from the equation, table, or accompanying definition.
 - Every regression table that prints significance stars states the complete
   mapping in its note: ( * ), ( ** ), and ( *** ) denote statistical
   significance at the 10\%, 5\%, and 1\% levels, respectively. Never leave the
@@ -125,10 +189,17 @@ the conflict.
 - Put an exhibit reference beside the substantive claim it supports and make the
   reader's lookup short. Name the panel, model or column, and economic row when a
   table contains several estimands; a table-level reference is enough for a short,
-  single-object display. One precise reference may govern the next few sentences,
-  so do not repeat it mechanically. Captions, panel headings, column headings, and
-  row labels must make this level of reference possible without internal workflow
-  terminology.
+  single-object display. This lookup rule governs the results sections; the
+  abstract and executive findings preview follow the narrower convention above.
+  One precise reference may govern the next few sentences, so do not repeat it
+  mechanically. Captions, panel headings, column headings, and row labels must
+  make this level of reference possible without internal workflow terminology.
+- The introduction roadmap is a compact map of admitted body evidence. Each
+  promised empirical object must appear in the named section and matter to the
+  argument there; a definition, benchmark under construction, or analysis held
+  outside the paper is not advertised as a finding. Recheck the roadmap whenever
+  sections move, evidence is withheld, or the abstract and contribution
+  paragraphs change.
 - The appendix is an audit trail, not a second paper. It mirrors the main claims
   and keeps nulls, failed alternatives, and adverse validation evidence visible.
 - Do not add equations, citations, tables, or length as filler to resemble a

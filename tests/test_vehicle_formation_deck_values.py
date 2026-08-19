@@ -3,6 +3,8 @@ from __future__ import annotations
 import pandas as pd
 
 from scripts.tabulate.build_vehicle_formation_deck_values import (
+    DECK_VALUES,
+    ESTIMATES,
     render_vehicle_formation_deck_values,
 )
 
@@ -476,12 +478,13 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
     assert "\\FormationDirectPresentPathRowsOneTwenty" in rendered
     assert "\\FormationValuePathEntryShareThirtyCoef" in rendered
     assert "\\FormationValuePathEntryShareOneTwentyCoef" in rendered
-    assert "$+9.0$ pp" in rendered
+    assert "$+0.90$ pp" in rendered
     assert "\\FormationNonWethEntryStableShareEnd" in rendered
     assert "\\FormationStableEntryTopTwoShareEnd" in rendered
     assert "99.6\\%" in rendered
     assert "\\FormationUSDCEntryOwnThirty" in rendered
     assert "\\FormationIdentityPathOneTwentyCoef" in rendered
+    assert r"\newcommand{\FormationIdentityPathThirtySE}{$0.040$ pp}" in rendered
     assert "\\FormationStablePresentFutureRoutesCoef" in rendered
     assert "$+9.2\\%$" in rendered
     assert "\\FormationStableHysteresisThirtyRetrade" in rendered
@@ -492,3 +495,11 @@ def test_vehicle_formation_deck_values_render_key_macros() -> None:
     assert "\\FormationSecureStableEndpointShareEnd" in rendered
     assert "$+10.0$ pp" in rendered
     assert "\\FormationSecureVolumeDriver" in rendered
+
+
+def test_current_identity_persistence_se_keeps_three_decimal_pp_precision() -> None:
+    estimates = pd.read_json(ESTIMATES, lines=True)
+    rendered = render_vehicle_formation_deck_values(estimates)
+    expected = r"\newcommand{\FormationIdentityPathThirtySE}{$0.004$ pp}"
+    assert expected in rendered
+    assert DECK_VALUES.read_text(encoding="utf-8") == rendered

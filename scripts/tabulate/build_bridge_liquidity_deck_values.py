@@ -393,12 +393,12 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         f"\\newcommand{{\\BridgeEstablishmentValueSE}}{{{_unsigned_pp(float(establishment_value['standard_error']))}}}",
         f"\\newcommand{{\\BridgeEstablishmentNativeLogCoef}}{{${float(establishment_native['coefficient']):+.2f}$}}",
         f"\\newcommand{{\\BridgeEstablishmentNativeLogSE}}{{${abs(float(establishment_native['standard_error'])):.2f}$}}",
-        f"\\newcommand{{\\BridgeDepthDoseFirstCoef}}{{{_signed_pp(0.1 * float(depth_slope_first['coefficient']))}}}",
-        f"\\newcommand{{\\BridgeDepthDoseFirstSE}}{{{_unsigned_pp(0.1 * float(depth_slope_first['standard_error']))}}}",
+        f"\\newcommand{{\\BridgeDepthDoseFirstCoef}}{{{_signed_pp(0.01 * float(depth_slope_first['coefficient']))}}}",
+        f"\\newcommand{{\\BridgeDepthDoseFirstSE}}{{{_unsigned_pp(0.01 * float(depth_slope_first['standard_error']))}}}",
         f"\\newcommand{{\\BridgeDepthDoseFirstRows}}{{{_integer(float(depth_slope_first['n_observations']))}}}",
         f"\\newcommand{{\\BridgeDepthDoseFirstEvents}}{{{_integer(float(depth_first_events))}}}",
-        f"\\newcommand{{\\BridgeDepthDoseLaterCoef}}{{{_signed_pp(0.1 * float(depth_slope_later['coefficient']))}}}",
-        f"\\newcommand{{\\BridgeDepthDoseLaterSE}}{{{_unsigned_pp(0.1 * float(depth_slope_later['standard_error']))}}}",
+        f"\\newcommand{{\\BridgeDepthDoseLaterCoef}}{{{_signed_pp(0.01 * float(depth_slope_later['coefficient']))}}}",
+        f"\\newcommand{{\\BridgeDepthDoseLaterSE}}{{{_unsigned_pp(0.01 * float(depth_slope_later['standard_error']))}}}",
         f"\\newcommand{{\\BridgeDepthThinFirstShare}}{{{_pct(float(depth_thin_first['stable_route_share']))}}}",
         f"\\newcommand{{\\BridgeDepthThinFirstDays}}{{{_integer(float(depth_thin_first['active_pair_days']))}}}",
         f"\\newcommand{{\\BridgeDepthEqualFirstShare}}{{{_pct(float(depth_equal_first['coefficient']))}}}",
@@ -522,9 +522,9 @@ def render_bridge_establishment_table(estimates: pd.DataFrame) -> str:
         depth_bin="below_0.1x",
     )
     depth_rows = [
-        "Relative-depth slope [pp per +10 pp] & "
-        f"{_estimate_cell(slope_first, scale=10.0)} & "
-        f"{_estimate_cell(slope_later, scale=10.0)} \\\\",
+        "Relative-depth slope [pp per +1 pp] & "
+        f"{_estimate_cell(slope_first)} & "
+        f"{_estimate_cell(slope_later)} \\\\",
         "Stable route share, depth $<0.1\\times$ WETH [\\%] & "
         f"{100.0 * float(thin_first['stable_route_share']):.1f} & "
         f"{100.0 * float(thin_later['stable_route_share']):.1f} \\\\",

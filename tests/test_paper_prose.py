@@ -210,8 +210,13 @@ class PaperProseTests(unittest.TestCase):
             )
 
     def test_percentage_point_abbreviation_is_defined_before_compact_use(self) -> None:
+        preamble = (PAPER_DIR.parent / "main.tex").read_text(encoding="utf-8")
         setting = (PAPER_DIR / "02-setting.tex").read_text(encoding="utf-8")
-        self.assertIn("percentage points (pp)", setting)
+        self.assertRegex(
+            preamble,
+            r"\\DeclareAcronym\{pp\}\{[^}]*short=pp[^}]*long=percentage point",
+        )
+        self.assertRegex(setting, r"\\acp?\{pp\}")
 
         results = (DECK_DIR / "sections" / "04-results.tex").read_text(
             encoding="utf-8"

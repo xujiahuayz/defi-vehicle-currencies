@@ -4,119 +4,107 @@
   "budget_words": 55,
   "hard_ceiling_words": 70,
   "core_frame_limit": 24,
-  "appendix_first_page": 25,
+  "appendix_first_page": 23,
   "appendix_title": "Appendix map",
   "page_allowances": [
     {
-      "page": 5,
+      "page": 3,
+      "title": "Vehicle currencies are routes",
+      "words": 60,
+      "note_words": 36
+    },
+    {
+      "page": 6,
       "title": "Inside the pools, USDT links USDC to USDe",
       "words": 56,
       "note_words": 17
     },
     {
-      "page": 6,
-      "title": "Vehicle dominance is the share of indirect trade carried by",
-      "words": 60,
+      "page": 22,
+      "title": "Entry and local depth form stablecoin dominance",
+      "words": 58,
       "note_words": 0
     },
     {
-      "page": 8,
-      "title": "The route sample and architecture supplement answer",
-      "words": 61,
-      "note_words": 0
-    },
-    {
-      "page": 16,
-      "title": "Trading shifts toward stablecoin-heavy ultimate pairs",
-      "words": 61,
-      "note_words": 22
-    },
-    {
-      "page": 24,
-      "title": "Stablecoin dominance forms through",
-      "words": 57,
-      "note_words": 0
-    },
-    {
-      "page": 25,
+      "page": 23,
       "title": "Appendix map",
       "words": 65,
       "note_words": 0
     },
     {
-      "page": 27,
+      "page": 25,
       "title": "How we reconstruct a route from one transaction",
       "words": 57,
       "note_words": 0
     },
     {
-      "page": 29,
+      "page": 27,
       "title": "A3. One route universe supports two measurements",
       "words": 67,
       "note_words": 0
     },
     {
-      "page": 30,
+      "page": 28,
       "title": "A4. State is reconstructed immediately before execution",
       "words": 60,
       "note_words": 0
     },
     {
-      "page": 31,
+      "page": 29,
       "title": "A5. Each AMM family has a different state vector",
       "words": 59,
       "note_words": 0
     },
     {
-      "page": 32,
+      "page": 30,
       "title": "A5.1. Atomic-pair creation determines available paths",
       "words": 57,
       "note_words": 0
     },
     {
-      "page": 33,
+      "page": 31,
       "title": "A5.2. Executable depth comes from active liquidity",
       "words": 62,
       "note_words": 0
     },
     {
-      "page": 34,
+      "page": 32,
       "title": "A5.3. Shared accounting moves route settlement",
       "words": 61,
       "note_words": 0
     },
     {
-      "page": 36,
+      "page": 34,
       "title": "A7. Daily and weekly frequencies answer different questions",
       "words": 62,
       "note_words": 0
     },
     {
-      "page": 39,
+      "page": 37,
       "title": "Vehicle dominance aggregates realised intermediary choices",
       "words": 69,
       "note_words": 0
     },
     {
-      "page": 40,
+      "page": 38,
       "title": "A9. Intermediary and route-endpoint use are separate",
       "words": 67,
       "note_words": 0
     },
     {
-      "page": 41,
+      "page": 39,
       "title": "A10. Capital, inventory, and depth differ",
       "words": 67,
       "note_words": 0
     },
     {
-      "page": 43,
+      "page": 41,
       "title": "A11b. Venue scope and vehicle type differ in 2026",
       "words": 56,
       "note_words": 16
     },
     {
-      "page": 45,
+      "page": 43,
       "title": "A13. References: decentralised exchange design",
       "words": 59,
       "note_words": 0

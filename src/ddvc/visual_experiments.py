@@ -355,6 +355,7 @@ def render_annual_composition_bands(frame: pd.DataFrame, output: Path) -> None:
                                 color=colour,
                             )
             axes[0].set_ylabel("Share of intermediation")
+            axes[1].tick_params(axis="y", labelleft=False, labelright=True, right=True)
             handles, labels = axes[0].get_legend_handles_labels()
             figure.legend(
                 handles,
