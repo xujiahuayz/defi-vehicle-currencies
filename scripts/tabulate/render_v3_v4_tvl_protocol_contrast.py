@@ -12,8 +12,8 @@ from ddvc.paths import OUTPUT_DIR
 RESULTS = OUTPUT_DIR / "exhibits" / "v3_v4_tvl_protocol_contrast.jsonl"
 
 OUTCOMES = {
-    "future_delta_log1p_tvl": "Reported TVL growth",
-    "future_delta_log1p_pool_count": "Pool-footprint growth",
+    "future_delta_log1p_tvl": "Reported TVL growth [log points]",
+    "future_delta_log1p_pool_count": "Pool-footprint growth [log points]",
 }
 HORIZONS = (7, 30, 120)
 

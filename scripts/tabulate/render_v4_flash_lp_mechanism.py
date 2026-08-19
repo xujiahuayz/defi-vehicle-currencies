@@ -116,8 +116,11 @@ def render_v4_flash_lp_mechanism(results: pd.DataFrame) -> str:
     )
     rows.append(r"\toprule")
     rows.append(
-        "Flash-accounting proxy & "
-        + " & ".join(f"{label} ({unit})" for label, unit in OUTCOMES.values())
+        "Flash-accounting proxy ($M_{c,t}$) & "
+        + " & ".join(
+            f"{label} [{'log points' if unit == 'log pts' else unit}]"
+            for label, unit in OUTCOMES.values()
+        )
         + r" \\"
     )
     rows.append(r"\midrule")

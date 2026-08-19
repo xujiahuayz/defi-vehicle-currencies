@@ -102,8 +102,8 @@ def render_v4_flash_gap_flow_interactions(results: pd.DataFrame) -> str:
     )
     rows.append(r"\toprule")
     rows.append(
-        "Interaction term & "
-        + " & ".join(f"{label} (log pts)" for label in OUTCOMES.values())
+        "Interaction term ($G^S_{c,t}\\times M_{c,t}$) & "
+        + " & ".join(f"{label} [log points]" for label in OUTCOMES.values())
         + r" \\"
     )
     rows.append(r"\midrule")

@@ -163,6 +163,35 @@ class PaperProseTests(unittest.TestCase):
                 with self.subTest(file=path.name, marker=marker):
                     self.assertNotIn(marker, body)
 
+    def test_dex_route_units_use_distinct_terms(self) -> None:
+        for path in (
+            PAPER_DIR / "03-dominance.tex",
+            PAPER_DIR / "05-rivals.tex",
+            DECK_DIR / "sections" / "04-results.tex",
+        ):
+            body = strip_latex_comments(path.read_text(encoding="utf-8")).lower()
+            self.assertNotIn(
+                "corridor",
+                body,
+                f"{path.name} uses corridor for a DEX ultimate pair",
+            )
+            self.assertNotIn(
+                "ultimate-pair market",
+                body,
+                f"{path.name} conflates an ultimate pair with an atomic-pair market",
+            )
+
+    def test_percentage_point_abbreviation_is_defined_before_compact_use(self) -> None:
+        setting = (PAPER_DIR / "02-setting.tex").read_text(encoding="utf-8")
+        self.assertIn("percentage points (pp)", setting)
+
+        results = (DECK_DIR / "sections" / "04-results.tex").read_text(
+            encoding="utf-8"
+        )
+        definition = results.index("percentage points (pp)")
+        first_compact_use = results.index("[pp]")
+        self.assertLess(definition, first_compact_use)
+
     def test_abstract_respects_jfe_submission_ceiling(self) -> None:
         abstract = PAPER_DIR / "abstract.tex"
         visible = strip_latex_markup(abstract.read_text(encoding="utf-8"))

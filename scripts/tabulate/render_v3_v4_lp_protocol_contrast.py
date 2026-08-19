@@ -87,7 +87,7 @@ def render_v3_v4_lp_protocol_contrast(results: pd.DataFrame) -> str:
         r"*{3}{>{\hsize=0.85\hsize\centering\arraybackslash}X}@{}}"
     )
     rows.append(r"\toprule")
-    rows.append("Outcome & 7 days & 30 days & 120 days " + r"\\")
+    rows.append("Outcome [log points] & 7 days & 30 days & 120 days " + r"\\")
     rows.append(r"\midrule")
     for outcome, label in OUTCOMES.items():
         cells = []

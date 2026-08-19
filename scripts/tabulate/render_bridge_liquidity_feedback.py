@@ -13,6 +13,7 @@ from ddvc.paths import OUTPUT_DIR
 
 RESULTS = OUTPUT_DIR / "exhibits" / "bridge_liquidity_feedback.jsonl"
 HORIZONS = (30, 120)
+DISPLAY_UNITS = {"pp": "pp", "log pts": "log points"}
 
 
 @dataclass(frozen=True)
@@ -25,7 +26,7 @@ class FeedbackRow:
 
 TABLE_ROWS: tuple[FeedbackRow, ...] = (
     FeedbackRow(
-        label="Route use to bridge depth, pooled",
+        label=r"$R_{b,t}\rightarrow\Delta B_{b,t+h}$, pooled",
         unit="log pts",
         selector={
             "record_type": "bridge_liquidity_feedback_regression",
@@ -36,7 +37,7 @@ TABLE_ROWS: tuple[FeedbackRow, ...] = (
         scale=0.10,
     ),
     FeedbackRow(
-        label="Route use to bridge depth, stable",
+        label=r"$R_{b,t}\rightarrow\Delta B_{b,t+h}$, stable",
         unit="log pts",
         selector={
             "record_type": "bridge_liquidity_feedback_regression",
@@ -47,7 +48,7 @@ TABLE_ROWS: tuple[FeedbackRow, ...] = (
         scale=0.10,
     ),
     FeedbackRow(
-        label="Bridge depth to route use, pooled",
+        label=r"$B_{b,t}\rightarrow\Delta R_{b,t+h}$, pooled",
         unit="pp",
         selector={
             "record_type": "bridge_liquidity_feedback_regression",
@@ -58,7 +59,7 @@ TABLE_ROWS: tuple[FeedbackRow, ...] = (
         scale=100.0,
     ),
     FeedbackRow(
-        label="Bridge depth to route use, stable",
+        label=r"$B_{b,t}\rightarrow\Delta R_{b,t+h}$, stable",
         unit="pp",
         selector={
             "record_type": "bridge_liquidity_feedback_regression",
@@ -142,11 +143,10 @@ def render_bridge_liquidity_feedback(results: pd.DataFrame) -> str:
     rows.append(
         r"\begin{tabularx}{\linewidth}{@{}"
         r">{\hsize=1.65\hsize\raggedright\arraybackslash}X"
-        r"c"
         r"*{2}{>{\hsize=0.675\hsize\centering\arraybackslash}X}@{}}"
     )
     rows.append(r"\toprule")
-    rows.append(r"Feedback margin & Unit & 30 days & 120 days \\")
+    rows.append(r"Feedback equation & 30 days & 120 days \\")
     rows.append(r"\midrule")
     for table_row in TABLE_ROWS:
         cells = [
@@ -157,7 +157,7 @@ def render_bridge_liquidity_feedback(results: pd.DataFrame) -> str:
             for horizon in HORIZONS
         ]
         rows.append(
-            f"{table_row.label} & {table_row.unit} & "
+            f"{table_row.label} [{DISPLAY_UNITS[table_row.unit]}] & "
             + " & ".join(cells)
             + r" \\"
         )
@@ -172,12 +172,11 @@ def render_bridge_liquidity_feedback(results: pd.DataFrame) -> str:
         )
     rows.append(
         "Rows / ultimate pairs / dates & "
-        + r"\multicolumn{1}{c}{} & "
         + " & ".join(support_cells)
         + r" \\"
     )
-    rows.append(r"Asset and date effects & \multicolumn{3}{r}{Yes} \\")
-    rows.append(r"Two-way clustered covariance & \multicolumn{3}{r}{Ordered ultimate pair and date} \\")
+    rows.append(r"Asset and date effects & \multicolumn{2}{r}{Yes} \\")
+    rows.append(r"Two-way clustered covariance & \multicolumn{2}{r}{Ordered ultimate pair and date} \\")
     rows.append(r"\bottomrule")
     rows.append(r"\end{tabularx}")
     rows.append("")

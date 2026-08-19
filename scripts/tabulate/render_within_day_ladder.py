@@ -48,16 +48,16 @@ def _pp_se(row: dict | None) -> str:
     return f"({float(row['se']):.2f})"
 
 
-def _slope(row: dict | None) -> str:
+def _slope_pp(row: dict | None) -> str:
     if row is None:
         return DASH
-    return f"${float(row['beta']):.3f}{_stars(float(row['p']))}$"
+    return f"${float(row['beta']):+.2f}{_stars(float(row['p']))}$"
 
 
-def _slope_se(row: dict | None) -> str:
+def _slope_pp_se(row: dict | None) -> str:
     if row is None:
         return DASH
-    return f"({float(row['se']):.3f})"
+    return f"({float(row['se']):.2f})"
 
 
 def _stars(p_value: float) -> str:
@@ -93,7 +93,12 @@ def render_within_day_ladder(rows: list[dict]) -> str:
     for label, term, coefficient_formatter, se_formatter in (
         ("Native currency", "native", _pp, _pp_se),
         ("Stablecoin", "stable", _pp, _pp_se),
-        ("Own endpoint-demand share", "demand", _slope, _slope_se),
+        (
+            r"Own endpoint-demand share ($D_{a,t}$)",
+            "demand",
+            _slope_pp,
+            _slope_pp_se,
+        ),
     ):
         body.append(" & ".join(coefficient_row(label, term, coefficient_formatter)) + r" \\")
         body.append(" & ".join(coefficient_row("", term, se_formatter)) + r" \\")
@@ -115,7 +120,7 @@ def render_within_day_ladder(rows: list[dict]) -> str:
         [
             r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}X*{4}{>{\centering\arraybackslash}p{0.92in}}@{}}",
             r"\toprule",
-            r" & \multicolumn{4}{c}{Intermediary episode share (pp)} \\",
+            r" & \multicolumn{4}{c}{Intermediary episode share ($I_{a,t}$) [pp]} \\",
             r"\cmidrule(lr){2-5}",
             r" & (1) & (2) & (3) & (4) \\",
             " & " + " & ".join(label for _spec, label in SPECIFICATIONS) + r" \\",

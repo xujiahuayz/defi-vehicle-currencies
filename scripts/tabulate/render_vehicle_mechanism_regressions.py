@@ -18,7 +18,7 @@ RESULTS = OUTPUT_DIR / "exhibits" / "vehicle_dominance_mechanism_sweep.jsonl"
 class TableRow:
     margin: str
     outcome: str
-    scaled_regressor: str
+    regressor_label: str
     selector: dict[str, object]
 
 
@@ -26,7 +26,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     TableRow(
         margin="Turn-on",
         outcome="Stable appears",
-        scaled_regressor="Baseline market routes (+1 log)",
+        regressor_label="Baseline route count",
         selector={
             "model_id": "turn_on_lpm",
             "metric": "count_share",
@@ -37,7 +37,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     TableRow(
         margin="Turn-on",
         outcome="Stable appears",
-        scaled_regressor="Direct-route share (+1)",
+        regressor_label="Direct-route share",
         selector={
             "model_id": "turn_on_lpm",
             "metric": "count_share",
@@ -48,7 +48,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     TableRow(
         margin="Turn-on",
         outcome="Stable appears",
-        scaled_regressor="Complex-route share (+1)",
+        regressor_label="Complex-route share",
         selector={
             "model_id": "turn_on_lpm",
             "metric": "count_share",
@@ -59,7 +59,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     TableRow(
         margin="Thin/direct",
         outcome="Stable appears",
-        scaled_regressor="Direct share $\\times$ thinness",
+        regressor_label="Direct share $\\times$ thinness",
         selector={
             "model_id": "turn_on_direct_thin_interaction",
             "metric": "count_share",
@@ -70,7 +70,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     TableRow(
         margin="Leader switch",
         outcome="Stable becomes leader",
-        scaled_regressor="Baseline market routes (+1 log)",
+        regressor_label="Baseline route count",
         selector={
             "model_id": "leader_switch_lpm",
             "metric": "count_share",
@@ -81,7 +81,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     TableRow(
         margin="Rolling hazard",
         outcome="Stable appears within 30d",
-        scaled_regressor="Origin market routes (+1 log)",
+        regressor_label="Origin route count",
         selector={
             "model_id": "stable_turn_on_hazard_fe",
             "outcome": "future_stable_turn_on",
@@ -91,7 +91,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     TableRow(
         margin="Rolling hazard",
         outcome="Stable appears within 30d",
-        scaled_regressor="Ultimate-pair age (+1 log)",
+        regressor_label="Ultimate-pair age",
         selector={
             "model_id": "stable_turn_on_hazard_fe",
             "outcome": "future_stable_turn_on",
@@ -101,7 +101,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     TableRow(
         margin="Mixed risk set",
         outcome="Vehicle route share",
-        scaled_regressor="Same-day reach (+1 log)",
+        regressor_label="Same-day reach",
         selector={
             "model_id": "mixed_native_stable_risk_set_centrality_fe",
             "metric": "candidate_route_share",
@@ -113,7 +113,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     TableRow(
         margin="Mixed risk set",
         outcome="Vehicle route share",
-        scaled_regressor="Prior-30d reach (+1 log)",
+        regressor_label="Prior-30d reach",
         selector={
             "model_id": "mixed_native_stable_risk_set_lag30_reach_fe",
             "metric": "candidate_route_share",
@@ -125,7 +125,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     TableRow(
         margin="Issuer split",
         outcome="Vehicle route share",
-        scaled_regressor="USDC $\\times$ 2026",
+        regressor_label="USDC $\\times$ 2026",
         selector={
             "model_id": "mixed_native_stable_risk_set_issuer_reach_fe",
             "metric": "candidate_route_share",
@@ -137,7 +137,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     TableRow(
         margin="Issuer split",
         outcome="Vehicle route share",
-        scaled_regressor="USDT $\\times$ 2026",
+        regressor_label="USDT $\\times$ 2026",
         selector={
             "model_id": "mixed_native_stable_risk_set_issuer_reach_fe",
             "metric": "candidate_route_share",
@@ -213,13 +213,13 @@ def render_vehicle_mechanism_regressions(results: pd.DataFrame) -> str:
         r"cr@{}}"
     )
     rows.append(r"\toprule")
-    rows.append(r"Margin & Outcome & Scaled regressor & Effect (pp) & Obs. / clusters \\")
+    rows.append(r"Margin & Outcome & Regressor & Coefficient [pp] & Obs. / clusters \\")
     rows.append(r"\midrule")
     for table_row in TABLE_ROWS:
         row = _select_one(results, table_row.selector)
         rows.append(
             f"{table_row.margin} & {table_row.outcome} & "
-            f"{table_row.scaled_regressor} & {_cell(row)} & {_support(row)} \\\\"
+            f"{table_row.regressor_label} & {_cell(row)} & {_support(row)} \\\\"
         )
     rows.append(r"\bottomrule")
     rows.append(r"\end{tabularx}")

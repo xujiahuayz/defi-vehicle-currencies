@@ -26,8 +26,8 @@ class TableRow:
 TABLE_ROWS: tuple[TableRow, ...] = (
     TableRow(
         screen="Entry persistence",
-        outcome="Stable share, 30 days",
-        regressor="Entry stable share (+10 pp)",
+        outcome="Stable follow-up share ($S_{p,t+h}$), 30 days",
+        regressor="Entry stable share ($S^{\\mathrm{entry}}_{p,t}$)",
         selector={
             "record_type": "entry_path_dependence_regression",
             "horizon_days": 30.0,
@@ -38,8 +38,8 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     ),
     TableRow(
         screen="Entry persistence",
-        outcome="Stable share, 120 days",
-        regressor="Entry stable share (+10 pp)",
+        outcome="Stable follow-up share ($S_{p,t+h}$), 120 days",
+        regressor="Entry stable share ($S^{\\mathrm{entry}}_{p,t}$)",
         selector={
             "record_type": "entry_path_dependence_regression",
             "horizon_days": 120.0,
@@ -51,7 +51,10 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     TableRow(
         screen="Entry persistence",
         outcome="Stable-majority follow-up, 120 days",
-        regressor="Stable-majority entry",
+        regressor=(
+            "Stable-majority entry "
+            "($\\mathbf 1\\{S^{\\mathrm{entry}}_{p,t}>1/2\\}$)"
+        ),
         selector={
             "record_type": "entry_path_dependence_regression",
             "horizon_days": 120.0,
@@ -61,9 +64,12 @@ TABLE_ROWS: tuple[TableRow, ...] = (
         scale="binary_share",
     ),
     TableRow(
-        screen="Thin-corridor split",
-        outcome="Stable share, 120 days",
-        regressor="Entry stable share (+10 pp), no direct route",
+        screen="No-direct-route split",
+        outcome="Stable follow-up share ($S_{p,t+h}$), 120 days",
+        regressor=(
+            "Entry stable share ($S^{\\mathrm{entry}}_{p,t}$), "
+            "no direct route"
+        ),
         selector={
             "record_type": "entry_path_dependence_direct_route_regression",
             "horizon_days": 120.0,
@@ -76,7 +82,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     TableRow(
         screen="Value-weighted entry",
         outcome="Stable value share, 120 days",
-        regressor="Entry stable value share (+10 pp)",
+        regressor="Entry stable value share",
         selector={
             "record_type": "entry_value_path_dependence_regression",
             "horizon_days": 120.0,
@@ -88,7 +94,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     TableRow(
         screen="Named-stable identity",
         outcome="Own-stable follow-up share, 120 days",
-        regressor="Entry named-stable share (+10 pp)",
+        regressor="Entry named-stable share",
         selector={
             "record_type": "entry_stable_candidate_identity_regression",
             "horizon_days": 120.0,
@@ -100,7 +106,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     ),
     TableRow(
         screen="Secure-volume endpoint",
-        outcome="Entry stable share",
+        outcome="Entry stable share ($S^{\\mathrm{entry}}_{p,t}$)",
         regressor="Stable endpoint $\\times$ 2026",
         selector={
             "record_type": "entry_driver_regression",
@@ -111,8 +117,8 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     ),
     TableRow(
         screen="Route architecture",
-        outcome="Entry stable share",
-        regressor="Direct-route share $\\times$ 2026 (+10 pp)",
+        outcome="Entry stable share ($S^{\\mathrm{entry}}_{p,t}$)",
+        regressor="Direct-route share ($D_{p,t}$) $\\times$ 2026",
         selector={
             "record_type": "entry_route_architecture_regression",
             "outcome": "stable_share",
@@ -122,8 +128,8 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     ),
     TableRow(
         screen="Route architecture",
-        outcome="Entry stable share",
-        regressor="Complex-route share $\\times$ 2026 (+10 pp)",
+        outcome="Entry stable share ($S^{\\mathrm{entry}}_{p,t}$)",
+        regressor="Complex-route share ($C_{p,t}$) $\\times$ 2026",
         selector={
             "record_type": "entry_route_architecture_regression",
             "outcome": "stable_share",
@@ -165,33 +171,25 @@ def _select_one(results: pd.DataFrame, row: TableRow) -> pd.Series:
     return sample.iloc[0]
 
 
-def _scaled_effect(result: pd.Series, scale: str) -> tuple[float, float]:
+def _reported_effect(result: pd.Series, scale: str) -> tuple[float, float]:
     coefficient = float(result["coefficient"])
     standard_error = float(result["standard_error"])
-    if scale in SCALE_SE_COLUMNS:
-        scaled = result.get(scale)
-        scaled_se = result.get(SCALE_SE_COLUMNS[scale])
-        if pd.notna(scaled) and pd.notna(scaled_se):
-            coefficient = float(scaled)
-            standard_error = float(scaled_se)
-        else:
-            coefficient *= 0.10
-            standard_error *= 0.10
-    elif scale == "ten_pp_share":
-        coefficient *= 0.10
-        standard_error *= 0.10
-    elif scale != "binary_share":
+    if scale == "binary_share":
+        coefficient *= 100.0
+        standard_error *= 100.0
+    elif scale not in SCALE_SE_COLUMNS and scale != "ten_pp_share":
         raise ValueError(f"unknown table scale: {scale}")
-    return 100.0 * coefficient, 100.0 * standard_error
+    return coefficient, standard_error
 
 
 def _effect_cell(result: pd.Series, scale: str) -> str:
-    effect, standard_error = _scaled_effect(result, scale)
+    effect, standard_error = _reported_effect(result, scale)
+    decimals = 1 if scale == "binary_share" else 2
     return (
         r"\begin{tabular}{@{}c@{}}"
-        f"${effect:+.1f}{_stars(float(result['p_value']))}$"
+        f"${effect:+.{decimals}f}{_stars(float(result['p_value']))}$"
         r"\\"
-        f"$({standard_error:.1f})$"
+        f"$({standard_error:.{decimals}f})$"
         r"\end{tabular}"
     )
 
@@ -229,7 +227,7 @@ def render_vehicle_formation_regressions(results: pd.DataFrame) -> str:
     )
     rows.append(r"\toprule")
     rows.append(
-        r"Specification & Outcome & Scaled regressor & Effect (pp) & Obs. / clusters \\"
+        r"Specification & Outcome & Regressor & Coefficient & Obs. / clusters \\"
     )
     rows.append(r"\midrule")
     for row in TABLE_ROWS:

@@ -48,8 +48,9 @@ def test_checked_in_fragments_equal_their_named_renderers() -> None:
 def test_rotation_and_usdt_values_are_exact() -> None:
     rotation = (TABLES / "dominance_rotation.tex").read_text(encoding="utf-8")
     assert "Dollar-weighted routes (20\\% agreement)" in rotation
-    assert "16.9\\% & 42.3\\% & $+25.4$ pp ($1.05$ pp)" in rotation
-    assert "32.7\\% & 76.5\\% & $+43.9$ pp ($2.02$ pp)" in rotation
+    assert "Change [pp] (s.e.)" in rotation
+    assert "16.9\\% & 42.3\\% & $+25.4$ ($1.05$)" in rotation
+    assert "32.7\\% & 76.5\\% & $+43.9$ ($2.02$)" in rotation
 
     usdt = (TABLES / "usdt_transition.tex").read_text(encoding="utf-8")
     assert (
@@ -60,8 +61,8 @@ def test_rotation_and_usdt_values_are_exact() -> None:
         "Value-weighted excess-use ratio (2024 full year; 2026 January--June) & 0.59 & 1.42"
         in usdt
     )
-    assert "Paired January--June intermediary minus route-endpoint share" in usdt
-    assert "$-7.13$ pp & $+8.14$ pp" in usdt
+    assert "Paired January--June intermediary minus route-endpoint share [pp]" in usdt
+    assert "$-7.13$ & $+8.14$" in usdt
 
 
 def test_pair_panel_d_contains_all_three_fixed_effect_rows() -> None:
@@ -70,7 +71,7 @@ def test_pair_panel_d_contains_all_three_fixed_effect_rows() -> None:
         "All two-leg routes, count share & $+0.22\\ (0.76)$ & 188,520"
         in pair
     )
-    assert "Margin or estimate & Estimate in pp & Obs." in pair
+    assert "Margin or estimate & Estimate [pp] & Obs." in pair
     assert (
         "20\\% agreement sample, count share & $+0.32\\ (0.75)$ & 182,834"
         in pair
@@ -120,7 +121,8 @@ def test_pair_table_keeps_the_two_count_factorisations_apart() -> None:
     )
 
     assert macros["MarketBridgeTotal"] == macros["PairPooledTotal"]
-    assert pair.count(f"Total route-count change & {macros['MarketBridgeTotal']}") == 2
+    total = macros["MarketBridgeTotal"].removesuffix(" pp")
+    assert pair.count(f"Total route-count change & {total}") == 2
 
     # Panel A's labels belong to Panel A alone.
     for label in (
@@ -148,7 +150,7 @@ def test_pair_table_keeps_the_two_count_factorisations_apart() -> None:
         "PairPooledSupportMass",
         "PairPooledExclusive",
     ):
-        assert macros[macro] in pair
+        assert macros[macro].removesuffix(" pp") in pair
 
 
 def test_paper_has_one_consumer_and_no_duplicate_inline_body() -> None:

@@ -190,7 +190,7 @@ An atomic pair's weight ratio is fitted on the trades crossing it in either dire
 \widehat\theta_{ab,p}=\arg\min_{\theta}
 \mathcal{E}_p\bigl(\theta\ \text{on}\ \mathcal{O}^{a\to b}_p,\ \theta^{-1}\ \text{on}\ \mathcal{O}^{b\to a}_p\bigr),
 \]
-searched over a logarithmic grid spanning Balancer's own weight bounds and refined by ternary search in the log exponent, and attempted only for atomic pairs carrying at least four fitting trades, since one or two are fitted exactly by construction and then read as a clean fit. The fee $\widehat f_p$ is recovered the same way over the fee range the vault permits. Reading is tried before fitting and the fee before the weights, so each tier adds at most one free scalar and a pool that reproduces its trades on reported parameters is never handed a fitted one,
+searched over a logarithmic grid spanning Balancer's own weight bounds and refined by ternary search in the log exponent, and attempted only for atomic pairs carrying at least four fitting trades, since one or two are fitted exactly by construction and then read as an exact fit. The fee $\widehat f_p$ is recovered the same way over the fee range the vault permits. Reading is tried before fitting and the fee before the weights, so each tier adds at most one free scalar and a pool that reproduces its trades on reported parameters is never handed a fitted one,
 \begin{equation}
 \label{eq:weighted-fit}
 \widehat\vartheta_p=

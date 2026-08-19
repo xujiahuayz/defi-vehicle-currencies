@@ -5,6 +5,10 @@ import re
 ROOT = Path(__file__).resolve().parents[1]
 PAPER_SECTIONS = ROOT / "paper" / "sections"
 DECK_SECTIONS = ROOT / "deck" / "sections"
+STAR_MAPPING = (
+    r"Asterisks \(*\), \(**\), and \(***\) denote statistical significance "
+    r"at the 10\%, 5\%, and 1\% levels, respectively."
+)
 
 
 def _environment_blocks(text: str, environment: str) -> list[str]:
@@ -83,3 +87,16 @@ def test_deck_empirical_exhibits_use_the_shared_note_block() -> None:
         assert frame.count(r"\decknote{") == 1
 
     assert r"\emph{Notes.}" not in sections
+
+
+def test_every_starred_paper_table_defines_its_thresholds() -> None:
+    sections = "\n".join(
+        path.read_text(encoding="utf-8") for path in sorted(PAPER_SECTIONS.glob("*.tex"))
+    )
+    for block in _environment_blocks(sections, "table"):
+        match = re.search(r"\\input\{\.\./output/tables/([^}]+)\}", block)
+        if match is None:
+            continue
+        fragment = ROOT / "output" / "tables" / match.group(1)
+        if fragment.is_file() and "^{*" in fragment.read_text(encoding="utf-8"):
+            assert STAR_MAPPING in block, f"{fragment.name} lacks the full star mapping"

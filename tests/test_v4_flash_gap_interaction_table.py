@@ -61,9 +61,10 @@ def _complete_rows() -> list[dict[str, object]]:
 def test_v4_flash_gap_interaction_table_scales_units() -> None:
     rendered = render_v4_flash_gap_interactions(pd.DataFrame(_complete_rows()))
 
+    assert "Interaction term ($G^S_{c,t}\\times M_{c,t}$)" in rendered
     assert "Stable gap $\\times$ internal same-asset share" in rendered
-    assert "Vehicle-linked TVL (log pts)" in rendered
-    assert "Wide/very-wide ranges (pp)" in rendered
+    assert "Vehicle-linked TVL [log points]" in rendered
+    assert "Wide/very-wide ranges [pp]" in rendered
     assert "$+0.100^{***}$" in rendered
     assert "$+40.000^{**}$" in rendered
     assert "1,209 / 403" in rendered

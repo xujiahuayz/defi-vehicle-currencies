@@ -70,6 +70,12 @@ def _unsigned_pp(value: float, digits: int = 2) -> str:
     return f"${100 * value:.{digits}f}$"
 
 
+def _without_pp(value: str) -> str:
+    """Remove a presentation macro's trailing unit when the table declares it."""
+
+    return re.sub(r"\s+pp$", "", value.strip())
+
+
 def _estimate_se_pp(row: Mapping[str, object]) -> str:
     estimate = 100 * _number(row, "coefficient")
     standard_error = 100 * _number(row, "standard_error")
@@ -104,7 +110,7 @@ def render_dominance_rotation(rows: Iterable[Mapping[str, object]]) -> str:
     lines = [
         r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xrrr@{}}",
         r"\toprule",
-        r"Stablecoin share among native and stable intermediaries & 2024 & 2026 & Change (s.e.) \\",
+        r"Stablecoin share among native and stable intermediaries & 2024 & 2026 & Change [pp] (s.e.) \\",
         r"\midrule",
         "Route count & "
         + _pct(_number(count, "baseline_daily_mean"))
@@ -112,18 +118,18 @@ def render_dominance_rotation(rows: Iterable[Mapping[str, object]]) -> str:
         + _pct(_number(count, "comparison_daily_mean"))
         + " & "
         + _signed_pp(_number(count, "change"))
-        + r" pp ("
+        + r" ("
         + _unsigned_pp(_number(count, "hac_standard_error"))
-        + r" pp) \\",
+        + r") \\",
         r"Dollar-weighted routes (20\% agreement) & "
         + _pct(_number(value, "baseline_daily_mean"))
         + " & "
         + _pct(_number(value, "comparison_daily_mean"))
         + " & "
         + _signed_pp(_number(value, "change"))
-        + r" pp ("
+        + r" ("
         + _unsigned_pp(_number(value, "hac_standard_error"))
-        + r" pp) \\",
+        + r") \\",
         r"\bottomrule",
         r"\end{tabularx}",
     ]
@@ -164,6 +170,7 @@ def render_pair_composition(
 
     _require_macros(macros, PAIR_ACCOUNTING_MACROS)
     records = list(fixed_effect_rows)
+    display = {name: _without_pp(value) for name, value in macros.items()}
     common = {
         "baseline_year": 2024,
         "comparison_year": 2026,
@@ -199,35 +206,35 @@ def render_pair_composition(
     lines = [
         r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xrr@{}}",
         r"\toprule",
-        r"Margin or estimate & Estimate in pp & Obs. \\",
+        r"Margin or estimate & Estimate [pp] & Obs. \\",
         r"\midrule",
         r"\multicolumn{3}{l}{\emph{Panel A. Route-count share: market activity and"
         r" vehicle incidence}} \\",
-        f"Ultimate pairs entering or leaving the sample & {macros['MarketSupportBridge']} & \\\\",
-        f"Ultimate pairs gaining or losing a vehicle route & {macros['VehicleRoleSupportBridge']} & \\\\",
-        f"Market activity shifting across continuing ultimate pairs & {macros['MarketActivityReweight']} & \\\\",
-        f"Change in how often continuing ultimate pairs use a vehicle & {macros['VehicleIncidenceReweight']} & \\\\",
-        f"Stablecoin share within continuing vehicle-using ultimate pairs & {macros['WithinPairStableShare']} & \\\\",
+        f"Ultimate pairs entering or leaving the sample & {display['MarketSupportBridge']} & \\\\",
+        f"Ultimate pairs gaining or losing a vehicle route & {display['VehicleRoleSupportBridge']} & \\\\",
+        f"Market activity shifting across continuing ultimate pairs & {display['MarketActivityReweight']} & \\\\",
+        f"Change in how often continuing ultimate pairs use a vehicle & {display['VehicleIncidenceReweight']} & \\\\",
+        f"Stablecoin share within continuing vehicle-using ultimate pairs & {display['WithinPairStableShare']} & \\\\",
         r"\midrule",
-        f"Total route-count change & {macros['MarketBridgeTotal']} & \\\\",
+        f"Total route-count change & {display['MarketBridgeTotal']} & \\\\",
         r"\addlinespace",
         r"\multicolumn{3}{l}{\emph{Panel B. Route-count share: continuing and"
         r" year-specific ultimate pairs}} \\",
-        f"Stablecoin share within continuing ultimate pairs & {macros['PairPooledWithin']} & \\\\",
-        f"Vehicle activity shifting across continuing ultimate pairs & {macros['PairPooledReweight']} & \\\\",
-        f"Weight of continuing versus year-specific ultimate pairs & {macros['PairPooledSupportMass']} & \\\\",
-        f"Ultimate pairs traded in only one year & {macros['PairPooledExclusive']} & \\\\",
+        f"Stablecoin share within continuing ultimate pairs & {display['PairPooledWithin']} & \\\\",
+        f"Vehicle activity shifting across continuing ultimate pairs & {display['PairPooledReweight']} & \\\\",
+        f"Weight of continuing versus year-specific ultimate pairs & {display['PairPooledSupportMass']} & \\\\",
+        f"Ultimate pairs traded in only one year & {display['PairPooledExclusive']} & \\\\",
         r"\midrule",
-        f"Total route-count change & {macros['PairPooledTotal']} & \\\\",
+        f"Total route-count change & {display['PairPooledTotal']} & \\\\",
         r"\addlinespace",
         r"\multicolumn{3}{l}{\emph{Panel C. Dollar-weighted share: continuing and"
         r" year-specific ultimate pairs}} \\",
-        f"Stablecoin share within continuing ultimate pairs & {macros['PairValueWithin']} & \\\\",
-        f"Vehicle activity shifting across continuing ultimate pairs & {macros['PairValueReweight']} & \\\\",
-        f"Weight of continuing versus year-specific ultimate pairs & {macros['PairValueSupportMass']} & \\\\",
-        f"Ultimate pairs traded in only one year & {macros['PairValueExclusive']} & \\\\",
+        f"Stablecoin share within continuing ultimate pairs & {display['PairValueWithin']} & \\\\",
+        f"Vehicle activity shifting across continuing ultimate pairs & {display['PairValueReweight']} & \\\\",
+        f"Weight of continuing versus year-specific ultimate pairs & {display['PairValueSupportMass']} & \\\\",
+        f"Ultimate pairs traded in only one year & {display['PairValueExclusive']} & \\\\",
         r"\midrule",
-        f"Total change in dollar-weighted share & {macros['PairValueTotal']} & \\\\",
+        f"Total change in dollar-weighted share & {display['PairValueTotal']} & \\\\",
         r"\addlinespace",
         r"\multicolumn{3}{l}{\emph{Panel D. Matched ordered ultimate-pair estimates}} \\",
         r"\midrule",
@@ -270,10 +277,10 @@ def render_usdt_transition(macros: Mapping[str, str]) -> str:
         + " & "
         + macros["USDTValueExcessEnd"]
         + r" \\",
-        "Paired January--June intermediary minus route-endpoint share & "
-        + macros["USDTEndpointGapBase"]
+        "Paired January--June intermediary minus route-endpoint share [pp] & "
+        + _without_pp(macros["USDTEndpointGapBase"])
         + " & "
-        + macros["USDTEndpointGapEnd"]
+        + _without_pp(macros["USDTEndpointGapEnd"])
         + r" \\",
         r"\bottomrule",
         r"\end{tabularx}",

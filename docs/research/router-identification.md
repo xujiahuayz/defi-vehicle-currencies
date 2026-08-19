@@ -64,8 +64,9 @@ the present paper makes no aggregator-causality or market-efficiency claim.
 ## Reporting rules
 
 - Say **executor**, not route author, unless authorship is separately established.
-- Say **ultimate route/pair** for the input-to-output exchange and **atomic
-  trade/pair** for each pool leg.
+- Say **ordered ultimate pair** for the direction-specific input-to-output
+  endpoints, **route** for the realised execution sequence (or **path** when
+  discussing the graph), and **atomic trade/pair** for each pool leg.
 - Keep route complexity, market integration, search performance, and
   vehicle-currency economics separate.
 - Count-weighted routing is primary; value-weighted routing always reports its

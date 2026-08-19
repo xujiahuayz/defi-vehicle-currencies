@@ -13,8 +13,9 @@ the sentences say, so these are not decoration and they are not preferences.
 Thresholds are empirical quantiles of the exemplars, recomputed by
 `scripts/verify/measure_venue_optics.py`. The working paper is still growing, so absolute word
 and exhibit counts are not submission gates. We instead require a venue-like page count,
-the presence of each structural feature, and first-quartile exhibit density per word.
-This catches a memo-shaped draft without forcing unfinished sections to be padded.
+the presence of each structural feature, and the first quartile of the published papers'
+within-paper exhibit densities. This catches a memo-shaped draft without forcing unfinished
+sections to be padded.
 """
 
 from __future__ import annotations
@@ -52,19 +53,19 @@ class VenueOpticsTests(unittest.TestCase):
             f"pages: {r['draft']} against a first quartile of {r['exemplar_p25']}")
 
     def test_exhibit_density_reaches_the_first_quartile(self) -> None:
-        words = self.rows.get("words")
-        if not words or not words["draft"] or not words["exemplar_p25"]:
-            self.skipTest("word counts are required for density comparisons")
         for f in ("tables", "figures", "citations"):
             if f not in self.rows:
                 continue
             r = self.rows[f]
+            if "draft_density" not in r or "exemplar_density_p25" not in r:
+                self.skipTest("rerun measure_venue_optics.py for paired densities")
             with self.subTest(feature=f):
-                draft_density = r["draft"] / words["draft"]
-                exemplar_density = r["exemplar_p25"] / words["exemplar_p25"]
+                draft_density = r["draft_density"]
+                exemplar_density = r["exemplar_density_p25"]
                 # Counts are discrete. Treat a gap smaller than one draft exhibit
                 # as measurement granularity, not a mandate to add a filler cite.
-                one_item_density = 1 / words["draft"]
+                words = self.rows["words"]["draft"]
+                one_item_density = 1 / words
                 self.assertGreaterEqual(
                     draft_density + one_item_density, exemplar_density,
                     f"{f}: {draft_density:.6f} per word against a first-quartile "

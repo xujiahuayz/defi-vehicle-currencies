@@ -11,6 +11,12 @@ trade `A → B → C`, this project calls `A → C` the **ultimate trade** or
 **ultimate pair** and calls `A → B` and `B → C` the **atomic trades** or
 **atomic pairs**. Code, tables, figures, paper, and slides should use those terms
 whenever the distinction matters.
+The ordered ultimate pair records the direction-specific endpoints; the
+**route** records the ordered sequence of atomic trades. A pool is a trading
+venue for an atomic pair. Do not append “market” to an ultimate pair unless the
+text explicitly defines a broader market that aggregates substitutable direct
+and indirect routes. Reserve “corridor” for an explicitly bilateral
+real-economy trade or payment relationship.
 
 ## Iterative workflow graph and current position
 
@@ -52,7 +58,7 @@ parallel: keep the paper and slides presentable, integrate provisional results
 with explicit status labels, and continue the scoped mechanism and review loops.
 Current provisional layers cover vehicle birth, active-day birth-state
 hysteresis, controlled entry-state path dependence, value-supported entry path dependence, non-WETH entry drivers, route-architecture entry interactions,
-large-entrant routing, thin-market turn-on with a direct-route by thinness
+large-entrant routing, low-activity ultimate-pair turn-on with a direct-route by thinness
 interaction, rolling native-only-to-stable turn-on hazards, same-day and
 prior-30-day candidate-network reach inside observed mixed-risk-set rival checks,
 endpoint claim-class formation splits, endpoint price-history formation screens,
@@ -129,9 +135,9 @@ slide titles, or result framing.
 - Route-flow coherence and quote-notional proximity are separate support axes.
 - Deposited capital, liquidity-supply flows, inventory, local depth, executable
   depth, and provider returns are distinct quantities.
-- Architecture availability, adoption, market formation, substitution, exit,
-  reversal, and hysteresis are distinct events. Calendar time is not a substitute
-  for architecture.
+- Architecture availability, adoption, atomic-pair venue formation,
+  ultimate-pair entry, substitution, exit, reversal, and hysteresis are
+  distinct events. Calendar time is not a substitute for architecture.
 - Descriptive comparisons remain descriptive. Predictive capital associations
   are not causal feedback, and a global protocol launch alone is not a treatment
   design.

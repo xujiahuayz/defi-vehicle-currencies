@@ -66,11 +66,11 @@ def test_v4_flash_lp_mechanism_table_scales_coefficients() -> None:
     assert "Internal same-asset share" in rendered
     assert "Multi-leg transaction share" in rendered
     assert "Gross-to-net reduction share" in rendered
-    assert "Future LP flow (log pts)" in rendered
-    assert "Flow narrow/medium (pp)" in rendered
-    assert "Flow broad (pp)" in rendered
-    assert "Action narrow/medium (pp)" in rendered
-    assert "Action wide/very-wide (pp)" in rendered
+    assert "Future LP flow [log points]" in rendered
+    assert "Flow narrow/medium [pp]" in rendered
+    assert "Flow broad [pp]" in rendered
+    assert "Action narrow/medium [pp]" in rendered
+    assert "Action wide/very-wide [pp]" in rendered
     assert "$+0.010^{***}$" in rendered
     assert "$+7.000^{**}$" in rendered
     assert "2,015 / 403" in rendered

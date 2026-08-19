@@ -34,8 +34,9 @@ class WithinDayLadderTableTests(unittest.TestCase):
                     }
                 )
         rendered = render_within_day_ladder(rows)
-        self.assertIn("Intermediary episode share (pp)", rendered)
-        self.assertIn("Own endpoint-demand share", rendered)
+        self.assertIn("Intermediary episode share ($I_{a,t}$) [pp]", rendered)
+        self.assertIn("Own endpoint-demand share ($D_{a,t}$)", rendered)
+        self.assertNotIn("[+10 pp]", rendered)
         self.assertIn("$R^2$", rendered)
         self.assertIn("Date fixed effects & No & Yes & Yes & Yes", rendered)
         self.assertIn("$+1.25^{***}$", rendered)

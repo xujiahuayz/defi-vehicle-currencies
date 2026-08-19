@@ -33,22 +33,25 @@ SPECIFICATIONS = (
 )
 
 REGRESSORS = (
-    ("baseline_log_market_routes", "Log baseline market routes"),
-    ("baseline_direct_route_share", "Baseline direct-route share"),
-    ("baseline_complex_route_share", "Baseline complex-route share"),
-    ("baseline_primary_choice_share", "Baseline primary-choice share"),
-    ("baseline_pair_age_log", "Log baseline ultimate-pair age"),
-    ("cross_venue", "Cross-venue scope"),
-    ("market_route_growth_log", "Log market-route growth"),
-    ("direct_route_share_change", "Change in direct-route share"),
-    ("complex_route_share_change", "Change in complex-route share"),
+    ("baseline_log_market_routes", r"$\log(1+N_{pds,2024})$"),
+    ("baseline_direct_route_share", r"$D_{pds,2024}$"),
+    ("baseline_complex_route_share", r"$C_{pds,2024}$"),
+    ("baseline_primary_choice_share", r"$P_{pds,2024}$"),
+    ("baseline_pair_age_log", r"$\log(1+A_{p,2024})$"),
+    ("cross_venue", r"$V_{pds}$"),
+    ("market_route_growth_log", r"$\Delta\log(1+N_{pds})$"),
+    ("direct_route_share_change", r"$\Delta D_{pds}$"),
+    ("complex_route_share_change", r"$\Delta C_{pds}$"),
 )
 
 PANELS = (
-    ("count_share", "Panel A: Route-count stable-share change"),
+    (
+        "count_share",
+        r"Panel A: $\Delta S^{(N)}_{pds}$, route-count stable share [pp]",
+    ),
     (
         "strict_intermediation_value_share",
-        "Panel B: Routed-value stable-share change",
+        r"Panel B: $\Delta S^{(V)}_{pds}$, routed-value stable share [pp]",
     ),
 )
 

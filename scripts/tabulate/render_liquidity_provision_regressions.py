@@ -12,6 +12,12 @@ from ddvc.paths import OUTPUT_DIR
 
 
 RESULTS = OUTPUT_DIR / "exhibits" / "liquidity_provision_behavior_exploration.jsonl"
+DISPLAY_UNITS = {
+    "pp": "pp",
+    "log pts": "log points",
+    "ranks": "rank positions",
+    "events": "events",
+}
 
 
 @dataclass(frozen=True)
@@ -314,20 +320,19 @@ def render_liquidity_provision_regressions(results: pd.DataFrame) -> str:
         r">{\raggedright\arraybackslash}X"
         r"c"
         r"c"
-        r"c"
         r"r"
         r"r@{}}"
     )
     rows.append(r"\toprule")
     rows.append(
-        r"Margin & Outcome & Horizon & Effect & Unit & Obs. & Clusters \\"
+        r"Margin & Outcome ($Y_{c,t+h}$) & Horizon & Effect of +10 pp in $G^S_{c,t}$ & Obs. & Clusters \\"
     )
     rows.append(r"\midrule")
     for row in TABLE_ROWS:
         result = _select_one(results, row)
         rows.append(
-            f"{row.margin} & {row.outcome} & {row.horizon} & "
-            f"{_effect_cell(result, row.unit)} & {row.unit} & "
+            f"{row.margin} & {row.outcome} [{DISPLAY_UNITS[row.unit]}] & {row.horizon} & "
+            f"{_effect_cell(result, row.unit)} & "
             f"{_int_cell(result, 'n_observations')} & "
             f"{_int_cell(result, 'date_clusters')} \\\\"
         )

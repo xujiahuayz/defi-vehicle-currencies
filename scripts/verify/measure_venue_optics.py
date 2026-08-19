@@ -143,6 +143,7 @@ def main() -> int:
     print(f"  {'feature':<12}{'min':>8}{'p25':>8}{'median':>9}{'p75':>8}{'max':>8}"
           f"{'DRAFT':>9}{'verdict':>12}")
     rows = []
+    density_fields = {"tables", "figures", "citations"}
     for f in fields:
         vals = sorted(m[f] for m in got)
         q = lambda x: vals[min(len(vals) - 1, int(x * len(vals)))]  # noqa: E731
@@ -151,9 +152,21 @@ def main() -> int:
         verdict = "absent" if d == 0 and q(0.5) > 0 else ("below p25" if d < lo else "in range")
         print(f"  {f:<12}{vals[0]:>8,}{lo:>8,}{q(0.5):>9,}{q(0.75):>8,}{vals[-1]:>8,}"
               f"{d:>9,}{verdict:>12}")
-        rows.append({"feature": f, "exemplar_min": vals[0], "exemplar_p25": lo,
-                     "exemplar_median": q(0.5), "exemplar_p75": q(0.75),
-                     "exemplar_max": vals[-1], "draft": d, "verdict": verdict})
+        row = {"feature": f, "exemplar_min": vals[0], "exemplar_p25": lo,
+               "exemplar_median": q(0.5), "exemplar_p75": q(0.75),
+               "exemplar_max": vals[-1], "draft": d, "verdict": verdict}
+        if f in density_fields:
+            # Quantile the within-paper ratios. Dividing the marginal count and word-count
+            # quantiles can combine two different papers and manufacture a density that no
+            # exemplar actually has.
+            densities = sorted(m[f] / m["words"] for m in got if m["words"])
+            density_q = lambda x: densities[min(len(densities) - 1, int(x * len(densities)))]  # noqa: E731
+            row.update({
+                "draft_density": d / draft["words"] if draft["words"] else 0.0,
+                "exemplar_density_p25": density_q(0.25),
+                "exemplar_density_median": density_q(0.5),
+            })
+        rows.append(row)
     napp = sum(m["has_appendix"] for m in got)
     print(f"  {'appendix':<12}{'':>8}{'':>8}{f'{napp}/{len(got)}':>9}{'':>8}{'':>8}"
           f"{draft['has_appendix']:>9}"

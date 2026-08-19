@@ -34,8 +34,14 @@ class VehicleDominanceDeterminantsTableTests(unittest.TestCase):
                         }
                     )
         rendered = render_vehicle_dominance_determinants(pd.DataFrame(rows))
-        self.assertIn("Panel A: Route-count stable-share change", rendered)
-        self.assertIn("Panel B: Routed-value stable-share change", rendered)
+        self.assertIn(
+            r"Panel A: $\Delta S^{(N)}_{pds}$, route-count stable share [pp]",
+            rendered,
+        )
+        self.assertIn(
+            r"Panel B: $\Delta S^{(V)}_{pds}$, routed-value stable share [pp]",
+            rendered,
+        )
         self.assertIn("Within $R^2$", rendered)
         self.assertIn("Month-day fixed effects & Yes & Yes & Yes & Yes", rendered)
         self.assertIn("$+0.100^{***}$", rendered)

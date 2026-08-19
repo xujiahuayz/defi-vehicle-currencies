@@ -370,7 +370,8 @@ def test_deck_separates_weth_eligibility_from_value_composition() -> None:
     assert "output/exhibits/route_methodology_heterogeneity.jsonl" in results
     assert "grouped-binomial" not in results
     assert "Challenger cost advantage predicts subsequent vehicle share" not in results
-    assert "Trading shifts toward stablecoin-heavy corridors" in results
+    assert "Trading shifts toward stablecoin-heavy ultimate pairs" in results
+    assert "stablecoin-heavy corridors" not in results
 
     frame_start = results.index(rf"\begin{{frame}}{{{title}}}")
     frame_end = results.index(r"\end{frame}", frame_start)

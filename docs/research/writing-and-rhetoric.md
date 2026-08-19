@@ -40,13 +40,23 @@ the conflict.
 - Keep distinct objects distinct: binary vehicle status, continuous vehicle
   dominance, realised route choice, counterfactual execution cost, deposited
   capital, liquidity-supply flow, inventory, executable depth, provider return,
-  market formation, substitution, exit, reversal, and persistence.
+  atomic-pair venue formation, ultimate-pair entry, substitution, exit,
+  reversal, and persistence.
 - Keep the route vocabulary equally explicit. For \(A\rightarrow B\rightarrow C\),
   \(A\rightarrow C\) is the ultimate trade and \((A,C)\) the ultimate pair;
   \(A\rightarrow B\) and \(B\rightarrow C\) are atomic trades and their token
   pairs are atomic pairs. Qualify “trade” and “pair” in audience-facing text
   whenever both levels are possible; leave either word unqualified only when its
   local referent is unambiguous.
+- The ordered ultimate pair records endpoints and direction, not the intervening
+  execution sequence. Call \(A\rightarrow B\rightarrow C\) the realised route
+  (or path when discussing the graph); call each pool a venue for an atomic pair.
+  Do not append “market” to an ultimate pair unless the text explicitly defines
+  a broader market aggregating substitutable direct and indirect routes.
+  Reserve corridor for an explicitly bilateral real-economy trade or payment
+  relationship, where that term is conventional. These labels keep an endpoint
+  relation, its execution sequence, its trading venues, and its settlement
+  relationship distinct.
 - Use causal verbs only when the design earns them. Otherwise use descriptive,
   predictive, associated, or mechanism-consistent language.
 - The paper and deck present an economic argument, not the state of the research
@@ -90,6 +100,20 @@ the conflict.
 - Captions and notes must be portable: object, unit, sample, weighting, support,
   uncertainty, and interpretation boundary should be visible without making the
   reader search through prose.
+- Regression tables put a shared unit once in the dependent-variable header or
+  note. When outcomes use different units, attach the unit to the corresponding
+  row or column label in square brackets. Keep coefficient and standard-error
+  cells numeric. Put already-defined notation in parentheses after an economic
+  label, or use the notation directly when that materially shortens a paper
+  table; the table note then states how every displayed variable is constructed.
+  A compact model is ``Route share ($R_{b,t}$) [pp]``. Parentheses identify
+  notation, while square brackets identify units or scaling.
+- Define percentage points (pp) at first use in both the paper and the deck;
+  use the abbreviation thereafter only where compact table labels benefit.
+- Every regression table that prints significance stars states the complete
+  mapping in its note: ( * ), ( ** ), and ( *** ) denote statistical
+  significance at the 10\%, 5\%, and 1\% levels, respectively. Never leave the
+  reader to infer the thresholds from convention.
 - Every numbered table and figure is introduced or interpreted in the main text.
   The published-JFE corpus makes this close to universal. Equation practice is
   different: local definitions and derivation steps may stand as unnumbered

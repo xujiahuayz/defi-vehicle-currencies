@@ -57,8 +57,8 @@ def test_bridge_liquidity_feedback_table_renders_two_direction_feedback() -> Non
     rendered = render_bridge_liquidity_feedback(pd.DataFrame(_complete_rows()))
 
     assert r"\begin{tabularx}{\linewidth}" in rendered
-    assert "Route use to bridge depth, pooled" in rendered
-    assert "Bridge depth to route use, stable" in rendered
+    assert "$R_{b,t}\\rightarrow\\Delta B_{b,t+h}$, pooled [log points]" in rendered
+    assert "$B_{b,t}\\rightarrow\\Delta R_{b,t+h}$, stable [pp]" in rendered
     assert "30 days" in rendered
     assert "120 days" in rendered
     assert "$+0.012^{***}$" in rendered

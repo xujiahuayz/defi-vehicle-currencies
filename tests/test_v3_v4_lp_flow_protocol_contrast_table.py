@@ -93,8 +93,9 @@ def test_v3_v4_lp_flow_protocol_contrast_table_renders_grid() -> None:
     assert "Remove-side flow" in rendered
     assert "Narrow/medium flow share" in rendered
     assert "Broad flow share" in rendered
-    assert "$+0.060^{**}$" in rendered
-    assert "$-0.090^{**}$" in rendered
+    assert "Narrow/medium flow share [pp]" in rendered
+    assert "$+6.000^{**}$" in rendered
+    assert "$-9.000^{**}$" in rendered
     assert "5,198 / 522" in rendered
 
 

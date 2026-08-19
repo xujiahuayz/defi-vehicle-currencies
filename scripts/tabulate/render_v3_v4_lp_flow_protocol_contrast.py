@@ -12,11 +12,11 @@ from ddvc.paths import OUTPUT_DIR
 RESULTS = OUTPUT_DIR / "exhibits" / "v3_v4_lp_flow_protocol_contrast.jsonl"
 
 OUTCOMES = {
-    "future_log1p_gross_lp_flow_usd": "Gross LP flow",
-    "future_log1p_add_lp_flow_usd": "Add-side flow",
-    "future_log1p_remove_lp_flow_usd": "Remove-side flow",
-    "future_narrow_medium_flow_value_share": "Narrow/medium flow share",
-    "future_broad_flow_value_share": "Broad flow share",
+    "future_log1p_gross_lp_flow_usd": ("Gross LP flow", "log points"),
+    "future_log1p_add_lp_flow_usd": ("Add-side flow", "log points"),
+    "future_log1p_remove_lp_flow_usd": ("Remove-side flow", "log points"),
+    "future_narrow_medium_flow_value_share": ("Narrow/medium flow share", "pp"),
+    "future_broad_flow_value_share": ("Broad flow share", "pp"),
 }
 HORIZONS = (7, 30, 120)
 
@@ -36,6 +36,9 @@ def _cell(row: pd.Series) -> str:
     standard_error = float(
         row["standard_error_per_10pp_stable_gap_v4_minus_v3"]
     )
+    if str(row["outcome"]).endswith("_share"):
+        effect *= 100.0
+        standard_error *= 100.0
     return (
         r"\begin{tabular}{@{}c@{}}"
         f"${effect:+.3f}{_stars(float(row['p_value']))}$"
@@ -92,7 +95,7 @@ def render_v3_v4_lp_flow_protocol_contrast(results: pd.DataFrame) -> str:
     rows.append(r"\toprule")
     rows.append("Outcome & 7 days & 30 days & 120 days " + r"\\")
     rows.append(r"\midrule")
-    for outcome, label in OUTCOMES.items():
+    for outcome, (label, unit) in OUTCOMES.items():
         cells = []
         for horizon in HORIZONS:
             row = contrasts[
@@ -100,7 +103,7 @@ def render_v3_v4_lp_flow_protocol_contrast(results: pd.DataFrame) -> str:
                 & contrasts["horizon_days"].eq(horizon)
             ].iloc[0]
             cells.append(_cell(row))
-        rows.append(f"{label} & " + " & ".join(cells) + r" \\")
+        rows.append(f"{label} [{unit}] & " + " & ".join(cells) + r" \\")
     rows.append(r"\midrule")
     observations = sorted(int(value) for value in contrasts["n_observations"].unique())
     clusters = sorted(int(value) for value in contrasts["date_clusters"].unique())

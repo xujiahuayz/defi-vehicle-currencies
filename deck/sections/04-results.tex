@@ -30,7 +30,7 @@
 \end{center}
 \vspace{-0.10cm}
 \decknote{Exact two-atomic-trade routes. Count weights every route equally; value requires agreement among source, intermediary, and destination dollar values. The 2026 endpoint covers January through June.}
-\note{Holding ultimate pair, calendar date, and route scope fixed, stablecoin share changes by \MatchedMarketCountChange{} by count and \MatchedMarketValueChange{} by value. The aggregate movement therefore comes primarily from the allocation of routed activity across markets.}
+\note{Holding ultimate pair, calendar date, and route scope fixed, stablecoin share changes by \MatchedMarketCountChange{} by count and \MatchedMarketValueChange{} by value. The aggregate movement therefore comes primarily from the allocation of routed activity across ultimate pairs.}
 \end{frame}
 
 % EVIDENCE-STATUS: current descriptive route decomposition
@@ -71,37 +71,38 @@ I_{a,t}=\alpha+\beta D_{a,t}+\mathbf{A}_{a}'\theta+\mu_t+\eta_a+\varepsilon_{a,t
 SE clustered by date and currency\par}
 \end{column}
 \end{columns}
-\decknote{Outcome and demand are percentage-point shares of the same day's route universe. The estimates are descriptive within-day associations.}
+\decknote{Outcome and demand are shares of the same day's route universe, measured in percentage points (pp). The estimates are descriptive within-day associations.}
 \end{frame}
 
 % EVIDENCE-STATUS: supporting within-day descriptive regression
 % EVIDENCE-SOURCES: output/exhibits/excess_use_date_fe_ladder.jsonl; output/exhibits/excess_use_date_fe_deck_values.tex; output/tables/within_day_ladder.tex
 % VISUAL-FUNCTION: regression specification ladder | compact finance-style coefficient table | show demand pass-through after date and currency effects
 \begin{frame}{Endpoint demand tracks vehicle use across currencies}
-\vspace{0.12cm}
-\begin{center}
+\vspace{0.04cm}
+\centering
 {\scriptsize
-\renewcommand{\arraystretch}{1.18}
-\begin{tabular}{lcccc}
+\renewcommand{\arraystretch}{1.06}
+\begin{tabularx}{0.94\textwidth}{@{}Xcccc@{}}
 \toprule
+ & \multicolumn{4}{c}{Intermediary share \((I_{a,t})\) [pp]} \\
+\cmidrule(lr){2-5}
  & (1) & (2) & (3) & (4) \\
  & Pooled & Date FE & {}+ demand & {}+ currency FE \\
 \midrule
-Native currency & \DateFEPooledNative{} & \DateFEDayNative{} & \DateFEDemandNative{} & --- \\
- & (\DateFEPooledNativeSE{}) & (\DateFEDayNativeSE{}) & (\DateFEDemandNativeSE{}) & --- \\
-Stablecoin & \DateFEPooledStable{} & \DateFEDayStable{} & \DateFEDemandStable{} & --- \\
- & (\DateFEPooledStableSE{}) & (\DateFEDayStableSE{}) & (\DateFEDemandStableSE{}) & --- \\
-Own endpoint-demand share & --- & --- & \DateFESlope{} & \DateFESlopeWithinToken{} \\
- & --- & --- & (\DateFESlopeSE{}) & (\DateFESlopeWithinTokenSE{}) \\
+Native currency & \DateFEPooledNativeTable{} & \DateFEDayNativeTable{} & \DateFEDemandNativeTable{} & --- \\
+ & (\DateFEPooledNativeTableSE{}) & (\DateFEDayNativeTableSE{}) & (\DateFEDemandNativeTableSE{}) & --- \\
+Stablecoin & \DateFEPooledStableTable{} & \DateFEDayStableTable{} & \DateFEDemandStableTable{} & --- \\
+ & (\DateFEPooledStableTableSE{}) & (\DateFEDayStableTableSE{}) & (\DateFEDemandStableTableSE{}) & --- \\
+Endpoint-demand share \((D_{a,t})\) & --- & --- & \DateFESlopeTable{} & \DateFESlopeWithinTokenTable{} \\
+ & --- & --- & (\DateFESlopeTableSE{}) & (\DateFESlopeWithinTokenTableSE{}) \\
 \midrule
 Date fixed effects & No & Yes & Yes & Yes \\
 Currency fixed effects & No & No & No & Yes \\
 \bottomrule
-\end{tabular}}
-\end{center}
-\vspace{0.20cm}
-{\small A currency's intermediary share moves almost one for one with its endpoint-demand share after both fixed effects.\par}
-\decknote{The sample contains \DateFETokenDays{} currency-days over \DateFEDays{} dates. Coefficients are percentage points; parentheses contain two-way clustered standard errors.}
+\end{tabularx}\par}
+\vspace{0.08cm}
+{\small Endpoint-demand share passes through almost one for one after both fixed effects.\par}
+\decknote{\DateFETokenDays{} currency-days; \DateFEDays{} dates; currency/date-clustered standard errors. Class coefficients are percentage-point differences; the demand coefficient is percentage points of intermediary share per percentage point of endpoint-demand share. Asterisks \(*\), \(**\), and \(***\) denote significance at 10\%, 5\%, and 1\%, respectively.}
 \end{frame}
 
 % EVIDENCE-STATUS: supporting deterministic endpoint-eligibility decomposition
@@ -118,7 +119,7 @@ Currency fixed effects & No & No & No & Yes \\
 % EVIDENCE-STATUS: supporting exact routed-value decomposition
 % EVIDENCE-SOURCES: output/exhibits/route_methodology_heterogeneity.jsonl; output/exhibits/route_methodology_heterogeneity_deck_values.tex
 % VISUAL-FUNCTION: routed-value composition | enlarged exact midpoint decomposition | separate activity reallocation from within-group switching
-\begin{frame}{Trading shifts toward stablecoin-heavy corridors}
+\begin{frame}{Trading shifts toward stablecoin-heavy ultimate pairs}
 \vspace{-0.16cm}
 \begin{center}
 \resizebox{0.98\textwidth}{!}{\input{assets/non-weth-value-composition.tex}}
@@ -153,7 +154,7 @@ Currency fixed effects & No & No & No & Yes \\
 
 % EVIDENCE-STATUS: supporting exact route-count decomposition
 % EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_contributions.parquet; output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex
-% VISUAL-FUNCTION: activity reallocation | one named-pair example plus aggregate contribution | show growth among corridors already using stablecoins
+% VISUAL-FUNCTION: activity reallocation | one named-pair example plus aggregate contribution | show growth among ultimate pairs already using stablecoins
 \begin{frame}{Growth favors ultimate pairs that already use stablecoins}
 \evidencekicker{Activity reallocation across continuing ultimate pairs}
 \vspace{0.28cm}
@@ -178,7 +179,7 @@ Currency fixed effects & No & No & No & Yes \\
 
 % EVIDENCE-STATUS: supporting exact route-count decomposition
 % EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_contributions.parquet; output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex
-% VISUAL-FUNCTION: newly traded pair margin | one named arrival plus aggregate contribution | show market formation as the largest component
+% VISUAL-FUNCTION: newly traded pair margin | one named arrival plus aggregate contribution | show ultimate-pair entry as the largest component
 \begin{frame}{Newly traded ultimate pairs deliver the largest rotation margin}
 \evidencekicker{Markets appearing after the baseline period}
 \vspace{0.28cm}
@@ -215,7 +216,7 @@ Currency fixed effects & No & No & No & Yes \\
 
 % EVIDENCE-STATUS: exploratory descriptive local-depth result
 % EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl; output/exhibits/bridge_liquidity_dominance_support.jsonl; output/exhibits/bridge_liquidity_deck_values.tex
-% VISUAL-FUNCTION: local bridge depth | three large economic magnitudes | link corridor-specific capital to realised route choice
+% VISUAL-FUNCTION: local bridge depth | three large economic magnitudes | link ultimate-pair-specific capital to realised route choice
 \begin{frame}{Local bridge depth predicts route choice}
 \vspace{0.18cm}
 \begin{columns}[T,totalwidth=0.92\textwidth]

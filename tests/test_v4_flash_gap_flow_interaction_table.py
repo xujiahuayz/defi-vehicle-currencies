@@ -61,9 +61,10 @@ def test_v4_flash_gap_flow_table_scales_log_outcomes() -> None:
     rendered = render_v4_flash_gap_flow_interactions(pd.DataFrame(_complete_rows()))
 
     assert r"\begin{tabularx}{\linewidth}" in rendered
+    assert "Interaction term ($G^S_{c,t}\\times M_{c,t}$)" in rendered
     assert "Stable gap $\\times$ internal same-asset share" in rendered
-    assert "Gross LP flow (log pts)" in rendered
-    assert "Remove-side LP flow (log pts)" in rendered
+    assert "Gross LP flow [log points]" in rendered
+    assert "Remove-side LP flow [log points]" in rendered
     assert "$+0.100^{***}$" in rendered
     assert "$+0.900^{**}$" in rendered
     assert "1,209 / 403" in rendered

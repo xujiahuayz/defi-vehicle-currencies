@@ -35,6 +35,8 @@ def test_liquidity_provision_regression_table_scales_units() -> None:
     assert r"p{" not in rendered
     assert "V2 stock" in rendered
     assert "V4 LP flow" in rendered
+    assert "Log deposited capital [log points]" in rendered
+    assert "& Unit &" not in rendered
     assert "Effect" in rendered
     assert "Sender-days" in rendered
     assert "$+5.4^{***}$" in rendered

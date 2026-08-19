@@ -135,8 +135,8 @@ who authored a route and market composition changes at the same time.
 
 ## Boundaries
 
-- Architecture availability, adoption, market formation, substitution, and
-  reversal are different objects.
+- Architecture availability, adoption, atomic-pair venue formation,
+  ultimate-pair entry, substitution, and reversal are different objects.
 - Counts and values answer different questions and are never silently pooled.
 - Unsupported values stay visible through coverage rather than being imputed.
 - Symbols label assets; contract addresses establish identity.
