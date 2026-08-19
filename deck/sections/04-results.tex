@@ -25,6 +25,9 @@
 \IfFileExists{../output/exhibits/v3_v4_lp_protocol_deck_values.tex}{%
 \input{../output/exhibits/v3_v4_lp_protocol_deck_values.tex}%
 }{\PackageError{dvc-deck}{Missing generated V3/V4 LP protocol values}{Run scripts/analyze/run_v3_v4_lp_protocol_contrast.py then scripts/tabulate/build_v3_v4_lp_protocol_deck_values.py.}}
+\IfFileExists{../output/exhibits/v3_v4_lp_flow_protocol_deck_values.tex}{%
+\input{../output/exhibits/v3_v4_lp_flow_protocol_deck_values.tex}%
+}{\PackageError{dvc-deck}{Missing generated V3/V4 LP-flow protocol values}{Run scripts/analyze/run_v3_v4_lp_flow_protocol_contrast.py then scripts/tabulate/build_v3_v4_lp_flow_protocol_deck_values.py.}}
 \IfFileExists{../output/exhibits/bridge_liquidity_deck_values.tex}{%
 \input{../output/exhibits/bridge_liquidity_deck_values.tex}%
 }{\PackageError{dvc-deck}{Missing generated bridge-liquidity values}{Run scripts/analyze/run_bridge_liquidity_dominance.py then scripts/tabulate/build_bridge_liquidity_deck_values.py.}}
@@ -459,9 +462,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{frame}
 
 % EVIDENCE-STATUS: exploratory descriptive allocation result
-% EVIDENCE-SOURCES: output/exhibits/liquidity_provision_behavior_exploration.jsonl; output/exhibits/liquidity_provision_behavior_support.jsonl; output/exhibits/liquidity_provision_behavior_deck_values.tex
-% SCIENTIFIC-BOUNDARY: V2 deposited-capital stock over five vehicle candidates plus Uniswap v3 mint/burn records, Uniswap v4 modify-liquidity event/origin-count records, and V4 gross/net swap-flow proxies; not provider inflow, unique LP identity, active concentrated-liquidity depth, or executable quote size
-% ESTIMAND-BOUNDARY: daily five-candidate panel with route and V2 capital support; leader rows are same-day rankings, gap rows are within-day route-share minus capital-share associations, exact-horizon rows are future capital-share and rank changes, stable-basket rows aggregate DAI/USDC/USDT and use 30-day calendar HAC with activity controls, same-pool rows follow pool-candidate capital, pool-entry rows split target V2 capital by pools active at origin versus newly active by the target date, fee rows follow processed V3 pool-day fees, volume, TVL-normalized fee yield, and turnover, V3 LP-action rows follow raw mint/burn event and origin counts through processed pool metadata, V4 rows compare modify-liquidity candidate-action composition with native ETH mapped to WETH, forecast future activity net of current V4 action/origin/sender counts, and measure transaction gross-to-net singleton reductions; FE rows are contemporaneous level associations
+% EVIDENCE-SOURCES: output/exhibits/liquidity_provision_behavior_exploration.jsonl; output/exhibits/liquidity_provision_behavior_support.jsonl; output/exhibits/liquidity_provision_behavior_deck_values.tex; output/exhibits/v3_v4_lp_flow_protocol_deck_values.tex
+% SCIENTIFIC-BOUNDARY: V2 deposited-capital stock over five vehicle candidates plus Uniswap v3 mint/burn records, Uniswap v4 modify-liquidity event/origin-count records, V3/V4 candidate-token-side LP-flow records, and V4 gross/net swap-flow proxies; not provider inventory, unique LP identity, active concentrated-liquidity depth, executable quote size, or causal protocol treatment
+% ESTIMAND-BOUNDARY: daily five-candidate panel with route and V2 capital support; leader rows are same-day rankings, gap rows are within-day route-share minus capital-share associations, exact-horizon rows are future capital-share and rank changes, stable-basket rows aggregate DAI/USDC/USDT and use 30-day calendar HAC with activity controls, same-pool rows follow pool-candidate capital, pool-entry rows split target V2 capital by pools active at origin versus newly active by the target date, fee rows follow processed V3 pool-day fees, volume, TVL-normalized fee yield, and turnover, V3 LP-action rows follow raw mint/burn event and origin counts through processed pool metadata, V4 rows compare modify-liquidity candidate-action composition with native ETH mapped to WETH, forecast future activity net of current V4 action/origin/sender counts, measure transaction gross-to-net singleton reductions, and compare V3/V4 candidate-token-side flow on the same candidate-date; FE rows are contemporaneous level associations
 % VISUAL-FUNCTION: capital-use split | three-stat allocation contrast | show that provider capital remains native-heavy while stablecoins carry excess vehicle use
 \begin{frame}{Provider capital stays native-heavy}
 \vspace{0.10cm}
@@ -484,9 +487,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.44cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.4}{9.4}\selectfont Same candidate-date origins: V4's LP-action response to a 10 pp stable shortfall exceeds V3 by \VThreeVFourLpActionLongCoef{}. With V4 internal routing, future TVL rises \VFourFlashGapInternalTvlCoef{} and wide/very-wide ranges rise \VFourFlashGapInternalWideCoef{}.\par}
+{\fontsize{8.4}{9.4}\selectfont Same candidate-date: V4 LP-action response to a 10 pp stable shortfall exceeds V3 by \VThreeVFourLpActionLongCoef{}. Flow is not broad add expansion: gross/add differentials are \VThreeVFourLpFlowGrossLongCoef{} / \VThreeVFourLpFlowAddLongCoef{}; remove turnover is \VThreeVFourLpFlowRemoveLongCoef{}.\par}
 \end{minipage}}
-\decknote{Five-candidate V2 capital panel. V3 rows use \LiqBehVThreeLpActionRows{} mint/burn records. V4 rows use filtered candidate-token flow, flash-LP, and stable-gap interactions. Protocol contrast uses \VThreeVFourLpProtocolRows{} stacked observations with \VThreeVFourLpProtocolFixedEffects{} effects. Not LP inventory or causal protocol treatment.}
+\decknote{Five-candidate V2 capital panel. V3 rows use \LiqBehVThreeLpActionRows{} mint/burn records. V4 rows use filtered candidate-token flow, flash-LP, and stable-gap interactions. Protocol contrasts use \VThreeVFourLpProtocolRows{} action rows and \VThreeVFourLpFlowProtocolRows{} flow rows with candidate-date and protocol effects. Not LP inventory or causal protocol treatment.}
 \end{frame}
 
 % EVIDENCE-STATUS: current predictive mechanism result; the reciprocal rule records a non-pass
