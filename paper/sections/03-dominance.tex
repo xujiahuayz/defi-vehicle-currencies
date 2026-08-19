@@ -241,8 +241,10 @@ where \(\Delta S^{(m)}\) is the change in stablecoin share, $X$ contains baselin
 \centering
 \caption{Determinants of stablecoin vehicle-share growth}
 \label{tab:vehicle-dominance-determinants}
-\footnotesize
+{\scriptsize
+\renewcommand{\arraystretch}{0.86}
 \input{../output/tables/vehicle_dominance_determinants.tex}
+}
 \exhibitnote{The unit is an ordered ultimate-pair--calendar-month-day--route-scope transition cell observed in both 2024 and 2026. Panel A uses route-count stablecoin share and Panel B uses routed value whose source, intermediary, and destination dollar values agree within 20\%. Coefficients and clustered standard errors in parentheses are in percentage points. All columns absorb month-day effects, use harmonic native-plus-stable route-mass weights, and cluster by ordered ultimate pair and month-day. Columns (1) and (2) enter the market-state and route-architecture blocks separately; column (3) combines their baseline variables; column (4) adds changes in market activity and route architecture. Within \(R^2\) is computed after the fixed-effect transformation. Stars denote 1\%, 5\%, and 10\% significance. The estimates are descriptive associations, not causal effects.}
 \end{table}
 

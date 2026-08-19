@@ -123,6 +123,9 @@ I_{a,t}=\alpha+\beta D_{a,t}+\mathbf{A}_{a}'\theta+\mu_t+\eta_a+\varepsilon_{a,t
 \decknote{The outcome and demand regressor are percentage-point shares of the same day's route universe. The specification ladder is reported in the next frame. This is descriptive within-day identification, not a causal demand shock.}
 \end{frame}
 
+% EVIDENCE-STATUS: supporting within-day descriptive result
+% EVIDENCE-SOURCES: output/exhibits/excess_use_date_fe_ladder.jsonl; output/exhibits/excess_use_date_fe_screens.jsonl; output/exhibits/excess_use_date_fe_deck_values.tex; data/processed/vehicle_excess_use_daily.parquet; docs/findings/README.md
+% ESTIMAND-BOUNDARY: token-day intermediary count share on own endpoint count share, percentage points, endpoint-supported token-days with more than twenty route units; date fixed effects absorb the calendar; two-way CR1 on date and token; class intercepts are measured against the residual unclassified bucket and are not identified in the two-way row
 % VISUAL-FUNCTION: within-day identification of the vehicle role | four-rung control ladder in one table | show the calendar absorbed and the cross-section unchanged
 \begin{frame}{The cross-section holds when the calendar is absorbed}
 \vspace{0.10cm}

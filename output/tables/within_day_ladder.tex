@@ -1,16 +1,23 @@
-\begin{tabular}{lcccr}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}X*{4}{>{\centering\arraybackslash}p{0.92in}}@{}}
 \toprule
- & \multicolumn{2}{c}{Class premium (pp)} & Demand & Absorbed \\
-\cmidrule(lr){2-3}
-Specification & Native & Stable & pass-through & effects \\
+ & \multicolumn{4}{c}{Intermediary episode share (pp)} \\
+\cmidrule(lr){2-5}
+ & (1) & (2) & (3) & (4) \\
+ & Pooled & Date FE & {}+ demand & {}+ currency FE \\
 \midrule
-Pooled & $+34.56$ & $+2.42$ & --- & 0 \\
- & (23.04) & (1.32) & --- & \\
-{}+ day effects & $+34.55$ & $+2.42$ & --- & 2,259 \\
- & (23.04) & (1.32) & --- & \\
-{}+ own endpoint share & $+0.05$ & $+0.85$ & 1.587 & 2,259 \\
- & (0.56) & (0.50) & (0.026) & \\
-{}+ currency effects & --- & --- & 0.985 & 306,830 \\
- & --- & --- & (0.301) & \\
+Native currency & $+34.56$ & $+34.55$ & $+0.05$ & --- \\
+ & (23.04) & (23.04) & (0.56) & --- \\
+Stablecoin & $+2.42^{*}$ & $+2.42^{*}$ & $+0.85^{*}$ & --- \\
+ & (1.32) & (1.32) & (0.50) & --- \\
+Own endpoint-demand share & --- & --- & $1.587^{***}$ & $0.985^{***}$ \\
+ & --- & --- & (0.026) & (0.301) \\
+\addlinespace
+$R^2$ & 0.485 & 0.485 & 0.953 & 0.208 \\
+Observations & 1,828,862 & 1,828,862 & 1,828,862 & 1,828,862 \\
+Currencies & 304,572 & 304,572 & 304,572 & 304,572 \\
+Dates & 2,259 & 2,259 & 2,259 & 2,259 \\
+Date fixed effects & No & Yes & Yes & Yes \\
+Currency fixed effects & No & No & No & Yes \\
+Date and currency clustered SE & Yes & Yes & Yes & Yes \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
