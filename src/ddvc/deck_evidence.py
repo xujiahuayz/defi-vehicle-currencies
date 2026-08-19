@@ -7,6 +7,8 @@ from pathlib import Path
 import json
 import re
 
+from ddvc.latex_text import NEGATED_HEADLINE, audience_process_matches, strip_latex_comments
+
 
 MANUAL_PLOT_DATA = re.compile(
     r"\\addplot(?:\s*\[[^\]]*\])?\s*coordinates\s*\{",
@@ -29,25 +31,6 @@ EVIDENCE_STATUS = re.compile(r"(?m)^% EVIDENCE-STATUS:\s*\S.+$")
 EVIDENCE_SOURCES = re.compile(r"(?m)^% EVIDENCE-SOURCES:\s*\S.+$")
 VISUAL_MANAGED_FILE = "VISUAL-MANAGED-FILE"
 VISUAL_FUNCTION = re.compile(r"(?m)^% VISUAL-FUNCTION:\s*\S.+\|\s*\S.+\|\s*\S.+$")
-
-# Audience language is checked separately from scientific validity.  These are
-# research-management or software expressions that are absent from, or used in
-# a different sense by, the saved finance/economics presentation and paper
-# corpus.  The internal evidence metadata is deliberately stripped before this
-# check, so the workflow can stay precise without making the audience listen to
-# its machinery.
-AUDIENCE_JARGON = {
-    "verdict": re.compile(r"\bverdicts?\b", flags=re.IGNORECASE),
-    "findings_freeze": re.compile(r"\bfindings?[- ]freeze\b", flags=re.IGNORECASE),
-    "evidence_gate": re.compile(r"\bevidence[- ]gate\b", flags=re.IGNORECASE),
-    "data_pipeline": re.compile(r"\bdata[- ]pipeline\b", flags=re.IGNORECASE),
-    "workflow_status": re.compile(r"\bworkflow[- ]status\b", flags=re.IGNORECASE),
-    "common_support_value": re.compile(
-        r"\bcommon(?:[-\s]+)support(?:[-\s]+)value\b",
-        flags=re.IGNORECASE,
-    ),
-}
-
 
 # Slide density is measured on the rendered page, not on the authored source.
 # The rendered page is what a listener actually reads, it cannot be gamed by
@@ -81,35 +64,22 @@ def _line_number(text: str, offset: int) -> int:
     return text.count("\n", 0, offset) + 1
 
 
-def _without_comments(text: str) -> str:
-    visible: list[str] = []
-    for line in text.splitlines():
-        end = len(line)
-        for offset, character in enumerate(line):
-            if character == "%" and (offset == 0 or line[offset - 1] != "\\"):
-                end = offset
-                break
-        visible.append(line[:end])
-    return "\n".join(visible)
-
-
 def audit_audience_text(text: str, *, path: Path, unit: int = 1) -> list[DeckEvidenceDefect]:
     """Find backstage vocabulary in one audience-visible source or PDF unit."""
 
     defects: list[DeckEvidenceDefect] = []
-    for label, pattern in AUDIENCE_JARGON.items():
-        for match in pattern.finditer(text):
-            defects.append(
-                DeckEvidenceDefect(
-                    path=path,
-                    line=_line_number(text, match.start()) if "\n" in text else unit,
-                    kind="audience_workflow_jargon",
-                    detail=(
-                        f"{match.group(0)!r} is internal workflow language "
-                        f"({label}); use the field-facing scientific statement"
-                    ),
-                )
+    for label, match in audience_process_matches(text):
+        defects.append(
+            DeckEvidenceDefect(
+                path=path,
+                line=_line_number(text, match.start()) if "\n" in text else unit,
+                kind="audience_workflow_jargon",
+                detail=(
+                    f"{match.group(0)!r} exposes {label.replace('_', ' ')}; "
+                    "rewrite the claim around its economic object"
+                ),
             )
+        )
     return defects
 
 
@@ -145,8 +115,22 @@ def audit_deck_sources(deck_root: Path) -> list[DeckEvidenceDefect]:
         paths.insert(0, deck_root / "main.tex")
     for path in paths:
         authored = path.read_text(encoding="utf-8")
-        source = _without_comments(authored)
+        source = strip_latex_comments(authored)
         scientific_section = path.parent == sections
+        for match in re.finditer(r"\\begin\{frame\}(?:\[[^\]]*\])?\{([^}]*)\}", source):
+            title = match.group(1)
+            if NEGATED_HEADLINE.search(title):
+                defects.append(
+                    DeckEvidenceDefect(
+                        path=path,
+                        line=_line_number(source, match.start()),
+                        kind="negated_frame_title",
+                        detail=(
+                            f"frame title {title!r} is built around negation; "
+                            "state the economic result affirmatively"
+                        ),
+                    )
+                )
         for match in MANUAL_PLOT_DATA.finditer(source) if scientific_section else ():
             defects.append(
                 DeckEvidenceDefect(
@@ -278,8 +262,7 @@ def audit_deck_density(pdf_path: Path, ledger_path: Path) -> list[DeckEvidenceDe
     budget = int(ledger["budget_words"])
     ceiling = int(ledger["hard_ceiling_words"])
     core_limit = int(ledger["core_frame_limit"])
-    core_allowance = int(ledger.get("core_frame_allowance", core_limit))
-    if not 0 < budget <= ceiling or core_limit <= 0 or core_allowance <= 0:
+    if not 0 < budget <= ceiling or core_limit <= 0:
         return [_density_ledger_defect(ledger_path, "deck density ledger states an incoherent budget")]
 
     defects: list[DeckEvidenceDefect] = []
@@ -311,17 +294,29 @@ def audit_deck_density(pdf_path: Path, ledger_path: Path) -> list[DeckEvidenceDe
         )
     else:
         core_frames = appendix_first - 1
-        if core_frames != core_allowance:
+        if core_frames > core_limit:
             defects.append(
                 _density_ledger_defect(
                     ledger_path,
-                    f"core deck has {core_frames} frames against a recorded allowance of {core_allowance}"
-                    f" (venue limit {core_limit})",
+                    f"core deck has {core_frames} frames against a venue limit of {core_limit}",
                 )
             )
 
     for number, (title, slide, note) in enumerate(pages, start=1):
         row = allowances.get(number)
+        if number < appendix_first and (slide > ceiling or note > ceiling):
+            defects.append(
+                DeckEvidenceDefect(
+                    path=pdf_path,
+                    line=number,
+                    kind="deck_density_hard_ceiling",
+                    detail=(
+                        f"core page {number} ({title!r}) exceeds the {ceiling}-word hard ceiling: "
+                        f"{slide} visible words and {note} note words"
+                    ),
+                )
+            )
+            continue
         if row is None:
             for measured, label in ((slide, "visible words"), (note, "words of exhibit note")):
                 if measured > budget:
@@ -415,7 +410,6 @@ def write_deck_density_ledger(pdf_path: Path, ledger_path: Path) -> int:
         "budget_words": budget,
         "hard_ceiling_words": int(existing.get("hard_ceiling_words", 70)),
         "core_frame_limit": int(existing.get("core_frame_limit", 13)),
-        "core_frame_allowance": appendix_first - 1,
         "appendix_first_page": appendix_first,
         "appendix_title": appendix_title,
         "page_allowances": allowances,

@@ -13,13 +13,13 @@ RESULTS = OUTPUT_DIR / "exhibits" / "v4_flash_lp_mechanism_exploration.jsonl"
 
 HORIZON_DAYS = 120
 PREDICTORS = {
-    "internal_tx_share": "Internal same-candidate share",
+    "internal_tx_share": "Internal same-asset share",
     "multi_leg_tx_share": "Multi-leg transaction share",
     "netting_reduction_share": "Gross-to-net reduction share",
 }
 OUTCOMES = {
     "future_log1p_gross_lp_flow_usd": ("Future LP flow", "log pts"),
-    "future_delta_log1p_tvl_usd": ("Candidate-linked TVL", "log pts"),
+    "future_delta_log1p_tvl_usd": ("Vehicle-linked TVL", "log pts"),
     "future_log1p_lp_actions": ("LP actions", "log pts"),
     "future_narrow_medium_flow_value_share": ("Flow narrow/medium", "pp"),
     "future_broad_flow_value_share": ("Flow broad", "pp"),
@@ -141,7 +141,7 @@ def render_v4_flash_lp_mechanism(results: pd.DataFrame) -> str:
         + f"{observations[0]:,} / {clusters[0]:,}"
         + r"} \\"
     )
-    rows.append(rf"Candidate and date effects & \multicolumn{{{outcome_count}}}{{r}}{{Yes}} \\")
+    rows.append(rf"Asset and date effects & \multicolumn{{{outcome_count}}}{{r}}{{Yes}} \\")
     rows.append(rf"Origin-day activity controls & \multicolumn{{{outcome_count}}}{{r}}{{Yes}} \\")
     rows.append(r"\bottomrule")
     rows.append(r"\end{tabularx}")

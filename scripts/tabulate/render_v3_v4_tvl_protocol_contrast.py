@@ -112,7 +112,7 @@ def render_v3_v4_tvl_protocol_contrast(results: pd.DataFrame) -> str:
             + f"{observations[0]:,} / {clusters[0]:,}"
             + r"} \\"
         )
-    rows.append(r"Candidate-date and protocol effects & \multicolumn{2}{r}{Yes} \\")
+    rows.append(r"Asset-date and protocol effects & \multicolumn{2}{r}{Yes} \\")
     rows.append(r"Origin TVL and pool-count controls & \multicolumn{2}{r}{Yes} \\")
     rows.append(r"\bottomrule")
     rows.append(r"\end{tabularx}")

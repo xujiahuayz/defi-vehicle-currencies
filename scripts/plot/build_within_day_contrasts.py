@@ -57,7 +57,7 @@ PANEL_A = (
     ("Imported", L3, ALL, "imported", "imported"),
 )
 PANEL_B = (
-    ("Five candidates", CUT, "five_named_candidates", "native", "native"),
+    ("Five named vehicles", CUT, "five_named_candidates", "native", "native"),
     ("All classified", CUT, "classified_types_only", "native", "native"),
 )
 PANEL_C = (

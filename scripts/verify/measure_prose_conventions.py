@@ -11,9 +11,11 @@ unlabelled.
 This script asks a deliberately narrower question. For any construction already expressed
 as a pattern, it measures the rate per thousand words in the 14 published papers and in the
 draft. A construction the corpus uses freely should not be banned merely because somebody
-dislikes it. One the corpus rarely uses and the draft repeats is an alarm. The result says
-nothing about an unregistered construction, a one-off use below the frequency threshold, or
-the rhetorical function a word performs in its paragraph.
+dislikes it. One the corpus rarely uses and the draft repeats is an alarm. For the registered
+negation family, the reference is the second-highest published-paper rate, so one corpus
+outlier cannot mask a draft-wide rhetorical habit. The result says nothing about an
+unregistered construction, a one-off use below the frequency threshold, or the rhetorical
+function a word performs in its paragraph.
 
 The script is therefore a final diagnostic, not a writing method and not evidence that prose
 sounds like a JFE article. Paragraph organization must be reviewed against the raw passages
@@ -82,6 +84,16 @@ PROBES: list[tuple[str, str, str]] = [
     ("hedging_stack", r"\b(?:may|might|could) (?:possibly|perhaps|arguably)\b", "stacked hedges"),
 ]
 
+# Negation is an ensemble property: titles, topic sentences, result statements, and
+# limitations can each be locally defensible while the whole paper still reads as a
+# sequence of denials. Use a leave-one-out upper-tail reference for this family rather
+# than letting the most negation-heavy published paper define the rule by itself.
+ENSEMBLE_TAIL_PROBES = {
+    "negation_periphrastic",
+    "not_any",
+    "neither_nor",
+}
+
 EXTRACT = r"""
 import sys, fitz
 d = fitz.open(sys.argv[1])
@@ -133,32 +145,34 @@ def main() -> int:
     draft = draft_text()
 
     rows, flagged = [], []
-    print(f"  {'construction':<28}{'corpus med':>12}{'corpus max':>12}"
+    print(f"  {'construction':<28}{'corpus med':>12}{'corpus ref':>12}"
           f"{'draft':>10}{'verdict':>12}")
     for name, pattern, _desc in PROBES:
         corpus = sorted(rate(t, pattern) for t in texts)
         med = corpus[len(corpus) // 2]
         mx = corpus[-1]
+        reference = corpus[-2] if name in ENSEMBLE_TAIL_PROBES and len(corpus) > 1 else mx
         d = rate(draft, pattern)
-        over = d > max(mx * args.tolerance, 1e-9) and d > med
+        over = d > max(reference * args.tolerance, 1e-9) and d > med
         verdict = "OVERUSED" if over else "in range"
         if over:
-            flagged.append((name, d, mx))
-        print(f"  {name:<28}{med:>12.3f}{mx:>12.3f}{d:>10.3f}{verdict:>12}")
+            flagged.append((name, d, reference))
+        print(f"  {name:<28}{med:>12.3f}{reference:>12.3f}{d:>10.3f}{verdict:>12}")
         rows.append({"construction": name, "corpus_median": med, "corpus_max": mx,
-                     "corpus_min": corpus[0], "draft": d, "verdict": verdict})
+                     "corpus_reference": reference, "corpus_min": corpus[0],
+                     "draft": d, "verdict": verdict})
 
     print()
     if flagged:
-        print(f"{len(flagged)} construction(s) used at a rate no published paper reaches:")
-        for name, d, mx in flagged:
+        print(f"{len(flagged)} construction(s) used above the registered corpus reference:")
+        for name, d, reference in flagged:
             desc = next(x[2] for x in PROBES if x[0] == name)
-            print(f"  {name}: draft {d:.3f} per 1,000 words against a corpus maximum of "
-                  f"{mx:.3f}  ({desc})")
+            print(f"  {name}: draft {d:.3f} per 1,000 words against a corpus reference of "
+                  f"{reference:.3f}  ({desc})")
         print("\nThese are alarms for whole-thought review. A construction the corpus uses")
         print("freely is not banned by this test, but context and paragraph function still matter.")
     else:
-        print("No REGISTERED construction exceeds the published-corpus range. This result")
+        print("No REGISTERED construction exceeds its published-corpus reference. This result")
         print("does not assess unregistered phrasing, word sense, or paragraph organization.")
     write_report(__import__("pandas").DataFrame(rows), OUT)
     print(f"\nwrote {OUT.relative_to(ROOT)}")

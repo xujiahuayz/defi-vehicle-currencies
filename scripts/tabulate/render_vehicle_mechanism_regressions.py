@@ -91,7 +91,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     TableRow(
         margin="Rolling hazard",
         outcome="Stable appears within 30d",
-        scaled_regressor="Pair age (+1 log)",
+        scaled_regressor="Ultimate-pair age (+1 log)",
         selector={
             "model_id": "stable_turn_on_hazard_fe",
             "outcome": "future_stable_turn_on",
@@ -100,7 +100,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     ),
     TableRow(
         margin="Mixed risk set",
-        outcome="Candidate route share",
+        outcome="Vehicle route share",
         scaled_regressor="Same-day reach (+1 log)",
         selector={
             "model_id": "mixed_native_stable_risk_set_centrality_fe",
@@ -112,7 +112,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     ),
     TableRow(
         margin="Mixed risk set",
-        outcome="Candidate route share",
+        outcome="Vehicle route share",
         scaled_regressor="Prior-30d reach (+1 log)",
         selector={
             "model_id": "mixed_native_stable_risk_set_lag30_reach_fe",
@@ -124,7 +124,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     ),
     TableRow(
         margin="Issuer split",
-        outcome="Candidate route share",
+        outcome="Vehicle route share",
         scaled_regressor="USDC $\\times$ 2026",
         selector={
             "model_id": "mixed_native_stable_risk_set_issuer_reach_fe",
@@ -136,7 +136,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     ),
     TableRow(
         margin="Issuer split",
-        outcome="Candidate route share",
+        outcome="Vehicle route share",
         scaled_regressor="USDT $\\times$ 2026",
         selector={
             "model_id": "mixed_native_stable_risk_set_issuer_reach_fe",

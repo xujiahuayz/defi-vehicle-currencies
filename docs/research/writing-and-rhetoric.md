@@ -41,17 +41,28 @@ the conflict.
   dominance, realised route choice, counterfactual execution cost, deposited
   capital, liquidity-supply flow, inventory, executable depth, provider return,
   market formation, substitution, exit, reversal, and persistence.
+- Keep the route vocabulary equally explicit. For \(A\rightarrow B\rightarrow C\),
+  \(A\rightarrow C\) is the ultimate trade and \((A,C)\) the ultimate pair;
+  \(A\rightarrow B\) and \(B\rightarrow C\) are atomic trades and their token
+  pairs are atomic pairs. Qualify “trade” and “pair” in audience-facing text
+  whenever both levels are possible; leave either word unqualified only when its
+  local referent is unambiguous.
 - Use causal verbs only when the design earns them. Otherwise use descriptive,
   predictive, associated, or mechanism-consistent language.
-- A provisional result may enter the paper or deck if it is clearly labelled and
-  rebuildable enough for review. It becomes headline evidence only after it is
-  economically material, survives a serious rival explanation, fits the
-  literature contribution, and has a complete producer-to-deliverable path.
-- Blocked, withheld, unsupported, or retired material may remain in notes or
-  appendix context, but it does not enter the abstract, headline tables, or
-  audience-facing slides as established evidence.
-- Provenance, node labels, workflow status, and review status belong in comments,
-  source notes, or workflow docs. They do not narrate the paper or slides.
+- The paper and deck present an economic argument, not the state of the research
+  process. Internal sample-construction nouns, search labels, evidence states,
+  provenance, node labels, and review status belong in code, source comments, or
+  workflow documents. In reader-facing text, name the economic object, comparison,
+  and specification directly. This is a sentence-level translation rule, not a
+  synonym list: rewrite the thought when its subject is still the research process.
+- Provisional, blocked, withheld, unsupported, or retired results may remain in
+  source comments and review documents. A result enters reader-facing prose only
+  in scientific language that states its design and limitation; workflow status is
+  never the limitation shown to the audience.
+- Titles, topic sentences, and conclusions state the economic result affirmatively.
+  A genuine null or bound remains publishable evidence, but introduce the economic
+  benchmark first and quantify the estimate and uncertainty instead of making
+  grammatical negation carry the claim.
 
 ## Paper prose
 
@@ -132,7 +143,8 @@ the conflict.
 - Reviewer comments, new experiments, draft integration, and motivation rewrite
   run in parallel. Do not wait for all experiments to finish before keeping the
   draft coherent.
-- Use explicit labels for provisional, registered, and confirmed evidence.
+- Use explicit evidence-state labels in source comments and review documents, where
+  parallel work needs them; keep those labels out of audience-facing prose.
 - Use named branches or small focused commits on `main` for parallel work. Do
   not create sibling project folders as a workflow state.
 

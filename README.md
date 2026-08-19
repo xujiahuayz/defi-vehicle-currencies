@@ -25,7 +25,7 @@ question and literature                    done
   → cleaned and analysis-ready data        ready for the two active claim families
   → registered baseline analysis           done; findings check green
   → repository cleanup and host sync        done; one checkout per host
-  → presentable paper/deck trunk            66/47 pages; blocking checks green
+  → presentable paper/deck trunk            64/44 pages; blocking checks green
         status labels                      provisional / registered / confirmed
         review snapshots                   versioned and shareable while work continues
 

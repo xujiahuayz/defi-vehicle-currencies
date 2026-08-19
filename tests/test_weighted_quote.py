@@ -199,7 +199,7 @@ class AppendixTierIncidenceTests(unittest.TestCase):
             f"Of the {priced} pool-days accepted across the twelve validation days, "
             f"{modes.get('reported', 0)} clear the gate on reported parameters with nothing "
             f"identified, {modes.get('fee_fitted', 0)} need the swap fee alone, and "
-            f"{modes.get('weight_fitted', 0)} need per-pair weight ratios."
+            f"{modes.get('weight_fitted', 0)} need per-atomic-pair weight ratios."
         )
         self.assertIn(sentence, body)
         self.assertEqual(len(rows), 12)

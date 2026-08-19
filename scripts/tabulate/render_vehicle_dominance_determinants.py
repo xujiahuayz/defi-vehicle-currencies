@@ -37,7 +37,7 @@ REGRESSORS = (
     ("baseline_direct_route_share", "Baseline direct-route share"),
     ("baseline_complex_route_share", "Baseline complex-route share"),
     ("baseline_primary_choice_share", "Baseline primary-choice share"),
-    ("baseline_pair_age_log", "Log baseline pair age"),
+    ("baseline_pair_age_log", "Log baseline ultimate-pair age"),
     ("cross_venue", "Cross-venue scope"),
     ("market_route_growth_log", "Log market-route growth"),
     ("direct_route_share_change", "Change in direct-route share"),
@@ -146,7 +146,7 @@ def render_vehicle_dominance_determinants(results: pd.DataFrame) -> str:
                 "Observations & "
                 + " & ".join(_integer(row["observations"]) for row in anchors)
                 + r" \\",
-                "Ordered-pair clusters & "
+                "Ordered ultimate-pair clusters & "
                 + " & ".join(_integer(row["ordered_pair_clusters"]) for row in anchors)
                 + r" \\",
                 "Month-day clusters & "

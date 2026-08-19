@@ -157,7 +157,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     ),
     TableRow(
         margin="V4 accounting",
-        outcome="Internal same-candidate share",
+        outcome="Internal same-asset share",
         horizon="same day",
         unit="pp",
         selector={
@@ -179,7 +179,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     ),
     TableRow(
         margin="V4 LP flow",
-        outcome="Gross candidate-side flow",
+        outcome="Gross vehicle-side flow",
         horizon="120d",
         unit="log pts",
         selector={

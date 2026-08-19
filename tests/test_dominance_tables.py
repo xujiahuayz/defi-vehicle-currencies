@@ -124,20 +124,20 @@ def test_pair_table_keeps_the_two_count_factorisations_apart() -> None:
 
     # Panel A's labels belong to Panel A alone.
     for label in (
-        "Market activity shifting across continuing pairs",
-        "Change in how often continuing pairs use a vehicle",
-        "Stablecoin share within continuing vehicle-using pairs",
-        "Pairs entering or leaving the sample",
+        "Market activity shifting across continuing ultimate pairs",
+        "Change in how often continuing ultimate pairs use a vehicle",
+        "Stablecoin share within continuing vehicle-using ultimate pairs",
+        "Ultimate pairs entering or leaving the sample",
     ):
         assert pair.count(label) == 1
 
     # The identity's labels appear once in its count panel and once in its
     # value panel, and nowhere else.
     for label in (
-        "Stablecoin share within continuing pairs",
-        "Vehicle activity shifting across continuing pairs",
-        "Weight of continuing versus year-specific pairs",
-        "Pairs traded in only one year",
+        "Stablecoin share within continuing ultimate pairs",
+        "Vehicle activity shifting across continuing ultimate pairs",
+        "Weight of continuing versus year-specific ultimate pairs",
+        "Ultimate pairs traded in only one year",
     ):
         assert pair.count(label) == 2
 
@@ -163,7 +163,7 @@ def test_paper_has_one_consumer_and_no_duplicate_inline_body() -> None:
     assert "2024 is the omitted year" in section
     assert "pair--calendar-date--route-type combination" in section
     assert "number or dollar value of native-plus-stable routes as weights" in section
-    assert "clustered by ordered pair and calendar date" in section
+    assert "clustered by ordered ultimate pair and calendar date" in section
     assert "comparison remains descriptive" in section
 
 

@@ -9,7 +9,7 @@
 \draw[rule,line width=2pt] (0,0) -- (11.9,0);
 \foreach \x/\year in {0/2020,2/2021,4/2022,6/2023,8/2024,10/2025,11.9/2026}{\fill[ucldark] (\x,0) circle (2.3pt); \node[below,font=\small] at (\x,-0.15) {\year};}
 \draw[uclbright,line width=1pt] (0.75,0.12)--(0.75,1.05);
-\node[above,align=center,font=\small] at (0.75,1.05) {V2: arbitrary pairs};
+\node[above,align=center,font=\small] at (0.75,1.05) {V2: arbitrary atomic pairs};
 \draw[native,line width=1pt] (2.10,0.12)--(2.10,1.65);
 \node[above,align=center,font=\small] at (3.00,1.65) {V3: concentrated liquidity};
 \draw[stable,line width=1pt] (10.05,0.12)--(10.05,1.05);
@@ -20,13 +20,13 @@
 \begin{column}{0.49\textwidth}
 \begin{beamercolorbox}[sep=0.15cm,wd=\textwidth]{block body}
 {\small\bfseries Main route sample}\par\vspace{0.08cm}
-{\scriptsize Atomic trades (swap legs) from multiple protocols are linked within each transaction. An atomic pair may be a two-asset pool or one asset pair inside a multi-asset Curve or Balancer pool.}
+{\scriptsize Atomic trades are linked within each transaction across the V2, V3, V4, Curve, and Balancer route perimeter.}
 \end{beamercolorbox}
 \end{column}
 \begin{column}{0.49\textwidth}
 \begin{beamercolorbox}[sep=0.15cm,wd=\textwidth]{block body}
 {\small\bfseries V1/V2 architecture supplement}\par\vspace{0.08cm}
-{\scriptsize Uniswap V1 forced-ETH paths and V2 pair formation are analysed separately. They answer protocol-design questions and do not define the main route perimeter.}
+{\scriptsize V1 forced-ETH paths and V2 atomic-pair formation isolate how protocol rules shape available routes.}
 \end{beamercolorbox}
 \end{column}
 \end{columns}

@@ -18,8 +18,6 @@
 \foreach \x/\lab in {1.80/{$t-2$},2.62/{$t-1$},3.44/{$t$},4.26/{$t+1$},5.08/{$t+2$}} {
   \node[day] at (\x,2.45) {\lab};
 }
-\node[font=\tiny,text=muted,anchor=west] at (1.78,1.94)
-  {one observation for each observed calendar date};
 
 % Weekly aggregation uses complete seven-day blocks and sums before ratios.
 \node[clocklabel] at (1.32,0.92) {Complete weeks};
@@ -28,10 +26,8 @@
 }
 \draw[decorate,decoration={brace,mirror,amplitude=4pt},draw=native,line width=0.9pt]
   (1.48,0.50) -- (5.38,0.50);
-\node[font=\tiny,text=native] at (3.43,0.13) {sum a complete seven-day block};
 \draw[-{Stealth[length=4.5pt]},draw=native,line width=1.0pt] (5.48,0.92) -- (6.42,0.92);
 \node[day,draw=native,fill=native!8,minimum width=0.90cm] at (6.98,0.92) {week $w$};
-\node[font=\tiny,text=muted] at (6.15,1.34) {sum, then divide};
 
 % Every exact dynamic link names both its origin and required future date.
 \node[clocklabel] at (1.32,-0.78) {Exact links};
@@ -47,8 +43,6 @@
 \node[origin] (t0120) at (7.66,-0.78) {$t$};
 \node[target,minimum width=0.82cm] (t120) at (8.78,-0.78) {$t+120$};
 \draw[link] (t0120)--(t120);
-\node[font=\tiny,text=muted] at (5.30,-1.48)
-  {same market definition, exact target calendar date};
 
 % Model labels remain adjacent to the clocks instead of becoming another prose list.
 \node[font=\scriptsize\bfseries,text=ucldark,anchor=west] at (9.28,3.02) {Model role};

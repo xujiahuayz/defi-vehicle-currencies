@@ -13,12 +13,12 @@ RESULTS = OUTPUT_DIR / "exhibits" / "v4_flash_gap_interaction_exploration.jsonl"
 HORIZON_DAYS = 120
 
 PREDICTORS = {
-    "internal_tx_share": "Stable gap $\\times$ internal same-candidate share",
+    "internal_tx_share": "Stable gap $\\times$ internal same-asset share",
     "multi_leg_tx_share": "Stable gap $\\times$ multi-leg transaction share",
     "netting_reduction_share": "Stable gap $\\times$ gross-to-net reduction share",
 }
 OUTCOMES = {
-    "future_delta_log1p_tvl_usd": ("Candidate-linked TVL", "log pts"),
+    "future_delta_log1p_tvl_usd": ("Vehicle-linked TVL", "log pts"),
     "future_log1p_lp_actions": ("LP actions", "log pts"),
     "future_narrow_medium_action_share": ("Narrow/medium ranges", "pp"),
     "future_wide_very_wide_action_share": ("Wide/very-wide ranges", "pp"),
@@ -134,7 +134,7 @@ def render_v4_flash_gap_interactions(results: pd.DataFrame) -> str:
         + f"{observations[0]:,} / {clusters[0]:,}"
         + r"} \\"
     )
-    rows.append(r"Candidate and date effects & \multicolumn{4}{r}{Yes} \\")
+    rows.append(r"Asset and date effects & \multicolumn{4}{r}{Yes} \\")
     rows.append(r"Origin-day activity controls & \multicolumn{4}{r}{Yes} \\")
     rows.append(r"\bottomrule")
     rows.append(r"\end{tabularx}")

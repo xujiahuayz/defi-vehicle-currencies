@@ -60,7 +60,7 @@ def _complete_rows() -> list[dict[str, object]]:
 def test_v4_flash_gap_flow_table_scales_log_outcomes() -> None:
     rendered = render_v4_flash_gap_flow_interactions(pd.DataFrame(_complete_rows()))
 
-    assert "Stable gap $\\times$ internal same-candidate share" in rendered
+    assert "Stable gap $\\times$ internal same-asset share" in rendered
     assert "Gross LP flow (log pts)" in rendered
     assert "Remove-side LP flow (log pts)" in rendered
     assert "$+0.100^{***}$" in rendered

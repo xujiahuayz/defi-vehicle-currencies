@@ -31,15 +31,13 @@
 \node[font=\small\bfseries,text=ucldark] at (9.75,1.58) {Excess vehicle use};
 \node[font=\scriptsize,align=center,text width=3.15cm] at (9.75,0.78)
   {$X_k=D_k\div E_k$\\$E_k$: endpoint share of $k$};
-\node[font=\scriptsize,text=muted,align=center] at (9.75,0.06)
-  {$X_k>1$: intermediary use exceeds\\the endpoint benchmark};
+\node[font=\tiny,text=muted,align=center,text width=3.15cm] at (9.75,0.06)
+  {$X_k>1$: use exceeds\\the endpoint benchmark};
 
 \draw[route,draw=rule] (routebox)--(dominancebox);
 \draw[route,draw=rule] (dominancebox)--(excessbox);
 
 % Neighbouring objects are characteristics, not alternative definitions of dominance.
-\node[anchor=west,font=\scriptsize\bfseries,text=muted] at (0.20,-0.82)
-  {Separate characteristics of the asset and route set};
 \draw[draw=rule,line width=0.7pt] (0.20,-1.00)--(11.55,-1.00);
 
 \node[mtvehicle,minimum size=19pt] (gk) at (1.20,-1.82) {$k$};
@@ -48,8 +46,6 @@
   \draw[draw=rule,line width=0.9pt] (gk)--(\name);
 }
 \node[font=\small\bfseries,text=ucldark,anchor=west] at (2.46,-1.52) {Network position};
-\node[font=\scriptsize,anchor=west,align=left,text width=3.20cm] at (2.46,-2.02)
-  {position of $k$ in the\\feasible graph};
 
 \node[mtasset] (qi) at (6.78,-1.82) {$i$};
 \node[mtasset] (qo) at (8.92,-1.82) {$o$};
@@ -58,7 +54,5 @@
 \draw[route,draw=native] (qi)--(qk);
 \draw[route,draw=native] (qk)--(qo);
 \node[font=\small\bfseries,text=ucldark,anchor=west] at (9.28,-1.52) {Execution cost};
-\node[font=\scriptsize,anchor=west,align=left] at (9.28,-2.02)
-  {which route returns more\\at the same state};
 
 \end{tikzpicture}

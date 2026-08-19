@@ -170,13 +170,13 @@ def render_bridge_liquidity_feedback(results: pd.DataFrame) -> str:
             f"{int(support['days']):,}"
         )
     rows.append(
-        "Rows / pairs / dates & "
+        "Rows / ultimate pairs / dates & "
         + r"\multicolumn{1}{c}{} & "
         + " & ".join(support_cells)
         + r" \\"
     )
-    rows.append(r"Candidate and date effects & \multicolumn{3}{r}{Yes} \\")
-    rows.append(r"Two-way clustered covariance & \multicolumn{3}{r}{Ordered pair and date} \\")
+    rows.append(r"Asset and date effects & \multicolumn{3}{r}{Yes} \\")
+    rows.append(r"Two-way clustered covariance & \multicolumn{3}{r}{Ordered ultimate pair and date} \\")
     rows.append(r"\bottomrule")
     rows.append(r"\end{tabularx}")
     rows.append("")

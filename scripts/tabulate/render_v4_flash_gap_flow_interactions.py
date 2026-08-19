@@ -13,7 +13,7 @@ RESULTS = OUTPUT_DIR / "exhibits" / "v4_flash_gap_interaction_exploration.jsonl"
 HORIZON_DAYS = 120
 
 PREDICTORS = {
-    "internal_tx_share": "Stable gap $\\times$ internal same-candidate share",
+    "internal_tx_share": "Stable gap $\\times$ internal same-asset share",
     "multi_leg_tx_share": "Stable gap $\\times$ multi-leg transaction share",
     "netting_reduction_share": "Stable gap $\\times$ gross-to-net reduction share",
 }
@@ -126,7 +126,7 @@ def render_v4_flash_gap_flow_interactions(results: pd.DataFrame) -> str:
         + f"{observations[0]:,} / {clusters[0]:,}"
         + r"} \\"
     )
-    rows.append(r"Candidate and date effects & \multicolumn{3}{r}{Yes} \\")
+    rows.append(r"Asset and date effects & \multicolumn{3}{r}{Yes} \\")
     rows.append(r"Origin-day activity controls & \multicolumn{3}{r}{Yes} \\")
     rows.append(r"\bottomrule")
     rows.append(r"\end{tabularx}")

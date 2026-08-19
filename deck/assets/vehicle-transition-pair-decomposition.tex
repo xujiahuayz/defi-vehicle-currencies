@@ -9,33 +9,30 @@
 \node[draw=stable,line width=1.1pt,circle,minimum size=1.05cm,
   font=\fontsize{8.2}{8.8}\selectfont\bfseries,text=ucldark] at (1.05,3.45) {WETH};
 \node[anchor=west,font=\fontsize{8.2}{9.0}\selectfont\bfseries,text=ucldark]
-  at (1.82,3.62) {WETH is the source or destination};
+  at (1.82,3.62) {WETH is an endpoint of the ultimate pair};
 \node[anchor=west,font=\fontsize{7.2}{8.0}\selectfont,text=ink]
-  at (1.82,3.25) {WETH cannot also be the intermediary; stable share is mechanically 100\%.};
+  at (1.82,3.25) {Stablecoins alone remain eligible as intermediaries.};
 
-\draw[panel] (0,0.48) rectangle (5.45,2.68);
+\draw[panel] (0,0.56) rectangle (6.00,2.68);
 \node[anchor=west,font=\fontsize{8.1}{8.8}\selectfont\bfseries,text=ucldark]
-  at (0.35,2.32) {All matched trading-pair groups};
+  at (0.35,2.32) {All matched ultimate-pair groups};
 \node[anchor=west,font=\fontsize{23}{24}\selectfont\bfseries,text=stable]
   at (0.35,1.48) {\WethCountFullChange};
 \node[anchor=west,font=\fontsize{6.9}{7.6}\selectfont,text=muted]
   at (0.35,1.05) {95\% CI [\WethCountFullCILower, \WethCountFullCIUpper]};
 \node[anchor=west,font=\fontsize{7.0}{7.7}\selectfont,text=ink]
-  at (0.35,0.72) {WETH-linked route-count mass: \WethCountMassBase{} $\rightarrow$ \WethCountMassEnd};
+  at (0.35,0.80) {WETH-linked route-count mass: \WethCountMassBase{} $\rightarrow$ \WethCountMassEnd};
 
-\draw[->,accent,line width=1.5pt] (5.72,1.58) -- (6.72,1.58);
-\node[small,text width=1.55cm] at (6.22,1.05) {exclude WETH\ endpoints};
-
-\draw[panel] (7.00,0.48) rectangle (12.45,2.68);
+\draw[panel] (6.35,0.56) rectangle (12.35,2.68);
 \node[anchor=west,font=\fontsize{8.1}{8.8}\selectfont\bfseries,text=ucldark]
-  at (7.35,2.32) {Trading-pair groups without WETH endpoints};
+  at (6.70,2.32) {Ultimate-pair groups excluding WETH endpoints};
 \node[anchor=west,font=\fontsize{23}{24}\selectfont\bfseries,text=accent]
-  at (7.35,1.48) {\WethCountNoEndpointChange};
+  at (6.70,1.48) {\WethCountNoEndpointChange};
 \node[anchor=west,font=\fontsize{6.9}{7.6}\selectfont,text=muted]
-  at (7.35,1.05) {95\% CI [\WethCountNoEndpointCILower, \WethCountNoEndpointCIUpper]};
+  at (6.70,1.05) {95\% CI [\WethCountNoEndpointCILower, \WethCountNoEndpointCIUpper]};
 \node[anchor=west,font=\fontsize{7.0}{7.7}\selectfont,text=ink]
-  at (7.35,0.72) {\WethCountNoEndpointGroups{} matched groups};
+  at (6.70,0.80) {\WethCountNoEndpointGroups{} matched groups};
 
-\node[small,text width=12.0cm] at (6.23,0.10)
-  {Within the same trading pair, calendar position, and route scope: all groups \WethCountWithinFullChange{} [\WethCountWithinFullCILower, \WethCountWithinFullCIUpper]; without WETH endpoints \WethCountWithinNoEndpointChange{} [\WethCountWithinNoEndpointCILower, \WethCountWithinNoEndpointCIUpper].};
+\node[small,text width=12.0cm] at (6.18,0.08)
+  {\textbf{Within-ultimate-pair change:} all groups \WethCountWithinFullChange{} [\WethCountWithinFullCILower, \WethCountWithinFullCIUpper];\\excluding WETH endpoints \WethCountWithinNoEndpointChange{} [\WethCountWithinNoEndpointCILower, \WethCountWithinNoEndpointCIUpper].};
 \end{tikzpicture}

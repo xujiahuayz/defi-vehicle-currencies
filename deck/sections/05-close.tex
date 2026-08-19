@@ -1,103 +1,48 @@
-% VISUAL-MANAGED-FILE
 % EVIDENCE-MANAGED-FILE
-% Working-paper close. Refresh the findings when their source results change.
+% VISUAL-MANAGED-FILE
+% Working-paper close. Numerical bindings are generated in the results section.
 
-% EVIDENCE-STATUS: institutional illustration; no empirical estimate from this project is displayed
-% EVIDENCE-SOURCES: People's Bank of China and Banco Central do Brasil, memorandum of understanding on establishing renminbi clearing arrangements in Brazil, https://www.pbc.gov.cn/en/3688241/3688636/3688657/2025080817522611695/index.html (retrieved 2026-08-16)
-% SCIENTIFIC-BOUNDARY: the corridor comparison is an accounting analogy for the two composition margins. It carries no causal, policy, or geopolitical claim, no measurement of currency shares in trade settlement, and no assertion that the two settings share a mechanism.
-% VISUAL-FUNCTION: external validity of the composition margins | two-corridor schematic against the same two margins | show the arithmetic is general to any aggregate currency share
-\begin{frame}{The same arithmetic governs any aggregate currency share}
-\vspace{0.02cm}
-\begin{columns}[T,totalwidth=\textwidth]
-\begin{column}{0.47\textwidth}
-\evidencekicker{A familiar setting}
-\vspace{0.10cm}
-\centering
-\begin{tikzpicture}[x=1cm,y=1cm,corridor/.style={-{Stealth[length=5pt]},line width=1.6pt}]
-\node[nodepoint,minimum size=26pt,font=\scriptsize] (a) at (0,1.55) {A};
-\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=26pt,font=\scriptsize] (usd) at (2.15,1.55) {USD};
-\node[nodepoint,minimum size=26pt,font=\scriptsize] (b) at (4.30,1.55) {B};
-\draw[corridor,draw=ucldark] (a)--(usd);
-\draw[corridor,draw=ucldark] (usd)--(b);
-\node[font=\scriptsize,text=muted] at (2.15,2.20) {established corridor};
-\node[nodepoint,minimum size=26pt,font=\scriptsize] (cn) at (0,0.05) {CN};
-\node[nodepoint,minimum size=26pt,font=\scriptsize] (br) at (4.30,0.05) {BR};
-\draw[corridor,draw=stable] (cn)--(br);
-\node[font=\scriptsize,text=stable] at (2.15,0.42) {settles bilaterally};
-\end{tikzpicture}
-\par\vspace{0.22cm}
-{\footnotesize\raggedright China and Brazil have built clearing arrangements for settling their bilateral trade in renminbi. The established corridor above is unaffected.\par}
+% EVIDENCE-STATUS: current descriptive route decomposition
+% EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_fixed_effects.jsonl; output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex
+% VISUAL-FUNCTION: economic conclusion | three concise takeaways | close on market formation and activity reallocation
+\begin{frame}{Market formation made stablecoins dominant vehicles}
+\vspace{0.18cm}
+
+\begin{columns}[T,totalwidth=0.94\textwidth]
+\begin{column}{0.10\textwidth}
+{\fontsize{26}{28}\selectfont\bfseries\color{uclbright}1}
 \end{column}
-\begin{column}{0.50\textwidth}
-\evidencekicker{The share can fall with no corridor switching}
-\vspace{0.14cm}
-{\footnotesize\raggedright A currency's share of all settled trade falls when trade grows fastest along corridors that never adopted it, even if every corridor that uses it today keeps using it tomorrow.\par}
-\vspace{0.22cm}
-{\footnotesize\raggedright\textbf{Margin 2} is trade reallocating toward corridors that already avoid the incumbent.\par}
-\vspace{0.10cm}
-{\footnotesize\raggedright\textbf{Margin 3} is a corridor that had no meaningful volume opening on other terms.\par}
-\vspace{0.22cm}
-{\footnotesize\raggedright Our routes measure the same two margins directly, because the transaction log records the whole path rather than its legs.\par}
+\begin{column}{0.84\textwidth}
+{\large\bfseries Intermediary choice persists within continuing ultimate pairs.}\par
+{\small Same ultimate pair, date, and route scope: \MatchedMarketCountChange{} (SE \MatchedMarketCountSE{}).}
 \end{column}
 \end{columns}
-\vspace{0.12cm}
-\decknote{Illustrative comparison only. Renminbi clearing arrangements in Brazil follow the \href{https://www.pbc.gov.cn/en/3688241/3688636/3688657/2025080817522611695/index.html}{memorandum of understanding} between the People's Bank of China and the Banco Central do Brasil. No currency share of trade settlement is measured here, and no causal or policy claim is made about either setting.}
-\end{frame}
 
-% EVIDENCE-STATUS: evolving route result; current generated presentation bindings
-% EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_fixed_effects.jsonl; output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex
-% The closing image is the invariance, not the chronology. The one calendar
-% element left on the frame is the aggregate fact in the first column, which is
-% setup: everything to its right is a design that holds the market fixed, and the
-% axis the audience reads left to right is how much is being held fixed.
-% ESTIMAND-BOUNDARY: the left block is one estimand throughout -- the stablecoin share of route
-% intermediation, pooled 2024 against 2026 on 181 common calendar days -- shown at three levels of
-% conditioning: unconditional, restricted to ordered pairs traded in both years, and matched on
-% ordered pair, calendar date and realised route scope. Those three are comparable to each other and
-% share a scale. No margin here is an entry or exit effect, none identifies a treatment, and the
-% aggregate change is realised composition on the validated allocation.
-% VISUAL-FUNCTION: substantive conclusion | conditioning ladder in one estimand | close on the invariance rather than on the timeline
-\begin{frame}{The market changed, not the trade}
-\vspace{0.06cm}
-\centering
-\resizebox{0.78\textwidth}{!}{%
-\begin{tikzpicture}[x=1cm,y=1cm]
-\tikzset{closelabel/.style={font=\scriptsize,text=muted,align=center}}
-\tikzset{rungbox/.style={draw=rule,fill=white,rounded corners=3pt,line width=0.9pt}}
-% The boxes are sized so every caption sets without hyphenation at this measure.
-% The whole picture is scaled to the text width, so widening it costs nothing but
-% a few percent of type size, and broken short words read badly on a screen.
+\vspace{0.34cm}
+\begin{columns}[T,totalwidth=0.94\textwidth]
+\begin{column}{0.10\textwidth}
+{\fontsize{26}{28}\selectfont\bfseries\color{uclbright}2}
+\end{column}
+\begin{column}{0.84\textwidth}
+{\large\bfseries Activity reallocates toward stablecoin-heavy ultimate pairs.}\par
+{\small Continuing-market reallocation contributes \MarginReweightTotal{} to the count rotation.}
+\end{column}
+\end{columns}
 
-% Left block: one estimand, the stablecoin share of route intermediation, at
-% three levels of conditioning. These three are comparable and share a scale.
-\node[anchor=west,font=\small\bfseries,text=ucldark] at (0.10,5.42) {SHARE OF INTERMEDIATION CARRIED BY STABLECOINS};
-\node[anchor=west,font=\scriptsize,text=muted] at (0.10,4.90) {as the comparison holds more of the market fixed};
+\vspace{0.34cm}
+\begin{columns}[T,totalwidth=0.94\textwidth]
+\begin{column}{0.10\textwidth}
+{\fontsize{26}{28}\selectfont\bfseries\color{uclbright}3}
+\end{column}
+\begin{column}{0.84\textwidth}
+{\large\bfseries Newly traded ultimate pairs supply the largest margin.}\par
+{\small Market entry contributes \MarginNewPairTotal{} to the aggregate count rotation.}
+\end{column}
+\end{columns}
 
-\draw[rungbox] (0.10,1.70) rectangle (3.70,4.34);
-\node[closelabel,text=ucldark,font=\scriptsize\bfseries] at (1.90,4.02) {Across the\\whole market};
-\node[font=\fontsize{22}{23}\selectfont\bfseries,text=stable] at (1.90,3.12) {\PairPooledTotal};
-\node[closelabel,text width=3.30cm] at (1.90,2.28) {no conditioning at all};
-
-\draw[-{Stealth[length=6pt]},draw=uclbright,line width=1.8pt] (3.88,3.02)--(4.58,3.02);
-
-\draw[rungbox] (4.76,1.70) rectangle (8.36,4.34);
-\node[closelabel,text=ucldark,font=\scriptsize\bfseries] at (6.56,4.02) {Within pairs traded\\in both years};
-\node[font=\fontsize{22}{23}\selectfont\bfseries,text=muted] at (6.56,3.12) {\MarginWithinTotal};
-\node[closelabel,text width=3.30cm] at (6.56,2.28) {theory's own margin};
-
-\draw[-{Stealth[length=6pt]},draw=uclbright,line width=1.8pt] (8.54,3.02)--(9.24,3.02);
-
-\draw[rungbox,draw=stable,line width=1.3pt] (9.42,1.70) rectangle (13.02,4.34);
-\node[closelabel,text=ucldark,font=\scriptsize\bfseries] at (11.22,4.02) {Same pair, same day,\\same route scope};
-\node[font=\fontsize{22}{23}\selectfont\bfseries,text=muted] at (11.22,3.12) {\MatchedMarketCountChange};
-\node[closelabel,text width=3.30cm] at (11.22,2.28) {SE \MatchedMarketCountSE{}, over \MatchedCells{} matched cells};
-
-% The sentence a listener should be able to repeat.
-\fill[ucldark,rounded corners=4pt] (0.10,0.20) rectangle (13.02,1.34);
-\node[font=\large\bfseries,text=white,align=center,text width=12.0cm] at (6.56,0.77)
-  {Stablecoins won through the markets that formed and grew, not repeated switching inside established pairs.};
-\end{tikzpicture}
-}
-\vspace{0.04cm}
-{\fontsize{7.4}{8.2}\selectfont The three shares are one measure at three levels of conditioning and are directly comparable. They describe realised route composition; they are not entry or exit effects and do not identify a treatment.\par}
+\vfill
+\begin{beamercolorbox}[wd=\textwidth,sep=0.30cm,center]{structure}
+{\large\bfseries The dominant vehicle is made by the markets that form and grow.}
+\end{beamercolorbox}
+\note{The close follows the retained finance-deck pattern: compress each empirical result into its mechanism, then end on the joint economic implication.}
 \end{frame}

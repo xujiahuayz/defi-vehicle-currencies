@@ -230,7 +230,7 @@ def render_vehicle_formation_regressions(results: pd.DataFrame) -> str:
     )
     rows.append(r"\toprule")
     rows.append(
-        r"Screen & Outcome & Scaled regressor & Effect (pp) & Obs. / clusters \\"
+        r"Specification & Outcome & Scaled regressor & Effect (pp) & Obs. / clusters \\"
     )
     rows.append(r"\midrule")
     for row in TABLE_ROWS:

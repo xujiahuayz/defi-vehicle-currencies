@@ -165,10 +165,10 @@ and the lock.
 
 ## Deliverable state
 
-The current branch compiles a 66-page paper and a 47-page deck after the
+The current branch compiles a 64-page paper and a 44-page deck after the
 provisional mechanism reruns and publication-regression repair. The paper and
-deck compile with zero undefined references. The repository passes 769 pytest
-tests plus 445 subtests, the findings gate, and every
+deck compile with zero undefined references. The repository passes 774 pytest
+tests plus 122 subtests, the findings gate, and every
 blocking conformance check. There is one manuscript under `paper/` and one
 presentation under `deck/`; Git history is the archive.
 

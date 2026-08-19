@@ -63,7 +63,7 @@ def _complete_rows() -> list[dict[str, object]]:
 def test_v4_flash_lp_mechanism_table_scales_coefficients() -> None:
     rendered = render_v4_flash_lp_mechanism(pd.DataFrame(_complete_rows()))
 
-    assert "Internal same-candidate share" in rendered
+    assert "Internal same-asset share" in rendered
     assert "Multi-leg transaction share" in rendered
     assert "Gross-to-net reduction share" in rendered
     assert "Future LP flow (log pts)" in rendered

@@ -10,6 +10,11 @@ this README only owns deck folder structure and build handoff.
 
 Build from this directory with `latexmk -pdf -interaction=nonstopmode main.tex`. Review the rendered pages visually and check the log for overflow before committing `main.pdf`.
 
+For the 30-minute research talk, the core deck is capped at 24 static frames.
+Core pages may carry at most 70 visible words, including chart and table labels;
+the 55-word budget remains the default. Appendix pages may retain denser
+question-defense exhibits.
+
 ## Folder map
 
 | Path | Purpose |

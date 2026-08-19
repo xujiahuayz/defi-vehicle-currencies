@@ -12,7 +12,7 @@
 \vspace{0.10cm}
 {\large A treasury desk keeps one thin dollar corridor while aggregate dollar share falls.\par}
 \vspace{0.22cm}
-{\small Growth elsewhere changes the denominator: route allocation, not only within-pair substitution.\par}
+{\small Growth elsewhere changes the denominator: route allocation, not only within-ultimate-pair substitution.\par}
 \end{column}
 \begin{column}{0.48\textwidth}
 \centering
@@ -41,7 +41,7 @@
 \vspace{0.10cm}
 {\large Yen--euro may trade through dollars.\par}
 \vspace{0.24cm}
-{\small Pair data see two legs, not the customer route.\par}
+{\small Atomic-pair turnover data show two legs, not the customer route.\par}
 \end{column}
 \begin{column}{0.49\textwidth}
 \centering
@@ -58,7 +58,7 @@
 \end{columns}
 \vspace{0.22cm}
 {\small DEX data make the hidden route observable.\par}
-\decknote{Traditional pair-level FX records show turnover in each bilateral pair, but not whether two legs belong to one customer route. The DEX setting preserves the transaction-level pool path, so the intermediary asset is observed directly.}
+\decknote{Traditional FX records show turnover in each atomic currency pair, but not whether two legs belong to one customer route. The DEX setting preserves the transaction-level pool path, so the intermediary asset is observed directly.}
 \end{frame}
 
 % EVIDENCE-STATUS: authentic transaction and route-component trace; exact same-state alternative remains outside this exhibit
@@ -128,7 +128,6 @@
 \begin{itemize}
 \item Dominance is the share of indirect trade intermediated by asset $k$.
 \item Count share treats each route equally; value share weights routes by dollar value.
-\item Network measures capture how broadly $k$ connects ultimate pairs.
 \end{itemize}
 \end{column}
 \begin{column}{0.53\textwidth}
@@ -163,7 +162,7 @@
 
 % V1: the pairing contract makes ETH the only token-to-token path.
 \begin{column}{0.238\textwidth}
-\fcolorbox{rule}{panel}{\begin{minipage}[t][3.95cm][t]{0.88\linewidth}
+\fcolorbox{rule}{panel}{\begin{minipage}[t][3.15cm][t]{0.88\linewidth}
 {\small\bfseries\color{ucldark}V1}\hfill{\scriptsize\color{muted}mandatory hub}\par
 \vspace{0.18cm}
 \centering
@@ -173,10 +172,8 @@
 \node[tinyasset] (b) at (2.10,0) {B};
 \draw[routearrow,draw=accent] (a)--(k);
 \draw[routearrow,draw=accent] (k)--(b);
-\draw[rule,densely dashed] (a) to[bend left=35] node[above,font=\tiny,text=muted] {no direct pool} (b);
+\draw[rule,densely dashed] (a) to[bend left=35] node[above,font=\tiny,text=muted] {vehicle-only} (b);
 \end{tikzpicture}
-\par\vspace{0.22cm}
-\raggedright\scriptsize Only ETH--token pools: token-to-token execution must pass through ETH.\par
 \vfill
 {\scriptsize\bfseries\color{accent}Hub use is imposed}\par
 \end{minipage}}
@@ -184,8 +181,8 @@
 
 % V2: arbitrary pairs add a direct opportunity while leaving vehicle routes feasible.
 \begin{column}{0.238\textwidth}
-\fcolorbox{rule}{panel}{\begin{minipage}[t][3.95cm][t]{0.88\linewidth}
-{\small\bfseries\color{ucldark}V2}\hfill{\scriptsize\color{muted}pair choice}\par
+\fcolorbox{rule}{panel}{\begin{minipage}[t][3.15cm][t]{0.88\linewidth}
+{\small\bfseries\color{ucldark}V2}\hfill{\scriptsize\color{muted}atomic-pair choice}\par
 \vspace{0.18cm}
 \centering
 \begin{tikzpicture}[tinyasset/.style={circle,draw=ink,fill=white,minimum size=14pt,inner sep=0pt,font=\tiny},routearrow/.style={-{Stealth[length=4pt]},line width=1.15pt}]
@@ -196,8 +193,6 @@
 \draw[routearrow,draw=ucldark] (k)--(b);
 \draw[routearrow,draw=stable] (a) to[bend left=35] node[above,font=\tiny,text=stable] {direct} (b);
 \end{tikzpicture}
-\par\vspace{0.22cm}
-\raggedright\scriptsize Arbitrary pairs add a direct route; vehicle routes remain feasible.\par
 \vfill
 {\scriptsize\bfseries\color{stable}Hub use becomes a choice}\par
 \end{minipage}}
@@ -205,7 +200,7 @@
 
 % V3: bounded ranges make active depth depend on where liquidity is placed.
 \begin{column}{0.238\textwidth}
-\fcolorbox{rule}{panel}{\begin{minipage}[t][3.95cm][t]{0.88\linewidth}
+\fcolorbox{rule}{panel}{\begin{minipage}[t][3.15cm][t]{0.88\linewidth}
 {\small\bfseries\color{ucldark}V3}\hfill{\scriptsize\color{muted}range choice}\par
 \vspace{0.25cm}
 \centering
@@ -218,16 +213,14 @@
 \draw[ucldark,line width=3pt] (0.58,-0.20)--(1.08,-0.20);
 \draw[uclbright,line width=3pt] (1.48,-0.20)--(2.02,-0.20);
 \end{tikzpicture}
-\par\vspace{0.28cm}
-\raggedright\scriptsize LPs choose ranges and fees; active depth can favor direct pairs or vehicle spokes.\par
 \vfill
-{\scriptsize\bfseries\color{uclbright}Opportunity shifts by pair}\par
+{\scriptsize\bfseries\color{uclbright}Atomic-pair opportunities shift}\par
 \end{minipage}}
 \end{column}
 
 % V4: settlement can net movement without erasing the economic route or its pools.
 \begin{column}{0.238\textwidth}
-\fcolorbox{rule}{panel}{\begin{minipage}[t][3.95cm][t]{0.88\linewidth}
+\fcolorbox{rule}{panel}{\begin{minipage}[t][3.15cm][t]{0.88\linewidth}
 {\small\bfseries\color{ucldark}V4}\hfill{\scriptsize\color{muted}net settlement}\par
 \vspace{0.18cm}
 \centering
@@ -240,18 +233,9 @@
 \draw[routearrow,draw=ucldark] (k)--(b);
 \node[anchor=north,font=\tiny,text=uclbright] at (1.05,-0.50) {shared accounting};
 \end{tikzpicture}
-\par\vspace{0.22cm}
-\raggedright\scriptsize Two pools still execute; intermediate token movement may be netted.\par
 \vfill
-{\scriptsize\bfseries\color{ucldark}Settlement can diverge from route use}\par
+{\scriptsize\bfseries\color{ucldark}Settlement differs from route use}\par
 \end{minipage}}
 \end{column}
 \end{columns}
-
-% The empirical design must not substitute the version date for exposure to its mechanism.
-\vspace{0.25cm}
-\colorbox{panel}{\parbox[c][0.72cm][c]{0.965\textwidth}{\hspace{0.15cm}\scriptsize
-\textbf{Architecture}\; feasible rules\hfill
-\textbf{Exposure}\; realised pool and route use\hfill
-\textbf{Calendar date}\; timing only\hspace{0.15cm}}}
 \end{frame}

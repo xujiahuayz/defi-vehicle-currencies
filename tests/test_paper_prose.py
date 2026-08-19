@@ -24,7 +24,13 @@ import re
 import unittest
 from pathlib import Path
 
-from ddvc.latex_text import included_section_files, strip_latex_markup
+from ddvc.latex_text import (
+    NEGATED_HEADLINE,
+    audience_process_matches,
+    included_section_files,
+    strip_latex_comments,
+    strip_latex_markup,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -43,15 +49,6 @@ CONTRAST_CONFIRMATION = re.compile(
 LOOSE_P_VALUE = re.compile(r"\bp\s*[<>=]", flags=re.IGNORECASE)
 ABSTRACT_WORD = re.compile(r"[A-Za-z0-9]+(?:[.'’%-][A-Za-z0-9]+)*")
 JFE_ABSTRACT_WORD_LIMIT = 100
-
-# Words that only appear when a deliverable is talking about its own construction. A
-# reader at a conference does not care which node produced a slide.
-PROCESS_WORDS = (
-    "node a", "node b", "node c", "node d", "node e", "node f", "node g", "node h",
-    "node i", "node j", "node k", "workflow", "pipeline", "this project", "spine",
-    "PENDING", "WITHDRAWN", "TODO", "placeholder",
-)
-
 
 def source_files(directory: Path, suffix: str = "*.tex") -> list[Path]:
     return sorted(p for p in directory.rglob(suffix) if p.is_file()) if directory.exists() else []
@@ -119,11 +116,43 @@ class PaperProseTests(unittest.TestCase):
                 self.fail(f"{path.name}:{n}-{n + 1} hard-wrapped prose")
 
     def test_no_internal_process_language_in_the_deck(self) -> None:
-        for path in source_files(DECK_DIR):
-            body = strip_comments(path.read_text(encoding="utf-8"))
-            for word in PROCESS_WORDS:
-                with self.subTest(file=path.name, word=word):
-                    self.assertNotIn(word.lower(), body.lower())
+        for path in self.all_sources():
+            body = strip_latex_comments(path.read_text(encoding="utf-8"))
+            matches = audience_process_matches(body)
+            if matches:
+                label, match = matches[0]
+                self.fail(
+                    f"{path.name}:{body.count(chr(10), 0, match.start()) + 1} "
+                    f"{match.group(0)!r} exposes {label.replace('_', ' ')}"
+                )
+
+    def test_generated_content_does_not_reintroduce_process_language(self) -> None:
+        """The compiled paper includes generated figure labels and table text.
+
+        Source-only checks miss those readers' words, so the audience-language
+        contract is also applied to the actual deliverable.
+        """
+        from pypdf import PdfReader
+
+        pdf = PAPER_DIR.parent / "main.pdf"
+        self.assertTrue(pdf.is_file(), "paper/main.pdf must be built before prose review")
+        for page_number, page in enumerate(PdfReader(pdf).pages, start=1):
+            body = page.extract_text() or ""
+            matches = audience_process_matches(body)
+            if matches:
+                label, match = matches[0]
+                self.fail(
+                    f"paper/main.pdf:{page_number} {match.group(0)!r} exposes "
+                    f"{label.replace('_', ' ')} through generated content"
+                )
+
+    def test_headlines_state_economic_results_affirmatively(self) -> None:
+        pattern = re.compile(r"\\(?:section|subsection|caption)\{([^}]*)\}")
+        for path in source_files(PAPER_DIR):
+            body = strip_latex_comments(path.read_text(encoding="utf-8"))
+            for headline in pattern.findall(body):
+                if NEGATED_HEADLINE.search(headline):
+                    self.fail(f"{path.name}: negated headline {headline!r}")
 
     def test_no_status_markers_leak_into_the_paper(self) -> None:
         # A spine row reading PENDING is a plan. The same string in a compiled paper is

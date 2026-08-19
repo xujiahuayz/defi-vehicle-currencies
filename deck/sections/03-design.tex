@@ -41,7 +41,7 @@
 \node[font=\small\bfseries,text=ucldark,align=center] at (2.55,0.95) {\VOneForcedRoutes{} token-to-token trades\\pass through ETH};
 \end{tikzpicture}
 \vspace{0.10cm}
-{\small Every token pool pairs with ETH, so the architecture imposes the vehicle.\par}
+{\small Every pool is an ETH--token atomic pair, so the architecture imposes the vehicle.\par}
 \end{column}
 \begin{column}{0.08\textwidth}
 \centering
@@ -58,11 +58,9 @@
 \vspace{0.26cm}
 \begin{beamercolorbox}[sep=0.28cm,wd=\textwidth]{block body}
 {\fontsize{24}{26}\selectfont\bfseries\color{stable}\VTwoWethNewPairShare}\par
-{\small of pairs first traded in 2026 include WETH}
+{\small of ultimate pairs first traded in 2026 include WETH}
 \end{beamercolorbox}
 \end{column}
 \end{columns}
-\vspace{0.10cm}
-{\small V2 converted ETH pairing from a protocol rule into a market choice. Native-asset concentration remained high through pair formation and realised trading.\par}
-\decknote{V1 counts linked token-to-ETH and ETH-to-token swaps with matching ETH quantities in one transaction. V2 shares use single-leg Uniswap V2 trades and newly traded pairs; they describe that venue rather than market-wide vehicle dominance.}
+\decknote{V1 links token-to-ETH and ETH-to-token swaps within one transaction. V2 reports single-leg trades and newly traded ultimate pairs on that venue.}
 \end{frame}

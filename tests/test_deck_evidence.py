@@ -110,7 +110,24 @@ def test_common_support_value_is_not_an_audience_measure_name(tmp_path: Path) ->
         path=tmp_path / "main.pdf",
     )
     assert [defect.kind for defect in defects] == ["audience_workflow_jargon"]
-    assert "common_support_value" in defects[0].detail
+    assert "sample construction" in defects[0].detail
+
+
+def test_field_language_gate_rejects_candidate_and_screen_language(tmp_path: Path) -> None:
+    defects = audit_audience_text(
+        "The candidate survives the mechanism screen.",
+        path=tmp_path / "main.pdf",
+    )
+    assert [defect.kind for defect in defects] == [
+        "audience_workflow_jargon",
+        "audience_workflow_jargon",
+    ]
+
+
+def test_frame_titles_state_results_affirmatively(tmp_path: Path) -> None:
+    write_section(tmp_path, r"\begin{frame}{Capital does not lead vehicle use}\end{frame}")
+    defects = audit_deck_sources(tmp_path)
+    assert [defect.kind for defect in defects] == ["negated_frame_title"]
 
 
 def test_visual_managed_frames_require_object_form_and_job(tmp_path: Path) -> None:
@@ -155,11 +172,11 @@ def test_density_gate_holds_an_unlisted_page_to_the_budget(
 ) -> None:
     stub_pages(
         monkeypatch,
-        [("Title", 40, 20), ("Dense result", 96, 20), ("Appendix map", 40, 0)],
+        [("Title", 40, 20), ("Dense result", 68, 20), ("Appendix map", 40, 0)],
     )
     defects = audit_deck_density(DECK_PDF, write_density_ledger(tmp_path, []))
     assert [defect.kind for defect in defects] == ["deck_density_over_budget"]
-    assert "96 visible words" in defects[0].detail
+    assert "68 visible words" in defects[0].detail
 
 
 def test_density_gate_counts_the_exhibit_note_under_its_own_cap(
@@ -171,11 +188,11 @@ def test_density_gate_counts_the_exhibit_note_under_its_own_cap(
 
     stub_pages(monkeypatch, [("Title", 40, 82), ("Result", 40, 12), ("Appendix map", 9, 0)])
     defects = audit_deck_density(DECK_PDF, ledger)
-    assert [defect.kind for defect in defects] == ["deck_density_over_budget"]
-    assert "82 words of exhibit note" in defects[0].detail
+    assert [defect.kind for defect in defects] == ["deck_density_hard_ceiling"]
+    assert "82 note words" in defects[0].detail
 
 
-def test_density_gate_fails_when_a_recorded_page_moves_in_either_direction(
+def test_core_density_cannot_be_grandfathered_above_the_hard_ceiling(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     ledger = write_density_ledger(
@@ -183,17 +200,29 @@ def test_density_gate_fails_when_a_recorded_page_moves_in_either_direction(
         [{"page": 2, "title": "Dense result", "words": 96, "note_words": 20}],
     )
     stub_pages(monkeypatch, [("Title", 40, 0), ("Dense result", 96, 20), ("Appendix map", 9, 0)])
+    defects = audit_deck_density(DECK_PDF, ledger)
+    assert [defect.kind for defect in defects] == ["deck_density_hard_ceiling"]
+
+
+def test_density_gate_fails_when_a_recorded_page_moves_in_either_direction(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    ledger = write_density_ledger(
+        tmp_path,
+        [{"page": 2, "title": "Dense result", "words": 68, "note_words": 20}],
+    )
+    stub_pages(monkeypatch, [("Title", 40, 0), ("Dense result", 68, 20), ("Appendix map", 9, 0)])
     assert audit_deck_density(DECK_PDF, ledger) == []
 
-    stub_pages(monkeypatch, [("Title", 40, 0), ("Dense result", 97, 20), ("Appendix map", 9, 0)])
+    stub_pages(monkeypatch, [("Title", 40, 0), ("Dense result", 69, 20), ("Appendix map", 9, 0)])
     grew = audit_deck_density(DECK_PDF, ledger)
     assert [defect.kind for defect in grew] == ["deck_density_ledger_stale"]
-    assert "grew to 97" in grew[0].detail
+    assert "grew to 69" in grew[0].detail
 
-    stub_pages(monkeypatch, [("Title", 40, 0), ("Dense result", 80, 20), ("Appendix map", 9, 0)])
+    stub_pages(monkeypatch, [("Title", 40, 0), ("Dense result", 67, 20), ("Appendix map", 9, 0)])
     fell = audit_deck_density(DECK_PDF, ledger)
     assert [defect.kind for defect in fell] == ["deck_density_ledger_stale"]
-    assert "fell to 80" in fell[0].detail
+    assert "fell to 67" in fell[0].detail
 
 
 def test_density_gate_requires_a_paid_down_page_to_leave_the_ledger(
@@ -214,16 +243,16 @@ def test_density_gate_catches_a_renamed_page_and_a_moved_appendix(
 ) -> None:
     ledger = write_density_ledger(
         tmp_path,
-        [{"page": 2, "title": "Dense result", "words": 96, "note_words": 20}],
+        [{"page": 2, "title": "Dense result", "words": 68, "note_words": 20}],
     )
-    stub_pages(monkeypatch, [("Title", 40, 0), ("Renamed result", 96, 20), ("Appendix map", 9, 0)])
+    stub_pages(monkeypatch, [("Title", 40, 0), ("Renamed result", 68, 20), ("Appendix map", 9, 0)])
     renamed = audit_deck_density(DECK_PDF, ledger)
     assert [defect.kind for defect in renamed] == ["deck_density_ledger"]
     assert "'Renamed result'" in renamed[0].detail
 
     stub_pages(
         monkeypatch,
-        [("Title", 40, 0), ("Dense result", 96, 20), ("A new core frame", 9, 0), ("Appendix map", 9, 0)],
+        [("Title", 40, 0), ("Dense result", 68, 20), ("A new core frame", 9, 0), ("Appendix map", 9, 0)],
     )
     moved = audit_deck_density(DECK_PDF, ledger)
     assert [defect.kind for defect in moved] == ["deck_density_ledger"]
@@ -269,18 +298,17 @@ def test_deck_states_units_scopes_and_primary_protocol_sources() -> None:
         ROOT / "deck" / "assets" / "vehicle-transition-pair-decomposition.tex"
     ).read_text(encoding="utf-8")
 
-    assert "one intermediary episode per route" in results
-    assert "total routed value among routes whose source" in results
-    assert "Descriptive accounting:" in results
-    assert "carries no sampling interval" in results
+    assert "Count weights every route equally" in results
+    assert "value requires agreement among source" in results
+    assert "descriptive within-day associations" in results
     assert "native-WETH-versus-stablecoin routes" in results
-    assert "on 181 common month-days" in results
+    assert "common month-days" in results
     assert "Matched markets" not in decomposition
-    assert "Within the same trading pair" in decomposition
+    assert "Within-ultimate-pair change" in decomposition
 
     assert "Main route sample" in objects
     assert "V1/V2 architecture supplement" in objects
-    assert "multi-asset Curve or Balancer pool" in objects
+    assert "Curve, and Balancer route perimeter" in objects
 
     assert "https://app.uniswap.org/whitepaper-v4.pdf" in appendix
     assert "add-usdc-as-a-collateral-type-2020-03-17" in appendix
@@ -302,12 +330,13 @@ def test_deck_mechanism_sequence_separates_route_settlement_and_capital() -> Non
         ROOT / "deck" / "assets" / "liquidity-quantity-cross-section.tex"
     ).read_text(encoding="utf-8")
 
-    assert "Deposited capital neither leads vehicle use nor follows it" in results
-    assert "Deposited capital in" in results
+    assert "Higher capital predicts lower vehicle use at longer horizons" in results
+    assert "Vehicle use barely changes subsequent capital" in results
+    assert "Deposited capital at" in results
     assert "\\LiqPredCapRouteDayCoef" in results
     assert "\\LiqPredRouteCapDayCoef" in results
     assert "\\LiqPredLongCapRouteCoef" in results
-    assert "Predictive associations only, not causal feedback" in results
+    assert "Coefficients are predictive associations" in results
     assert "candidate-day" not in results
     assert "exact 1-, 7-, 30-, and 120-day horizons" not in results
 
@@ -336,25 +365,25 @@ def test_deck_separates_weth_eligibility_from_value_composition() -> None:
         ROOT / "deck" / "assets" / "non-weth-value-composition.tex"
     ).read_text(encoding="utf-8")
 
-    title = "WETH-linked ultimate pairs account for most of the count rotation"
+    title = "WETH-linked ultimate pairs carry the count rotation"
     assert title in results
     assert "output/exhibits/route_methodology_heterogeneity.jsonl" in results
     assert "grouped-binomial" not in results
     assert "Challenger cost advantage predicts subsequent vehicle share" not in results
-    assert "The routed-value rotation extends beyond WETH-linked ultimate pairs" in results
+    assert "Trading shifts toward stablecoin-heavy corridors" in results
 
     frame_start = results.index(rf"\begin{{frame}}{{{title}}}")
     frame_end = results.index(r"\end{frame}", frame_start)
     rendered_frame = results[frame_start:frame_end]
     assert "provisional" not in rendered_frame.lower()
 
-    assert "WETH cannot also be the intermediary" in asset
-    assert "All matched trading-pair groups" in asset
-    assert "Trading-pair groups without WETH endpoints" in asset
+    assert "Stablecoins alone remain eligible as intermediaries" in asset
+    assert "All matched ultimate-pair groups" in asset
+    assert "Ultimate-pair groups excluding WETH endpoints" in asset
     assert "cells" not in asset.lower()
     assert r"\WethCountFullChange" in asset
     assert r"\WethCountNoEndpointChange" in asset
-    assert "Exact midpoint identity" in value_asset
+    assert "The daily midpoint identity is exact" in results
     assert r"\WethValueNoEndpointChange" in value_asset
     assert r"\WethValueActivityChange" in value_asset
     assert r"\WethValueWithinChange" in value_asset
@@ -364,14 +393,14 @@ def test_weth_frame_evidence_boundary_does_not_drift() -> None:
     results = (ROOT / "deck" / "sections" / "04-results.tex").read_text(
         encoding="utf-8"
     )
-    title = "WETH-linked ultimate pairs account for most of the count rotation"
+    title = "WETH-linked ultimate pairs carry the count rotation"
     frame_start = results.index(rf"\begin{{frame}}{{{title}}}")
     metadata = results[results.rfind("% EVIDENCE-STATUS:", 0, frame_start):frame_start]
 
     status = re.search(r"^% EVIDENCE-STATUS: (.+)$", metadata, flags=re.MULTILINE)
     sources = re.search(r"^% EVIDENCE-SOURCES: (.+)$", metadata, flags=re.MULTILINE)
     assert status
-    assert status.group(1).startswith("supporting descriptive analysis")
+    assert status.group(1).startswith("supporting deterministic")
     assert "validated" not in status.group(1).lower()
     assert sources
     assert "output/exhibits/route_methodology_heterogeneity.jsonl" in sources.group(1)
