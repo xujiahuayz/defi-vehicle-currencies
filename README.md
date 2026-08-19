@@ -31,7 +31,7 @@ question and literature                    done
   → cleaned and analysis-ready data        ready for the two active claim families
   → registered baseline analysis           done; findings check green
   → repository cleanup and host sync        done; one checkout per host
-  → presentable paper/deck trunk            64/44 pages; blocking checks green
+  → presentable paper/deck trunk            67/45 pages; blocking checks green
         status labels                      provisional / registered / confirmed
         review snapshots                   versioned and shareable while work continues
 
@@ -72,6 +72,7 @@ pool-capital concentration/fragmentation, same-pool capital-chase screens,
 bounded V3 fee/rent-incidence and TVL-normalized fee-yield screens, V3 mint/burn action-count, provider-day, activity-controlled provider-day responses, V3-versus-V4 same-candidate-date LP-action response contrasts, V4 modify-liquidity action composition, activity-controlled response, flash-accounting netting proxies, screened candidate-side V4 LP flow, V4 flash-to-wide-range LP reallocation,
 stable-shortfall x V4 flash-accounting LP repositioning,
 local bridge-liquidity dominance, entry-date local bridge-depth choice screens,
+first stable-bridge establishment and partial route reallocation,
 stable-specific dynamic local bridge-depth feedback, and V2 capital predictability. A
 result becomes headline evidence only if it is economically material,
 distinguishes at least one serious rival story, fits the literature contribution,

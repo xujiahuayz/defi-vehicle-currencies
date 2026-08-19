@@ -1,6 +1,6 @@
 ---
 title: Live research and deliverable state
-updated: 2026-08-18
+updated: 2026-08-19
 target: Journal of Financial Economics
 submission_ready: false
 freeze_status: green
@@ -104,6 +104,7 @@ fragmentation, plus same-pool LP capital-chase rival screens, bounded V3
 fee/rent-incidence and TVL-normalized fee-yield screens, V3 mint/burn action-count, provider-day, activity-controlled provider-day responses, V3-versus-V4 same-candidate-date LP-action response contrasts, V4 modify-liquidity action composition, activity-controlled response, flash-accounting netting proxies, screened candidate-side V4 LP flow, V4 flash-to-wide-range LP reallocation,
 stable-shortfall x V4 flash-accounting LP repositioning, and local
 bridge-liquidity dominance, entry-date local bridge-depth choice screens, plus
+first stable-bridge establishment and partial route reallocation, plus
 stable-specific dynamic local bridge-depth feedback. The deck
 also carries the traditional-FX route analogy as motivation. These layers
 strengthen the
@@ -165,9 +166,9 @@ and the lock.
 
 ## Deliverable state
 
-The current branch compiles a 64-page paper and a 44-page deck after the
+The current branch compiles a 67-page paper and a 45-page deck after the
 provisional mechanism reruns and publication-regression repair. The paper and
-deck compile with zero undefined references. The repository passes 774 pytest
+deck compile with zero undefined references. The repository passes 779 pytest
 tests plus 122 subtests, the findings gate, and every
 blocking conformance check. There is one manuscript under `paper/` and one
 presentation under `deck/`; Git history is the archive.

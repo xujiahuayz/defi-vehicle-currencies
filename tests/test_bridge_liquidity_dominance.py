@@ -7,6 +7,7 @@ from pathlib import Path
 import pandas as pd
 
 from scripts.analyze.run_bridge_liquidity_dominance import (
+    bridge_establishment_period_summaries,
     bridge_liquidity_bottleneck_regressions,
     bridge_liquidity_depth_regressions,
     bridge_liquidity_entry_birth_panel,
@@ -15,9 +16,11 @@ from scripts.analyze.run_bridge_liquidity_dominance import (
     bridge_liquidity_leave_one_candidate_regressions,
     bridge_liquidity_stable_issuer_regressions,
     bridge_liquidity_top_rank_summaries,
+    load_bridge_establishment_event_panel,
     load_bridge_liquidity_panel,
 )
 from scripts.tabulate.build_bridge_liquidity_deck_values import (
+    render_bridge_establishment_table,
     render_bridge_liquidity_deck_values,
 )
 
@@ -27,6 +30,90 @@ WBTC = "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"
 DAI = "0x6b175474e89094c44da98b954eedeac495271d0f"
 USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
 USDT = "0xdac17f958d2ee523a2206206994597c13d831ec7"
+
+
+def test_bridge_establishment_separates_support_from_route_adoption() -> None:
+    choice_rows = []
+    for date, native_routes, stable_routes in [
+        ("2024-01-01", 4, 0),
+        ("2024-01-05", 5, 0),
+        ("2024-01-15", 6, 0),
+        ("2024-01-25", 7, 0),
+        ("2024-02-01", 8, 0),
+        ("2024-02-10", 8, 2),
+        ("2024-02-20", 7, 3),
+        ("2024-04-01", 6, 4),
+        ("2024-05-15", 5, 5),
+        ("2024-06-30", 4, 6),
+    ]:
+        choice_rows.append(
+            {
+                "date": pd.Timestamp(date),
+                "src": "src",
+                "tgt": "tgt",
+                "integration_scope": "single_venue",
+                "candidate_type": "native",
+                "candidate_symbol": "WETH",
+                "candidate_address": WETH,
+                "route_count": native_routes,
+                "within_20pct_value_usd": 100.0 * native_routes,
+            }
+        )
+        if stable_routes:
+            choice_rows.append(
+                {
+                    "date": pd.Timestamp(date),
+                    "src": "src",
+                    "tgt": "tgt",
+                    "integration_scope": "single_venue",
+                    "candidate_type": "stable",
+                    "candidate_symbol": "USDC",
+                    "candidate_address": USDC,
+                    "route_count": stable_routes,
+                    "within_20pct_value_usd": 100.0 * stable_routes,
+                }
+            )
+    pool_rows = []
+    for date in pd.date_range("2024-02-01", periods=24, freq="D"):
+        for token0, token1, pool in [
+            ("src", USDC, "src-usdc"),
+            (USDC, "tgt", "usdc-tgt"),
+        ]:
+            pool_rows.append(
+                {
+                    "day": int(date.strftime("%Y%m%d")),
+                    "token0_address": token0,
+                    "token1_address": token1,
+                    "pool": pool,
+                    "venue": "uniswap_v2",
+                    "capital_usd": 100.0,
+                    "quantity_kind": "deposited_capital",
+                    "capital_validation_status": "exact_state_prior_calendar",
+                }
+            )
+    with tempfile.TemporaryDirectory() as tmpdir:
+        root = Path(tmpdir)
+        choices_path = root / "choices.parquet"
+        pool_path = root / "pool.parquet"
+        pd.DataFrame(choice_rows).to_parquet(choices_path, index=False)
+        pd.DataFrame(pool_rows).to_parquet(pool_path, index=False)
+        event = load_bridge_establishment_event_panel(
+            choices_path=choices_path,
+            pool_capital_path=pool_path,
+        )
+    assert event["event_date"].nunique() == 1
+    assert event["event_date"].iloc[0] == pd.Timestamp("2024-02-01")
+    assert event["event_stablecoins"].iloc[0] == "USDC"
+    assert event["support_days_30"].iloc[0] == 24
+    event_day = event[event["origin_date"].eq(pd.Timestamp("2024-02-01"))].iloc[0]
+    assert event_day["stable_share"] == 0
+    adoption_day = event[event["origin_date"].eq(pd.Timestamp("2024-02-10"))].iloc[0]
+    assert adoption_day["stable_share"] == 0.2
+    summary = bridge_establishment_period_summaries(event)
+    pre = summary[summary["period"].eq("pre_30")].iloc[0]
+    post = summary[summary["period"].eq("post_0_29")].iloc[0]
+    assert pre["stable_route_share"] == 0
+    assert post["stable_route_share"] > 0
 
 
 def test_bridge_liquidity_panel_uses_prior_two_leg_capital() -> None:
@@ -906,7 +993,46 @@ def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
             },
         ]
     )
+    event_rows = [
+        {
+            "claim_status": "provisional_exploratory",
+            "record_type": "bridge_establishment_period_summary",
+            "period": period,
+            "stable_route_share": stable_share,
+            "native_route_share": 1.0 - stable_share,
+            "stable_value_share": value_share,
+        }
+        for period, stable_share, value_share in [
+            ("pre_30", 0.0, 0.0),
+            ("post_0_29", 0.074, 0.023),
+            ("post_30_119", 0.062, 0.023),
+        ]
+    ]
+    model_values = {
+        "stable_share_after_bridge_establishment": (0.079, 0.019, 0.0001),
+        "stable_value_share_after_bridge_establishment": (0.031, 0.015, 0.04),
+        "native_routes_after_bridge_establishment": (-0.20, 0.04, 0.0001),
+        "total_routes_after_bridge_establishment": (-0.10, 0.04, 0.02),
+        "native_value_after_bridge_establishment": (-0.17, 0.11, 0.13),
+        "total_value_after_bridge_establishment": (0.06, 0.10, 0.56),
+    }
+    for model_id, (coefficient, standard_error, p_value) in model_values.items():
+        for regressor, scale in [("post_0_29", 1.0), ("post_30_119", 1.2)]:
+            event_rows.append(
+                {
+                    "claim_status": "provisional_exploratory",
+                    "record_type": "bridge_establishment_event_regression",
+                    "model_id": model_id,
+                    "regressor": regressor,
+                    "coefficient": scale * coefficient,
+                    "standard_error": scale * standard_error,
+                    "p_value": p_value,
+                    "events": 865 if regressor == "post_0_29" else 818,
+                }
+            )
+    estimates = pd.concat([estimates, pd.DataFrame(event_rows)], ignore_index=True)
     rendered = render_bridge_liquidity_deck_values(estimates)
+    table = render_bridge_establishment_table(estimates)
     assert "\\BridgeLiquidityTopShare" in rendered
     assert "\\BridgeLiquidityStableLogTotalCoef" in rendered
     assert "\\BridgeLiquidityHorseRaceDepthCoef" in rendered
@@ -916,3 +1042,6 @@ def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
     assert "\\BridgeLiquidityImbalanceCoef" in rendered
     assert "\\BridgeLiquidityLeaveOneMinCoef" in rendered
     assert "\\BridgeLiquidityStableIssuerUsdtTwentySixCoef" in rendered
+    assert "\\BridgeEstablishmentCountCoef" in rendered
+    assert "Stable route share [pp]" in table
+    assert "Bridge events" in table

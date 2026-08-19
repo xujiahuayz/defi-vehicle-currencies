@@ -14,6 +14,7 @@ from ddvc.runtime import atomic_output
 
 ESTIMATES = OUTPUT_DIR / "exhibits/bridge_liquidity_dominance.jsonl"
 DECK_VALUES = OUTPUT_DIR / "exhibits/bridge_liquidity_deck_values.tex"
+TABLE_OUTPUT = OUTPUT_DIR / "tables/bridge_establishment_regressions.tex"
 
 
 def _single(frame: pd.DataFrame, **conditions: object) -> pd.Series:
@@ -39,6 +40,25 @@ def _signed_pp(value: float, decimals: int = 2) -> str:
 
 def _unsigned_pp(value: float, decimals: int = 2) -> str:
     return f"${abs(100.0 * value):.{decimals}f}$ pp"
+
+
+def _stars(p_value: float) -> str:
+    if p_value < 0.01:
+        return "^{***}"
+    if p_value < 0.05:
+        return "^{**}"
+    if p_value < 0.10:
+        return "^{*}"
+    return ""
+
+
+def _estimate_cell(row: pd.Series, *, scale: float = 1.0) -> str:
+    coefficient = scale * float(row["coefficient"])
+    standard_error = scale * float(row["standard_error"])
+    return (
+        f"\\shortstack{{${coefficient:+.2f}{_stars(float(row['p_value']))}$"
+        f"\\\\$({standard_error:.2f})$}}"
+    )
 
 
 def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
@@ -177,6 +197,34 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         outcome="route_share_stable_supported",
         regressor="log_bridge_min_capital",
     )
+    establishment_pre = _single(
+        estimates,
+        record_type="bridge_establishment_period_summary",
+        period="pre_30",
+    )
+    establishment_post = _single(
+        estimates,
+        record_type="bridge_establishment_period_summary",
+        period="post_0_29",
+    )
+    establishment_count = _single(
+        estimates,
+        record_type="bridge_establishment_event_regression",
+        model_id="stable_share_after_bridge_establishment",
+        regressor="post_0_29",
+    )
+    establishment_value = _single(
+        estimates,
+        record_type="bridge_establishment_event_regression",
+        model_id="stable_value_share_after_bridge_establishment",
+        regressor="post_0_29",
+    )
+    establishment_native = _single(
+        estimates,
+        record_type="bridge_establishment_event_regression",
+        model_id="native_routes_after_bridge_establishment",
+        regressor="post_0_29",
+    )
     if not (
         float(pooled["top_bridge_route_share"]) > 0.75
         and float(end["top_bridge_route_share"]) > float(base["top_bridge_route_share"])
@@ -208,6 +256,14 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         and float(stable_issuer_usdt_2026["p_value"]) < 0.01
         and float(stable_issuer_depth["coefficient"]) > 0
         and float(stable_issuer_depth["p_value"]) < 0.01
+        and float(establishment_pre["stable_route_share"]) == 0
+        and float(establishment_post["stable_route_share"]) > 0
+        and float(establishment_count["coefficient"]) > 0
+        and float(establishment_count["p_value"]) < 0.01
+        and float(establishment_value["coefficient"]) > 0
+        and float(establishment_value["p_value"]) < 0.05
+        and float(establishment_native["coefficient"]) < 0
+        and float(establishment_native["p_value"]) < 0.01
     ):
         raise ValueError("bridge-liquidity dominance pattern no longer holds")
     lines = [
@@ -256,20 +312,113 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         f"\\newcommand{{\\BridgeLiquidityStableIssuerUsdtTwentySixSE}}{{{_unsigned_pp(float(stable_issuer_usdt_2026['standard_error']))}}}",
         f"\\newcommand{{\\BridgeLiquidityStableIssuerDepthCoef}}{{{_signed_pp(float(stable_issuer_depth['coefficient']))}}}",
         f"\\newcommand{{\\BridgeLiquidityStableIssuerDepthSE}}{{{_unsigned_pp(float(stable_issuer_depth['standard_error']))}}}",
+        f"\\newcommand{{\\BridgeEstablishmentEvents}}{{{_integer(float(establishment_count['events']))}}}",
+        f"\\newcommand{{\\BridgeEstablishmentPostCountShare}}{{{_pct(float(establishment_post['stable_route_share']))}}}",
+        f"\\newcommand{{\\BridgeEstablishmentPostNativeCountShare}}{{{_pct(float(establishment_post['native_route_share']))}}}",
+        f"\\newcommand{{\\BridgeEstablishmentPostValueShare}}{{{_pct(float(establishment_post['stable_value_share']))}}}",
+        f"\\newcommand{{\\BridgeEstablishmentCountCoef}}{{{_signed_pp(float(establishment_count['coefficient']))}}}",
+        f"\\newcommand{{\\BridgeEstablishmentCountSE}}{{{_unsigned_pp(float(establishment_count['standard_error']))}}}",
+        f"\\newcommand{{\\BridgeEstablishmentValueCoef}}{{{_signed_pp(float(establishment_value['coefficient']))}}}",
+        f"\\newcommand{{\\BridgeEstablishmentValueSE}}{{{_unsigned_pp(float(establishment_value['standard_error']))}}}",
+        f"\\newcommand{{\\BridgeEstablishmentNativeLogCoef}}{{${float(establishment_native['coefficient']):+.2f}$}}",
+        f"\\newcommand{{\\BridgeEstablishmentNativeLogSE}}{{${abs(float(establishment_native['standard_error'])):.2f}$}}",
     ]
     return "\n".join(lines) + "\n"
+
+
+def render_bridge_establishment_table(estimates: pd.DataFrame) -> str:
+    """Render paired count/value adoption and incumbent-route changes."""
+
+    models = (
+        ("Stable route share [pp]", "stable_share_after_bridge_establishment", 100.0),
+        (
+            "Stable supported-value share [pp]",
+            "stable_value_share_after_bridge_establishment",
+            100.0,
+        ),
+        (
+            "$\\log(1+\\text{native routes per active day})$",
+            "native_routes_after_bridge_establishment",
+            1.0,
+        ),
+        (
+            "$\\log(1+\\text{total routes per active day})$",
+            "total_routes_after_bridge_establishment",
+            1.0,
+        ),
+        (
+            "$\\log(1+\\text{native supported value per active day})$",
+            "native_value_after_bridge_establishment",
+            1.0,
+        ),
+        (
+            "$\\log(1+\\text{total supported value per active day})$",
+            "total_value_after_bridge_establishment",
+            1.0,
+        ),
+    )
+    rows = []
+    for label, model_id, scale in models:
+        first = _single(
+            estimates,
+            record_type="bridge_establishment_event_regression",
+            model_id=model_id,
+            regressor="post_0_29",
+        )
+        later = _single(
+            estimates,
+            record_type="bridge_establishment_event_regression",
+            model_id=model_id,
+            regressor="post_30_119",
+        )
+        rows.append(
+            f"{label} & {_estimate_cell(first, scale=scale)} & "
+            f"{_estimate_cell(later, scale=scale)} \\\\"
+        )
+    first_support = _single(
+        estimates,
+        record_type="bridge_establishment_event_regression",
+        model_id="stable_share_after_bridge_establishment",
+        regressor="post_0_29",
+    )
+    later_support = _single(
+        estimates,
+        record_type="bridge_establishment_event_regression",
+        model_id="stable_share_after_bridge_establishment",
+        regressor="post_30_119",
+    )
+    return "\n".join(
+        [
+            "% Generated by scripts/tabulate/build_bridge_liquidity_deck_values.py; do not edit.",
+            "\\begin{tabularx}{\\linewidth}{@{}Xcc@{}}",
+            "\\toprule",
+            "Outcome & First 30 days & Days 30--119 \\\\",
+            "\\midrule",
+            *rows,
+            "\\midrule",
+            f"Bridge events & {_integer(float(first_support['events']))} & "
+            f"{_integer(float(later_support['events']))} \\\\ ",
+            "\\bottomrule",
+            "\\end{tabularx}",
+            "",
+        ]
+    )
 
 
 def run(
     *,
     estimates_path: Path = ESTIMATES,
     output_path: Path = DECK_VALUES,
+    table_path: Path = TABLE_OUTPUT,
 ) -> int:
     estimates = pd.read_json(estimates_path, lines=True)
     rendered = render_bridge_liquidity_deck_values(estimates)
     with atomic_output(output_path) as temporary:
         temporary.write_text(rendered, encoding="utf-8")
-    print(f"wrote {output_path}")
+    table = render_bridge_establishment_table(estimates)
+    with atomic_output(table_path) as temporary:
+        temporary.write_text(table, encoding="utf-8")
+    print(f"wrote {output_path} and {table_path}")
     return 0
 
 
@@ -277,8 +426,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--estimates", type=Path, default=ESTIMATES)
     parser.add_argument("--output", type=Path, default=DECK_VALUES)
+    parser.add_argument("--table", type=Path, default=TABLE_OUTPUT)
     args = parser.parse_args()
-    return run(estimates_path=args.estimates, output_path=args.output)
+    return run(
+        estimates_path=args.estimates,
+        output_path=args.output,
+        table_path=args.table,
+    )
 
 
 if __name__ == "__main__":

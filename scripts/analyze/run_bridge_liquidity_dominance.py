@@ -40,6 +40,10 @@ ENDPOINT_CUTOFF = "06-30"
 CAPITAL_STATUS = "exact_state_prior_calendar"
 MIN_SUPPORTED_CANDIDATES = 2
 STABLE_ISSUER_CANDIDATES = ("DAI", "USDC", "USDT")
+BRIDGE_ESTABLISHMENT_PRE_DAYS = 30
+BRIDGE_ESTABLISHMENT_POST_DAYS = 120
+BRIDGE_ESTABLISHMENT_MIN_ACTIVE_DAYS = 3
+BRIDGE_ESTABLISHMENT_MIN_SUPPORT_DAYS_30 = 24
 CODE_SOURCES = ["scripts/analyze/run_bridge_liquidity_dominance.py"]
 INPUTS = [
     "data/processed/endpoint_candidate_choices.parquet",
@@ -168,6 +172,237 @@ PANEL_QUERY_WITH_ZERO_BRIDGES = PANEL_QUERY.replace(
     "  AND bridge_min_capital_usd > 0\n",
     "",
 )
+
+
+BRIDGE_ESTABLISHMENT_QUERY = """
+WITH stable_candidates(candidate_symbol, candidate_address) AS (
+  VALUES
+    ('DAI','0x6b175474e89094c44da98b954eedeac495271d0f'),
+    ('USDC','0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'),
+    ('USDT','0xdac17f958d2ee523a2206206994597c13d831ec7')
+),
+choice_daily AS (
+    SELECT
+        CAST(date AS DATE) AS origin_date,
+        lower(src) AS src,
+        lower(tgt) AS tgt,
+        integration_scope,
+        sum(CASE WHEN candidate_type = 'native' THEN route_count ELSE 0 END)::DOUBLE
+            AS native_routes,
+        sum(CASE WHEN candidate_type = 'stable' THEN route_count ELSE 0 END)::DOUBLE
+            AS stable_routes,
+        sum(CASE WHEN candidate_type = 'native'
+                 THEN coalesce(within_20pct_value_usd, 0) ELSE 0 END)::DOUBLE
+            AS native_value_usd,
+        sum(CASE WHEN candidate_type = 'stable'
+                 THEN coalesce(within_20pct_value_usd, 0) ELSE 0 END)::DOUBLE
+            AS stable_value_usd
+    FROM read_parquet(?)
+    WHERE candidate_type IN ('native', 'stable')
+    GROUP BY 1, 2, 3, 4
+),
+choice_bounds AS (
+    SELECT min(origin_date) AS first_date, max(origin_date) AS last_date
+    FROM choice_daily
+),
+pair_scopes AS (
+    SELECT
+        src,
+        tgt,
+        integration_scope,
+        min(origin_date) AS first_active_date,
+        max(origin_date) AS last_active_date
+    FROM choice_daily
+    GROUP BY 1, 2, 3
+    HAVING sum(native_routes) > 0
+),
+leg_pool_day AS (
+    SELECT
+        strptime(CAST(p.day AS VARCHAR), '%Y%m%d')::DATE AS support_date,
+        c.candidate_symbol,
+        c.candidate_address,
+        CASE
+            WHEN lower(p.token0_address) = c.candidate_address
+                THEN lower(p.token1_address)
+            ELSE lower(p.token0_address)
+        END AS other_address,
+        sum(p.capital_usd)::DOUBLE AS capital_usd
+    FROM read_parquet(?) p
+    JOIN stable_candidates c
+      ON lower(p.token0_address) = c.candidate_address
+      OR lower(p.token1_address) = c.candidate_address
+    WHERE p.quantity_kind = 'deposited_capital'
+      AND p.capital_validation_status = ?
+      AND p.capital_usd > 0
+    GROUP BY 1, 2, 3, 4
+),
+first_leg_support AS (
+    SELECT
+        candidate_symbol,
+        candidate_address,
+        other_address,
+        min(support_date) AS first_support_date
+    FROM leg_pool_day
+    GROUP BY 1, 2, 3
+),
+candidate_event_start AS (
+    SELECT
+        p.src,
+        p.tgt,
+        p.integration_scope,
+        l1.candidate_symbol,
+        l1.candidate_address,
+        greatest(l1.first_support_date, l2.first_support_date) AS event_date,
+        p.first_active_date,
+        p.last_active_date
+    FROM pair_scopes p
+    JOIN first_leg_support l1 ON l1.other_address = p.src
+    JOIN first_leg_support l2
+      ON l2.candidate_address = l1.candidate_address
+     AND l2.other_address = p.tgt
+),
+candidate_event_support AS (
+    SELECT
+        e.*,
+        count(DISTINCT l1.support_date)::INTEGER AS support_days_30,
+        max((l1.support_date = e.event_date)::INTEGER)::INTEGER AS supported_on_event_date
+    FROM candidate_event_start e
+    JOIN leg_pool_day l1
+      ON l1.candidate_address = e.candidate_address
+     AND l1.other_address = e.src
+     AND l1.support_date BETWEEN e.event_date AND e.event_date + INTERVAL 29 DAY
+    JOIN leg_pool_day l2
+      ON l2.candidate_address = e.candidate_address
+     AND l2.other_address = e.tgt
+     AND l2.support_date = l1.support_date
+    WHERE e.event_date > e.first_active_date
+    GROUP BY ALL
+),
+persistent_candidate_events AS (
+    SELECT *
+    FROM candidate_event_support
+    WHERE supported_on_event_date = 1
+      AND support_days_30 >= ?
+),
+ranked_events AS (
+    SELECT
+        *,
+        min(event_date) OVER (
+            PARTITION BY src, tgt, integration_scope
+        ) AS first_stable_bridge_date
+    FROM persistent_candidate_events
+),
+first_events AS (
+    SELECT
+        src,
+        tgt,
+        integration_scope,
+        first_stable_bridge_date AS event_date,
+        string_agg(candidate_symbol, ',' ORDER BY candidate_symbol) AS event_stablecoins,
+        max(support_days_30)::INTEGER AS support_days_30
+    FROM ranked_events
+    WHERE event_date = first_stable_bridge_date
+    GROUP BY 1, 2, 3, 4
+),
+first_stable_route AS (
+    SELECT
+        src,
+        tgt,
+        integration_scope,
+        min(origin_date) AS first_stable_route_date
+    FROM choice_daily
+    WHERE stable_routes > 0
+    GROUP BY 1, 2, 3
+),
+event_support AS (
+    SELECT
+        e.*,
+        h.first_stable_route_date,
+        count(DISTINCT c.origin_date) FILTER (
+            WHERE c.origin_date BETWEEN e.event_date - INTERVAL 30 DAY
+                                    AND e.event_date - INTERVAL 1 DAY
+        )::INTEGER AS pre_active_days,
+        coalesce(sum(c.native_routes) FILTER (
+            WHERE c.origin_date BETWEEN e.event_date - INTERVAL 30 DAY
+                                    AND e.event_date - INTERVAL 1 DAY
+        ), 0)::DOUBLE AS pre_native_routes,
+        coalesce(sum(c.stable_routes) FILTER (
+            WHERE c.origin_date BETWEEN e.event_date - INTERVAL 30 DAY
+                                    AND e.event_date - INTERVAL 1 DAY
+        ), 0)::DOUBLE AS pre_stable_routes,
+        count(DISTINCT c.origin_date) FILTER (
+            WHERE c.origin_date BETWEEN e.event_date
+                                    AND e.event_date + INTERVAL 29 DAY
+        )::INTEGER AS post30_active_days,
+        count(DISTINCT c.origin_date) FILTER (
+            WHERE c.origin_date BETWEEN e.event_date
+                                    AND e.event_date + INTERVAL 119 DAY
+        )::INTEGER AS post120_active_days
+    FROM first_events e
+    LEFT JOIN choice_daily c
+      ON c.src = e.src
+     AND c.tgt = e.tgt
+     AND c.integration_scope = e.integration_scope
+     AND c.origin_date BETWEEN e.event_date - INTERVAL 30 DAY
+                           AND e.event_date + INTERVAL 119 DAY
+    LEFT JOIN first_stable_route h
+      ON h.src = e.src
+     AND h.tgt = e.tgt
+     AND h.integration_scope = e.integration_scope
+    GROUP BY ALL
+),
+eligible_events AS (
+    SELECT e.*
+    FROM event_support e
+    CROSS JOIN choice_bounds b
+    WHERE e.event_date >= b.first_date + INTERVAL 30 DAY
+      AND e.event_date <= b.last_date - INTERVAL 119 DAY
+      AND e.pre_active_days >= ?
+      AND e.pre_native_routes > 0
+      AND e.pre_stable_routes = 0
+      AND (
+          e.first_stable_route_date IS NULL
+          OR e.first_stable_route_date >= e.event_date
+      )
+      AND e.post30_active_days >= ?
+      AND e.post120_active_days >= ?
+)
+SELECT
+    c.origin_date,
+    e.event_date,
+    date_diff('day', e.event_date, c.origin_date)::INTEGER AS event_time,
+    e.src,
+    e.tgt,
+    e.integration_scope,
+    e.event_stablecoins,
+    e.support_days_30,
+    e.pre_active_days,
+    e.post30_active_days,
+    e.post120_active_days,
+    c.native_routes,
+    c.stable_routes,
+    (c.native_routes + c.stable_routes)::DOUBLE AS total_routes,
+    c.native_value_usd,
+    c.stable_value_usd,
+    (c.native_value_usd + c.stable_value_usd)::DOUBLE AS total_value_usd,
+    c.stable_routes / nullif(c.native_routes + c.stable_routes, 0) AS stable_share,
+    c.stable_value_usd / nullif(c.native_value_usd + c.stable_value_usd, 0)
+        AS stable_value_share,
+    ln(1 + c.native_routes) AS log_native_routes,
+    ln(1 + c.stable_routes) AS log_stable_routes,
+    ln(1 + c.native_routes + c.stable_routes) AS log_total_routes,
+    ln(1 + c.native_value_usd) AS log_native_value_usd,
+    ln(1 + c.stable_value_usd) AS log_stable_value_usd,
+    ln(1 + c.native_value_usd + c.stable_value_usd) AS log_total_value_usd
+FROM eligible_events e
+JOIN choice_daily c
+  ON c.src = e.src
+ AND c.tgt = e.tgt
+ AND c.integration_scope = e.integration_scope
+ AND c.origin_date BETWEEN e.event_date - INTERVAL 30 DAY
+                       AND e.event_date + INTERVAL 119 DAY
+WHERE c.native_routes + c.stable_routes > 0
+"""
 
 
 def _candidate_global_reach_features(
@@ -412,6 +647,369 @@ def load_bridge_liquidity_panel(
     if frame.empty:
         raise ValueError("bridge-liquidity panel lost all rows after validation")
     return frame.reset_index(drop=True)
+
+
+def load_bridge_establishment_event_panel(
+    *,
+    choices_path: Path = CHOICES_INPUT,
+    pool_capital_path: Path = POOL_CAPITAL_INPUT,
+    capital_status: str = CAPITAL_STATUS,
+    min_support_days_30: int = BRIDGE_ESTABLISHMENT_MIN_SUPPORT_DAYS_30,
+    min_active_days: int = BRIDGE_ESTABLISHMENT_MIN_ACTIVE_DAYS,
+) -> pd.DataFrame:
+    """Return active ultimate-pair days around first persistent stable support.
+
+    Availability is dated by the first day on which DAI, USDC, or USDT has
+    positive prior-calendar deposited capital on both atomic legs of an
+    already-traded ordered ultimate pair.  The event must retain two-leg
+    support for at least ``min_support_days_30`` of the next 30 calendar days.
+    The ultimate pair must have native-vehicle use and no stable-vehicle use in
+    the prior 30 days, then continue trading after support appears.  This
+    separates feasible-set expansion from realised stable-route adoption.
+    """
+
+    if not 1 <= min_support_days_30 <= 30:
+        raise ValueError("bridge establishment support days must lie in [1, 30]")
+    if min_active_days < 1:
+        raise ValueError("bridge establishment active-day minimum must be positive")
+    connection = duckdb.connect()
+    try:
+        connection.execute("PRAGMA threads=8")
+        frame = connection.execute(
+            BRIDGE_ESTABLISHMENT_QUERY,
+            [
+                str(choices_path),
+                str(pool_capital_path),
+                capital_status,
+                int(min_support_days_30),
+                int(min_active_days),
+                int(min_active_days),
+                int(min_active_days),
+            ],
+        ).fetchdf()
+    finally:
+        connection.close()
+    if frame.empty:
+        raise ValueError("bridge establishment event panel is empty")
+    for column in ("origin_date", "event_date"):
+        frame[column] = pd.to_datetime(frame[column], errors="raise").dt.normalize()
+    for column in ("src", "tgt"):
+        frame[column] = frame[column].astype(str).str.lower()
+    frame["event_id"] = (
+        frame["src"]
+        + "|"
+        + frame["tgt"]
+        + "|"
+        + frame["integration_scope"].astype(str)
+    )
+    frame["ordered_pair"] = frame["src"] + "|" + frame["tgt"]
+    frame["post_0_29"] = frame["event_time"].between(0, 29).astype(float)
+    frame["post_30_119"] = frame["event_time"].between(30, 119).astype(float)
+    frame["period"] = pd.cut(
+        frame["event_time"],
+        bins=[-31, -1, 29, 119],
+        labels=["pre_30", "post_0_29", "post_30_119"],
+    ).astype(str)
+    numeric = [
+        "native_routes",
+        "stable_routes",
+        "total_routes",
+        "stable_share",
+        "log_native_routes",
+        "log_stable_routes",
+        "log_total_routes",
+    ]
+    frame = frame.replace([np.inf, -np.inf], np.nan).dropna(subset=numeric)
+    if frame.empty:
+        raise ValueError("bridge establishment event panel lost all validated rows")
+    return frame.reset_index(drop=True)
+
+
+def bridge_establishment_period_summaries(panel: pd.DataFrame) -> pd.DataFrame:
+    """Summarize availability, adoption, and incumbent-route activity by period."""
+
+    order = ("pre_30", "post_0_29", "post_30_119")
+    rows: list[dict[str, object]] = []
+    for period in order:
+        group = panel[panel["period"].eq(period)].copy()
+        if group.empty:
+            continue
+        total_routes = float(group["total_routes"].sum())
+        rows.append(
+            {
+                "claim_status": "provisional_exploratory",
+                "record_type": "bridge_establishment_period_summary",
+                "period": period,
+                "events": int(group["event_id"].nunique()),
+                "ordered_pairs": int(group["ordered_pair"].nunique()),
+                "active_pair_days": int(len(group)),
+                "first_event_date": group["event_date"].min().date().isoformat(),
+                "last_event_date": group["event_date"].max().date().isoformat(),
+                "stable_route_share": float(group["stable_routes"].sum() / total_routes),
+                "native_route_share": float(group["native_routes"].sum() / total_routes),
+                "stable_routes_per_active_pair_day": float(group["stable_routes"].mean()),
+                "native_routes_per_active_pair_day": float(group["native_routes"].mean()),
+                "total_routes_per_active_pair_day": float(group["total_routes"].mean()),
+                "stable_value_share": (
+                    float(group["stable_value_usd"].sum() / group["total_value_usd"].sum())
+                    if float(group["total_value_usd"].sum()) > 0
+                    else None
+                ),
+                "stable_value_per_active_pair_day": float(
+                    group["stable_value_usd"].mean()
+                ),
+                "native_value_per_active_pair_day": float(
+                    group["native_value_usd"].mean()
+                ),
+                "total_value_per_active_pair_day": float(
+                    group["total_value_usd"].mean()
+                ),
+                "median_support_days_30": float(group["support_days_30"].median()),
+                "availability_definition": (
+                    "first persistent DAI/USDC/USDT bridge with positive "
+                    "prior-calendar V2-family deposited capital on both atomic legs"
+                ),
+                "sample_definition": (
+                    "already-traded ordered ultimate pair with native-vehicle use "
+                    "and zero stable-vehicle use in the prior 30 calendar days"
+                ),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def bridge_establishment_event_regressions(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 100,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Estimate paired route changes around bridge establishment.
+
+    Daily observations first collapse to one pre/post row per bridge event.
+    This makes the estimand transparent and avoids treating irregularly active
+    ultimate pairs as balanced daily panels.  Share changes use the harmonic
+    mean of pre/post route mass; route-intensity changes give every event equal
+    weight.  Inference clusters by ordered ultimate pair and event date.
+    """
+
+    specs = (
+        (
+            "stable_share_after_bridge_establishment",
+            "stable_share",
+            "harmonic_pre_post_route_mass",
+            "Stable-route adoption after two-leg stable bridge support appears",
+        ),
+        (
+            "native_routes_after_bridge_establishment",
+            "log_native_routes",
+            "none",
+            "Incumbent native-route activity after stable bridge support appears",
+        ),
+        (
+            "total_routes_after_bridge_establishment",
+            "log_total_routes",
+            "none",
+            "Total ultimate-pair route activity after stable bridge support appears",
+        ),
+        (
+            "stable_value_share_after_bridge_establishment",
+            "stable_value_share",
+            "harmonic_pre_post_value_mass",
+            "Stable-route value adoption after two-leg stable bridge support appears",
+        ),
+        (
+            "native_value_after_bridge_establishment",
+            "log_native_value_usd",
+            "none",
+            "Incumbent native-route value after stable bridge support appears",
+        ),
+        (
+            "total_value_after_bridge_establishment",
+            "log_total_value_usd",
+            "none",
+            "Total ultimate-pair route value after stable bridge support appears",
+        ),
+    )
+    regressors = ("post_0_29", "post_30_119")
+    rows: list[dict[str, object]] = []
+    event_columns = [
+        "event_id",
+        "ordered_pair",
+        "event_date",
+        "period",
+        "native_routes",
+        "stable_routes",
+        "total_routes",
+        "native_value_usd",
+        "stable_value_usd",
+        "total_value_usd",
+    ]
+    grouped = (
+        panel.loc[:, event_columns]
+        .groupby(
+            ["event_id", "ordered_pair", "event_date", "period"],
+            observed=True,
+            as_index=False,
+        )
+        .agg(
+            native_routes=("native_routes", "sum"),
+            stable_routes=("stable_routes", "sum"),
+            total_routes=("total_routes", "sum"),
+            native_value_usd=("native_value_usd", "sum"),
+            stable_value_usd=("stable_value_usd", "sum"),
+            total_value_usd=("total_value_usd", "sum"),
+            active_pair_days=("total_routes", "size"),
+        )
+    )
+    grouped["stable_share"] = grouped["stable_routes"] / grouped["total_routes"]
+    grouped["native_routes_per_active_day"] = (
+        grouped["native_routes"] / grouped["active_pair_days"]
+    )
+    grouped["total_routes_per_active_day"] = (
+        grouped["total_routes"] / grouped["active_pair_days"]
+    )
+    grouped["stable_value_share"] = (
+        grouped["stable_value_usd"] / grouped["total_value_usd"]
+    )
+    grouped["native_value_per_active_day"] = (
+        grouped["native_value_usd"] / grouped["active_pair_days"]
+    )
+    grouped["total_value_per_active_day"] = (
+        grouped["total_value_usd"] / grouped["active_pair_days"]
+    )
+    indexed = grouped.set_index(
+        ["event_id", "ordered_pair", "event_date", "period"]
+    )
+    measures = indexed[
+        [
+            "stable_share",
+            "native_routes_per_active_day",
+            "total_routes_per_active_day",
+            "total_routes",
+            "stable_value_share",
+            "native_value_per_active_day",
+            "total_value_per_active_day",
+            "total_value_usd",
+        ]
+    ].unstack("period")
+    measures.columns = [f"{name}__{period}" for name, period in measures.columns]
+    event_changes = measures.reset_index()
+    for regressor in regressors:
+        post_period = regressor
+        required = [
+            "stable_share__pre_30",
+            f"stable_share__{post_period}",
+            "native_routes_per_active_day__pre_30",
+            f"native_routes_per_active_day__{post_period}",
+            "total_routes_per_active_day__pre_30",
+            f"total_routes_per_active_day__{post_period}",
+            "total_routes__pre_30",
+            f"total_routes__{post_period}",
+        ]
+        data = event_changes.dropna(subset=required).copy()
+        data["stable_share"] = (
+            data[f"stable_share__{post_period}"] - data["stable_share__pre_30"]
+        )
+        data["log_native_routes"] = np.log1p(
+            data[f"native_routes_per_active_day__{post_period}"]
+        ) - np.log1p(data["native_routes_per_active_day__pre_30"])
+        data["log_total_routes"] = np.log1p(
+            data[f"total_routes_per_active_day__{post_period}"]
+        ) - np.log1p(data["total_routes_per_active_day__pre_30"])
+        data["stable_value_share"] = (
+            data[f"stable_value_share__{post_period}"]
+            - data["stable_value_share__pre_30"]
+        )
+        data["log_native_value_usd"] = np.log1p(
+            data[f"native_value_per_active_day__{post_period}"]
+        ) - np.log1p(data["native_value_per_active_day__pre_30"])
+        data["log_total_value_usd"] = np.log1p(
+            data[f"total_value_per_active_day__{post_period}"]
+        ) - np.log1p(data["total_value_per_active_day__pre_30"])
+        pre_mass = data["total_routes__pre_30"].astype(float)
+        post_mass = data[f"total_routes__{post_period}"].astype(float)
+        data["harmonic_pre_post_route_mass"] = pre_mass * post_mass / (
+            pre_mass + post_mass
+        )
+        pre_value_mass = data["total_value_usd__pre_30"].astype(float)
+        post_value_mass = data[f"total_value_usd__{post_period}"].astype(float)
+        data["harmonic_pre_post_value_mass"] = (
+            pre_value_mass * post_value_mass / (pre_value_mass + post_value_mass)
+        )
+        data["mean_change"] = 1.0
+        for model_id, outcome, weight_label, question in specs:
+            required_model_columns = [
+                outcome,
+                "mean_change",
+                "ordered_pair",
+                "event_date",
+            ]
+            if weight_label != "none":
+                required_model_columns.append(weight_label)
+            model_data = data.replace([np.inf, -np.inf], np.nan).dropna(
+                subset=required_model_columns
+            )
+            if weight_label != "none":
+                model_data = model_data[model_data[weight_label].gt(0)].copy()
+            weights = (
+                model_data["harmonic_pre_post_route_mass"]
+                if weight_label == "harmonic_pre_post_route_mass"
+                else (
+                    model_data["harmonic_pre_post_value_mass"]
+                    if weight_label == "harmonic_pre_post_value_mass"
+                    else None
+                )
+            )
+            fit = ols_clustered(
+                model_data[outcome],
+                model_data[["mean_change"]],
+                model_data["ordered_pair"],
+                add_constant=False,
+                additional_clusters=(model_data["event_date"],),
+                weights=weights,
+                min_observations=min_observations,
+                min_clusters=min_clusters,
+            )
+            coefficient = float(fit.beta[0])
+            standard_error = float(fit.standard_errors[0])
+            rows.append(
+                {
+                    "claim_status": "provisional_exploratory",
+                    "record_type": "bridge_establishment_event_regression",
+                    "model_id": model_id,
+                    "question": question,
+                    "outcome": outcome,
+                    "regressor": regressor,
+                    "coefficient": coefficient,
+                    "standard_error": standard_error,
+                    "t_statistic": float(fit.t_statistics[0]),
+                    "p_value": float(fit.p_values[0]),
+                    "coefficient_pp": (
+                        100.0 * coefficient
+                        if outcome in ("stable_share", "stable_value_share")
+                        else None
+                    ),
+                    "standard_error_pp": (
+                        100.0 * standard_error
+                        if outcome in ("stable_share", "stable_value_share")
+                        else None
+                    ),
+                    "n_observations": int(fit.n_observations),
+                    "events": int(model_data["event_id"].nunique()),
+                    "ordered_pair_clusters": int(fit.cluster_counts[0]),
+                    "date_clusters": int(fit.cluster_counts[1]),
+                    "fixed_effects": "paired_pre_post_change",
+                    "covariance": "two_way_ordered_pair_event_date_cr1",
+                    "weight": weight_label,
+                    "reference_period": "30 calendar days before bridge establishment",
+                    "interpretation": (
+                        "descriptive paired change around first persistent two-leg "
+                        "stable bridge support; not causal pool creation"
+                    ),
+                }
+            )
+    return pd.DataFrame(rows)
 
 
 def bridge_liquidity_top_rank_summaries(panel: pd.DataFrame) -> pd.DataFrame:
@@ -1254,6 +1852,7 @@ def support_rows(
     panel: pd.DataFrame,
     *,
     entry_panel: pd.DataFrame | None = None,
+    establishment_panel: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     """Return the support ledger for the bridge-liquidity screen."""
 
@@ -1306,6 +1905,34 @@ def support_rows(
                 ),
             }
         )
+    if establishment_panel is not None:
+        rows.append(
+            {
+                "claim_status": "provisional_exploratory",
+                "record_type": "bridge_establishment_support",
+                "choices_input": str(CHOICES_INPUT.relative_to(REPO_ROOT)),
+                "pool_capital_input": str(POOL_CAPITAL_INPUT.relative_to(REPO_ROOT)),
+                "capital_status": CAPITAL_STATUS,
+                "candidate_rows": None,
+                "choice_groups": int(establishment_panel["event_id"].nunique()),
+                "ordered_pairs": int(establishment_panel["ordered_pair"].nunique()),
+                "days": int(establishment_panel["origin_date"].nunique()),
+                "candidate_count": len(STABLE_ISSUER_CANDIDATES),
+                "min_supported_candidates": None,
+                "include_zero_bridge_candidates": None,
+                "event_rows": int(len(establishment_panel)),
+                "pre_days": BRIDGE_ESTABLISHMENT_PRE_DAYS,
+                "post_days": BRIDGE_ESTABLISHMENT_POST_DAYS,
+                "min_active_days": BRIDGE_ESTABLISHMENT_MIN_ACTIVE_DAYS,
+                "min_support_days_30": BRIDGE_ESTABLISHMENT_MIN_SUPPORT_DAYS_30,
+                "quantity": (
+                    "first persistent DAI/USDC/USDT bridge with positive "
+                    "prior-calendar V2-family deposited capital on both atomic legs; "
+                    "ultimate pair used a native vehicle and no stable vehicle in "
+                    "the prior 30 calendar days"
+                ),
+            }
+        )
     return pd.DataFrame(rows)
 
 
@@ -1329,6 +1956,10 @@ def run(
         ),
         pair_support_path=pair_support_path,
     )
+    establishment_panel = load_bridge_establishment_event_panel(
+        choices_path=choices_path,
+        pool_capital_path=pool_capital_path,
+    )
     result = pd.concat(
         [
             bridge_liquidity_top_rank_summaries(panel),
@@ -1338,12 +1969,18 @@ def run(
             bridge_liquidity_bottleneck_regressions(panel),
             bridge_liquidity_leave_one_candidate_regressions(panel),
             bridge_liquidity_stable_issuer_regressions(panel),
+            bridge_establishment_period_summaries(establishment_panel),
+            bridge_establishment_event_regressions(establishment_panel),
         ],
         ignore_index=True,
     )
     write_exhibit(result, output_path, code_sources=CODE_SOURCES, inputs=INPUTS)
     write_exhibit(
-        support_rows(panel, entry_panel=entry_panel),
+        support_rows(
+            panel,
+            entry_panel=entry_panel,
+            establishment_panel=establishment_panel,
+        ),
         support_path,
         code_sources=CODE_SOURCES,
         inputs=INPUTS,

@@ -22,7 +22,7 @@
 \begin{column}{0.47\textwidth}
 \textbf{Robustness}
 \begin{itemize}
-\item A7 Daily and weekly frequencies
+\item A7 Timing and venue-scope robustness
 \item A8 Count and value weighting
 \item A9 Observed route endpoints
 \end{itemize}
@@ -346,6 +346,18 @@ V4 singleton
 \resizebox{0.965\textwidth}{!}{\input{assets/exact-horizon-diagram.tex}}\par
 \vspace{0.10cm}
 {\small Exact horizons use the required target calendar date.\par}
+\end{frame}
+
+% EVIDENCE-STATUS: current descriptive venue-scope result
+% EVIDENCE-SOURCES: output/figures/experiments/integration_change_forest.pdf; output/exhibits/intermediation_integration_rival.jsonl; output/exhibits/intermediation_complexity_rival.jsonl; output/exhibits/integration_date_fe_ladder.jsonl
+% VISUAL-FUNCTION: venue-scope heterogeneity | enlarged HAC interval forest plot | show stablecoin growth across realised route scopes
+\begin{frame}{A7b. Stablecoin use rises within every venue scope}
+\vspace{-0.16cm}
+\begin{center}
+\includegraphics[width=0.99\textwidth,height=0.61\textheight,keepaspectratio]{../output/figures/experiments/integration_change_forest.pdf}
+\end{center}
+\decknote{Changes compare matched January-through-June dates in 2024 and 2026. Bars show calendar-HAC confidence intervals; venue scope records realised routes.}
+\note{Two-leg routes gain \StableCountChange{} and longer routes gain \MultiLegCountChange{}; the weakest venue-by-length cell gains \WeakestComplexityCountChange{}. Within day, cross-exchange routes carry \WithinDayVenueGapValue{} more stablecoin value share than same-exchange routes.}
 \end{frame}
 
 % VISUAL-FUNCTION: route weights | paired route-width small multiples | distinguish frequency from supported economic scale

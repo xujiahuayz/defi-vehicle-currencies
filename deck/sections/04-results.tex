@@ -202,18 +202,6 @@ Currency fixed effects & No & No & No & Yes \\
 \decknote{Exact allocation of the pooled route-count change. Unlabelled assets contribute alongside the named ultimate pair; the full new-ultimate-pair population sums to \MarginNewPairTotal{}.}
 \end{frame}
 
-% EVIDENCE-STATUS: current descriptive venue-scope result
-% EVIDENCE-SOURCES: output/figures/experiments/integration_change_forest.pdf; output/exhibits/intermediation_integration_rival.jsonl; output/exhibits/intermediation_complexity_rival.jsonl; output/exhibits/integration_date_fe_ladder.jsonl
-% VISUAL-FUNCTION: venue-scope heterogeneity | enlarged HAC interval forest plot | show stablecoin growth across realised route scopes
-\begin{frame}{Stablecoin use rises within every venue scope}
-\vspace{-0.16cm}
-\begin{center}
-\includegraphics[width=0.99\textwidth,height=0.61\textheight,keepaspectratio]{../output/figures/experiments/integration_change_forest.pdf}
-\end{center}
-\decknote{Changes compare matched January-through-June dates in 2024 and 2026. Bars show calendar-HAC confidence intervals; venue scope records realised routes.}
-\note{Two-leg routes gain \StableCountChange{} and longer routes gain \MultiLegCountChange{}; the weakest venue-by-length cell gains \WeakestComplexityCountChange{}. Within day, cross-exchange routes carry \WithinDayVenueGapValue{} more stablecoin value share than same-exchange routes.}
-\end{frame}
-
 % EVIDENCE-STATUS: exploratory descriptive local-depth result
 % EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl; output/exhibits/bridge_liquidity_dominance_support.jsonl; output/exhibits/bridge_liquidity_deck_values.tex
 % VISUAL-FUNCTION: local bridge depth | three large economic magnitudes | link ultimate-pair-specific capital to realised route choice
@@ -238,6 +226,42 @@ Currency fixed effects & No & No & No & Yes \\
 \vspace{0.72cm}
 {\large The weaker atomic leg carries the economically relevant depth constraint.\par}
 \decknote{The analysis compares five potential vehicle assets within locally supported endpoint-date-route-scope sets. Depth is prior deposited capital on the weaker atomic leg; standard errors cluster by ordered ultimate pair and date.}
+\end{frame}
+
+% EVIDENCE-STATUS: exploratory descriptive bridge-establishment result
+% EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl; output/exhibits/bridge_liquidity_dominance_support.jsonl; output/exhibits/bridge_liquidity_deck_values.tex
+% VISUAL-FUNCTION: stable-bridge availability | event sequence plus three magnitudes | separate feasible-set expansion from route adoption and displacement
+\begin{frame}{A new stable bridge wins a foothold}
+\vspace{-0.08cm}
+\begin{center}
+\begin{tikzpicture}[x=1cm,y=1cm]
+\node[softbox,text width=3.35cm,minimum height=0.92cm,align=center] (native) at (-4.0,1.55) {WETH route only};
+\node[softbox,text width=3.35cm,minimum height=0.92cm,align=center] (support) at (0,1.55) {Stable bridge becomes feasible};
+\node[softbox,text width=3.35cm,minimum height=0.92cm,align=center] (follow) at (4.0,1.55) {First 30 days of route flow};
+\draw[-{Stealth[length=7pt]},line width=1.7pt,draw=stable] (native)--(support);
+\draw[-{Stealth[length=7pt]},line width=1.7pt,draw=stable] (support)--(follow);
+\end{tikzpicture}
+\end{center}
+\vspace{0.18cm}
+\begin{columns}[T,totalwidth=0.92\textwidth]
+\begin{column}{0.29\textwidth}\centering
+{\fontsize{23}{25}\selectfont\bfseries\color{stable}\BridgeEstablishmentCountCoef}\par\vspace{0.12cm}
+{\small route-count share\par}
+{\scriptsize SE \BridgeEstablishmentCountSE}
+\end{column}
+\begin{column}{0.29\textwidth}\centering
+{\fontsize{23}{25}\selectfont\bfseries\color{stable}\BridgeEstablishmentValueCoef}\par\vspace{0.12cm}
+{\small supported-value share\par}
+{\scriptsize SE \BridgeEstablishmentValueSE}
+\end{column}
+\begin{column}{0.29\textwidth}\centering
+{\fontsize{23}{25}\selectfont\bfseries\color{ucldark}\BridgeEstablishmentPostNativeCountShare}\par\vspace{0.12cm}
+{\small route counts retained by WETH}
+\end{column}
+\end{columns}
+\vspace{0.58cm}
+{\large Availability produces partial reallocation while the incumbent remains dominant.\par}
+\decknote{\BridgeEstablishmentEvents{} first-time events among ordered ultimate pairs previously routed only through WETH. Stable support requires positive prior-calendar deposited capital on both atomic pairs in Uniswap V2 or SushiSwap V2 and persistence over the next month. Share changes are paired against the prior 30 days; standard errors cluster by ordered ultimate pair and event date.}
 \end{frame}
 
 % EVIDENCE-STATUS: current predictive capital-to-route result
