@@ -21,6 +21,7 @@ Captions, labels, placement, and interpretation stay in the paper/deck source.
 | `render_v4_flash_gap_interactions.py` | `v4_flash_gap_interactions.tex/.pdf` | `tab:v4-flash-gap` |
 | `render_v4_flash_gap_flow_interactions.py` | `v4_flash_gap_flow_interactions.tex/.pdf` | `tab:v4-flash-gap-flow` |
 | `render_v3_v4_lp_protocol_contrast.py` | `v3_v4_lp_protocol_contrast.tex/.pdf` | `tab:v3-v4-lp-protocol` |
+| `render_v3_v4_lp_flow_protocol_contrast.py` | `v3_v4_lp_flow_protocol_contrast.tex/.pdf` | `tab:v3-v4-lp-flow-protocol` |
 | `render_venue_coverage.py` | `venue_coverage.tex/.pdf` | `tab:app:venues` |
 
 The remaining active manuscript tables are intentionally inline because each is

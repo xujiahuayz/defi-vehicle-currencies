@@ -214,6 +214,16 @@ Table~\ref{tab:v3-v4-lp-protocol} makes the protocol comparison directly on the 
 \exhibitnote{Each cell reports the V4-minus-V3 difference in the association between a 10 percentage point larger stable route-minus-capital gap and the future LP-action outcome, with standard errors in parentheses. Outcomes are log points. The stacked unit is a protocol--candidate--origin-day row, restricted to candidate-origin days with observed V4 singleton swap activity. All columns absorb candidate-date and protocol fixed effects, include same-protocol current LP-action and active-origin controls, and cluster by origin date. V3 outcomes are mint/burn event counts and active origins. V4 outcomes are modify-liquidity event counts and active origins. The design is an exploratory protocol contrast, not a causal protocol-adoption estimate. Stars denote 1\%, 5\%, and 10\% significance.}
 \end{table}
 
+The dollar-flow analogue disciplines that reading. Table~\ref{tab:v3-v4-lp-flow-protocol} values the candidate-token side of V3 mint/burn events and V4 modify-liquidity events with the same daily price panel, stacks the two protocols on the same V4-active candidate dates, and repeats the candidate-date comparison for future LP flow. The V4-minus-V3 differential is near zero for gross and add-side flow at all three horizons. The one clean positive coefficient is remove-side flow after 120 days, \({0.044}\) log points for a 10 percentage point stable shortfall. Thus the protocol contrast is not a simple story in which V4 turns stable shortfalls into larger provider-token inflows. It says the same shortfalls are associated with more V4 provider activity and, on the dollar side, with delayed turnover, not broad add-flow expansion. This is why the mechanism is described as range management and reallocation, consistent with concentrated-liquidity provider adjustment costs in \citet{LeharParlour2024Uniswap}, not as a measured capital-supply shock.
+% output/exhibits/v3_v4_lp_flow_protocol_contrast.jsonl; output/tables/v3_v4_lp_flow_protocol_contrast.tex; producer scripts/process/build_v3_lp_flow_candidate_daily.py, scripts/analyze/run_v3_v4_lp_flow_protocol_contrast.py, and scripts/tabulate/render_v3_v4_lp_flow_protocol_contrast.py.
+
+\begin{table}[tbp]
+\caption{Stable shortfalls and the V4-minus-V3 LP-flow response}
+\label{tab:v3-v4-lp-flow-protocol}
+\input{../output/tables/v3_v4_lp_flow_protocol_contrast.tex}
+\exhibitnote{Each cell reports the V4-minus-V3 difference in the association between a 10 percentage point larger stable route-minus-capital gap and future candidate-token-side LP flow, with standard errors in parentheses. Outcomes are log points. The stacked unit is a protocol--candidate--origin-day row, restricted to candidate-origin days with observed V4 singleton swap activity. All columns absorb candidate-date and protocol fixed effects, include same-protocol current gross, add, remove, and sender-day flow controls, and cluster by origin date. V3 outcomes value mint and burn event token sides. V4 outcomes value modify-liquidity event token sides. The design is an exploratory protocol contrast, not a causal protocol-adoption estimate or whole-pool inventory measure. Stars denote 1\%, 5\%, and 10\% significance.}
+\end{table}
+
 % EVIDENCE-STATUS: exploratory descriptive allocation result.
 % output/exhibits/liquidity_provision_behavior_exploration.jsonl and
 % output/exhibits/liquidity_provision_behavior_support.jsonl; macros from
@@ -251,8 +261,10 @@ Table~\ref{tab:v3-v4-lp-protocol} makes the protocol comparison directly on the 
 % modify-liquidity candidate-action assignments and map native ETH to the WETH
 % candidate family; V4 activity-control rows absorb current action, origin-day,
 % and sender counts; V4 flash rows compare gross and net swap-flow within
-% singleton transactions. They are event/provider-day counts and unit-free
-% netting proxies, not dollar-valued provider flows or unique LP identities.
+% singleton transactions. The V3/V4 flow comparison values candidate-token
+% sides of provider events. These are event/provider-day counts, candidate-side
+% dollar flows, and unit-free netting proxies, not whole-pool inventory, unique
+% LP identity, or causal provider-supply estimates.
 
 \subsection{Protocol architecture}
 
