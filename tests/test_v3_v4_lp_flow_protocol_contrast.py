@@ -97,6 +97,12 @@ def test_v3_v4_lp_flow_protocol_contrast_is_estimable_on_stacked_panel() -> None
                         + 0.2 * current_remove_v3
                         + rng.normal(0.0, 0.01)
                     ),
+                    "future_v3_narrow_medium_flow_value_share": (
+                        0.40 + 0.02 * stable_gap + rng.normal(0.0, 0.01)
+                    ),
+                    "future_v3_broad_flow_value_share": (
+                        0.60 - 0.02 * stable_gap + rng.normal(0.0, 0.01)
+                    ),
                     "origin_log1p_v3_gross_lp_flow_usd": current_gross_v3,
                     "origin_log1p_v3_add_lp_flow_usd": current_add_v3,
                     "origin_log1p_v3_remove_lp_flow_usd": current_remove_v3,
@@ -132,6 +138,12 @@ def test_v3_v4_lp_flow_protocol_contrast_is_estimable_on_stacked_panel() -> None
                         + 2.0 * stable_gap
                         + 0.2 * current_remove_v4
                         + rng.normal(0.0, 0.01)
+                    ),
+                    "future_v4_narrow_medium_flow_value_share": (
+                        0.45 + 1.0 * stable_gap + rng.normal(0.0, 0.01)
+                    ),
+                    "future_v4_broad_flow_value_share": (
+                        0.55 - 1.0 * stable_gap + rng.normal(0.0, 0.01)
                     ),
                     "origin_log1p_v4_gross_lp_flow_usd": current_gross_v4,
                     "origin_log1p_v4_add_lp_flow_usd": current_add_v4,

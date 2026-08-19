@@ -63,6 +63,24 @@ def _complete_rows() -> list[dict[str, object]]:
                 p_value=0.04,
             )
         )
+        rows.append(
+            _row(
+                horizon_days=horizon,
+                outcome="future_narrow_medium_flow_value_share",
+                effect=0.03 * horizon_index,
+                standard_error=0.02,
+                p_value=0.03,
+            )
+        )
+        rows.append(
+            _row(
+                horizon_days=horizon,
+                outcome="future_broad_flow_value_share",
+                effect=-0.03 * horizon_index,
+                standard_error=0.02,
+                p_value=0.03,
+            )
+        )
     return rows
 
 
@@ -72,7 +90,10 @@ def test_v3_v4_lp_flow_protocol_contrast_table_renders_grid() -> None:
     assert "Gross LP flow" in rendered
     assert "Add-side flow" in rendered
     assert "Remove-side flow" in rendered
+    assert "Narrow/medium flow share" in rendered
+    assert "Broad flow share" in rendered
     assert "$+0.060^{**}$" in rendered
+    assert "$-0.090^{**}$" in rendered
     assert "5,198 / 522" in rendered
 
 

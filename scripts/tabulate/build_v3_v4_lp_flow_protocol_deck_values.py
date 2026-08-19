@@ -16,6 +16,8 @@ from ddvc.runtime import atomic_output
 ESTIMATES = OUTPUT_DIR / "exhibits/v3_v4_lp_flow_protocol_contrast.jsonl"
 DECK_VALUES = OUTPUT_DIR / "exhibits/v3_v4_lp_flow_protocol_deck_values.tex"
 HORIZON_DAYS = 120
+WEEK_HORIZON_DAYS = 7
+MONTH_HORIZON_DAYS = 30
 
 
 def _signed_log_points(value: float) -> str:
@@ -26,6 +28,16 @@ def _signed_log_points(value: float) -> str:
 
 def _unsigned_log_points(value: float) -> str:
     return f"${value:.3f}$ log pts"
+
+
+def _signed_percentage_points(value: float) -> str:
+    if abs(value) < 0.0005:
+        return "$0.0$ pp"
+    return f"${100 * value:+.1f}$ pp"
+
+
+def _unsigned_percentage_points(value: float) -> str:
+    return f"${100 * value:.1f}$ pp"
 
 
 def _integer(value: int) -> str:
@@ -41,10 +53,12 @@ def _single(frame: pd.DataFrame, **conditions: object) -> pd.Series:
     return selected.iloc[0]
 
 
-def _contrast_row(estimates: pd.DataFrame, *, outcome: str) -> pd.Series:
+def _contrast_row(
+    estimates: pd.DataFrame, *, outcome: str, horizon_days: int = HORIZON_DAYS
+) -> pd.Series:
     return _single(
         estimates,
-        horizon_days=HORIZON_DAYS,
+        horizon_days=horizon_days,
         outcome=outcome,
         term="v4_x_stable_gap",
     )
@@ -73,12 +87,46 @@ def render_v3_v4_lp_flow_protocol_deck_values(estimates: pd.DataFrame) -> str:
     gross = _contrast_row(estimates, outcome="future_log1p_gross_lp_flow_usd")
     add = _contrast_row(estimates, outcome="future_log1p_add_lp_flow_usd")
     remove = _contrast_row(estimates, outcome="future_log1p_remove_lp_flow_usd")
+    narrow_week = _contrast_row(
+        estimates,
+        outcome="future_narrow_medium_flow_value_share",
+        horizon_days=WEEK_HORIZON_DAYS,
+    )
+    narrow_month = _contrast_row(
+        estimates,
+        outcome="future_narrow_medium_flow_value_share",
+        horizon_days=MONTH_HORIZON_DAYS,
+    )
+    narrow_long = _contrast_row(
+        estimates,
+        outcome="future_narrow_medium_flow_value_share",
+    )
+    broad_week = _contrast_row(
+        estimates,
+        outcome="future_broad_flow_value_share",
+        horizon_days=WEEK_HORIZON_DAYS,
+    )
+    broad_month = _contrast_row(
+        estimates,
+        outcome="future_broad_flow_value_share",
+        horizon_days=MONTH_HORIZON_DAYS,
+    )
+    broad_long = _contrast_row(estimates, outcome="future_broad_flow_value_share")
     if not (
         abs(float(gross["effect_per_10pp_stable_gap_v4_minus_v3"])) < 0.05
         and abs(float(add["effect_per_10pp_stable_gap_v4_minus_v3"])) < 0.05
         and float(remove["effect_per_10pp_stable_gap_v4_minus_v3"]) > 0.03
         and float(remove["p_value"]) < 0.05
         and int(remove["n_observations"]) > 5_000
+        and float(narrow_week["effect_per_10pp_stable_gap_v4_minus_v3"]) > 0.01
+        and float(narrow_month["effect_per_10pp_stable_gap_v4_minus_v3"]) > 0.01
+        and float(narrow_long["effect_per_10pp_stable_gap_v4_minus_v3"]) > 0.002
+        and float(broad_week["effect_per_10pp_stable_gap_v4_minus_v3"]) < -0.01
+        and float(broad_month["effect_per_10pp_stable_gap_v4_minus_v3"]) < -0.01
+        and float(broad_long["effect_per_10pp_stable_gap_v4_minus_v3"]) < -0.002
+        and float(narrow_week["p_value"]) < 0.01
+        and float(narrow_month["p_value"]) < 0.01
+        and float(narrow_long["p_value"]) < 0.01
     ):
         raise ValueError("V3/V4 LP-flow protocol deck headline no longer holds")
     lines = [
@@ -93,6 +141,18 @@ def render_v3_v4_lp_flow_protocol_deck_values(estimates: pd.DataFrame) -> str:
         f"\\newcommand{{\\VThreeVFourLpFlowAddLongSE}}{{{_unsigned_log_points(float(add['standard_error_per_10pp_stable_gap_v4_minus_v3']))}}}",
         f"\\newcommand{{\\VThreeVFourLpFlowRemoveLongCoef}}{{{_signed_log_points(float(remove['effect_per_10pp_stable_gap_v4_minus_v3']))}}}",
         f"\\newcommand{{\\VThreeVFourLpFlowRemoveLongSE}}{{{_unsigned_log_points(float(remove['standard_error_per_10pp_stable_gap_v4_minus_v3']))}}}",
+        f"\\newcommand{{\\VThreeVFourLpFlowNarrowWeekCoef}}{{{_signed_percentage_points(float(narrow_week['effect_per_10pp_stable_gap_v4_minus_v3']))}}}",
+        f"\\newcommand{{\\VThreeVFourLpFlowNarrowWeekSE}}{{{_unsigned_percentage_points(float(narrow_week['standard_error_per_10pp_stable_gap_v4_minus_v3']))}}}",
+        f"\\newcommand{{\\VThreeVFourLpFlowNarrowMonthCoef}}{{{_signed_percentage_points(float(narrow_month['effect_per_10pp_stable_gap_v4_minus_v3']))}}}",
+        f"\\newcommand{{\\VThreeVFourLpFlowNarrowMonthSE}}{{{_unsigned_percentage_points(float(narrow_month['standard_error_per_10pp_stable_gap_v4_minus_v3']))}}}",
+        f"\\newcommand{{\\VThreeVFourLpFlowNarrowLongCoef}}{{{_signed_percentage_points(float(narrow_long['effect_per_10pp_stable_gap_v4_minus_v3']))}}}",
+        f"\\newcommand{{\\VThreeVFourLpFlowNarrowLongSE}}{{{_unsigned_percentage_points(float(narrow_long['standard_error_per_10pp_stable_gap_v4_minus_v3']))}}}",
+        f"\\newcommand{{\\VThreeVFourLpFlowBroadWeekCoef}}{{{_signed_percentage_points(float(broad_week['effect_per_10pp_stable_gap_v4_minus_v3']))}}}",
+        f"\\newcommand{{\\VThreeVFourLpFlowBroadWeekSE}}{{{_unsigned_percentage_points(float(broad_week['standard_error_per_10pp_stable_gap_v4_minus_v3']))}}}",
+        f"\\newcommand{{\\VThreeVFourLpFlowBroadMonthCoef}}{{{_signed_percentage_points(float(broad_month['effect_per_10pp_stable_gap_v4_minus_v3']))}}}",
+        f"\\newcommand{{\\VThreeVFourLpFlowBroadMonthSE}}{{{_unsigned_percentage_points(float(broad_month['standard_error_per_10pp_stable_gap_v4_minus_v3']))}}}",
+        f"\\newcommand{{\\VThreeVFourLpFlowBroadLongCoef}}{{{_signed_percentage_points(float(broad_long['effect_per_10pp_stable_gap_v4_minus_v3']))}}}",
+        f"\\newcommand{{\\VThreeVFourLpFlowBroadLongSE}}{{{_unsigned_percentage_points(float(broad_long['standard_error_per_10pp_stable_gap_v4_minus_v3']))}}}",
     ]
     return "\n".join(lines) + "\n"
 

@@ -14,6 +14,7 @@ def _row(
     effect: float,
     standard_error: float,
     p_value: float,
+    horizon_days: int = 120,
 ) -> dict[str, object]:
     return {
         "activity_controls": "same-protocol current flow controls",
@@ -21,7 +22,7 @@ def _row(
         "date_clusters": 522,
         "effect_per_10pp_stable_gap_v4_minus_v3": effect,
         "fixed_effects": "candidate_date+protocol",
-        "horizon_days": 120,
+        "horizon_days": horizon_days,
         "n_observations": 5198,
         "outcome": outcome,
         "p_value": p_value,
@@ -51,6 +52,46 @@ def _complete_rows() -> list[dict[str, object]]:
             standard_error=0.022,
             p_value=0.044,
         ),
+        _row(
+            horizon_days=7,
+            outcome="future_narrow_medium_flow_value_share",
+            effect=0.015,
+            standard_error=0.002,
+            p_value=0.001,
+        ),
+        _row(
+            horizon_days=30,
+            outcome="future_narrow_medium_flow_value_share",
+            effect=0.011,
+            standard_error=0.001,
+            p_value=0.001,
+        ),
+        _row(
+            outcome="future_narrow_medium_flow_value_share",
+            effect=0.003,
+            standard_error=0.001,
+            p_value=0.001,
+        ),
+        _row(
+            horizon_days=7,
+            outcome="future_broad_flow_value_share",
+            effect=-0.015,
+            standard_error=0.002,
+            p_value=0.001,
+        ),
+        _row(
+            horizon_days=30,
+            outcome="future_broad_flow_value_share",
+            effect=-0.011,
+            standard_error=0.001,
+            p_value=0.001,
+        ),
+        _row(
+            outcome="future_broad_flow_value_share",
+            effect=-0.003,
+            standard_error=0.001,
+            p_value=0.001,
+        ),
     ]
 
 
@@ -63,6 +104,8 @@ def test_v3_v4_lp_flow_protocol_deck_values_render_turnover_headline() -> None:
     assert "\\VThreeVFourLpFlowGrossLongCoef}{$+0.027$ log pts}" in rendered
     assert "\\VThreeVFourLpFlowAddLongCoef}{$+0.011$ log pts}" in rendered
     assert "\\VThreeVFourLpFlowRemoveLongCoef}{$+0.044$ log pts}" in rendered
+    assert "\\VThreeVFourLpFlowNarrowWeekCoef}{$+1.5$ pp}" in rendered
+    assert "\\VThreeVFourLpFlowBroadMonthCoef}{$-1.1$ pp}" in rendered
 
 
 def test_v3_v4_lp_flow_protocol_deck_values_reject_broad_add_flow() -> None:

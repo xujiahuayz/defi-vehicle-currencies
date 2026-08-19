@@ -15,6 +15,8 @@ OUTCOMES = {
     "future_log1p_gross_lp_flow_usd": "Gross LP flow",
     "future_log1p_add_lp_flow_usd": "Add-side flow",
     "future_log1p_remove_lp_flow_usd": "Remove-side flow",
+    "future_narrow_medium_flow_value_share": "Narrow/medium flow share",
+    "future_broad_flow_value_share": "Broad flow share",
 }
 HORIZONS = (7, 30, 120)
 
