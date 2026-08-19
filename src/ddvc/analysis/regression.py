@@ -51,6 +51,11 @@ class ClusteredOLSResult:
     absorbed_degrees_of_freedom: int
     cluster_counts: tuple[int, ...] = ()
     finite_sample_observations: int | None = None
+    r_squared: float = np.nan
+    adjusted_r_squared: float = np.nan
+    dependent_mean: float = np.nan
+    dependent_standard_deviation: float = np.nan
+    residual_sum_squares: float = np.nan
 
     @property
     def standard_errors(self) -> np.ndarray:
@@ -441,6 +446,10 @@ def ols_clustered(
     group_arrays = [group[finite] for group in group_arrays]
     if weight_array is not None:
         weight_array = weight_array[finite]
+    dependent_mean = float(np.mean(y_array)) if len(y_array) else np.nan
+    dependent_standard_deviation = (
+        float(np.std(y_array, ddof=0)) if len(y_array) else np.nan
+    )
     if add_constant:
         x_array = np.column_stack([np.ones(len(x_array)), x_array])
     if weight_array is not None:
@@ -478,6 +487,8 @@ def ols_clustered(
         absorbed_degrees_of_freedom=absorbed_degrees_of_freedom,
         cluster_counts=cluster_counts,
         finite_sample_observations=finite_sample_observations,
+        dependent_mean=dependent_mean,
+        dependent_standard_deviation=dependent_standard_deviation,
     )
     if (
         finite_sample_observations < min_observations
@@ -490,6 +501,40 @@ def ols_clustered(
     xtx_inverse = np.linalg.pinv(x_array.T @ x_array)
     beta = xtx_inverse @ (x_array.T @ y_array)
     residual = y_array - x_array @ beta
+    residual_sum_squares = float(residual @ residual)
+    if add_constant:
+        if weight_array is None:
+            centered = y_array - float(np.mean(y_array))
+        else:
+            weighted_mean = float(
+                np.sum(weight_array * (y_array / np.sqrt(weight_array)))
+                / np.sum(weight_array)
+            )
+            centered = y_array - np.sqrt(weight_array) * weighted_mean
+        total_sum_squares = float(centered @ centered)
+    else:
+        # With absorbed fixed effects, y is already the within-transformed
+        # outcome.  The uncentred transformed sum of squares is the conventional
+        # denominator for within R-squared.
+        total_sum_squares = float(y_array @ y_array)
+    r_squared = (
+        1.0 - residual_sum_squares / total_sum_squares
+        if total_sum_squares > 0
+        else np.nan
+    )
+    residual_degrees_freedom = (
+        finite_sample_observations - k - absorbed_degrees_of_freedom
+    )
+    total_degrees_freedom = finite_sample_observations - int(add_constant)
+    adjusted_r_squared = (
+        1.0
+        - (residual_sum_squares / residual_degrees_freedom)
+        / (total_sum_squares / total_degrees_freedom)
+        if total_sum_squares > 0
+        and residual_degrees_freedom > 0
+        and total_degrees_freedom > 0
+        else np.nan
+    )
     residual_dof_scale = (finite_sample_observations - 1) / (
         finite_sample_observations - k - absorbed_degrees_of_freedom
     )
@@ -534,6 +579,11 @@ def ols_clustered(
         absorbed_degrees_of_freedom=absorbed_degrees_of_freedom,
         cluster_counts=cluster_counts,
         finite_sample_observations=finite_sample_observations,
+        r_squared=r_squared,
+        adjusted_r_squared=adjusted_r_squared,
+        dependent_mean=dependent_mean,
+        dependent_standard_deviation=dependent_standard_deviation,
+        residual_sum_squares=residual_sum_squares,
     )
 
 

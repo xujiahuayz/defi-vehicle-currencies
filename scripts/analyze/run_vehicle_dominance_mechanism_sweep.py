@@ -44,6 +44,17 @@ BASE_RHS = (
     "baseline_pair_age_log",
     "cross_venue",
 )
+MARKET_STATE_RHS = (
+    "baseline_log_market_routes",
+    "baseline_pair_age_log",
+    "cross_venue",
+)
+ROUTE_ARCHITECTURE_RHS = (
+    "baseline_direct_route_share",
+    "baseline_complex_route_share",
+    "baseline_primary_choice_share",
+    "cross_venue",
+)
 CHANGE_RHS = (
     "market_route_growth_log",
     "direct_route_share_change",
@@ -96,6 +107,18 @@ STABLE_TURN_ON_DECILE_VARIABLES = (
     "pair_age_log",
 )
 MODEL_SPECS = (
+    (
+        "share_change_market_state",
+        "stable_share_change",
+        MARKET_STATE_RHS,
+        "How much of the stable-vehicle rotation is associated with initial market scale and age?",
+    ),
+    (
+        "share_change_route_architecture",
+        "stable_share_change",
+        ROUTE_ARCHITECTURE_RHS,
+        "How much of the stable-vehicle rotation is associated with initial route architecture?",
+    ),
     (
         "share_change_baseline_state",
         "stable_share_change",
@@ -403,6 +426,12 @@ def _fit_specification(
                 "fixed_effects": "month_day",
                 "covariance": "two_way_ordered_pair_month_day_cr1",
                 "weight": "harmonic_endpoint_denominator_mass",
+                "r_squared_within": float(fit.r_squared),
+                "adjusted_r_squared_within": float(fit.adjusted_r_squared),
+                "dependent_mean_within": float(fit.dependent_mean),
+                "dependent_standard_deviation_within": float(
+                    fit.dependent_standard_deviation
+                ),
                 "interpretation": "descriptive_driver_screen_not_causal",
                 "rival_story": (
                     "endpoint demand, feasible route set, notional, router search, and "
@@ -1435,6 +1464,8 @@ def estimate_mechanism_sweep(
             *BASE_RHS,
             *CHANGE_RHS,
             *DIRECT_THIN_RHS,
+            *MARKET_STATE_RHS,
+            *ROUTE_ARCHITECTURE_RHS,
         }
         - set(design.columns)
     )

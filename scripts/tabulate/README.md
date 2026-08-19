@@ -11,6 +11,7 @@ Captions, labels, placement, and interpretation stay in the paper/deck source.
 | `render_pair_composition.py` | `pair_composition.tex/.pdf` | `tab:pair-composition` |
 | `render_usdt_transition.py` | `usdt_transition.tex/.pdf` | `tab:usdt-transition` |
 | `render_within_day_ladder.py` | `within_day_ladder.tex/.pdf` | `tab:within-day-ladder` |
+| `render_vehicle_dominance_determinants.py` | `vehicle_dominance_determinants.tex/.pdf` | `tab:vehicle-dominance-determinants` |
 | `render_routing_technology_windows.py` | `routing_technology_windows.tex/.pdf` | `tab:router-windows` |
 | `render_venue_technology_rival.py` | `venue_technology_rival.tex/.pdf` | `tab:venue-technology` |
 | `render_vehicle_formation_regressions.py` | `vehicle_formation_regressions.tex/.pdf` | `tab:formation-regressions` |

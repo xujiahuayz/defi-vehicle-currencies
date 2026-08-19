@@ -95,6 +95,34 @@
 % units -- pooled and day-absorbed rows -- so the claim is bounded rather than a
 % failure to reject. Refresh with scripts/analyze/run_excess_use_date_fe_ladder.py then
 % scripts/tabulate/build_excess_use_date_fe_deck_values.py.
+% VISUAL-FUNCTION: estimating equation for within-day vehicle use | one equation plus variable map | expose the regression design before reporting coefficients
+\begin{frame}{The regression compares currencies within the same day}
+\vspace{0.18cm}
+\begin{equation*}
+I_{a,t}=\alpha+\beta D_{a,t}+\mathbf{A}_{a}'\theta+\mu_t+\eta_a+\varepsilon_{a,t}
+\end{equation*}
+\vspace{0.18cm}
+\begin{columns}[T,totalwidth=\textwidth]
+\begin{column}{0.48\textwidth}
+\begin{itemize}
+\item \(I_{a,t}\): currency share of intermediary episodes
+\item \(D_{a,t}\): own route-endpoint demand share
+\item \(\mathbf A_a\): native, stable, and other classes
+\end{itemize}
+\end{column}
+\begin{column}{0.48\textwidth}
+\begin{itemize}
+\item \(\mu_t\): date effects absorb the calendar
+\item \(\eta_a\): currency effects absorb persistent identity
+\item SE clustered by date and currency
+\end{itemize}
+\end{column}
+\end{columns}
+\vspace{0.12cm}
+{\small Pooled \(\rightarrow\) date effects \(\rightarrow\) own demand \(\rightarrow\) currency effects.}
+\decknote{The outcome and demand regressor are percentage-point shares of the same day's route universe. The specification ladder is reported in the next frame. This is descriptive within-day identification, not a causal demand shock.}
+\end{frame}
+
 % VISUAL-FUNCTION: within-day identification of the vehicle role | four-rung control ladder in one table | show the calendar absorbed and the cross-section unchanged
 \begin{frame}{The cross-section holds when the calendar is absorbed}
 \vspace{0.10cm}

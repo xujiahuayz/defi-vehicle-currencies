@@ -23,6 +23,16 @@ from ddvc.analysis.regression import (
 
 
 class RegressionPrimitiveTests(unittest.TestCase):
+    def test_clustered_ols_reports_fit_statistics(self) -> None:
+        x = np.arange(1.0, 9.0)
+        y = 2.0 + 3.0 * x
+        result = ols_clustered(y, x, np.repeat(np.arange(4), 2))
+        self.assertAlmostEqual(result.r_squared, 1.0)
+        self.assertAlmostEqual(result.adjusted_r_squared, 1.0)
+        self.assertAlmostEqual(result.dependent_mean, float(y.mean()))
+        self.assertAlmostEqual(result.dependent_standard_deviation, float(y.std()))
+        self.assertAlmostEqual(result.residual_sum_squares, 0.0)
+
     def test_negative_covariance_variance_is_missing_not_zero(self) -> None:
         result = ClusteredOLSResult(
             beta=np.array([1.0]),

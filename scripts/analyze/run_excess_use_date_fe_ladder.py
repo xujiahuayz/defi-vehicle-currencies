@@ -244,6 +244,12 @@ def rows_from(
                 "clustering": clustering,
                 "inference_clusters": int(result.n_clusters),
                 "absorbed_df": int(result.absorbed_degrees_of_freedom),
+                "r_squared": float(result.r_squared),
+                "adjusted_r_squared": float(result.adjusted_r_squared),
+                "dependent_mean": float(result.dependent_mean),
+                "dependent_standard_deviation": float(
+                    result.dependent_standard_deviation
+                ),
             }
         )
     return out
