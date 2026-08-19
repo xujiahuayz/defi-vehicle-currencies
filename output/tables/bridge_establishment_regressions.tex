@@ -3,6 +3,7 @@
 \toprule
 Outcome & First 30 days & Days 30--119 \\
 \midrule
+\multicolumn{3}{@{}l}{\textit{Panel A. Changes around first persistent stable support}} \\
 Stable route share [pp] & \shortstack{$+7.93^{***}$\\$(1.88)$} & \shortstack{$+8.68^{***}$\\$(2.57)$} \\
 Stable supported-value share [pp] & \shortstack{$+3.11^{**}$\\$(1.53)$} & \shortstack{$+6.94$\\$(4.53)$} \\
 $\log(1+\text{native routes per active day})$ & \shortstack{$-0.20^{***}$\\$(0.04)$} & \shortstack{$-0.39^{***}$\\$(0.06)$} \\
@@ -11,5 +12,12 @@ $\log(1+\text{native supported value per active day})$ & \shortstack{$-0.17$\\$(
 $\log(1+\text{total supported value per active day})$ & \shortstack{$+0.06$\\$(0.10)$} & \shortstack{$-0.32^{*}$\\$(0.18)$} \\
 \midrule
 Bridge events & 865 & 818 \\ 
+\addlinespace[0.35em]
+\multicolumn{3}{@{}l}{\textit{Panel B. Stable-bridge competitiveness relative to WETH}} \\
+Relative-depth slope [pp per +10 pp] & \shortstack{$+6.41^{***}$\\$(0.70)$} & \shortstack{$+7.52^{***}$\\$(0.48)$} \\
+Stable route share, depth $<0.1\times$ WETH [\%] & 2.4 & 2.4 \\
+Stable route share, depth $\geq$ WETH [\%] & \shortstack{$53.0$\\$(4.6)$} & \shortstack{$61.2$\\$(13.2)$} \\
+Stable route share, depth $\geq 2\times$ WETH [\%] & \shortstack{$69.9$\\$(2.3)$} & \shortstack{$70.7$\\$(9.3)$} \\
+Active ordered-ultimate-pair days & 11{,}327 & 17{,}027 \\
 \bottomrule
 \end{tabularx}

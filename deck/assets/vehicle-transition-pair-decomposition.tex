@@ -1,38 +1,38 @@
 % Presentation geometry only. Numerical labels are generated in
 % output/exhibits/route_methodology_heterogeneity_deck_values.tex.
 % WETH is the native intermediary in this comparison. If WETH is an endpoint,
-% it cannot also be the intermediary; every such row therefore has stable_share=1.
+% it cannot also be the intermediary; stablecoins remain the eligible class.
+% Within-ultimate-pair change is reported in the authored frame text below the graphic.
 \begin{tikzpicture}[x=1cm,y=1cm]
 \tikzset{panel/.style={draw=rule,fill=white,rounded corners=3pt,line width=0.8pt}}
-\tikzset{small/.style={font=\fontsize{6.8}{7.5}\selectfont,text=muted,align=center}}
 
-\node[draw=stable,line width=1.1pt,circle,minimum size=1.05cm,
-  font=\fontsize{8.2}{8.8}\selectfont\bfseries,text=ucldark] at (1.05,3.45) {WETH};
-\node[anchor=west,font=\fontsize{8.2}{9.0}\selectfont\bfseries,text=ucldark]
-  at (1.82,3.62) {WETH is an endpoint of the ultimate pair};
+% Economic restriction: WETH cannot be both an endpoint and the intermediary.
+\node[draw=stable,line width=1.1pt,circle,minimum size=1.10cm,
+  font=\fontsize{8.6}{9.2}\selectfont\bfseries,text=ucldark] (weth) at (1.45,3.40) {WETH};
+\node[font=\fontsize{7.8}{8.6}\selectfont\bfseries,text=ucldark,align=center,text width=2.9cm]
+  at (1.45,2.48) {endpoint of the\\ultimate pair};
+\draw[-{Stealth[length=5pt]},line width=1.2pt,draw=stable] (1.45,2.03)--(1.45,1.55);
+\node[draw=rule,fill=panel,rounded corners=2pt,font=\fontsize{7.6}{8.4}\selectfont,text=ink,align=center,text width=2.75cm,minimum height=0.88cm] at (1.45,0.94) {Stablecoins alone remain eligible as intermediaries};
+
+% The two estimates are stacked so the comparison reads vertically, not as
+% competing headline cards.
+\draw[panel,fill=stable!7] (3.35,2.42) rectangle (13.00,4.35);
+\node[anchor=west,font=\fontsize{21}{22}\selectfont\bfseries,text=stable]
+  at (3.72,3.43) {\WethCountFullChange};
+\node[anchor=west,font=\fontsize{9.0}{9.8}\selectfont\bfseries,text=ucldark]
+  at (6.55,3.77) {All matched ultimate-pair groups};
+\node[anchor=west,font=\fontsize{7.2}{8.0}\selectfont,text=muted]
+  at (6.55,3.25) {95\% CI [\WethCountFullCILower, \WethCountFullCIUpper]};
 \node[anchor=west,font=\fontsize{7.2}{8.0}\selectfont,text=ink]
-  at (1.82,3.25) {Stablecoins alone remain eligible as intermediaries.};
+  at (6.55,2.84) {WETH-linked route-count mass: \WethCountMassBase{} $\rightarrow$ \WethCountMassEnd};
 
-\draw[panel] (0,0.56) rectangle (6.00,2.68);
-\node[anchor=west,font=\fontsize{8.1}{8.8}\selectfont\bfseries,text=ucldark]
-  at (0.35,2.32) {All matched ultimate-pair groups};
-\node[anchor=west,font=\fontsize{23}{24}\selectfont\bfseries,text=stable]
-  at (0.35,1.48) {\WethCountFullChange};
-\node[anchor=west,font=\fontsize{6.9}{7.6}\selectfont,text=muted]
-  at (0.35,1.05) {95\% CI [\WethCountFullCILower, \WethCountFullCIUpper]};
-\node[anchor=west,font=\fontsize{7.0}{7.7}\selectfont,text=ink]
-  at (0.35,0.80) {WETH-linked route-count mass: \WethCountMassBase{} $\rightarrow$ \WethCountMassEnd};
-
-\draw[panel] (6.35,0.56) rectangle (12.35,2.68);
-\node[anchor=west,font=\fontsize{8.1}{8.8}\selectfont\bfseries,text=ucldark]
-  at (6.70,2.32) {Ultimate-pair groups excluding WETH endpoints};
-\node[anchor=west,font=\fontsize{23}{24}\selectfont\bfseries,text=accent]
-  at (6.70,1.48) {\WethCountNoEndpointChange};
-\node[anchor=west,font=\fontsize{6.9}{7.6}\selectfont,text=muted]
-  at (6.70,1.05) {95\% CI [\WethCountNoEndpointCILower, \WethCountNoEndpointCIUpper]};
-\node[anchor=west,font=\fontsize{7.0}{7.7}\selectfont,text=ink]
-  at (6.70,0.80) {\WethCountNoEndpointGroups{} matched groups};
-
-\node[small,text width=12.0cm] at (6.18,0.08)
-  {\textbf{Within-ultimate-pair change:} all groups \WethCountWithinFullChange{} [\WethCountWithinFullCILower, \WethCountWithinFullCIUpper];\\excluding WETH endpoints \WethCountWithinNoEndpointChange{} [\WethCountWithinNoEndpointCILower, \WethCountWithinNoEndpointCIUpper].};
+\draw[panel] (3.35,0.25) rectangle (13.00,2.18);
+\node[anchor=west,font=\fontsize{21}{22}\selectfont\bfseries,text=accent]
+  at (3.72,1.26) {\WethCountNoEndpointChange};
+\node[anchor=west,font=\fontsize{9.0}{9.8}\selectfont\bfseries,text=ucldark]
+  at (6.55,1.60) {Ultimate-pair groups excluding WETH endpoints};
+\node[anchor=west,font=\fontsize{7.2}{8.0}\selectfont,text=muted]
+  at (6.55,1.08) {95\% CI [\WethCountNoEndpointCILower, \WethCountNoEndpointCIUpper]};
+\node[anchor=west,font=\fontsize{7.2}{8.0}\selectfont,text=ink]
+  at (6.55,0.67) {\WethCountNoEndpointGroups{} matched groups};
 \end{tikzpicture}

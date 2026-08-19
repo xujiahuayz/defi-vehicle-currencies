@@ -93,7 +93,7 @@ route-architecture entry interactions, stable turn-on in thin baseline markets,
 rolling native-only-to-stable turn-on hazards, the direct-route by thinness
 interaction, same-day and prior-30-day candidate-network reach inside observed mixed native-stable
 risk-set checks, endpoint claim-class formation splits, endpoint price-history
-formation screens, sticky incumbent
+formation screens, persistent established
 vehicle regimes, USDC/USDT concentration at stable-entry, controlled stable-candidate
 identity persistence, USDC/SVB stress-window identity persistence and LP capital
 non-chase, extra-hop gas economics and route-level fixed-toll feasibility, the V2 liquidity
@@ -104,7 +104,8 @@ fragmentation, plus same-pool LP capital-chase rival screens, bounded V3
 fee/rent-incidence and TVL-normalized fee-yield screens, V3 mint/burn action-count, provider-day, activity-controlled provider-day responses, V3-versus-V4 same-candidate-date LP-action response contrasts, V4 modify-liquidity action composition, activity-controlled response, flash-accounting netting proxies, screened candidate-side V4 LP flow, V4 flash-to-wide-range LP reallocation,
 stable-shortfall x V4 flash-accounting LP repositioning, and local
 bridge-liquidity dominance, entry-date local bridge-depth choice screens, plus
-first stable-bridge establishment and partial route reallocation, plus
+first stable-bridge establishment, continuous stable-versus-WETH bottleneck depth,
+and depth-conditioned route reallocation, plus
 stable-specific dynamic local bridge-depth feedback. The deck
 also carries the traditional-FX route analogy as motivation. These layers
 strengthen the

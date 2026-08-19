@@ -150,11 +150,12 @@
 % VISUAL-FUNCTION: protocol-specific state requirements | protocol-by-state matrix | prevent false comparability across AMM families
 % Source contract: README.md lines 161--163 and 382--384;
 % src/ddvc/execution_contracts.py and src/ddvc/liquidity.py at f16d5f074fac73011dce1c609d80146ec3fd3bec.
-% Filled squares mean that the field enters the family-specific pre-trade state;
-% the outlined V4 hook square records an explicit perimeter restriction, not measured hook state.
+% Filled squares mean that the field enters the family-specific pre-trade quote state.
+% The outlined V4 hook square marks unavailable hook-dependent pricing logic in
+% executable-quote validation; it does not remove singleton accounting or netting from mechanism analysis.
 \begin{frame}{A5. Each AMM family has a different state vector}
 \begin{center}
-\setlength{\tabcolsep}{4.7pt}
+\setlength{\tabcolsep}{4.0pt}
 \renewcommand{\arraystretch}{1.55}
 \scriptsize
 \begin{tabular}{@{}p{2.80cm}ccccccc@{}}
@@ -165,7 +166,7 @@
 & \shortstack{weights or\\scaling}
 & \shortstack{rates or\\oracles}
 & fees
-& hooks \\
+& \shortstack{hook-dependent\\pricing} \\
 \midrule
 Constant product
 & {\color{native}$\blacksquare$} & -- & -- & -- & -- & {\color{native}$\blacksquare$} & -- \\
@@ -180,13 +181,19 @@ V4 singleton
 \bottomrule
 \end{tabular}
 \end{center}
-\vspace{0.25cm}
-\begin{columns}[T]
-\begin{column}{0.68\textwidth}
-{\small The common object is the state immediately before execution. The fields required to recover that state vary with the pricing rule.\par}
+\vspace{0.18cm}
+\begin{columns}[T,totalwidth=0.94\textwidth]
+\begin{column}{0.46\textwidth}
+{\small\bfseries\color{ucldark} Executable-quote validation\par}
+\vspace{0.08cm}
+{\scriptsize {\color{ink}$\blacksquare$} recovered pricing input\par}
+{\scriptsize {\color{accent}$\square$} hook-dependent pricing unavailable\par}
 \end{column}
-\begin{column}{0.27\textwidth}
-{\scriptsize\color{muted}{\color{ink}$\blacksquare$} required state\\[0.25em]{\color{accent}$\square$} hooks outside comparison\par}
+\hfill
+\begin{column}{0.46\textwidth}
+{\small\bfseries\color{ucldark} Protocol mechanisms studied\par}
+\vspace{0.08cm}
+{\scriptsize V4 singleton flash accounting and netting remain in scope; A5.3 shows the settlement mechanism.\par}
 \end{column}
 \end{columns}
 \end{frame}

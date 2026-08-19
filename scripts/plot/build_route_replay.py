@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the manifest, local replay, and deck values for one real route."""
+"""Build the manifest and deck values for one real route."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from pathlib import Path
 
 from ddvc.datasets import require_datasets
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
-from ddvc.route_replay import manifest_from_partition, write_route_replay_bundle
+from ddvc.route_replay import manifest_from_partition, write_route_replay_outputs
 
 
 def main() -> int:
@@ -17,7 +17,6 @@ def main() -> int:
     parser.add_argument("--tx-hash", required=True)
     parser.add_argument("--component-id", type=int, default=0)
     parser.add_argument("--manifest", type=Path, default=OUTPUT_DIR / "exhibits" / "route_replay.json")
-    parser.add_argument("--html", type=Path, default=OUTPUT_DIR / "live" / "route_replay.html")
     parser.add_argument("--tex", type=Path, default=OUTPUT_DIR / "exhibits" / "route_replay_deck_values.tex")
     args = parser.parse_args()
 
@@ -31,13 +30,12 @@ def main() -> int:
         tx_hash=args.tx_hash,
         component_id=args.component_id,
     )
-    write_route_replay_bundle(
+    write_route_replay_outputs(
         manifest,
         manifest_path=args.manifest,
-        html_path=args.html,
         tex_path=args.tex,
     )
-    print(f"wrote {args.manifest}, {args.html}, and {args.tex}")
+    print(f"wrote {args.manifest} and {args.tex}")
     return 0
 
 

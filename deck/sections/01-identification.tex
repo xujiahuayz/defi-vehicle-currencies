@@ -1,18 +1,18 @@
 % VISUAL-MANAGED-FILE
 % Framing and institutional setting. Sources: Krugman (1980); Flandreau and Jobst (2009); PBoC Brazil clearing memorandum; project route-release audit.
 
-% EVIDENCE-STATUS: conceptual motivation from vehicle-currency theory and clearing-corridor intuition; no empirical estimate is displayed.
+% EVIDENCE-STATUS: conceptual motivation from vehicle-currency theory and bilateral-clearing intuition; no empirical estimate is displayed.
 % SOURCE: Krugman (1980), vehicle currency theory; PBoC memorandum with Banco Central do Brasil on renminbi clearing arrangements in Brazil; paper introduction footnote records the source and boundary.
-% SCIENTIFIC-BOUNDARY: the clearing example motivates a corridor-allocation margin only; it is not an identification event and the paper measures DEX pool routes rather than trade settlement.
-% VISUAL-FUNCTION: corridor-allocation intuition | traditional-finance corridor schematic plus two margin boxes | motivate why aggregate vehicle dominance can move without within-corridor switching
-\begin{frame}{Dominance changes when trade corridors change}
+% SCIENTIFIC-BOUNDARY: the clearing example motivates allocation across bilateral trading relationships only; it is not an identification event and the paper measures DEX pool routes rather than trade settlement.
+% VISUAL-FUNCTION: bilateral-activity allocation | traditional-finance route schematic plus two margin boxes | motivate why aggregate vehicle dominance can move while one relationship keeps its vehicle
+\begin{frame}{Dominance changes when bilateral trading activity moves}
 \begin{columns}[T,totalwidth=\textwidth]
 \begin{column}{0.48\textwidth}
 \evidencekicker{Traditional-finance intuition}
 \vspace{0.10cm}
-{\large A treasury desk keeps one thin dollar corridor while aggregate dollar share falls.\par}
+{\large A treasury desk keeps routing one thin bilateral relationship through dollars while aggregate dollar share falls.\par}
 \vspace{0.22cm}
-{\small Growth elsewhere changes the denominator: route allocation, not only within-ultimate-pair substitution.\par}
+{\small Growth in other bilateral relationships changes the denominator while this relationship keeps using dollars.\par}
 \end{column}
 \begin{column}{0.48\textwidth}
 \centering
@@ -23,7 +23,7 @@
 \draw[route,draw=rule,line width=1.25pt] (brl)--(usd);
 \draw[route,draw=rule,line width=1.25pt] (usd)--(cny);
 \draw[route,draw=stable,line width=1.85pt] (brl) to[bend right=28] (cny);
-\node[softbox,text width=5.15cm,align=center] at (2.50,1.15) {\small Growth elsewhere can cut aggregate dollar dominance without old corridors switching.};
+\node[softbox,text width=5.15cm,align=center] at (2.50,1.15) {\small Growth elsewhere lowers the dollar's aggregate share.};
 \node[font=\scriptsize\bfseries,text=white,fill=stable,rounded corners=2pt,inner sep=4pt] at (2.50,0.30) {composition margin};
 \end{tikzpicture}
 \end{column}
@@ -64,7 +64,6 @@
 % EVIDENCE-STATUS: authentic transaction and route-component trace; exact same-state alternative remains outside this exhibit
 % EVIDENCE-SOURCES: output/exhibits/route_replay.json; data/unified/20260110.parquet; https://eth.blockscout.com/tx/0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9?tab=token_transfers (retrieved 2026-08-14)
 % EVIDENCE-CASE: transaction 0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9, component 0.
-% LIVE-COMPANION: output/live/route_replay.html (native HTML/CSS/JS reveal; no embedded video)
 % LITERATURE-PRECEDENT: Lehar and Parlour (2025), Appendix B, pairs one named explorer transaction with decoded logs before handing off to the population reconstruction.
 % VISUAL-FUNCTION: source-versus-pool-route handoff | authentic explorer screenshot plus settlement trace | separate the user's PYUSD instruction from the USDC-funded pool component
 \input{../output/exhibits/route_replay_deck_values.tex}

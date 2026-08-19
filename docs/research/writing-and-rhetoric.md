@@ -122,6 +122,13 @@ the conflict.
   numbered in the order they are referred to in the text. Number an equation only
   when its number has a narrative use; do not manufacture a callout merely to keep
   a number.
+- Put an exhibit reference beside the substantive claim it supports and make the
+  reader's lookup short. Name the panel, model or column, and economic row when a
+  table contains several estimands; a table-level reference is enough for a short,
+  single-object display. One precise reference may govern the next few sentences,
+  so do not repeat it mechanically. Captions, panel headings, column headings, and
+  row labels must make this level of reference possible without internal workflow
+  terminology.
 - The appendix is an audit trail, not a second paper. It mirrors the main claims
   and keeps nulls, failed alternatives, and adverse validation evidence visible.
 - Do not add equations, citations, tables, or length as filler to resemble a

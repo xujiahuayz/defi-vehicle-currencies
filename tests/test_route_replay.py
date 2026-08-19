@@ -8,7 +8,6 @@ import pytest
 from ddvc.route_replay import (
     build_route_replay_manifest,
     render_route_replay_deck_values,
-    render_route_replay_html,
 )
 
 
@@ -64,18 +63,6 @@ def test_manifest_preserves_authentic_transaction_and_route_order() -> None:
     assert manifest["route"]["vehicle"] == "USDT"
     assert manifest["route"]["target"] == "USDe"
     assert [leg["venue"] for leg in manifest["route"]["legs"]] == ["fluid", "uniswap_v4"]
-
-
-def test_replay_is_selectable_progressive_and_print_complete() -> None:
-    manifest = build_route_replay_manifest(
-        _legs(), day="20260110", tx_hash="0xabc", component_id=0
-    )
-    page = render_route_replay_html(manifest)
-
-    assert 'data-step="1"' in page and 'data-step="2"' in page
-    assert "Reveal next leg" in page
-    assert "@media print" in page
-    assert "Fluid" in page and "Uniswap V4" in page
 
 
 def test_manifest_rejects_a_missing_second_leg() -> None:

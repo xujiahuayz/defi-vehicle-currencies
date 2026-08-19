@@ -107,13 +107,15 @@ Currency fixed effects & No & No & No & Yes \\
 
 % EVIDENCE-STATUS: supporting deterministic endpoint-eligibility decomposition
 % EVIDENCE-SOURCES: output/exhibits/route_methodology_heterogeneity.jsonl; output/exhibits/route_methodology_heterogeneity_deck_values.tex; output/exhibits/vehicle_transition_pair_panel.parquet
-% VISUAL-FUNCTION: WETH endpoint eligibility | enlarged full-versus-excluded comparison | locate the count rotation in changing market activity
+% VISUAL-FUNCTION: WETH endpoint eligibility | stacked restriction-and-estimate comparison | locate the count rotation in ultimate-pair composition
 \begin{frame}{WETH-linked ultimate pairs carry the count rotation}
-\vspace{-0.15cm}
+\vspace{-0.12cm}
 \begin{center}
-\resizebox{0.93\textwidth}{!}{\input{assets/vehicle-transition-pair-decomposition.tex}}
+\resizebox{0.92\textwidth}{!}{\input{assets/vehicle-transition-pair-decomposition.tex}}
 \end{center}
-\decknote{Exact two-atomic-trade native-WETH-versus-stablecoin routes on common month-days. The intervals use calendar HAC; within-ultimate-pair estimates fix ultimate pair, month-day, and route scope.}
+\vspace{-0.10cm}
+{\large Fixed-ultimate-pair changes are \WethCountWithinFullChange{} overall and \WethCountWithinNoEndpointChange{} without WETH endpoints.\par}
+\decknote{Exact two-atomic-trade native-WETH-versus-stablecoin routes on common month-days. Confidence intervals use calendar HAC; within-ultimate-pair estimates fix ultimate pair, month-day, and route scope.}
 \end{frame}
 
 % EVIDENCE-STATUS: supporting exact routed-value decomposition
@@ -129,77 +131,76 @@ Currency fixed effects & No & No & No & Yes \\
 
 % EVIDENCE-STATUS: supporting exact route-count decomposition
 % EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_contributions.parquet; output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex
-% VISUAL-FUNCTION: within-pair intermediary choice | one named-pair example plus aggregate contribution | show the small aggregate role of repeated switching
-\begin{frame}{Established ultimate pairs contribute little to the rotation}
-\evidencekicker{Intermediary choice within continuing ultimate pairs}
-\vspace{0.28cm}
-\begin{columns}[T,totalwidth=0.94\textwidth]
-\begin{column}{0.31\textwidth}
-{\Large\bfseries\color{ucldark}\MarginWithinPair}\par\vspace{0.18cm}
-{\small largest positive ultimate-pair contribution}
-\end{column}
-\begin{column}{0.31\textwidth}
-{\fontsize{25}{27}\selectfont\bfseries\color{muted}\MarginWithinStableBase{} $\to$ \color{stable}\MarginWithinStableEnd}\par\vspace{0.18cm}
-{\small stablecoin share within that ultimate pair}
-\end{column}
-\begin{column}{0.31\textwidth}
-{\fontsize{28}{30}\selectfont\bfseries\color{accent}\MarginWithinTotal}\par\vspace{0.18cm}
-{\small aggregate within-ultimate-pair margin}
-\end{column}
-\end{columns}
-\vspace{0.65cm}
-{\large Gross gains and losses across continuing ultimate pairs almost offset.\par}
-\decknote{Exact allocation of the pooled 2024-to-2026 route-count change on common calendar days. The named ultimate pair contributes \MarginWithinContribution{}; all continuing ultimate pairs sum to \MarginWithinTotal{}.}
+% VISUAL-FUNCTION: route-count rotation mechanism | cumulative three-stage decomposition | reveal aggregate change, incumbent margins, then ultimate-pair entry and exit
+\newcommand{\rotationdecomposition}[1]{%
+\begin{tikzpicture}[x=1cm,y=1cm]
+\tikzset{rotationpanel/.style={draw=rule,fill=white,rounded corners=3pt,line width=0.8pt}}
+\path[use as bounding box] (0,0.38) rectangle (13.0,4.32);
+\draw[rotationpanel,fill=panel] (0,2.95) rectangle (13.0,4.32);
+\node[font=\scriptsize\bfseries,text=muted] at (1.10,3.64) {2024};
+\node[font=\fontsize{22}{23}\selectfont\bfseries,text=ucldark] at (2.80,3.64) {\PairPooledBase};
+\ifnum#1>1\relax
+  \draw[-{Stealth[length=6pt]},line width=1.5pt,draw=stable] (4.18,3.64)--(5.22,3.64);
+  \node[font=\scriptsize\bfseries,text=muted] at (6.10,3.64) {2026};
+  \node[font=\fontsize{22}{23}\selectfont\bfseries,text=ucldark] at (7.75,3.64) {\PairPooledEnd};
+  \node[anchor=east,font=\fontsize{23}{24}\selectfont\bfseries,text=stable] at (12.56,3.75) {\PairPooledTotal};
+  \node[anchor=east,font=\scriptsize,text=muted] at (12.56,3.25) {aggregate rotation};
+  \draw[rotationpanel,fill=ucldark!4] (0,0.38) rectangle (6.20,2.60);
+  \node[anchor=west,font=\small\bfseries,text=ucldark] at (0.38,2.22) {Continuing ultimate pairs};
+  \node[anchor=west,font=\fontsize{15}{16}\selectfont\bfseries,text=accent] at (0.42,1.48) {\MarginWithinTotal};
+  \node[anchor=west,font=\fontsize{7.3}{8.0}\selectfont,text=ink] at (2.78,1.48) {within-ultimate-pair choice};
+  \node[anchor=west,font=\fontsize{15}{16}\selectfont\bfseries,text=stable] at (0.42,0.76) {\MarginReweightTotal};
+  \node[anchor=west,font=\fontsize{7.3}{8.0}\selectfont,text=ink] at (2.78,0.76) {activity reallocation};
+\fi
+\ifnum#1>2\relax
+  \draw[rotationpanel,fill=stable!7] (6.80,0.38) rectangle (13.00,2.60);
+  \node[anchor=west,font=\small\bfseries,text=ucldark] at (7.18,2.22) {Ultimate-pair entry and exit};
+  \node[anchor=west,font=\fontsize{15}{16}\selectfont\bfseries,text=stable] at (7.22,1.48) {\MarginNewPairTotal};
+  \node[anchor=west,font=\fontsize{7.3}{8.0}\selectfont,text=ink] at (9.86,1.48) {newly traded ultimate pairs};
+  \node[anchor=west,font=\fontsize{15}{16}\selectfont\bfseries,text=muted] at (7.22,0.76) {\MarginRetiredPairTotal};
+  \node[anchor=west,font=\fontsize{7.3}{8.0}\selectfont,text=ink] at (9.86,0.76) {ultimate-pair exit};
+\fi
+\end{tikzpicture}%
+}
+% Duplicated progressive frames are deliberate: they preserve the reveal in a
+% live talk while each PDF page remains a complete, stable handout object.
+\begin{frame}{In 2024, stablecoins carry \PairPooledBase{} of routed activity}
+\evidencekicker{Exact pooled decomposition, 2024 to 2026}
+\vspace{-0.06cm}
+\begin{center}
+\rotationdecomposition{1}
+\end{center}
+\vspace{-0.12cm}
+{\large The baseline is the stablecoin share of intermediary episodes in the common-day route universe.\par}
+\decknote{Exact allocation on common calendar days. The remaining support-mass term is \PairPooledSupportMass{}; components sum using unrounded values. Ultimate-pair reallocation holds intermediary shares at their midpoint.}
 \end{frame}
 
 % EVIDENCE-STATUS: supporting exact route-count decomposition
 % EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_contributions.parquet; output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex
-% VISUAL-FUNCTION: activity reallocation | one named-pair example plus aggregate contribution | show growth among ultimate pairs already using stablecoins
-\begin{frame}{Growth favors ultimate pairs that already use stablecoins}
-\evidencekicker{Activity reallocation across continuing ultimate pairs}
-\vspace{0.28cm}
-\begin{columns}[T,totalwidth=0.94\textwidth]
-\begin{column}{0.31\textwidth}
-{\Large\bfseries\color{ucldark}\MarginReweightPair}\par\vspace{0.18cm}
-{\small largest positive ultimate-pair contribution}
-\end{column}
-\begin{column}{0.31\textwidth}
-{\fontsize{25}{27}\selectfont\bfseries\color{muted}\MarginReweightWeightBase{} $\to$ \color{stable}\MarginReweightWeightEnd}\par\vspace{0.18cm}
-{\small share of routed activity}
-\end{column}
-\begin{column}{0.31\textwidth}
-{\fontsize{28}{30}\selectfont\bfseries\color{stable}\MarginReweightTotal}\par\vspace{0.18cm}
-{\small aggregate reallocation margin}
-\end{column}
-\end{columns}
-\vspace{0.65cm}
-{\large Routes on the named ultimate pair rise from \MarginReweightRoutesBase{} to \MarginReweightRoutesEnd{}.\par}
-\decknote{Exact allocation of the pooled route-count change. Ultimate-pair weights change across the same two endpoint periods while intermediary shares are held at their midpoint.}
+% VISUAL-FUNCTION: route-count rotation endpoint | second progressive decomposition frame | reveal the 2026 endpoint and continuing-ultimate-pair margins
+\begin{frame}{By 2026, stablecoin vehicle share reaches \PairPooledEnd}
+\evidencekicker{Exact pooled decomposition, 2024 to 2026}
+\vspace{-0.06cm}
+\begin{center}
+\rotationdecomposition{2}
+\end{center}
+\vspace{-0.12cm}
+{\large The \PairPooledTotal{} endpoint rotation includes \MarginWithinTotal{} from intermediary switching and \MarginReweightTotal{} from activity reallocation.\par}
+\decknote{Exact allocation on common calendar days. The remaining support-mass term is \PairPooledSupportMass{}; components sum using unrounded values. Ultimate-pair reallocation holds intermediary shares at their midpoint.}
 \end{frame}
 
 % EVIDENCE-STATUS: supporting exact route-count decomposition
 % EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_contributions.parquet; output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex
-% VISUAL-FUNCTION: newly traded pair margin | one named arrival plus aggregate contribution | show ultimate-pair entry as the largest component
-\begin{frame}{Newly traded ultimate pairs deliver the largest rotation margin}
-\evidencekicker{Markets appearing after the baseline period}
-\vspace{0.28cm}
-\begin{columns}[T,totalwidth=0.94\textwidth]
-\begin{column}{0.31\textwidth}
-{\Large\bfseries\color{ucldark}\MarginNewPairPair}\par\vspace{0.18cm}
-{\small largest named arrival}
-\end{column}
-\begin{column}{0.31\textwidth}
-{\fontsize{25}{27}\selectfont\bfseries\color{muted}\MarginNewPairRoutesBase{} $\to$ \color{stable}\MarginNewPairRoutesEnd}\par\vspace{0.18cm}
-{\small observed routes}
-\end{column}
-\begin{column}{0.31\textwidth}
-{\fontsize{28}{30}\selectfont\bfseries\color{stable}\MarginNewPairTotal}\par\vspace{0.18cm}
-{\small aggregate new-ultimate-pair margin}
-\end{column}
-\end{columns}
-\vspace{0.65cm}
-{\large Newly traded ultimate pairs account for most of the aggregate increase.\par}
-\decknote{Exact allocation of the pooled route-count change. Unlabelled assets contribute alongside the named ultimate pair; the full new-ultimate-pair population sums to \MarginNewPairTotal{}.}
+% VISUAL-FUNCTION: ultimate-pair entry and exit | final progressive decomposition frame | reveal market formation as the largest positive count margin
+\begin{frame}{New ultimate pairs deliver the largest positive margin}
+\evidencekicker{Exact pooled decomposition, 2024 to 2026}
+\vspace{-0.06cm}
+\begin{center}
+\rotationdecomposition{3}
+\end{center}
+\vspace{-0.12cm}
+{\large Ultimate-pair entry is the largest positive margin in the count rotation.\par}
+\decknote{Exact allocation on common calendar days. The remaining support-mass term is \PairPooledSupportMass{}; components sum using unrounded values. Ultimate-pair reallocation holds intermediary shares at their midpoint.}
 \end{frame}
 
 % EVIDENCE-STATUS: exploratory descriptive local-depth result
@@ -228,40 +229,29 @@ Currency fixed effects & No & No & No & Yes \\
 \decknote{The analysis compares five potential vehicle assets within locally supported endpoint-date-route-scope sets. Depth is prior deposited capital on the weaker atomic leg; standard errors cluster by ordered ultimate pair and date.}
 \end{frame}
 
-% EVIDENCE-STATUS: exploratory descriptive bridge-establishment result
+% EVIDENCE-STATUS: exploratory descriptive continuous-depth result
 % EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl; output/exhibits/bridge_liquidity_dominance_support.jsonl; output/exhibits/bridge_liquidity_deck_values.tex
-% VISUAL-FUNCTION: stable-bridge availability | event sequence plus three magnitudes | separate feasible-set expansion from route adoption and displacement
-\begin{frame}{A new stable bridge wins a foothold}
-\vspace{-0.08cm}
+% VISUAL-FUNCTION: stable-bridge contestability | three relative-depth thresholds plus contextual slope | separate route-set availability from penetration
+\begin{frame}{Stablecoin penetration rises with relative bridge depth}
+\evidencekicker{First 30 days after stable-bridge availability}
+\vspace{0.02cm}
 \begin{center}
 \begin{tikzpicture}[x=1cm,y=1cm]
-\node[softbox,text width=3.35cm,minimum height=0.92cm,align=center] (native) at (-4.0,1.55) {WETH route only};
-\node[softbox,text width=3.35cm,minimum height=0.92cm,align=center] (support) at (0,1.55) {Stable bridge becomes feasible};
-\node[softbox,text width=3.35cm,minimum height=0.92cm,align=center] (follow) at (4.0,1.55) {First 30 days of route flow};
-\draw[-{Stealth[length=7pt]},line width=1.7pt,draw=stable] (native)--(support);
-\draw[-{Stealth[length=7pt]},line width=1.7pt,draw=stable] (support)--(follow);
+\node[softbox,text width=3.15cm,minimum height=1.62cm,align=center] (thin) at (-4.20,1.45) {\small Below $0.1\times$ WETH depth\\[0.13cm]{\fontsize{23}{24}\selectfont\bfseries\color{muted}\BridgeDepthThinFirstShare}};
+\node[softbox,text width=3.15cm,minimum height=1.62cm,align=center,fill=stable!7] (equal) at (0,1.45) {\small At least WETH depth\\[0.13cm]{\fontsize{23}{24}\selectfont\bfseries\color{stable}\BridgeDepthEqualFirstShare}};
+\node[softbox,text width=3.15cm,minimum height=1.62cm,align=center,fill=stable!12] (double) at (4.20,1.45) {\small At least $2\times$ WETH depth\\[0.13cm]{\fontsize{23}{24}\selectfont\bfseries\color{stable}\BridgeDepthDoubleFirstShare}};
+\draw[-{Stealth[length=7pt]},line width=1.6pt,draw=stable] (thin)--(equal);
+\draw[-{Stealth[length=7pt]},line width=1.6pt,draw=stable] (equal)--(double);
 \end{tikzpicture}
 \end{center}
 \vspace{0.18cm}
-\begin{columns}[T,totalwidth=0.92\textwidth]
-\begin{column}{0.29\textwidth}\centering
-{\fontsize{23}{25}\selectfont\bfseries\color{stable}\BridgeEstablishmentCountCoef}\par\vspace{0.12cm}
-{\small route-count share\par}
-{\scriptsize SE \BridgeEstablishmentCountSE}
-\end{column}
-\begin{column}{0.29\textwidth}\centering
-{\fontsize{23}{25}\selectfont\bfseries\color{stable}\BridgeEstablishmentValueCoef}\par\vspace{0.12cm}
-{\small supported-value share\par}
-{\scriptsize SE \BridgeEstablishmentValueSE}
-\end{column}
-\begin{column}{0.29\textwidth}\centering
-{\fontsize{23}{25}\selectfont\bfseries\color{ucldark}\BridgeEstablishmentPostNativeCountShare}\par\vspace{0.12cm}
-{\small route counts retained by WETH}
-\end{column}
-\end{columns}
-\vspace{0.58cm}
-{\large Availability produces partial reallocation while the incumbent remains dominant.\par}
-\decknote{\BridgeEstablishmentEvents{} first-time events among ordered ultimate pairs previously routed only through WETH. Stable support requires positive prior-calendar deposited capital on both atomic pairs in Uniswap V2 or SushiSwap V2 and persistence over the next month. Share changes are paired against the prior 30 days; standard errors cluster by ordered ultimate pair and event date.}
+\begin{beamercolorbox}[wd=0.90\textwidth,sep=0.22cm,center]{structure}
+{\fontsize{21}{23}\selectfont\bfseries\BridgeDepthDoseFirstCoef}\par\vspace{0.05cm}
+{\small stable-route-share slope per $+10$ pp of relative depth\qquad SE \BridgeDepthDoseFirstSE}
+\end{beamercolorbox}
+\vspace{0.32cm}
+{\large\bfseries Availability opens the route set; relative depth determines penetration.\par}
+\decknote{\BridgeDepthDoseFirstRows{} first-month ordered-ultimate-pair days across \BridgeDepthDoseFirstEvents{} bridge events. Thresholds compare the best stablecoin two-atomic-trade bottleneck with WETH using prior-calendar deposited capital. The slope uses stablecoin share of joint stablecoin-plus-WETH bottleneck depth, absorbs event, event-age, and calendar-month effects, and clusters by ordered ultimate pair and date. Deposited capital is a reserve stock, not executable route cost.}
 \end{frame}
 
 % EVIDENCE-STATUS: current predictive capital-to-route result

@@ -1,11 +1,14 @@
 % EVIDENCE-MANAGED-FILE
 % VISUAL-MANAGED-FILE
 % Working-paper close. Numerical bindings are generated in the results section.
+\IfFileExists{../output/exhibits/vehicle_formation_deck_values.tex}{%
+\input{../output/exhibits/vehicle_formation_deck_values.tex}%
+}{\PackageError{dvc-deck}{Missing generated formation values}{Run scripts/tabulate/build_vehicle_formation_deck_values.py.}}
 
 % EVIDENCE-STATUS: current descriptive route decomposition
-% EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_fixed_effects.jsonl; output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex
-% VISUAL-FUNCTION: economic conclusion | three concise takeaways | close on ultimate-pair entry and activity reallocation
-\begin{frame}{New ultimate pairs made stablecoins dominant vehicles}
+% EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_fixed_effects.jsonl; output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex; output/exhibits/vehicle_formation_deck_values.tex
+% VISUAL-FUNCTION: economic conclusion | three concise takeaways | close on ultimate-pair formation and liquidity contestability
+\begin{frame}{Formation and local depth make stablecoins dominant vehicles}
 \vspace{0.18cm}
 
 \begin{columns}[T,totalwidth=0.94\textwidth]
@@ -13,8 +16,8 @@
 {\fontsize{26}{28}\selectfont\bfseries\color{uclbright}1}
 \end{column}
 \begin{column}{0.84\textwidth}
-{\large\bfseries Intermediary choice persists within continuing ultimate pairs.}\par
-{\small Same ultimate pair, date, and route scope: \MatchedMarketCountChange{} (SE \MatchedMarketCountSE{}).}
+{\large\bfseries Entry vehicle identity remains persistent in follow-up.}\par
+{\small Descriptive 120-day own-stable share: USDC \FormationUSDCEntryOwnOneTwenty{}; USDT \FormationUSDTEntryOwnOneTwenty{}.}
 \end{column}
 \end{columns}
 
@@ -24,8 +27,8 @@
 {\fontsize{26}{28}\selectfont\bfseries\color{uclbright}2}
 \end{column}
 \begin{column}{0.84\textwidth}
-{\large\bfseries Activity reallocates toward stablecoin-heavy ultimate pairs.}\par
-{\small Reallocation among continuing ultimate pairs contributes \MarginReweightTotal{} to the count rotation.}
+{\large\bfseries Local liquidity formation makes route leadership contestable.}\par
+{\small Stable route share: \BridgeDepthThinFirstShare{} below $0.1\times$ WETH depth; \BridgeDepthDoubleFirstShare{} above $2\times$.}
 \end{column}
 \end{columns}
 
@@ -36,13 +39,13 @@
 \end{column}
 \begin{column}{0.84\textwidth}
 {\large\bfseries Newly traded ultimate pairs supply the largest margin.}\par
-{\small Ultimate-pair entry contributes \MarginNewPairTotal{} to the aggregate count rotation.}
+{\small Entry: \MarginNewPairTotal{}; continuing-ultimate-pair reallocation: \MarginReweightTotal{}.}
 \end{column}
 \end{columns}
 
 \vfill
 \begin{beamercolorbox}[wd=\textwidth,sep=0.30cm,center]{structure}
-{\large\bfseries The dominant vehicle is made where ultimate pairs form and grow.}
+{\large\bfseries Dominance forms through ultimate-pair entry; local liquidity keeps it contestable.}
 \end{beamercolorbox}
 \note{The close follows the retained finance-deck pattern: compress each empirical result into its mechanism, then end on the joint economic implication.}
 \end{frame}

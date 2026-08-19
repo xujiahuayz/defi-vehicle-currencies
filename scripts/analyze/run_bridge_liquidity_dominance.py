@@ -40,6 +40,12 @@ ENDPOINT_CUTOFF = "06-30"
 CAPITAL_STATUS = "exact_state_prior_calendar"
 MIN_SUPPORTED_CANDIDATES = 2
 STABLE_ISSUER_CANDIDATES = ("DAI", "USDC", "USDT")
+BRIDGE_DEPTH_CANDIDATES = (
+    ("WETH", "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", "native"),
+    ("DAI", "0x6b175474e89094c44da98b954eedeac495271d0f", "stable"),
+    ("USDC", "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "stable"),
+    ("USDT", "0xdac17f958d2ee523a2206206994597c13d831ec7", "stable"),
+)
 BRIDGE_ESTABLISHMENT_PRE_DAYS = 30
 BRIDGE_ESTABLISHMENT_POST_DAYS = 120
 BRIDGE_ESTABLISHMENT_MIN_ACTIVE_DAYS = 3
@@ -105,13 +111,13 @@ pair_capital AS (
         strptime(CAST(day AS VARCHAR), '%Y%m%d')::DATE AS origin_date,
         least(lower(token0_address), lower(token1_address)) AS token_a,
         greatest(lower(token0_address), lower(token1_address)) AS token_b,
-        sum(capital_usd)::DOUBLE AS pair_capital_usd,
+        sum(capital_usd_lagged)::DOUBLE AS pair_capital_usd,
         count(DISTINCT pool)::DOUBLE AS pair_pool_count,
         count(DISTINCT venue)::DOUBLE AS pair_venue_count
     FROM read_parquet(?)
     WHERE quantity_kind = 'deposited_capital'
       AND capital_validation_status = ?
-      AND capital_usd > 0
+      AND capital_usd_lagged > 0
     GROUP BY 1, 2, 3
 ),
 panel0 AS (
@@ -226,14 +232,14 @@ leg_pool_day AS (
                 THEN lower(p.token1_address)
             ELSE lower(p.token0_address)
         END AS other_address,
-        sum(p.capital_usd)::DOUBLE AS capital_usd
+        sum(p.capital_usd_lagged)::DOUBLE AS capital_usd
     FROM read_parquet(?) p
     JOIN stable_candidates c
       ON lower(p.token0_address) = c.candidate_address
       OR lower(p.token1_address) = c.candidate_address
     WHERE p.quantity_kind = 'deposited_capital'
       AND p.capital_validation_status = ?
-      AND p.capital_usd > 0
+      AND p.capital_usd_lagged > 0
     GROUP BY 1, 2, 3, 4
 ),
 first_leg_support AS (
@@ -402,6 +408,66 @@ JOIN choice_daily c
  AND c.origin_date BETWEEN e.event_date - INTERVAL 30 DAY
                        AND e.event_date + INTERVAL 119 DAY
 WHERE c.native_routes + c.stable_routes > 0
+"""
+
+
+BRIDGE_ESTABLISHMENT_DEPTH_QUERY = """
+WITH pair_capital AS (
+    SELECT
+        strptime(CAST(day AS VARCHAR), '%Y%m%d')::DATE AS origin_date,
+        least(lower(token0_address), lower(token1_address)) AS token_a,
+        greatest(lower(token0_address), lower(token1_address)) AS token_b,
+        sum(capital_usd_lagged)::DOUBLE AS pair_capital_usd
+    FROM read_parquet(?)
+    WHERE quantity_kind = 'deposited_capital'
+      AND capital_validation_status = ?
+      AND capital_usd_lagged > 0
+      AND (
+          lower(token0_address) IN (
+              '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+              '0x6b175474e89094c44da98b954eedeac495271d0f',
+              '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+              '0xdac17f958d2ee523a2206206994597c13d831ec7'
+          )
+          OR lower(token1_address) IN (
+              '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+              '0x6b175474e89094c44da98b954eedeac495271d0f',
+              '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+              '0xdac17f958d2ee523a2206206994597c13d831ec7'
+          )
+      )
+    GROUP BY 1, 2, 3
+),
+candidate_depth AS (
+    SELECT
+        r.event_row_id,
+        r.candidate_symbol,
+        r.candidate_type,
+        least(
+            coalesce(l1.pair_capital_usd, 0),
+            coalesce(l2.pair_capital_usd, 0)
+        )::DOUBLE AS bridge_min_capital_usd
+    FROM bridge_depth_requests r
+    LEFT JOIN pair_capital l1
+      ON l1.origin_date = CAST(r.origin_date AS DATE)
+     AND l1.token_a = r.leg1_token_a
+     AND l1.token_b = r.leg1_token_b
+    LEFT JOIN pair_capital l2
+      ON l2.origin_date = CAST(r.origin_date AS DATE)
+     AND l2.token_a = r.leg2_token_a
+     AND l2.token_b = r.leg2_token_b
+)
+SELECT
+    event_row_id,
+    max(CASE WHEN candidate_type = 'stable'
+             THEN bridge_min_capital_usd ELSE 0 END)::DOUBLE
+        AS stable_bridge_min_capital_usd,
+    max(CASE WHEN candidate_symbol = 'WETH'
+             THEN bridge_min_capital_usd ELSE 0 END)::DOUBLE
+        AS native_bridge_min_capital_usd
+FROM candidate_depth
+GROUP BY 1
+ORDER BY 1
 """
 
 
@@ -649,6 +715,64 @@ def load_bridge_liquidity_panel(
     return frame.reset_index(drop=True)
 
 
+def _attach_bridge_establishment_depth(
+    frame: pd.DataFrame,
+    *,
+    pool_capital_path: Path,
+    capital_status: str,
+) -> pd.DataFrame:
+    """Attach candidate bottleneck depth only for observed event-day keys."""
+
+    event_rows = frame.reset_index(drop=True).copy()
+    event_rows["event_row_id"] = np.arange(len(event_rows), dtype=np.int64)
+    candidates = pd.DataFrame(
+        BRIDGE_DEPTH_CANDIDATES,
+        columns=["candidate_symbol", "candidate_address", "candidate_type"],
+    )
+    requests = event_rows[
+        ["event_row_id", "origin_date", "src", "tgt"]
+    ].merge(candidates, how="cross")
+    for leg, endpoint in (("leg1", "src"), ("leg2", "tgt")):
+        candidate = requests["candidate_address"].astype(str).str.lower()
+        other = requests[endpoint].astype(str).str.lower()
+        requests[f"{leg}_token_a"] = np.where(candidate.le(other), candidate, other)
+        requests[f"{leg}_token_b"] = np.where(candidate.le(other), other, candidate)
+    requests = requests[
+        [
+            "event_row_id",
+            "origin_date",
+            "candidate_symbol",
+            "candidate_type",
+            "leg1_token_a",
+            "leg1_token_b",
+            "leg2_token_a",
+            "leg2_token_b",
+        ]
+    ]
+    connection = duckdb.connect()
+    try:
+        connection.execute("PRAGMA threads=4")
+        connection.execute("PRAGMA preserve_insertion_order=false")
+        connection.register("bridge_depth_requests", requests)
+        depth = connection.execute(
+            BRIDGE_ESTABLISHMENT_DEPTH_QUERY,
+            [str(pool_capital_path), capital_status],
+        ).fetchdf()
+    finally:
+        connection.close()
+    if len(depth) != len(event_rows) or depth["event_row_id"].nunique() != len(
+        event_rows
+    ):
+        raise ValueError("bridge establishment depth keys are incomplete")
+    merged = event_rows.merge(
+        depth,
+        on="event_row_id",
+        how="left",
+        validate="one_to_one",
+    ).drop(columns="event_row_id")
+    return merged
+
+
 def load_bridge_establishment_event_panel(
     *,
     choices_path: Path = CHOICES_INPUT,
@@ -674,7 +798,8 @@ def load_bridge_establishment_event_panel(
         raise ValueError("bridge establishment active-day minimum must be positive")
     connection = duckdb.connect()
     try:
-        connection.execute("PRAGMA threads=8")
+        connection.execute("PRAGMA threads=4")
+        connection.execute("PRAGMA preserve_insertion_order=false")
         frame = connection.execute(
             BRIDGE_ESTABLISHMENT_QUERY,
             [
@@ -703,6 +828,11 @@ def load_bridge_establishment_event_panel(
         + frame["integration_scope"].astype(str)
     )
     frame["ordered_pair"] = frame["src"] + "|" + frame["tgt"]
+    frame = _attach_bridge_establishment_depth(
+        frame,
+        pool_capital_path=pool_capital_path,
+        capital_status=capital_status,
+    )
     frame["post_0_29"] = frame["event_time"].between(0, 29).astype(float)
     frame["post_30_119"] = frame["event_time"].between(30, 119).astype(float)
     frame["period"] = pd.cut(
@@ -714,6 +844,8 @@ def load_bridge_establishment_event_panel(
         "native_routes",
         "stable_routes",
         "total_routes",
+        "stable_bridge_min_capital_usd",
+        "native_bridge_min_capital_usd",
         "stable_share",
         "log_native_routes",
         "log_stable_routes",
@@ -722,6 +854,25 @@ def load_bridge_establishment_event_panel(
     frame = frame.replace([np.inf, -np.inf], np.nan).dropna(subset=numeric)
     if frame.empty:
         raise ValueError("bridge establishment event panel lost all validated rows")
+    frame["stable_bridge_depth_share"] = np.divide(
+        frame["stable_bridge_min_capital_usd"],
+        frame["stable_bridge_min_capital_usd"]
+        + frame["native_bridge_min_capital_usd"],
+        out=np.full(len(frame), np.nan, dtype=float),
+        where=(
+            frame["stable_bridge_min_capital_usd"]
+            + frame["native_bridge_min_capital_usd"]
+        ).gt(0),
+    )
+    frame["stable_to_native_depth_ratio"] = np.divide(
+        frame["stable_bridge_min_capital_usd"],
+        frame["native_bridge_min_capital_usd"],
+        out=np.full(len(frame), np.nan, dtype=float),
+        where=frame["native_bridge_min_capital_usd"].gt(0),
+    )
+    frame["relative_log_bridge_depth"] = np.log1p(
+        frame["stable_bridge_min_capital_usd"]
+    ) - np.log1p(frame["native_bridge_min_capital_usd"])
     return frame.reset_index(drop=True)
 
 
@@ -1009,6 +1160,238 @@ def bridge_establishment_event_regressions(
                     ),
                 }
             )
+    return pd.DataFrame(rows)
+
+
+def bridge_establishment_depth_summaries(panel: pd.DataFrame) -> pd.DataFrame:
+    """Describe route allocation across the stable-to-WETH depth spectrum."""
+
+    data = panel[
+        panel["period"].isin(("post_0_29", "post_30_119"))
+        & panel["stable_bridge_min_capital_usd"].gt(0)
+        & panel["native_bridge_min_capital_usd"].gt(0)
+    ].copy()
+    data["depth_bin"] = pd.cut(
+        data["stable_to_native_depth_ratio"],
+        bins=[0.0, 0.1, 0.5, 1.0, 2.0, np.inf],
+        labels=["below_0.1x", "0.1x_to_0.5x", "0.5x_to_1x", "1x_to_2x", "at_least_2x"],
+        right=False,
+    )
+    rows: list[dict[str, object]] = []
+    for (period, depth_bin), group in data.groupby(
+        ["period", "depth_bin"], observed=True, sort=False
+    ):
+        total_routes = float(group["total_routes"].sum())
+        total_value = float(group["total_value_usd"].sum())
+        rows.append(
+            {
+                "claim_status": "provisional_exploratory",
+                "record_type": "bridge_establishment_depth_summary",
+                "period": str(period),
+                "depth_bin": str(depth_bin),
+                "active_pair_days": int(len(group)),
+                "events": int(group["event_id"].nunique()),
+                "ordered_pairs": int(group["ordered_pair"].nunique()),
+                "stable_route_share": float(group["stable_routes"].sum() / total_routes),
+                "stable_value_share": (
+                    float(group["stable_value_usd"].sum() / total_value)
+                    if total_value > 0
+                    else None
+                ),
+                "median_stable_to_native_depth_ratio": float(
+                    group["stable_to_native_depth_ratio"].median()
+                ),
+                "quantity": (
+                    "best stablecoin two-leg bottleneck divided by the WETH "
+                    "two-leg bottleneck, both from exact prior-calendar "
+                    "deposited capital"
+                ),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def bridge_establishment_depth_regressions(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 100,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Relate route allocation to continuous stable-versus-WETH bridge depth.
+
+    The within-event slope asks whether stable route share rises as the best
+    stable bottleneck gains deposited capital relative to WETH.  Threshold
+    means report route allocation where stable deposited capital matches or
+    exceeds the incumbent.  These estimates isolate retention beyond deposited
+    capital, not behavior beyond all-in executable route cost.
+    """
+
+    rows: list[dict[str, object]] = []
+    for period in ("post_0_29", "post_30_119"):
+        data = panel[
+            panel["period"].eq(period)
+            & panel["stable_bridge_min_capital_usd"].gt(0)
+            & panel["native_bridge_min_capital_usd"].gt(0)
+        ].copy()
+        route_data = data.replace([np.inf, -np.inf], np.nan).dropna(
+            subset=[
+                "stable_share",
+                "stable_bridge_depth_share",
+                "total_routes",
+                "event_time",
+                "event_id",
+                "ordered_pair",
+                "origin_date",
+            ]
+        )
+        route_data["event_week"] = np.floor(
+            route_data["event_time"].astype(float) / 7.0
+        ).astype(int)
+        route_data["calendar_month"] = (
+            pd.to_datetime(route_data["origin_date"], errors="raise")
+            .dt.to_period("M")
+            .astype(str)
+        )
+        event_week_controls = pd.get_dummies(
+            route_data["event_week"],
+            prefix="event_week",
+            drop_first=True,
+            dtype=float,
+        )
+        calendar_month_controls = pd.get_dummies(
+            route_data["calendar_month"],
+            prefix="calendar_month",
+            drop_first=True,
+            dtype=float,
+        )
+        within_variables = pd.concat(
+            [
+                route_data[["stable_share", "stable_bridge_depth_share"]],
+                event_week_controls,
+                calendar_month_controls,
+            ],
+            axis=1,
+        )
+        residual = absorb_fixed_effects(
+            within_variables,
+            route_data["event_id"],
+            weights=route_data["total_routes"],
+        )
+        regressors = ["stable_bridge_depth_share"]
+        design = residual[regressors].to_numpy(dtype=float)
+        design_rank = int(np.linalg.matrix_rank(design))
+        controls = [
+            *event_week_controls.columns,
+            *calendar_month_controls.columns,
+        ]
+        for control in controls:
+            candidate_design = np.column_stack(
+                [design, residual[control].to_numpy(dtype=float)]
+            )
+            candidate_rank = int(np.linalg.matrix_rank(candidate_design))
+            if candidate_rank > design_rank:
+                regressors.append(control)
+                design = candidate_design
+                design_rank = candidate_rank
+        fit = ols_clustered(
+            residual["stable_share"],
+            residual[regressors],
+            route_data["ordered_pair"],
+            add_constant=False,
+            absorbed_groups=(route_data["event_id"],),
+            additional_clusters=(route_data["origin_date"],),
+            weights=route_data["total_routes"],
+            min_observations=min_observations,
+            min_clusters=min_clusters,
+        )
+        rows.append(
+            {
+                "claim_status": "provisional_exploratory",
+                "record_type": "bridge_establishment_depth_regression",
+                "model_id": "stable_route_share_on_relative_depth",
+                "period": period,
+                "outcome": "stable_share",
+                "regressor": "stable_bridge_depth_share",
+                "coefficient": float(fit.beta[0]),
+                "standard_error": float(fit.standard_errors[0]),
+                "t_statistic": float(fit.t_statistics[0]),
+                "p_value": float(fit.p_values[0]),
+                "coefficient_pp_per_10pp_depth_share": float(10.0 * fit.beta[0]),
+                "standard_error_pp_per_10pp_depth_share": float(
+                    10.0 * fit.standard_errors[0]
+                ),
+                "n_observations": int(fit.n_observations),
+                "events": int(route_data["event_id"].nunique()),
+                "ordered_pair_clusters": int(fit.cluster_counts[0]),
+                "date_clusters": int(fit.cluster_counts[1]),
+                "fixed_effects": "bridge_event+calendar_month",
+                "event_age_controls": "seven_day_bins",
+                "covariance": "two_way_ordered_pair_date_cr1",
+                "weight": "route_count",
+                "interpretation": (
+                    "within-event association with prior-calendar deposited-capital "
+                    "depth; not executable-cost or behavioral identification"
+                ),
+            }
+        )
+
+        for threshold, threshold_label in ((1.0, "at_least_native"), (2.0, "at_least_2x_native")):
+            threshold_data = route_data[
+                route_data["stable_to_native_depth_ratio"].ge(threshold)
+            ].copy()
+            for outcome, weight_column, suffix in (
+                ("stable_share", "total_routes", "route_share"),
+                ("stable_value_share", "total_value_usd", "value_share"),
+            ):
+                model_data = threshold_data.replace([np.inf, -np.inf], np.nan).dropna(
+                    subset=[outcome, weight_column, "ordered_pair", "origin_date"]
+                )
+                model_data = model_data[model_data[weight_column].gt(0)].copy()
+                if (
+                    len(model_data) < min_observations
+                    or model_data["ordered_pair"].nunique() < min_clusters
+                    or model_data["origin_date"].nunique() < min_clusters
+                ):
+                    continue
+                model_data["mean_share"] = 1.0
+                mean_fit = ols_clustered(
+                    model_data[outcome],
+                    model_data[["mean_share"]],
+                    model_data["ordered_pair"],
+                    add_constant=False,
+                    additional_clusters=(model_data["origin_date"],),
+                    weights=model_data[weight_column],
+                    min_observations=min_observations,
+                    min_clusters=min_clusters,
+                )
+                rows.append(
+                    {
+                        "claim_status": "provisional_exploratory",
+                        "record_type": "bridge_establishment_depth_regression",
+                        "model_id": f"stable_{suffix}_when_depth_{threshold_label}",
+                        "period": period,
+                        "outcome": outcome,
+                        "regressor": "mean_share",
+                        "coefficient": float(mean_fit.beta[0]),
+                        "standard_error": float(mean_fit.standard_errors[0]),
+                        "t_statistic": float(mean_fit.t_statistics[0]),
+                        "p_value": float(mean_fit.p_values[0]),
+                        "native_retained_share": float(1.0 - mean_fit.beta[0]),
+                        "n_observations": int(mean_fit.n_observations),
+                        "events": int(model_data["event_id"].nunique()),
+                        "ordered_pair_clusters": int(mean_fit.cluster_counts[0]),
+                        "date_clusters": int(mean_fit.cluster_counts[1]),
+                        "fixed_effects": "none",
+                        "covariance": "two_way_ordered_pair_date_cr1",
+                        "weight": weight_column,
+                        "depth_threshold": threshold,
+                        "interpretation": (
+                            "incumbent retention where stable prior-calendar "
+                            "deposited-capital depth meets the stated WETH threshold; "
+                            "not executable-cost or behavioral identification"
+                        ),
+                    }
+                )
     return pd.DataFrame(rows)
 
 
@@ -1944,6 +2327,14 @@ def run(
     output_path: Path = RESULT_OUTPUT,
     support_path: Path = SUPPORT_OUTPUT,
 ) -> int:
+    # The event query scans the full choices and capital panels.  Run it before
+    # retaining either candidate-level DataFrame in Python; at full input scale
+    # those frames otherwise consume enough resident memory to prevent DuckDB
+    # from spilling the event-depth join.
+    establishment_panel = load_bridge_establishment_event_panel(
+        choices_path=choices_path,
+        pool_capital_path=pool_capital_path,
+    )
     panel = load_bridge_liquidity_panel(
         choices_path=choices_path,
         pool_capital_path=pool_capital_path,
@@ -1956,10 +2347,6 @@ def run(
         ),
         pair_support_path=pair_support_path,
     )
-    establishment_panel = load_bridge_establishment_event_panel(
-        choices_path=choices_path,
-        pool_capital_path=pool_capital_path,
-    )
     result = pd.concat(
         [
             bridge_liquidity_top_rank_summaries(panel),
@@ -1971,6 +2358,8 @@ def run(
             bridge_liquidity_stable_issuer_regressions(panel),
             bridge_establishment_period_summaries(establishment_panel),
             bridge_establishment_event_regressions(establishment_panel),
+            bridge_establishment_depth_summaries(establishment_panel),
+            bridge_establishment_depth_regressions(establishment_panel),
         ],
         ignore_index=True,
     )

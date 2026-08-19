@@ -7,6 +7,8 @@ from pathlib import Path
 import pandas as pd
 
 from scripts.analyze.run_bridge_liquidity_dominance import (
+    bridge_establishment_depth_regressions,
+    bridge_establishment_depth_summaries,
     bridge_establishment_period_summaries,
     bridge_liquidity_bottleneck_regressions,
     bridge_liquidity_depth_regressions,
@@ -75,9 +77,11 @@ def test_bridge_establishment_separates_support_from_route_adoption() -> None:
             )
     pool_rows = []
     for date in pd.date_range("2024-02-01", periods=24, freq="D"):
-        for token0, token1, pool in [
-            ("src", USDC, "src-usdc"),
-            (USDC, "tgt", "usdc-tgt"),
+        for token0, token1, pool, current_capital, lagged_capital in [
+            ("src", USDC, "src-usdc", 1_000.0, 100.0),
+            (USDC, "tgt", "usdc-tgt", 1_000.0, 100.0),
+            ("src", WETH, "src-weth", 50.0, 200.0),
+            (WETH, "tgt", "weth-tgt", 50.0, 200.0),
         ]:
             pool_rows.append(
                 {
@@ -86,7 +90,8 @@ def test_bridge_establishment_separates_support_from_route_adoption() -> None:
                     "token1_address": token1,
                     "pool": pool,
                     "venue": "uniswap_v2",
-                    "capital_usd": 100.0,
+                    "capital_usd": current_capital,
+                    "capital_usd_lagged": lagged_capital,
                     "quantity_kind": "deposited_capital",
                     "capital_validation_status": "exact_state_prior_calendar",
                 }
@@ -107,6 +112,9 @@ def test_bridge_establishment_separates_support_from_route_adoption() -> None:
     assert event["support_days_30"].iloc[0] == 24
     event_day = event[event["origin_date"].eq(pd.Timestamp("2024-02-01"))].iloc[0]
     assert event_day["stable_share"] == 0
+    assert event_day["stable_bridge_min_capital_usd"] == 100.0
+    assert event_day["native_bridge_min_capital_usd"] == 200.0
+    assert event_day["stable_to_native_depth_ratio"] == 0.5
     adoption_day = event[event["origin_date"].eq(pd.Timestamp("2024-02-10"))].iloc[0]
     assert adoption_day["stable_share"] == 0.2
     summary = bridge_establishment_period_summaries(event)
@@ -114,6 +122,71 @@ def test_bridge_establishment_separates_support_from_route_adoption() -> None:
     post = summary[summary["period"].eq("post_0_29")].iloc[0]
     assert pre["stable_route_share"] == 0
     assert post["stable_route_share"] > 0
+
+
+def test_bridge_establishment_continuous_depth_tracks_route_allocation() -> None:
+    rows = []
+    base_ratios = [0.05, 0.25, 0.75, 1.5, 3.0] * 4
+    for period_index, period in enumerate(("post_0_29", "post_30_119")):
+        for event_index in range(35):
+            event_effect = 0.002 * (event_index % 5)
+            for observation_index, base_ratio in enumerate(base_ratios):
+                ratio = base_ratio * (1.0 + 0.05 * (event_index % 7))
+                native_depth = 100.0
+                stable_depth = ratio * native_depth
+                depth_share = stable_depth / (stable_depth + native_depth)
+                stable_share = 0.08 + 0.60 * depth_share + event_effect
+                total_routes = 100.0
+                total_value = 1_000.0
+                rows.append(
+                    {
+                        "period": period,
+                        "event_id": f"{period_index}-{event_index}",
+                        "ordered_pair": f"src{event_index}|tgt{event_index}",
+                        "origin_date": pd.Timestamp("2024-01-01")
+                        + pd.Timedelta(days=period_index * 300 + observation_index),
+                        "event_time": observation_index + 30 * period_index,
+                        "stable_bridge_min_capital_usd": stable_depth,
+                        "native_bridge_min_capital_usd": native_depth,
+                        "stable_bridge_depth_share": depth_share,
+                        "stable_to_native_depth_ratio": ratio,
+                        "stable_share": stable_share,
+                        "stable_value_share": stable_share,
+                        "stable_routes": stable_share * total_routes,
+                        "total_routes": total_routes,
+                        "stable_value_usd": stable_share * total_value,
+                        "total_value_usd": total_value,
+                    }
+                )
+    panel = pd.DataFrame(rows)
+    summaries = bridge_establishment_depth_summaries(panel)
+    low = summaries[
+        summaries["period"].eq("post_0_29")
+        & summaries["depth_bin"].eq("below_0.1x")
+    ].iloc[0]
+    high = summaries[
+        summaries["period"].eq("post_0_29")
+        & summaries["depth_bin"].eq("at_least_2x")
+    ].iloc[0]
+    assert high["stable_route_share"] > low["stable_route_share"]
+
+    regressions = bridge_establishment_depth_regressions(
+        panel,
+        min_observations=30,
+        min_clusters=3,
+    )
+    slope = regressions[
+        regressions["period"].eq("post_0_29")
+        & regressions["model_id"].eq("stable_route_share_on_relative_depth")
+    ].iloc[0]
+    assert slope["coefficient"] > 0
+    threshold = regressions[
+        regressions["period"].eq("post_0_29")
+        & regressions["model_id"].eq(
+            "stable_route_share_when_depth_at_least_2x_native"
+        )
+    ].iloc[0]
+    assert 0 < threshold["native_retained_share"] < 1
 
 
 def test_bridge_liquidity_panel_uses_prior_two_leg_capital() -> None:
@@ -147,7 +220,8 @@ def test_bridge_liquidity_panel_uses_prior_two_leg_capital() -> None:
                 "token1_address": WETH,
                 "pool": "src-weth",
                 "venue": "uniswap_v2",
-                "capital_usd": 100.0,
+                "capital_usd": 1_000.0,
+                "capital_usd_lagged": 100.0,
                 "quantity_kind": "deposited_capital",
                 "capital_validation_status": "exact_state_prior_calendar",
             },
@@ -157,7 +231,8 @@ def test_bridge_liquidity_panel_uses_prior_two_leg_capital() -> None:
                 "token1_address": "tgt",
                 "pool": "weth-tgt",
                 "venue": "uniswap_v2",
-                "capital_usd": 25.0,
+                "capital_usd": 1_000.0,
+                "capital_usd_lagged": 25.0,
                 "quantity_kind": "deposited_capital",
                 "capital_validation_status": "exact_state_prior_calendar",
             },
@@ -167,7 +242,8 @@ def test_bridge_liquidity_panel_uses_prior_two_leg_capital() -> None:
                 "token1_address": USDC,
                 "pool": "src-usdc",
                 "venue": "uniswap_v2",
-                "capital_usd": 9.0,
+                "capital_usd": 1_000.0,
+                "capital_usd_lagged": 9.0,
                 "quantity_kind": "deposited_capital",
                 "capital_validation_status": "exact_state_prior_calendar",
             },
@@ -177,7 +253,8 @@ def test_bridge_liquidity_panel_uses_prior_two_leg_capital() -> None:
                 "token1_address": "tgt",
                 "pool": "usdc-tgt",
                 "venue": "uniswap_v2",
-                "capital_usd": 16.0,
+                "capital_usd": 1_000.0,
+                "capital_usd_lagged": 16.0,
                 "quantity_kind": "deposited_capital",
                 "capital_validation_status": "exact_state_prior_calendar",
             },
@@ -244,7 +321,8 @@ def test_bridge_liquidity_panel_can_keep_zero_bridge_candidates() -> None:
                 "token1_address": WETH,
                 "pool": "src-weth",
                 "venue": "uniswap_v2",
-                "capital_usd": 100.0,
+                "capital_usd": 1_000.0,
+                "capital_usd_lagged": 100.0,
                 "quantity_kind": "deposited_capital",
                 "capital_validation_status": "exact_state_prior_calendar",
             },
@@ -254,7 +332,8 @@ def test_bridge_liquidity_panel_can_keep_zero_bridge_candidates() -> None:
                 "token1_address": "tgt",
                 "pool": "weth-tgt",
                 "venue": "uniswap_v2",
-                "capital_usd": 25.0,
+                "capital_usd": 1_000.0,
+                "capital_usd_lagged": 25.0,
                 "quantity_kind": "deposited_capital",
                 "capital_validation_status": "exact_state_prior_calendar",
             },
@@ -264,7 +343,8 @@ def test_bridge_liquidity_panel_can_keep_zero_bridge_candidates() -> None:
                 "token1_address": USDC,
                 "pool": "src-usdc",
                 "venue": "uniswap_v2",
-                "capital_usd": 9.0,
+                "capital_usd": 1_000.0,
+                "capital_usd_lagged": 9.0,
                 "quantity_kind": "deposited_capital",
                 "capital_validation_status": "exact_state_prior_calendar",
             },
@@ -274,7 +354,8 @@ def test_bridge_liquidity_panel_can_keep_zero_bridge_candidates() -> None:
                 "token1_address": "tgt",
                 "pool": "usdc-tgt",
                 "venue": "uniswap_v2",
-                "capital_usd": 16.0,
+                "capital_usd": 1_000.0,
+                "capital_usd_lagged": 16.0,
                 "quantity_kind": "deposited_capital",
                 "capital_validation_status": "exact_state_prior_calendar",
             },
@@ -1030,6 +1111,84 @@ def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
                     "events": 865 if regressor == "post_0_29" else 818,
                 }
             )
+    for period, stable_share, active_pair_days in [
+        ("post_0_29", 0.024, 7752),
+        ("post_30_119", 0.024, 11153),
+    ]:
+        event_rows.append(
+            {
+                "claim_status": "provisional_exploratory",
+                "record_type": "bridge_establishment_depth_summary",
+                "period": period,
+                "depth_bin": "below_0.1x",
+                "stable_route_share": stable_share,
+                "active_pair_days": active_pair_days,
+            }
+        )
+    depth_models = [
+        (
+            "stable_route_share_on_relative_depth",
+            "post_0_29",
+            0.64,
+            0.07,
+            0.001,
+            11327,
+        ),
+        (
+            "stable_route_share_on_relative_depth",
+            "post_30_119",
+            0.75,
+            0.05,
+            0.001,
+            17027,
+        ),
+        (
+            "stable_route_share_when_depth_at_least_native",
+            "post_0_29",
+            0.53,
+            0.05,
+            0.001,
+            671,
+        ),
+        (
+            "stable_route_share_when_depth_at_least_native",
+            "post_30_119",
+            0.61,
+            0.13,
+            0.001,
+            1211,
+        ),
+        (
+            "stable_route_share_when_depth_at_least_2x_native",
+            "post_0_29",
+            0.70,
+            0.02,
+            0.001,
+            383,
+        ),
+        (
+            "stable_route_share_when_depth_at_least_2x_native",
+            "post_30_119",
+            0.71,
+            0.09,
+            0.001,
+            856,
+        ),
+    ]
+    for model_id, period, coefficient, standard_error, p_value, observations in depth_models:
+        event_rows.append(
+            {
+                "claim_status": "provisional_exploratory",
+                "record_type": "bridge_establishment_depth_regression",
+                "model_id": model_id,
+                "period": period,
+                "coefficient": coefficient,
+                "standard_error": standard_error,
+                "p_value": p_value,
+                "n_observations": observations,
+                "events": 855 if period == "post_0_29" else 737,
+            }
+        )
     estimates = pd.concat([estimates, pd.DataFrame(event_rows)], ignore_index=True)
     rendered = render_bridge_liquidity_deck_values(estimates)
     table = render_bridge_establishment_table(estimates)
@@ -1043,5 +1202,10 @@ def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
     assert "\\BridgeLiquidityLeaveOneMinCoef" in rendered
     assert "\\BridgeLiquidityStableIssuerUsdtTwentySixCoef" in rendered
     assert "\\BridgeEstablishmentCountCoef" in rendered
+    assert "\\BridgeDepthDoseFirstCoef" in rendered
+    assert "\\BridgeDepthEqualFirstShare" in rendered
+    assert "\\newcommand{\\BridgeDepthDoseFirstRows}{11{,}327}" in rendered
+    assert "\\newcommand{\\BridgeDepthDoseFirstEvents}{855}" in rendered
     assert "Stable route share [pp]" in table
     assert "Bridge events" in table
+    assert "Stable-bridge competitiveness relative to WETH" in table

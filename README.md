@@ -31,7 +31,7 @@ question and literature                    done
   → cleaned and analysis-ready data        ready for the two active claim families
   → registered baseline analysis           done; findings check green
   → repository cleanup and host sync        done; one checkout per host
-  → presentable paper/deck trunk            67/45 pages; blocking checks green
+  → presentable paper/deck trunk            69/45 pages; blocking checks green
         status labels                      provisional / registered / confirmed
         review snapshots                   versioned and shareable while work continues
 
@@ -62,7 +62,7 @@ large-entrant routing, low-activity ultimate-pair turn-on with a direct-route by
 interaction, rolling native-only-to-stable turn-on hazards, same-day and
 prior-30-day candidate-network reach inside observed mixed-risk-set rival checks,
 endpoint claim-class formation splits, endpoint price-history formation screens,
-sticky incumbent vehicle regimes, USDC/USDT concentration at stable-entry,
+persistent established vehicle regimes, USDC/USDT concentration at stable-entry,
 controlled stable-candidate identity persistence, USDC/SVB
 stress-window identity persistence and LP capital non-chase,
 extra-hop gas economics and route-level fixed-toll feasibility, LP capital-use
@@ -72,7 +72,8 @@ pool-capital concentration/fragmentation, same-pool capital-chase screens,
 bounded V3 fee/rent-incidence and TVL-normalized fee-yield screens, V3 mint/burn action-count, provider-day, activity-controlled provider-day responses, V3-versus-V4 same-candidate-date LP-action response contrasts, V4 modify-liquidity action composition, activity-controlled response, flash-accounting netting proxies, screened candidate-side V4 LP flow, V4 flash-to-wide-range LP reallocation,
 stable-shortfall x V4 flash-accounting LP repositioning,
 local bridge-liquidity dominance, entry-date local bridge-depth choice screens,
-first stable-bridge establishment and partial route reallocation,
+first stable-bridge establishment, continuous stable-versus-WETH bottleneck depth,
+and depth-conditioned route reallocation,
 stable-specific dynamic local bridge-depth feedback, and V2 capital predictability. A
 result becomes headline evidence only if it is economically material,
 distinguishes at least one serious rival story, fits the literature contribution,
@@ -155,7 +156,7 @@ slide titles, or result framing.
 | `scripts/` | Executable entry points; `fetch/`, `process/`, `analyze/`, `plot/`, `tabulate/`, `verify/`, and `utils/` are mapped in [`scripts/README.md`](scripts/README.md). |
 | `src/` | Reusable Python package; `src/ddvc/fetch/` owns acquisition logic, `src/ddvc/reconstruct/` route reconstruction, and `src/ddvc/analysis/` estimators. See [`src/README.md`](src/README.md). |
 | `data/` | `raw/` retained source evidence, `unified/` reconstructed routes, `processed/` analysis-ready panels, and `interim/` disposable checkpoints. See [`data/README.md`](data/README.md). |
-| `output/` | `exhibits/` machine-readable results, `tables/` and `figures/` publication renderings, and `live/` interactive renderings. See [`output/README.md`](output/README.md). |
+| `output/` | `exhibits/` machine-readable results and `tables/` and `figures/` publication renderings. See [`output/README.md`](output/README.md). |
 | `paper/` | `main.tex`, generated `main.pdf`, and authored `sections/`. See [`paper/README.md`](paper/README.md). |
 | `deck/` | `main.tex`, generated `main.pdf`, authored `sections/`, presentation-only `assets/`, and `density-ledger.json`. See [`deck/README.md`](deck/README.md). |
 | `docs/` | Current `findings/`, `research/`, `specifications/`, and `acquisition/` detail. See [`docs/README.md`](docs/README.md). |

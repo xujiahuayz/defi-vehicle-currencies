@@ -10,6 +10,13 @@ this README only owns deck folder structure and build handoff.
 
 Build from this directory with `latexmk -pdf -interaction=nonstopmode main.tex`. Review the rendered pages visually and check the log for overflow before committing `main.pdf`.
 
+For the live transition into the vehicle-rotation evidence, the generated
+[11-second vehicle-currency timelapse](../output/figures/vehicle_dominance_timelapse.mp4)
+shows the monthly WETH, USDC, USDT, and DAI route-share contest and closes on
+the ordered-ultimate-pair decomposition. Its
+[static poster](../output/figures/vehicle_dominance_timelapse_poster.pdf) is the
+PDF-safe fallback. The links live here instead of occupying slide space.
+
 For the 30-minute research talk, the core deck is capped at 24 static frames.
 Core pages may carry at most 70 visible words, including chart and table labels;
 the 55-word budget remains the default. Appendix pages may retain denser

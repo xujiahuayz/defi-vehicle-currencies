@@ -98,7 +98,7 @@ Pooled & 4{,}218 & $0$ & $1.15\times10^{-14}$ & $9.98\times10^{-4}$ & 100.0\% \\
 \exhibitnote{Absolute quote error in percent of realised output. The sample contains 4,218 realised Uniswap v4 swaps on three dates across 13 pools and nine atomic pairs, at static fee tiers 0, 7, 8, 100, 500, 10,000 and 20,000. Each quote uses liquidity events ordered strictly before the swap and the price state left by the preceding swap in the same pool.}
 \end{table}
 
-Every direction and tick-crossing group reproduces realised output within 0.001\% at the worst observed swap.
+Every direction and tick-crossing row of Table~\ref{tab:app:cl} reproduces realised output within 0.001\% in the Maximum column.
 % output/exhibits/v4_quoter_validation.jsonl, maximum absolute error 0.000998 percent over 4,218 swaps
 
 \subsection{StableSwap pools}
@@ -251,7 +251,7 @@ Day & Held-out trades & Backward & Flat & Opening & Pools priced / excluded \\
 \exhibitnote{Median absolute quote error in percent of realised output, on trades no fit ever saw. \emph{Backward} reconstructs per-swap balances by rolling the day's event sequence back from the closing snapshot, \emph{Flat} keeps the snapshot balances constant across the day, and \emph{Opening} treats the snapshot as the day's opening state and rolls forward. The sample contains twelve days from 2021-04 to 2026-02.}
 \end{table}
 
-Across the twelve validation days, backward reconstruction returns a median error of 0.0000\% and identifies 256 of 473 testable pool-days as weighted pools. The other pool-days carry a median 91.8\% of tested swap volume and follow different Balancer pricing rules. The exercise therefore validates the model for identified weighted pools, not for Balancer as a whole.
+Across the twelve date rows of Table~\ref{tab:app:weighted}, the Backward column returns a median error of 0.0000\% and the Pools priced / excluded column identifies 256 of 473 testable pool-days as weighted pools. The other pool-days carry a median 91.8\% of tested swap volume and follow different Balancer pricing rules. The exercise therefore validates the model for identified weighted pools, not for Balancer as a whole.
 % output/exhibits/weighted_quoter_validation.jsonl, 12 days, 256 priced and 217 excluded pool-days
 
 \section{Reconstructing pool balances before each trade}
@@ -331,7 +331,7 @@ Pooled & 932{,}270 & 0.34\% & 3.29\% & 14.86\% & 78.33\% & 100.00\% \\
 \exhibitnote{Trade size as a percentage of the input-side reserve of the pool traversed, over the constant-product swaps the quoters were validated against. The sample contains eight dates from 2020-05-05 through 2025-09-23.}
 \end{table}
 
-Five per cent of input reserves sits between the 90th percentile of 3.29\% and the 99th of 14.86\% of the pooled constant-product distribution, and it lies in the same interval on seven of the eight days taken separately. Figure~\ref{fig:app:support} shows the daily distributions. This calculation is a depth diagnostic. The empirical rule remains a 5\% own-price-impact cutoff computed separately under each pool family's pricing function.
+In the Pooled row of Table~\ref{tab:app:support}, five per cent of input reserves sits between the 90th percentile of 3.29\% and the 99th of 14.86\%; the same cutoff lies between those columns on seven of the eight date rows. Figure~\ref{fig:app:support} shows the daily distributions. This calculation is a depth diagnostic. The empirical rule remains a 5\% own-price-impact cutoff computed separately under each pool family's pricing function.
 % output/exhibits/quoter_support_bounds.jsonl, pooled over 932,270 validated swaps on eight sampled days
 
 \begin{figure}[tbp]
@@ -423,7 +423,7 @@ Year & \multicolumn{2}{r}{Native leg} & \multicolumn{2}{r}{Stable leg} & Other v
 \exhibitnote{A pool serves the \emph{native} leg when it contains ETH or a staking derivative, the \emph{stable} leg when every token is stable, including baskets and interest-bearing wrappers, and the \emph{other volatile} leg otherwise. Stablecoin base-pool claims are classified with the underlying stable assets. The sample contains 28 measured Curve pool-days from 11 February 2020 through 28 April 2026.}
 \end{table}
 
-The exclusions are concentrated in routes involving the native asset. The excluded share of native-leg volume exceeds the stable-leg share by at least 33 percentage points in every sample year and by 54 points in 2023. Tricrypto pools pairing WBTC and WETH with a stablecoin account for \$818m, or 44.6\%, of the \$1.83bn excluded, including seven of the twelve largest excluded pool-days. These pools use CryptoSwap, so the missing coverage is concentrated where Curve supplies depth between ETH and stablecoins.
+The exclusions are concentrated in routes involving the native asset. In Panel B of Table~\ref{tab:app:curveleg}, the excluded share of native-leg volume exceeds the stable-leg share by at least 33 percentage points in every sample year and by 54 points in the 2023 row. Tricrypto pools pairing WBTC and WETH with a stablecoin account for \$818m, or 44.6\%, of the \$1.83bn excluded, including seven of the twelve largest excluded pool-days. These pools use CryptoSwap, so the missing coverage is concentrated where Curve supplies depth between ETH and stablecoins.
 % docs/findings/venue-coverage.md, curve_excluded_composition.jsonl, 28 measured pool-days
 
 SushiSwap v3 is omitted from the route-cost comparison because its historical records lack the pool's root price, in-range liquidity, and tick spacing. Its reserves are distributed across ticks, and the balance and weight fields exposed by the common schema do not describe that invariant. The exchange accounts for 0.016\% of volume among the seven exchanges used for route costs over the full sample and 0.176\% in 2026. Across fourteen sampled days, only 4.1\% of its volume occurs on token atomic pairs unavailable on another included exchange, never more than \$37,609 on one day.
@@ -483,7 +483,7 @@ Maximum & 25.93\% & 91.31\% \\
 \exhibitnote{Round trips as a share of multi-leg routes. The sample contains 79 dates from 1 June 2020 through 27 April 2026 and 13,160,047 routes, of which 2,488,399 are multi-leg and 351,553 are round trips. Dates with fewer than 200 multi-leg routes are omitted.}
 \end{table}
 
-The value-weighted share exceeds the count-weighted share at every quantile, by a factor between 1.7 and 3.5, consistent with a population in which large self-returning routes carry disproportionate value. Round trips appear on every sampled day; their lowest count share, 4.45\%, occurs on the earliest date. The paper excludes them before forming both count- and value-weighted dominance measures. Figure~\ref{fig:app:roundtrip} plots their count and value shares among multi-leg routes.
+Across the quantile rows of Table~\ref{tab:app:roundtrip}, the Share by value column exceeds Share by count by a factor between 1.7 and 3.5, consistent with a population in which large self-returning routes carry disproportionate value. Round trips appear on every sampled day; their minimum count share is 4.45\%. The paper excludes them before forming both count- and value-weighted dominance measures. Figure~\ref{fig:app:roundtrip} plots their count and value shares among multi-leg routes and identifies the date of the maximum.
 % output/exhibits/round_trip_share_by_day.jsonl, 79 sampled days from 2020-06-01 to 2026-04-27
 
 \begin{figure}[tbp]

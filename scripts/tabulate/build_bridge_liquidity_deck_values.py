@@ -61,6 +61,14 @@ def _estimate_cell(row: pd.Series, *, scale: float = 1.0) -> str:
     )
 
 
+def _level_cell(row: pd.Series, *, complement: bool = False) -> str:
+    coefficient = float(row["coefficient"])
+    if complement:
+        coefficient = 1.0 - coefficient
+    standard_error = float(row["standard_error"])
+    return f"\\shortstack{{${100.0 * coefficient:.1f}$\\\\$({100.0 * standard_error:.1f})$}}"
+
+
 def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
     required = {"claim_status", "record_type"}
     missing = sorted(required - set(estimates.columns))
@@ -225,6 +233,59 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         model_id="native_routes_after_bridge_establishment",
         regressor="post_0_29",
     )
+    depth_slope_first = _single(
+        estimates,
+        record_type="bridge_establishment_depth_regression",
+        model_id="stable_route_share_on_relative_depth",
+        period="post_0_29",
+    )
+    depth_slope_later = _single(
+        estimates,
+        record_type="bridge_establishment_depth_regression",
+        model_id="stable_route_share_on_relative_depth",
+        period="post_30_119",
+    )
+    depth_equal_first = _single(
+        estimates,
+        record_type="bridge_establishment_depth_regression",
+        model_id="stable_route_share_when_depth_at_least_native",
+        period="post_0_29",
+    )
+    depth_equal_later = _single(
+        estimates,
+        record_type="bridge_establishment_depth_regression",
+        model_id="stable_route_share_when_depth_at_least_native",
+        period="post_30_119",
+    )
+    depth_double_first = _single(
+        estimates,
+        record_type="bridge_establishment_depth_regression",
+        model_id="stable_route_share_when_depth_at_least_2x_native",
+        period="post_0_29",
+    )
+    depth_double_later = _single(
+        estimates,
+        record_type="bridge_establishment_depth_regression",
+        model_id="stable_route_share_when_depth_at_least_2x_native",
+        period="post_30_119",
+    )
+    depth_thin_first = _single(
+        estimates,
+        record_type="bridge_establishment_depth_summary",
+        period="post_0_29",
+        depth_bin="below_0.1x",
+    )
+    depth_thin_later = _single(
+        estimates,
+        record_type="bridge_establishment_depth_summary",
+        period="post_30_119",
+        depth_bin="below_0.1x",
+    )
+    depth_first_events = depth_slope_first.get("events")
+    if pd.isna(depth_first_events):
+        # Retain compatibility with compact renderer fixtures that predate the
+        # event-support field. Current empirical output always supplies it.
+        depth_first_events = establishment_count["events"]
     if not (
         float(pooled["top_bridge_route_share"]) > 0.75
         and float(end["top_bridge_route_share"]) > float(base["top_bridge_route_share"])
@@ -264,6 +325,16 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         and float(establishment_value["p_value"]) < 0.05
         and float(establishment_native["coefficient"]) < 0
         and float(establishment_native["p_value"]) < 0.01
+        and float(depth_slope_first["coefficient"]) > 0
+        and float(depth_slope_first["p_value"]) < 0.01
+        and float(depth_slope_later["coefficient"]) > 0
+        and float(depth_slope_later["p_value"]) < 0.01
+        and float(depth_thin_first["stable_route_share"]) < 0.05
+        and float(depth_thin_later["stable_route_share"]) < 0.05
+        and float(depth_equal_first["coefficient"]) > 0.50
+        and float(depth_equal_later["coefficient"]) > 0.50
+        and float(depth_double_first["coefficient"]) > 0.65
+        and float(depth_double_later["coefficient"]) > 0.65
     ):
         raise ValueError("bridge-liquidity dominance pattern no longer holds")
     lines = [
@@ -322,12 +393,27 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         f"\\newcommand{{\\BridgeEstablishmentValueSE}}{{{_unsigned_pp(float(establishment_value['standard_error']))}}}",
         f"\\newcommand{{\\BridgeEstablishmentNativeLogCoef}}{{${float(establishment_native['coefficient']):+.2f}$}}",
         f"\\newcommand{{\\BridgeEstablishmentNativeLogSE}}{{${abs(float(establishment_native['standard_error'])):.2f}$}}",
+        f"\\newcommand{{\\BridgeDepthDoseFirstCoef}}{{{_signed_pp(0.1 * float(depth_slope_first['coefficient']))}}}",
+        f"\\newcommand{{\\BridgeDepthDoseFirstSE}}{{{_unsigned_pp(0.1 * float(depth_slope_first['standard_error']))}}}",
+        f"\\newcommand{{\\BridgeDepthDoseFirstRows}}{{{_integer(float(depth_slope_first['n_observations']))}}}",
+        f"\\newcommand{{\\BridgeDepthDoseFirstEvents}}{{{_integer(float(depth_first_events))}}}",
+        f"\\newcommand{{\\BridgeDepthDoseLaterCoef}}{{{_signed_pp(0.1 * float(depth_slope_later['coefficient']))}}}",
+        f"\\newcommand{{\\BridgeDepthDoseLaterSE}}{{{_unsigned_pp(0.1 * float(depth_slope_later['standard_error']))}}}",
+        f"\\newcommand{{\\BridgeDepthThinFirstShare}}{{{_pct(float(depth_thin_first['stable_route_share']))}}}",
+        f"\\newcommand{{\\BridgeDepthThinFirstDays}}{{{_integer(float(depth_thin_first['active_pair_days']))}}}",
+        f"\\newcommand{{\\BridgeDepthEqualFirstShare}}{{{_pct(float(depth_equal_first['coefficient']))}}}",
+        f"\\newcommand{{\\BridgeDepthEqualFirstSE}}{{${100.0 * float(depth_equal_first['standard_error']):.1f}$ pp}}",
+        f"\\newcommand{{\\BridgeDepthEqualFirstNativeShare}}{{{_pct(1.0 - float(depth_equal_first['coefficient']))}}}",
+        f"\\newcommand{{\\BridgeDepthEqualFirstDays}}{{{_integer(float(depth_equal_first['n_observations']))}}}",
+        f"\\newcommand{{\\BridgeDepthDoubleFirstShare}}{{{_pct(float(depth_double_first['coefficient']))}}}",
+        f"\\newcommand{{\\BridgeDepthDoubleFirstSE}}{{${100.0 * float(depth_double_first['standard_error']):.1f}$ pp}}",
+        f"\\newcommand{{\\BridgeDepthDoubleFirstDays}}{{{_integer(float(depth_double_first['n_observations']))}}}",
     ]
     return "\n".join(lines) + "\n"
 
 
 def render_bridge_establishment_table(estimates: pd.DataFrame) -> str:
-    """Render paired count/value adoption and incumbent-route changes."""
+    """Render bridge establishment and continuous depth competitiveness."""
 
     models = (
         ("Stable route share [pp]", "stable_share_after_bridge_establishment", 100.0),
@@ -357,7 +443,7 @@ def render_bridge_establishment_table(estimates: pd.DataFrame) -> str:
             1.0,
         ),
     )
-    rows = []
+    event_rows = []
     for label, model_id, scale in models:
         first = _single(
             estimates,
@@ -371,7 +457,7 @@ def render_bridge_establishment_table(estimates: pd.DataFrame) -> str:
             model_id=model_id,
             regressor="post_30_119",
         )
-        rows.append(
+        event_rows.append(
             f"{label} & {_estimate_cell(first, scale=scale)} & "
             f"{_estimate_cell(later, scale=scale)} \\\\"
         )
@@ -387,6 +473,69 @@ def render_bridge_establishment_table(estimates: pd.DataFrame) -> str:
         model_id="stable_share_after_bridge_establishment",
         regressor="post_30_119",
     )
+    slope_first = _single(
+        estimates,
+        record_type="bridge_establishment_depth_regression",
+        model_id="stable_route_share_on_relative_depth",
+        period="post_0_29",
+    )
+    slope_later = _single(
+        estimates,
+        record_type="bridge_establishment_depth_regression",
+        model_id="stable_route_share_on_relative_depth",
+        period="post_30_119",
+    )
+    equal_first = _single(
+        estimates,
+        record_type="bridge_establishment_depth_regression",
+        model_id="stable_route_share_when_depth_at_least_native",
+        period="post_0_29",
+    )
+    equal_later = _single(
+        estimates,
+        record_type="bridge_establishment_depth_regression",
+        model_id="stable_route_share_when_depth_at_least_native",
+        period="post_30_119",
+    )
+    double_first = _single(
+        estimates,
+        record_type="bridge_establishment_depth_regression",
+        model_id="stable_route_share_when_depth_at_least_2x_native",
+        period="post_0_29",
+    )
+    double_later = _single(
+        estimates,
+        record_type="bridge_establishment_depth_regression",
+        model_id="stable_route_share_when_depth_at_least_2x_native",
+        period="post_30_119",
+    )
+    thin_first = _single(
+        estimates,
+        record_type="bridge_establishment_depth_summary",
+        period="post_0_29",
+        depth_bin="below_0.1x",
+    )
+    thin_later = _single(
+        estimates,
+        record_type="bridge_establishment_depth_summary",
+        period="post_30_119",
+        depth_bin="below_0.1x",
+    )
+    depth_rows = [
+        "Relative-depth slope [pp per +10 pp] & "
+        f"{_estimate_cell(slope_first, scale=10.0)} & "
+        f"{_estimate_cell(slope_later, scale=10.0)} \\\\",
+        "Stable route share, depth $<0.1\\times$ WETH [\\%] & "
+        f"{100.0 * float(thin_first['stable_route_share']):.1f} & "
+        f"{100.0 * float(thin_later['stable_route_share']):.1f} \\\\",
+        "Stable route share, depth $\\geq$ WETH [\\%] & "
+        f"{_level_cell(equal_first)} & {_level_cell(equal_later)} \\\\",
+        "Stable route share, depth $\\geq 2\\times$ WETH [\\%] & "
+        f"{_level_cell(double_first)} & {_level_cell(double_later)} \\\\",
+        "Active ordered-ultimate-pair days & "
+        f"{_integer(float(slope_first['n_observations']))} & "
+        f"{_integer(float(slope_later['n_observations']))} \\\\",
+    ]
     return "\n".join(
         [
             "% Generated by scripts/tabulate/build_bridge_liquidity_deck_values.py; do not edit.",
@@ -394,10 +543,14 @@ def render_bridge_establishment_table(estimates: pd.DataFrame) -> str:
             "\\toprule",
             "Outcome & First 30 days & Days 30--119 \\\\",
             "\\midrule",
-            *rows,
+            "\\multicolumn{3}{@{}l}{\\textit{Panel A. Changes around first persistent stable support}} \\\\",
+            *event_rows,
             "\\midrule",
             f"Bridge events & {_integer(float(first_support['events']))} & "
             f"{_integer(float(later_support['events']))} \\\\ ",
+            "\\addlinespace[0.35em]",
+            "\\multicolumn{3}{@{}l}{\\textit{Panel B. Stable-bridge competitiveness relative to WETH}} \\\\",
+            *depth_rows,
             "\\bottomrule",
             "\\end{tabularx}",
             "",
