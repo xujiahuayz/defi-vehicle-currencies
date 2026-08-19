@@ -96,8 +96,9 @@ def render_v4_flash_gap_flow_interactions(results: pd.DataFrame) -> str:
 
     rows: list[str] = []
     rows.append(
-        r"\begin{tabularx}{0.92\linewidth}{@{}>{\raggedright\arraybackslash}X"
-        r"*{3}{>{\centering\arraybackslash}X}@{}}"
+        r"\begin{tabularx}{\linewidth}{@{}"
+        r">{\hsize=1.45\hsize\raggedright\arraybackslash}X"
+        r"*{3}{>{\hsize=0.85\hsize\centering\arraybackslash}X}@{}}"
     )
     rows.append(r"\toprule")
     rows.append(

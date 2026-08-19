@@ -31,6 +31,8 @@ def _complete_rows() -> list[dict[str, object]]:
 def test_liquidity_provision_regression_table_scales_units() -> None:
     rendered = render_liquidity_provision_regressions(pd.DataFrame(_complete_rows()))
 
+    assert r"\begin{tabularx}{\linewidth}" in rendered
+    assert r"p{" not in rendered
     assert "V2 stock" in rendered
     assert "V4 LP flow" in rendered
     assert "Effect" in rendered

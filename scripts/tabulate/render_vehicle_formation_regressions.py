@@ -222,11 +222,10 @@ def render_vehicle_formation_regressions(results: pd.DataFrame) -> str:
     rows: list[str] = []
     rows.append(
         r"\begin{tabularx}{\linewidth}{@{}"
-        r">{\raggedright\arraybackslash}X"
-        r">{\raggedright\arraybackslash}X"
-        r">{\raggedright\arraybackslash}X"
-        r">{\centering\arraybackslash}p{0.8in}"
-        r">{\raggedleft\arraybackslash}p{1.0in}@{}}"
+        r">{\hsize=0.78\hsize\raggedright\arraybackslash}X"
+        r">{\hsize=1.08\hsize\raggedright\arraybackslash}X"
+        r">{\hsize=1.14\hsize\raggedright\arraybackslash}X"
+        r"cr@{}}"
     )
     rows.append(r"\toprule")
     rows.append(

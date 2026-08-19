@@ -79,7 +79,7 @@ Panel A factors the same route-count total a second way. Equation~\eqref{eq:pair
 F_{y}(\mathcal{Q})=\frac{\sum_{p\in\mathcal{Q}}M_{p,y}I_{p,y}s_{p,y}}
 {\sum_{p\in\mathcal{Q}}M_{p,y}I_{p,y}}
 \end{equation}
-is then the stablecoin share those ultimate pairs deliver in year $y$. Write $\mathcal{N}$ for every ordered ultimate pair, $\mathcal{N}_{M}\subseteq\mathcal{N}$ for the ultimate pairs that traded in both years, and $\mathcal{N}_{V}\subseteq\mathcal{N}_{M}$ for the ultimate pairs that carried an intermediary in both years, so that $S_{y}=F_{y}(\mathcal{N})$ and $\mathcal{N}_{V}$ is the continuing population of Equation~\eqref{eq:pair-decomposition}. Bridging the aggregate to the narrower population twice and allocating what is left inside $\mathcal{N}_{V}$ gives
+is then the stablecoin share those ultimate pairs deliver in year $y$. Write $\mathcal{N}$ for every ordered ultimate pair, $\mathcal{N}_{M}\subseteq\mathcal{N}$ for the ultimate pairs that traded in both years, and $\mathcal{N}_{V}\subseteq\mathcal{N}_{M}$ for the ultimate pairs that carried an intermediary in both years, so that $S_{y}=F_{y}(\mathcal{N})$ and $\mathcal{N}_{V}$ is the continuing population of Equation~\eqref{eq:pair-decomposition}. Equation~\eqref{eq:incidence-functional} supplies the common stable-share functional for these nested populations. Bridging the aggregate to the narrower population twice and allocating what is left inside $\mathcal{N}_{V}$ gives
 \begin{equation}
 \label{eq:market-incidence}
 \Delta S=
@@ -223,6 +223,8 @@ The market-birth result extends to repeatedly traded corridors. On the same matc
 % realised pair-day route-count bins and first-day entrant size; they are
 % descriptive, because realised size is not assigned.
 
+Table~\ref{tab:formation-regressions} collects the estimates from Equation~\eqref{eq:entry-path} and its endpoint, value-weighted, identity, and route-architecture variants.
+
 \begin{table}[tbp]
 \centering
 \caption{Market birth and later vehicle use}
@@ -239,7 +241,7 @@ The transition panel next asks which initial market states and changes are assoc
 \label{eq:vehicle-dominance-determinants}
 \Delta S^{(m)}_{pds}=X_{pds,2024}'\beta^{(m)}+\Delta Z_{pds}'\gamma^{(m)}+\mu_d^{(m)}+\varepsilon^{(m)}_{pds},
 \end{equation}
-where \(\Delta S^{(m)}\) is the change in stablecoin share, $X$ contains baseline market activity, ultimate pair age, direct and complex route shares, primary-choice share, and cross-venue scope, while \(\Delta Z\) contains growth in market routes and changes in direct and complex route shares. Following the published-panel convention in \citet{Somogyi2026DollarDominanceFX}, each panel of Table~\ref{tab:vehicle-dominance-determinants} keeps the dependent variable, population, fixed effects, weighting, and covariance design fixed while columns add market-state variables, route architecture, their joint horse race, and market-structure dynamics. Month-day effects absorb the common calendar; standard errors cluster by ordered ultimate pair and month-day; harmonic endpoint route mass weights the two endpoint years symmetrically. These descriptive determinants summarize realised associations under the stated fixed effects.
+In Equation~\eqref{eq:vehicle-dominance-determinants}, \(\Delta S^{(m)}\) is the change in stablecoin share, $X$ contains baseline market activity, ultimate pair age, direct and complex route shares, primary-choice share, and cross-venue scope, while \(\Delta Z\) contains growth in market routes and changes in direct and complex route shares. Following the published-panel convention in \citet{Somogyi2026DollarDominanceFX}, each panel of Table~\ref{tab:vehicle-dominance-determinants} keeps the dependent variable, population, fixed effects, weighting, and covariance design fixed while columns add market-state variables, route architecture, their joint horse race, and market-structure dynamics. Month-day effects absorb the common calendar; standard errors cluster by ordered ultimate pair and month-day; harmonic endpoint route mass weights the two endpoint years symmetrically. These descriptive determinants summarize realised associations under the stated fixed effects.
 
 \begin{table}[tbp]
 \centering
@@ -271,6 +273,8 @@ A mixed risk-set check makes the last point directly. Among observed ultimate pa
 % Candidate reach is log one plus either the candidate's same-day observed
 % native/stable pair-scope count outside the current risk set or its prior
 % 30-day observed pair-scope count.
+
+Table~\ref{tab:vehicle-mechanism-regressions} collects the transition, rolling-hazard, and mixed-risk-set estimates.
 
 \begin{table}[tbp]
 \centering
@@ -533,6 +537,8 @@ We therefore write Equation~\eqref{eq:excess-use} as the panel regression
 I_{a,t}=\alpha+\beta D_{a,t}+\mathbf{A}_{a}'\theta+\mu_t+\eta_a+\varepsilon_{a,t},
 \end{equation}
 where $I_{a,t}$ is currency $a$'s share of the day's intermediary episodes in percentage points, $D_{a,t}$ is its share of the day's route-endpoint episodes in the same units, and \(\mathbf{A}_{a}\) contains the asset-class indicators. The specification ladder first estimates class differences without controls, then absorbs date effects \(\mu_t\), adds own endpoint demand, and finally replaces the class indicators by currency effects \(\eta_a\). The slope on endpoint share says whether intermediary use rises more or less than one for one with an asset's own trade demand, and the class intercepts say how much of the role an asset class takes beyond what its demand implies. \citet{AmitiItskhokiKonings2022Dominant} identify currency choice the same way, absorbing the macroeconomic environment in fixed effects so that what remains is the differential response of firms facing the same conditions. The ratio remains the primary extent measure; the regression is the same comparison with the calendar demoted from the identifying variation to a control. The sample is the \DateFETokenDays{} currency-days on which \DateFETokens{} currencies were quoted at a route endpoint with at least twenty route units, spanning \DateFEDays{} days. Inference clusters on date and currency, and on the few-currency cuts on date alone with a thirty-day Bartlett lag, since there the repeated sampling unit is the day.
+
+Table~\ref{tab:within-day-ladder} reports the specification ladder in Equation~\eqref{eq:within-day-role-regression}; Figure~\ref{fig:within-day-contrasts} compares the resulting class and currency contrasts.
 
 Absorbing the calendar changes almost nothing. The native premium moves from \DateFEPooledNative{} pooled to \DateFEDayNative{} within day, and the stablecoin premium from \DateFEPooledStable{} to \DateFEDayStable{}; both are estimated imprecisely across currencies, with intervals of \DateFEPooledNativeCI{} and \DateFEPooledStableCI{}. The differences between asset classes are cross-sectional after absorbing period effects. What does move them is conditioning on the currency's own trade demand. The native intercept falls to \DateFEDemandNative{} with a standard error of \DateFEDemandNativeSE{}, while the stablecoin intercept holds at \DateFEDemandStable{} (\DateFEDemandStableSE{}). Own demand accounts for the native asset's intermediary premium, while the stablecoin premium remains. That is the comparison the search-theoretic account of a medium of exchange asks for, since in \citet{KiyotakiWright1989MoneyMedium} an asset is used to intermediate because of what the other assets available at that moment can do, not because of its own turnover. The difference between the two, \DateFEStableMinusNative{} with an interval of \DateFEStableMinusNativeCI{}, has an interval that includes zero.
 

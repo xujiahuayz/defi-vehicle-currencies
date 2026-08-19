@@ -313,7 +313,7 @@ def render_liquidity_provision_regressions(results: pd.DataFrame) -> str:
         r">{\raggedright\arraybackslash}X"
         r">{\raggedright\arraybackslash}X"
         r"c"
-        r">{\centering\arraybackslash}p{0.82in}"
+        r"c"
         r"c"
         r"r"
         r"r@{}}"

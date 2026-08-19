@@ -82,8 +82,9 @@ def render_v3_v4_tvl_protocol_contrast(results: pd.DataFrame) -> str:
 
     rows: list[str] = []
     rows.append(
-        r"\begin{tabularx}{0.82\linewidth}{@{}l"
-        r"*{2}{>{\centering\arraybackslash}X}@{}}"
+        r"\begin{tabularx}{\linewidth}{@{}"
+        r">{\hsize=1.20\hsize\raggedright\arraybackslash}X"
+        r"*{2}{>{\hsize=0.90\hsize\centering\arraybackslash}X}@{}}"
     )
     rows.append(r"\toprule")
     rows.append(

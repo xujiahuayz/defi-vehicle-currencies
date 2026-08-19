@@ -29,6 +29,8 @@ def _complete_rows() -> list[dict[str, object]]:
 def test_vehicle_formation_regression_table_scales_and_labels_rows() -> None:
     rendered = render_vehicle_formation_regressions(pd.DataFrame(_complete_rows()))
 
+    assert r"\begin{tabularx}{\linewidth}" in rendered
+    assert r"p{" not in rendered
     assert "Entry persistence" in rendered
     assert "Named-stable identity" in rendered
     assert "Stable endpoint $\\times$ 2026" in rendered

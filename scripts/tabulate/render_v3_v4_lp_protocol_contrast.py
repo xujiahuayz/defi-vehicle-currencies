@@ -81,7 +81,11 @@ def render_v3_v4_lp_protocol_contrast(results: pd.DataFrame) -> str:
         raise ValueError("V3/V4 LP protocol-contrast table mixes controls")
 
     rows: list[str] = []
-    rows.append(r"\begin{tabularx}{0.82\linewidth}{@{}l*{3}{>{\centering\arraybackslash}X}@{}}")
+    rows.append(
+        r"\begin{tabularx}{\linewidth}{@{}"
+        r">{\hsize=1.45\hsize\raggedright\arraybackslash}X"
+        r"*{3}{>{\hsize=0.85\hsize\centering\arraybackslash}X}@{}}"
+    )
     rows.append(r"\toprule")
     rows.append("Outcome & 7 days & 30 days & 120 days " + r"\\")
     rows.append(r"\midrule")

@@ -206,9 +206,11 @@ def render_vehicle_mechanism_regressions(results: pd.DataFrame) -> str:
 
     rows: list[str] = []
     rows.append(
-        r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.88in}"
-        r">{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X"
-        r">{\centering\arraybackslash}p{0.82in}>{\raggedleft\arraybackslash}p{1.0in}@{}}"
+        r"\begin{tabularx}{\linewidth}{@{}"
+        r">{\hsize=0.72\hsize\raggedright\arraybackslash}X"
+        r">{\hsize=1.05\hsize\raggedright\arraybackslash}X"
+        r">{\hsize=1.23\hsize\raggedright\arraybackslash}X"
+        r"cr@{}}"
     )
     rows.append(r"\toprule")
     rows.append(r"Margin & Outcome & Scaled regressor & Effect (pp) & Obs. / clusters \\")

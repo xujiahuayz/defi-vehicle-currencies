@@ -4,21 +4,18 @@
 \label{sec:executability}
 
 Realised routes identify the assets that carried each trade. Execution cost is a separate object: it compares those routes with alternatives available immediately beforehand, quoted at the same trade size and over a common set of exchanges. We hold the source $i$, destination $o$, dollar input $q$, and pre-transaction pool state $e^-$ fixed. The best direct and two-leg outputs through intermediary $k$ are
-\begin{equation}
-\label{eq:direct}
+\begin{equation*}
 O^{D}_{i,o,q,e}=P_{o,e}\max_{p\in\mathcal P_{i,o,e^-}}Q_p\!\left(i\to o,\Delta_i(q,e);\chi_{p,e^-}\right),
-\end{equation}
-\begin{equation}
-\label{eq:vehicle}
+\end{equation*}
+\begin{equation*}
 O^{I}_{i,o,k,q,e}=P_{o,e}\max_{p'\in\mathcal P_{k,o,e^-}}Q_{p'}\!\left(k\to o,\max_{p\in\mathcal P_{i,k,e^-}}Q_p\!\left(i\to k,\Delta_i(q,e);\chi_{p,e^-}\right);\chi_{p',e^-}\right)
-\end{equation}
+\end{equation*}
 This comparison extends the realised-versus-optimised allocation benchmark of \citet{XiMoallemi2026Routing} from parallel pools for one atomic asset pair to sequential routes through an intermediary.
 
 The vehicle-route shortfall relative to direct execution is
-\begin{equation}
-\label{eq:gap}
+\begin{equation*}
 \Delta C^{D}_{i,o,k,q,e}=\frac{O^{D}_{i,o,q,e}-O^{I}_{i,o,k,q,e}}{O^{D}_{i,o,q,e}},
-\end{equation}
+\end{equation*}
 reported in basis points as $10^{4}\Delta C^{D}_{i,o,k,q,e}$. Positive values mean that the direct route returns more output before gas. Swaps and liquidity changes are replayed in on-chain order because a daily or hourly closing state incorporates events that occurred after the trade. The observed event marks settlement; a quote formed earlier can reflect a different opportunity set.
 
 We compare hypothetical legs only within a common executable range. Let $\widetilde Q_{\ell}$ denote leg $\ell$'s output at the pool's marginal rate. Each leg satisfies

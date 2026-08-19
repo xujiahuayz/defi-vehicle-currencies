@@ -85,7 +85,9 @@ def render_v3_v4_lp_flow_protocol_contrast(results: pd.DataFrame) -> str:
 
     rows: list[str] = []
     rows.append(
-        r"\begin{tabularx}{0.86\linewidth}{@{}l*{3}{>{\centering\arraybackslash}X}@{}}"
+        r"\begin{tabularx}{\linewidth}{@{}"
+        r">{\hsize=1.45\hsize\raggedright\arraybackslash}X"
+        r"*{3}{>{\hsize=0.85\hsize\centering\arraybackslash}X}@{}}"
     )
     rows.append(r"\toprule")
     rows.append("Outcome & 7 days & 30 days & 120 days " + r"\\")

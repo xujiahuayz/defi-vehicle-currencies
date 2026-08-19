@@ -31,6 +31,8 @@ def _complete_rows() -> list[dict[str, object]]:
 def test_vehicle_mechanism_regression_table_renders_driver_rows() -> None:
     rendered = render_vehicle_mechanism_regressions(pd.DataFrame(_complete_rows()))
 
+    assert r"\begin{tabularx}{\linewidth}" in rendered
+    assert r"p{" not in rendered
     assert "Turn-on" in rendered
     assert "Rolling hazard" in rendered
     assert "Issuer split" in rendered

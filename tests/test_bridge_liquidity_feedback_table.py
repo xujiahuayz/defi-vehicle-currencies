@@ -56,6 +56,7 @@ def _complete_rows() -> list[dict[str, object]]:
 def test_bridge_liquidity_feedback_table_renders_two_direction_feedback() -> None:
     rendered = render_bridge_liquidity_feedback(pd.DataFrame(_complete_rows()))
 
+    assert r"\begin{tabularx}{\linewidth}" in rendered
     assert "Route use to bridge depth, pooled" in rendered
     assert "Bridge depth to route use, stable" in rendered
     assert "30 days" in rendered

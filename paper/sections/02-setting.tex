@@ -41,10 +41,9 @@ This route setting makes the classical volume--cost mechanism observable at tran
 \label{sec:setting:definitions}
 
 An exact two-leg route consists of two atomic trades, one on either side of a unique intermediary. This gives the primary measure a simple unit: each ultimate trade contributes one intermediary observation. A supplementary multiple-intermediary measure includes routes of any length and counts each intermediary use separately. For route $r$, let $\mathcal{M}(r)$ denote the set of assets between the ultimate source and destination. We record the intermediary status of asset $k$ as
-\begin{equation}
-\label{eq:vehicle-status}
+\begin{equation*}
 Z_{r,k} \;=\; \mathbf{1}\{k \in \mathcal{M}(r)\}.
-\end{equation}
+\end{equation*}
 Let $a(k)$ assign each token to an economic asset type. The native group consolidates ETH and its one-for-one wrapped representation, WETH, after route reconstruction. The stable group contains fiat-reserve, on-chain-collateralised, synthetic, and non-dollar stable currencies. For $g\in\{\mathrm{native},\mathrm{stable}\}$, define $Z_{r,g}=\sum_{k:a(k)=g}Z_{r,k}$; on an exact two-leg route, this sum is an indicator.
 
 We begin with the competition between native and stable intermediaries. Let $\mathcal R^{(2),NS}_t$ denote exact two-leg routes on day $t$ whose intermediary belongs to either group, and let $\mathcal R^{(2),NS,V}_t$ retain routes for which the source, intermediary, and destination values agree within 20\%. The equally weighted and dollar-weighted group shares are
@@ -63,12 +62,11 @@ where $\nu_r$ is the arithmetic mean of the route's total dollar value at its ob
 % src/ddvc/route_roles.py, component_value_support and component_notional
 
 The frequency with which an asset appears at the beginning or end of an observed pool route provides a benchmark for its intermediary use. This comparison uses a broader set of currencies $\mathcal C$: native, staked-native, stable, and imported currencies, with unclassified assets excluded. We retain every complete route that does not return to its starting currency. Direct routes contribute to the source and destination counts, and a longer route contributes one observation for each intermediary it uses. Let $n^{I}_{k,t}$ count intermediary uses and $n^{E}_{k,t}$ count source or destination appearances for $k\in\mathcal C$. The two shares are
-\begin{equation}
+\begin{equation*}
 I^{N}_{k,t}=\frac{n^{I}_{k,t}}{\sum_{j\in\mathcal C} n^{I}_{j,t}},
 \qquad
 E^{N}_{k,t}=\frac{n^{E}_{k,t}}{\sum_{j\in\mathcal C} n^{E}_{j,t}},
-\label{eq:role-shares}
-\end{equation}
+\end{equation*}
 and the corresponding share gap and excess-use ratio are
 \begin{equation}
 \Delta^{N}_{k,t}=I^{N}_{k,t}-E^{N}_{k,t},

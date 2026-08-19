@@ -140,9 +140,10 @@ def render_bridge_liquidity_feedback(results: pd.DataFrame) -> str:
 
     rows: list[str] = []
     rows.append(
-        r"\begin{tabularx}{0.90\linewidth}{@{}>{\raggedright\arraybackslash}X"
-        r">{\centering\arraybackslash}p{0.75in}"
-        r"*{2}{>{\centering\arraybackslash}p{1.05in}}@{}}"
+        r"\begin{tabularx}{\linewidth}{@{}"
+        r">{\hsize=1.65\hsize\raggedright\arraybackslash}X"
+        r"c"
+        r"*{2}{>{\hsize=0.675\hsize\centering\arraybackslash}X}@{}}"
     )
     rows.append(r"\toprule")
     rows.append(r"Feedback margin & Unit & 30 days & 120 days \\")

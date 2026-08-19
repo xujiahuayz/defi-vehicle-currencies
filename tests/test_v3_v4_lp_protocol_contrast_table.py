@@ -57,6 +57,7 @@ def _complete_rows() -> list[dict[str, object]]:
 def test_v3_v4_lp_protocol_contrast_table_renders_grid() -> None:
     rendered = render_v3_v4_lp_protocol_contrast(pd.DataFrame(_complete_rows()))
 
+    assert r"\begin{tabularx}{\linewidth}" in rendered
     assert "LP actions" in rendered
     assert "Active origins" in rendered
     assert "$+0.300^{***}$" in rendered

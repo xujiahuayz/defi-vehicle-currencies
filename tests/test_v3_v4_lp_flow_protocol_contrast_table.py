@@ -87,6 +87,7 @@ def _complete_rows() -> list[dict[str, object]]:
 def test_v3_v4_lp_flow_protocol_contrast_table_renders_grid() -> None:
     rendered = render_v3_v4_lp_flow_protocol_contrast(pd.DataFrame(_complete_rows()))
 
+    assert r"\begin{tabularx}{\linewidth}" in rendered
     assert "Gross LP flow" in rendered
     assert "Add-side flow" in rendered
     assert "Remove-side flow" in rendered
