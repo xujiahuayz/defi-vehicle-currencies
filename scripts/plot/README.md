@@ -9,19 +9,21 @@ not read raw data or define a new estimand.
 | `build_within_day_contrasts.py` | within-day role-contrast figure used by paper/deck |
 | `build_visual_experiments.py` | named experimental figures used by the deck |
 | `build_route_replay.py` | route-replay manifest and deck macros |
-| `render_vehicle_dominance_timelapse.py` | 11-second H.264 vehicle-share film and static poster; monthly named-currency shares plus the registered ordered-ultimate-pair decomposition |
+| `render_vehicle_dominance_timelapse.py` | 18-second H.264 vehicle contest and final-month keyframe; route-count share, supported-value share, and active ultimate-pair breadth evolve from 2020 to 2026 |
 
 Edit the owner, never the generated file. An unconsumed figure is removed
 from the live tree.
 
-Render the short vehicle-currency film and its final-state poster with:
+Render the vehicle-currency film and its final-month keyframe with:
 
 ```bash
 ./scripts/run scripts/plot/render_vehicle_dominance_timelapse.py
 ```
 
 The owner reads `data/processed/endpoint_candidate_choices.parquet` for the
-monthly WETH, USDC, USDT, and DAI contest and
-`output/exhibits/vehicle_transition_pair_decomposition.jsonl` for the closing
-2024-to-2026 ordered-ultimate-pair accounting. It writes the H.264 MP4 plus PDF
-and PNG poster files under `output/figures/`.
+monthly WETH, USDC, USDT, and DAI contest. Each frame places route-count share
+on the horizontal axis and strict supported-value share on the vertical axis;
+bubble area records active ordered ultimate pairs, and fading trails retain only
+the prior six months. The final frame therefore cannot reproduce the full
+history. The owner writes the H.264 MP4 plus PDF and PNG keyframes under
+`output/figures/`.

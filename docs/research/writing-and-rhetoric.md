@@ -136,8 +136,16 @@ the conflict.
 - Hard style rules enforced by tests: no em dash or en dash in prose, no
   hard-wrapped prose, no loose `p < ...` style prose, no unfinished markers such
   as `PENDING`, `TODO`, `placeholder`, or `XXX`, and a JFE abstract ceiling of
-  100 words.
-- Corpus alarms are diagnostics, not word-replacement instructions. If a known
+  100 words. Words beginning with `diagnos` are internal workflow language and
+  never appear anywhere in paper or deck source, including comments, captions,
+  and notes. State the economic or statistical role directly: bound, comparison,
+  validation, coverage, sensitivity, or descriptive evidence. Correction-style
+  contrasts such as `rather than` and “not X but Y” are also excluded from paper
+  and deck prose. Lead with the measured object or result. Preserve a necessary
+  scientific boundary as a direct statement of the estimand and its scope. Use
+  result, estimate, proposition, inference, instrument, token, or exposure in
+  audience prose; reserve `claim` for internal evidence-state metadata.
+- Corpus alarms are review signals, not word-replacement instructions. If a known
   or discovered construction is over-used relative to the JFE corpus, rewrite
   the whole thought and paragraph function, then rerun the check.
 
@@ -174,8 +182,11 @@ the conflict.
 - Use screenshots or photos only when they document an episode, institution, or
   observed transaction. Do not add generic crypto imagery.
 - No current estimand warrants a surface or three-dimensional chart.
-- Every animation or live reveal must end in a complete static composition. The
-  PDF must stand alone as a review artifact.
+- A live reveal may end in a complete static composition. A film that uses time
+  as an empirical channel must instead preserve a dimension no single frame can
+  encode; its PDF keyframe documents one state and must not be presented as the
+  full trajectory. The surrounding static deck still stands alone as a review
+  artifact.
 - Scientific numbers and plots enter through generated outputs. Do not hard-code
   numeric redraws in slide source.
 

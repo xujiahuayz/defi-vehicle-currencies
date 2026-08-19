@@ -39,13 +39,13 @@ PAPER_DIR = SECTIONS_DIR
 DECK_DIR = ROOT / "deck"
 
 # Keep only unmistakable house-style tells here. Ordinary contrast and intent
-# phrases cannot be rejected lexically: both "rather than" and "deliberate"
-# occur in the raw JFE exemplars, and their quality depends on the surrounding
-# sentence. Paragraph-level rhetoric remains an editorial judgment.
-BANNED_SUBSTRINGS = ("—", "–", "genuinely")
+# phrases cannot generally be rejected lexically. This project's repeated use
+# of correction-style contrasts is the exception: the paper and deck state the
+# measured object directly.
+BANNED_SUBSTRINGS = ("—", "–", "genuinely", "rather than", "claim")
 
 CONTRAST_CONFIRMATION = re.compile(
-    r"\bnot\b[^.;]{2,40},\s*(but|it'?s|it is|this is)\b", flags=re.IGNORECASE)
+    r"\bnot\b[^.;!?]{1,100}\b(?:but|rather|instead)\b", flags=re.IGNORECASE)
 LOOSE_P_VALUE = re.compile(r"\bp\s*[<>=]", flags=re.IGNORECASE)
 ABSTRACT_WORD = re.compile(r"[A-Za-z0-9]+(?:[.'’%-][A-Za-z0-9]+)*")
 JFE_ABSTRACT_WORD_LIMIT = 100
@@ -92,6 +92,34 @@ class PaperProseTests(unittest.TestCase):
             for banned in BANNED_SUBSTRINGS:
                 with self.subTest(file=path.name, banned=banned):
                     self.assertNotIn(banned.lower(), body)
+
+    def test_no_internal_or_ai_favored_language_in_paper_or_deck(self) -> None:
+        pattern = re.compile(
+            r"\bdiagnos\w*|\bclaims?\b|\bclaimed\b|\bclaiming\b|\brather than\b",
+            flags=re.IGNORECASE,
+        )
+        tex_sources = source_files(ROOT / "paper") + source_files(DECK_DIR)
+        for path in tex_sources:
+            body = path.read_text(encoding="utf-8")
+            match = pattern.search(body)
+            if match:
+                self.fail(
+                    f"{path.relative_to(ROOT)}:{body.count(chr(10), 0, match.start()) + 1} "
+                    f"contains internal workflow language {match.group(0)!r}"
+                )
+
+        from pypdf import PdfReader
+
+        for path in (ROOT / "paper" / "main.pdf", DECK_DIR / "main.pdf"):
+            self.assertTrue(path.is_file(), f"{path.relative_to(ROOT)} must be built")
+            for page_number, page in enumerate(PdfReader(path).pages, start=1):
+                body = page.extract_text() or ""
+                match = pattern.search(body)
+                if match:
+                    self.fail(
+                        f"{path.relative_to(ROOT)}:{page_number} contains internal "
+                        f"workflow language {match.group(0)!r}"
+                    )
 
     def test_no_contrast_confirmation(self) -> None:
         for path in self.all_sources():

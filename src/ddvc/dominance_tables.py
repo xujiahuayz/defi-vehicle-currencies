@@ -159,6 +159,14 @@ PAIR_ACCOUNTING_MACROS = (
     "PairValueSupportMass",
     "PairValueExclusive",
     "PairValueTotal",
+    "MarginWithinGainPairs",
+    "MarginWithinLossPairs",
+    "MarginWithinGrossUp",
+    "MarginWithinGrossDown",
+    "MarginWithinValueGainPairs",
+    "MarginWithinValueLossPairs",
+    "MarginWithinValueGrossUp",
+    "MarginWithinValueGrossDown",
 )
 
 
@@ -220,7 +228,13 @@ def render_pair_composition(
         r"\addlinespace",
         r"\multicolumn{3}{l}{\emph{Panel B. Route-count share: continuing and"
         r" year-specific ultimate pairs}} \\",
-        f"Stablecoin share within continuing ultimate pairs & {display['PairPooledWithin']} & \\\\",
+        f"Net stablecoin-share change within continuing ultimate pairs & {display['PairPooledWithin']} & \\\\",
+        r"\quad Pairs moving toward stablecoins ("
+        + display["MarginWithinGainPairs"]
+        + f") & {display['MarginWithinGrossUp']} & \\\\",
+        r"\quad Pairs moving toward native assets ("
+        + display["MarginWithinLossPairs"]
+        + f") & {display['MarginWithinGrossDown']} & \\\\",
         f"Vehicle activity shifting across continuing ultimate pairs & {display['PairPooledReweight']} & \\\\",
         f"Weight of continuing versus year-specific ultimate pairs & {display['PairPooledSupportMass']} & \\\\",
         f"Ultimate pairs traded in only one year & {display['PairPooledExclusive']} & \\\\",
@@ -229,7 +243,13 @@ def render_pair_composition(
         r"\addlinespace",
         r"\multicolumn{3}{l}{\emph{Panel C. Dollar-weighted share: continuing and"
         r" year-specific ultimate pairs}} \\",
-        f"Stablecoin share within continuing ultimate pairs & {display['PairValueWithin']} & \\\\",
+        f"Net stablecoin-share change within continuing ultimate pairs & {display['PairValueWithin']} & \\\\",
+        r"\quad Pairs moving toward stablecoins ("
+        + display["MarginWithinValueGainPairs"]
+        + f") & {display['MarginWithinValueGrossUp']} & \\\\",
+        r"\quad Pairs moving toward native assets ("
+        + display["MarginWithinValueLossPairs"]
+        + f") & {display['MarginWithinValueGrossDown']} & \\\\",
         f"Vehicle activity shifting across continuing ultimate pairs & {display['PairValueReweight']} & \\\\",
         f"Weight of continuing versus year-specific ultimate pairs & {display['PairValueSupportMass']} & \\\\",
         f"Ultimate pairs traded in only one year & {display['PairValueExclusive']} & \\\\",

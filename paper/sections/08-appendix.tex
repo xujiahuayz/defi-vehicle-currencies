@@ -4,7 +4,7 @@
 % Same evidence discipline as the body sections: every numeric prose line and every
 % tabular row carries a trailing comment naming the artefact it was read from and the
 % sample it was measured on. A row is where a reader checks a number, so the comment sits
-% on the row and not only on the table.
+% on the row as well as on the table.
 
 \appendix
 
@@ -173,7 +173,7 @@ which gives the two-token exact-input form
 \frac{R_{i,p,e^-}}{R_{i,p,e^-}+\varphi_p\Delta_i}
 \right)^{w_{i,p}/w_{o,p}}\right].
 \]
-Only the ratio $w_{i,p}/w_{o,p}$ enters. An equal-weight Balancer pool and a constant-product atomic pair with the same reserves therefore return the same quote. Balancer's weighted-pool contract accepts inputs up to 30\% of the input-token reserve; that contract limit governs whether a quote can execute, but it is not the empirical support rule.\footnote{See the input-ratio bound in Balancer's \href{https://github.com/balancer/balancer-v2-monorepo/blob/master/pkg/pool-weighted/contracts/WeightedMath.sol}{\texttt{WeightedMath.sol}}.} The counterfactual design applies the common 5\% own-price-impact cutoff in Equation~\eqref{eq:support} to Balancer and every other pool family. The subgraph reports the weight ratio $\theta_p=w_{i,p}/w_{o,p}$ and the swap fee at its head block while balances come from a historical snapshot, so a pool that has repriced itself since is quoted with a current parameter against a past state. Liquidity-bootstrapping pools move weights on a schedule by design and managed pools move them on demand, and a weighted pool's owner can reset the fee at will. What such a pool produces is a small and nearly constant relative bias, which the validation displayed before anything diagnosed it: reported parameters reproduce trades in 2024 to a millionth of a basis point and trades in 2022 only to 0.19\%. A gap of that size is a fee. The fee enters the quote through $\varphi_p\Delta_i$, so a fee wrong by a basis point moves output by about a basis point, whereas a mistake in the invariant would leave an error that scales with trade size.
+Only the ratio $w_{i,p}/w_{o,p}$ enters. An equal-weight Balancer pool and a constant-product atomic pair with the same reserves therefore return the same quote. Balancer's weighted-pool contract accepts inputs up to 30\% of the input-token reserve; that contract limit governs whether a quote can execute, but it is not the empirical support rule.\footnote{See the input-ratio bound in Balancer's \href{https://github.com/balancer/balancer-v2-monorepo/blob/master/pkg/pool-weighted/contracts/WeightedMath.sol}{\texttt{WeightedMath.sol}}.} The counterfactual design applies the common 5\% own-price-impact cutoff in Equation~\eqref{eq:support} to Balancer and every other pool family. The subgraph reports the weight ratio $\theta_p=w_{i,p}/w_{o,p}$ and the swap fee at its head block while balances come from a historical snapshot, so a pool that has repriced itself since is quoted with a current parameter against a past state. Liquidity-bootstrapping pools move weights on a schedule by design and managed pools move them on demand, and a weighted pool's owner can reset the fee at will. What such a pool produces is a small and nearly constant relative bias, which appears directly in the preceding validation: reported parameters reproduce trades in 2024 to a millionth of a basis point and trades in 2022 only to 0.19\%. A gap of that size is a fee. The fee enters the quote through $\varphi_p\Delta_i$, so a fee wrong by a basis point moves output by about a basis point, whereas a mistake in the invariant would leave an error that scales with trade size.
 % src/ddvc/pricing/weighted.py, MAX_IN_RATIO at 30% of the input balance
 % src/ddvc/pricing/weighted.py, calibrate_fee docstring, read-parameter error measured at 1e-9 percent on 2024 trades and 0.19 percent on 2022 trades
 
@@ -207,7 +207,7 @@ The label a pool carries in the source plays no part in this. A pool-day whose o
 % WEIGHT_RATIO_MIN/MAX and FEE_MIN/MAX; scripts/verify/validate_weighted_quoter.py, fit_pool_day tier order
 % and the alternate-trade fitting and evaluation split
 
-How often the machinery binds is itself a diagnostic. Of the 256 pool-days accepted across the twelve validation days, 209 clear the gate on reported parameters with nothing identified, 43 need the swap fee alone, and 4 need per-atomic-pair weight ratios. Four fifths of the priced sample therefore carries no fitted parameter, and identification repairs a stale field in a minority of pool-days instead of supplying the invariant.
+The frequency with which the parameter search binds measures the sufficiency of reported pool state. Of the 256 pool-days accepted across the twelve validation days, 209 clear the gate on reported parameters with nothing identified, 43 need the swap fee alone, and 4 need per-atomic-pair weight ratios. Four fifths of the priced sample therefore carries no fitted parameter, and identification repairs a stale field in a minority of pool-days instead of supplying the invariant.
 % output/exhibits/weighted_quoter_validation.jsonl, pools_by_fit_mode summed over the 12 validation
 % days: reported 209, fee_fitted 43, weight_fitted 4, against 256 pools_priced
 
@@ -292,7 +292,7 @@ The Balancer replay includes joins and exits as well as swaps. Omitting those ev
 Component-validation samples contain executed swaps and therefore pools deep enough to serve the observed trade. Hypothetical routes can demand much more output relative to pool depth, where the observed errors no longer describe pricing accuracy. We include a hypothetical leg in the cost comparison only when its own price impact is at most 5\%, calculated under the pricing rule of the pool family it would traverse.
 % output/exhibits/quoter_support_bounds.jsonl; planned common 5 percent own-price-impact rule
 
-For constant-product swaps, input relative to reserves provides a transparent size--depth diagnostic,
+For constant-product swaps, input relative to reserves provides a transparent size--depth comparison,
 \[
 \iota_{i,p,e^-}=\frac{\Delta_i}{R_{i,p,e^-}},
 \]
@@ -331,7 +331,7 @@ Pooled & 932{,}270 & 0.34\% & 3.29\% & 14.86\% & 78.33\% & 100.00\% \\
 \exhibitnote{Trade size as a percentage of the input-side reserve of the pool traversed, over the constant-product swaps the quoters were validated against. The sample contains eight dates from 2020-05-05 through 2025-09-23.}
 \end{table}
 
-In the Pooled row of Table~\ref{tab:app:support}, five per cent of input reserves sits between the 90th percentile of 3.29\% and the 99th of 14.86\%; the same cutoff lies between those columns on seven of the eight date rows. Figure~\ref{fig:app:support} shows the daily distributions. This calculation is a depth diagnostic. The empirical rule remains a 5\% own-price-impact cutoff computed separately under each pool family's pricing function.
+In the Pooled row of Table~\ref{tab:app:support}, five per cent of input reserves sits between the 90th percentile of 3.29\% and the 99th of 14.86\%; the same cutoff lies between those columns on seven of the eight date rows. Figure~\ref{fig:app:support} shows the daily distributions. This calculation locates the cutoff in the empirical size distribution. The empirical rule remains a 5\% own-price-impact cutoff computed separately under each pool family's pricing function.
 % output/exhibits/quoter_support_bounds.jsonl, pooled over 932,270 validated swaps on eight sampled days
 
 \begin{figure}[tbp]
@@ -367,7 +367,7 @@ Equation~\eqref{eq:support} applies the same 5\% own-price-impact ceiling to eve
 \section{Coverage of the price comparison}
 \label{app:coverage}
 
-Omitting an exchange can change the best direct route, the best intermediated route, or both. Table~\ref{tab:app:venues} first describes the volume recorded in nine local source series, including Uniswap v1 as a separate architecture sample and the available Fluid extracts. Volume in the Graph-indexed series is reconstructed from individual swaps using the smaller dollar value of the two legs. This avoids double counting in two series and removes implausible oracle values in thin pools: one Curve pool reports a \$456m day whose swaps sum to \$8, and a constant-product atomic pair with \$255 of reserves reports \$1.36bn. Physical bounds on volume relative to reserves exclude between 0.10\% and 0.24\% of Graph-indexed pool-days per year. Uniswap v1 is excluded from the route-cost comparison because its forced-routing architecture is studied separately. Fluid supplies volume on only 40 of the 400 sampled dates and no historical TVL field. The table is consequently a source-coverage diagnostic, not an estimate of complete market shares.
+Omitting an exchange can change the best direct route, the best intermediated route, or both. Table~\ref{tab:app:venues} first describes the volume recorded in nine local source series, including Uniswap v1 as a separate architecture sample and the available Fluid extracts. Volume in the Graph-indexed series is reconstructed from individual swaps using the smaller dollar value of the two legs. This avoids double counting in two series and removes implausible oracle values in thin pools: one Curve pool reports a \$456m day whose swaps sum to \$8, and a constant-product atomic pair with \$255 of reserves reports \$1.36bn. Physical bounds on volume relative to reserves exclude between 0.10\% and 0.24\% of Graph-indexed pool-days per year. Uniswap v1 is excluded from the route-cost comparison because its forced-routing architecture is studied separately. Fluid supplies volume on only 40 of the 400 sampled dates and no historical TVL field. The table consequently reports source coverage. Complete market shares require a common historical state series for every exchange.
 % output/exhibits/venue_volume_by_year.jsonl; docs/findings/venue-coverage.md, volume reconstruction, 400 sampled days
 
 \begin{table}[t]
@@ -420,7 +420,7 @@ Year & \multicolumn{2}{r}{Native leg} & \multicolumn{2}{r}{Stable leg} & Other v
 % docs/findings/venue-coverage.md, Curve pool-days sampled in 2026
 \bottomrule
 \end{tabular}
-\exhibitnote{A pool serves the \emph{native} leg when it contains ETH or a staking derivative, the \emph{stable} leg when every token is stable, including baskets and interest-bearing wrappers, and the \emph{other volatile} leg otherwise. Stablecoin base-pool claims are classified with the underlying stable assets. The sample contains 28 measured Curve pool-days from 11 February 2020 through 28 April 2026.}
+\exhibitnote{A pool serves the \emph{native} leg when it contains ETH or a staking derivative, the \emph{stable} leg when every token is stable, including baskets and interest-bearing wrappers, and the \emph{other volatile} leg otherwise. Stablecoin base-pool tokens are classified with the underlying stable assets. The sample contains 28 measured Curve pool-days from 11 February 2020 through 28 April 2026.}
 \end{table}
 
 The exclusions are concentrated in routes involving the native asset. In Panel B of Table~\ref{tab:app:curveleg}, the excluded share of native-leg volume exceeds the stable-leg share by at least 33 percentage points in every sample year and by 54 points in the 2023 row. Tricrypto pools pairing WBTC and WETH with a stablecoin account for \$818m, or 44.6\%, of the \$1.83bn excluded, including seven of the twelve largest excluded pool-days. These pools use CryptoSwap, so the missing coverage is concentrated where Curve supplies depth between ETH and stablecoins.

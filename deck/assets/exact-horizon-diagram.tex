@@ -3,7 +3,7 @@
 % EVIDENCE-STATUS: conceptual design contract; no empirical estimate or fitted horizon result.
 % EVIDENCE-SOURCES: docs/specifications/confirmatory.json; README.md;
 % src/ddvc/analysis/dynamics.py.
-% Horizontal spacing in the exact-link row is schematic rather than proportional to elapsed time.
+% Horizontal spacing in the exact-link row is schematic; clock labels report elapsed time.
 \tikzset{clocklabel/.style={font=\scriptsize\bfseries,text=ucldark,anchor=east,align=right}}
 \tikzset{day/.style={rounded corners=1.5pt,draw=rule,fill=white,minimum width=0.68cm,minimum height=0.55cm,inner sep=2pt,font=\tiny}}
 \tikzset{origin/.style={day,draw=ucldark,fill=ucldark,text=white,line width=1pt}}
@@ -44,7 +44,7 @@
 \node[target,minimum width=0.82cm] (t120) at (8.78,-0.78) {$t+120$};
 \draw[link] (t0120)--(t120);
 
-% Model labels remain adjacent to the clocks instead of becoming another prose list.
+% Model labels remain adjacent to the clocks to keep the visual hierarchy compact.
 \node[font=\scriptsize\bfseries,text=ucldark,anchor=west] at (9.28,3.02) {Model role};
 \node[model,anchor=north west] at (9.28,2.76) {\textbf{Daily panel}\quad date fixed effects};
 \node[model,anchor=north west] at (9.28,1.92) {\textbf{Calendar check}\quad week and weekday fixed effects};

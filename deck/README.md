@@ -11,11 +11,13 @@ this README only owns deck folder structure and build handoff.
 Build from this directory with `latexmk -pdf -interaction=nonstopmode main.tex`. Review the rendered pages visually and check the log for overflow before committing `main.pdf`.
 
 For the live transition into the vehicle-rotation evidence, the generated
-[11-second vehicle-currency timelapse](../output/figures/vehicle_dominance_timelapse.mp4)
-shows the monthly WETH, USDC, USDT, and DAI route-share contest and closes on
-the ordered-ultimate-pair decomposition. Its
-[static poster](../output/figures/vehicle_dominance_timelapse_poster.pdf) is the
-PDF-safe fallback. The links live here instead of occupying slide space.
+[18-second vehicle-currency film](../output/figures/vehicle_dominance_timelapse.mp4)
+shows WETH, USDC, USDT, and DAI moving jointly in route-count share,
+supported-value share, and active ultimate-pair breadth from 2020 to 2026. Each
+frame retains only six months of history, so the time path must be watched. Its
+[final-month keyframe](../output/figures/vehicle_dominance_timelapse_poster.pdf)
+provides PDF-safe context without pretending to encode the full transition. The
+links live here instead of occupying slide space.
 
 For the 30-minute research talk, the core deck is capped at 24 static frames.
 Core pages may carry at most 70 visible words, including chart and table labels;

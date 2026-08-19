@@ -74,6 +74,14 @@ intermediary, and destination valuations to agree within 20 percent. Raw values,
 coverage, and a wider twofold agreement band remain diagnostics. Canonical
 endpoint round trips are excluded from economic-exchange denominators.
 
+The economic unit is a contract-identified token claim grouped by vehicle role,
+not a consolidated unit of account. ETH and WETH are combined only after route
+reconstruction because wrapping represents the same settlement asset one for
+one. Dollar-pegged tokens remain distinct claims because issuer, redemption,
+risk, and atomic-pair liquidity differ; stable-group results therefore measure a
+family of stable-token vehicles, while token-level results retain issuer
+competition.
+
 ## Confirmatory family 1: Vehicle-role rotation
 
 The first family compares the stablecoin share of native-plus-stable
@@ -91,7 +99,9 @@ intermediaries in 2024 and 2026 on common January-to-June dates.
 The aggregate change is then decomposed into within-common-pair substitution,
 reweighting across continuing pairs, common-support mass, and entry/exit-pair
 composition. The terms must add exactly to the pooled change. This decomposition
-is the paper's central empirical result.
+is the paper's central empirical result. Its within-pair component is a net
+quantity: gross movements toward stable and native intermediaries remain visible
+because cancellation is economically different from an absence of switching.
 
 Supporting evidence separates native, fiat-backed, crypto-backed, and hybrid
 intermediaries; decomposes USDT excess use; and reports single-venue versus
@@ -142,6 +152,10 @@ who authored a route and market composition changes at the same time.
 - Symbols label assets; contract addresses establish identity.
 - Causal language requires treatment timing, balance, pretrends, exclusion, and
   placebos appropriate to the claimed mechanism.
+- Route-minus-capital gaps mechanically reuse origin capital share when the
+  outcome is a future-minus-origin share or rank. Those rows diagnose
+  convergence and do not identify provider reallocation without separate origin
+  share controls or a residualised-gap design.
 - Withheld direct-cost, rent-incidence, joint V2/V3 flow, and hysteresis branches
   are outside the current paper unless they receive a new specification and a
   complete producer-to-deliverable path.

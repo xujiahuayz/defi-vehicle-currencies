@@ -1,7 +1,7 @@
 % Presentation geometry only. Numerical labels are generated in
 % output/exhibits/route_methodology_heterogeneity_deck_values.tex.
 % WETH is the native intermediary in this comparison. If WETH is an endpoint,
-% it cannot also be the intermediary; stablecoins remain the eligible class.
+% it cannot also be the intermediary; the eligible intermediary set contains stablecoins.
 % Within-ultimate-pair change is reported in the authored frame text below the graphic.
 \begin{tikzpicture}[x=1cm,y=1cm]
 \tikzset{panel/.style={draw=rule,fill=white,rounded corners=3pt,line width=0.8pt}}
@@ -12,7 +12,7 @@
 \node[font=\fontsize{7.8}{8.6}\selectfont\bfseries,text=ucldark,align=center,text width=2.9cm]
   at (1.45,2.48) {endpoint of the\\ultimate pair};
 \draw[-{Stealth[length=5pt]},line width=1.2pt,draw=stable] (1.45,2.03)--(1.45,1.55);
-\node[draw=rule,fill=panel,rounded corners=2pt,font=\fontsize{7.6}{8.4}\selectfont,text=ink,align=center,text width=2.75cm,minimum height=0.88cm] at (1.45,0.94) {Stablecoins alone remain eligible as intermediaries};
+\node[draw=rule,fill=panel,rounded corners=2pt,font=\fontsize{7.6}{8.4}\selectfont,text=ink,align=center,text width=2.75cm,minimum height=0.88cm] at (1.45,0.94) {Eligible intermediaries:\\stablecoins};
 
 % The two estimates are stacked so the comparison reads vertically, not as
 % competing headline cards.

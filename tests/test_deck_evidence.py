@@ -378,7 +378,7 @@ def test_deck_separates_weth_eligibility_from_value_composition() -> None:
     rendered_frame = results[frame_start:frame_end]
     assert "provisional" not in rendered_frame.lower()
 
-    assert "Stablecoins alone remain eligible as intermediaries" in asset
+    assert r"Eligible intermediaries:\\stablecoins" in asset
     assert "All matched ultimate-pair groups" in asset
     assert "Ultimate-pair groups excluding WETH endpoints" in asset
     assert "cells" not in asset.lower()

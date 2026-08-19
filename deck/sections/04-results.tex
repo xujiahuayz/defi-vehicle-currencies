@@ -148,7 +148,7 @@ Currency fixed effects & No & No & No & Yes \\
   \draw[rotationpanel,fill=ucldark!4] (0,0.38) rectangle (6.20,2.60);
   \node[anchor=west,font=\small\bfseries,text=ucldark] at (0.38,2.22) {Continuing ultimate pairs};
   \node[anchor=west,font=\fontsize{15}{16}\selectfont\bfseries,text=accent] at (0.42,1.48) {\MarginWithinTotal};
-  \node[anchor=west,font=\fontsize{7.3}{8.0}\selectfont,text=ink] at (2.78,1.48) {within-ultimate-pair choice};
+  \node[anchor=west,font=\fontsize{7.3}{8.0}\selectfont,text=ink] at (2.78,1.48) {net within-ultimate-pair change};
   \node[anchor=west,font=\fontsize{15}{16}\selectfont\bfseries,text=stable] at (0.42,0.76) {\MarginReweightTotal};
   \node[anchor=west,font=\fontsize{7.3}{8.0}\selectfont,text=ink] at (2.78,0.76) {activity reallocation};
 \fi
@@ -185,8 +185,8 @@ Currency fixed effects & No & No & No & Yes \\
 \rotationdecomposition{2}
 \end{center}
 \vspace{-0.12cm}
-{\large The \PairPooledTotal{} endpoint rotation includes \MarginWithinTotal{} from intermediary switching and \MarginReweightTotal{} from activity reallocation.\par}
-\decknote{Exact allocation on common calendar days. The remaining support-mass term is \PairPooledSupportMass{}; components sum using unrounded values. Ultimate-pair reallocation holds intermediary shares at their midpoint.}
+{\large The \PairPooledTotal{} endpoint rotation includes \MarginWithinTotal{} from net intermediary switching and \MarginReweightTotal{} from activity reallocation.\par}
+\decknote{The net within-pair term combines \MarginWithinGainPairs{} ultimate pairs contributing \MarginWithinGrossUp{} toward stablecoins and \MarginWithinLossPairs{} contributing \MarginWithinGrossDown{} toward native assets. The remaining support-mass term is \PairPooledSupportMass{}; components sum using unrounded values.}
 \end{frame}
 
 % EVIDENCE-STATUS: supporting exact route-count decomposition
@@ -200,7 +200,7 @@ Currency fixed effects & No & No & No & Yes \\
 \end{center}
 \vspace{-0.12cm}
 {\large Ultimate-pair entry is the largest positive margin in the count rotation.\par}
-\decknote{Exact allocation on common calendar days. The remaining support-mass term is \PairPooledSupportMass{}; components sum using unrounded values. Ultimate-pair reallocation holds intermediary shares at their midpoint.}
+\decknote{Exact allocation on common calendar days. The near-zero within-pair term is net: \MarginWithinGrossUp{} toward stablecoins offsets \MarginWithinGrossDown{} toward native assets. The remaining support-mass term is \PairPooledSupportMass{}; components sum using unrounded values.}
 \end{frame}
 
 % EVIDENCE-STATUS: exploratory descriptive local-depth result
@@ -215,8 +215,12 @@ Currency fixed effects & No & No & No & Yes \\
 \end{column}
 \hfill
 \begin{column}{0.27\textwidth}
-{\fontsize{21}{23}\selectfont\bfseries\color{ucldark}\BridgeLiquidityTopShareBase{} $\to$ \BridgeLiquidityTopShareEnd}\par\vspace{0.18cm}
-{\small deepest-bridge share, 2024 to 2026}
+\begin{tabular}{@{}r@{\hspace{0.16cm}}l@{}}
+{\scriptsize 2024} & {\fontsize{18}{20}\selectfont\bfseries\color{ucldark}\BridgeLiquidityTopShareBase} \\[0.13cm]
+{\scriptsize 2026} & {\fontsize{18}{20}\selectfont\bfseries\color{ucldark}\BridgeLiquidityTopShareEnd}
+\end{tabular}
+\par\vspace{0.16cm}
+{\small deepest-bridge share}
 \end{column}
 \hfill
 \begin{column}{0.27\textwidth}
@@ -226,7 +230,7 @@ Currency fixed effects & No & No & No & Yes \\
 \end{columns}
 \vspace{0.72cm}
 {\large The weaker atomic leg carries the economically relevant depth constraint.\par}
-\decknote{The analysis compares five potential vehicle assets within locally supported endpoint-date-route-scope sets. Depth is prior deposited capital on the weaker atomic leg; standard errors cluster by ordered ultimate pair and date.}
+\decknote{The analysis compares five vehicle assets within locally supported endpoint-date-route-scope sets. Depth is prior deposited capital on the weaker atomic leg; standard errors cluster by ordered ultimate pair and date.}
 \end{frame}
 
 % EVIDENCE-STATUS: exploratory descriptive continuous-depth result
@@ -250,8 +254,8 @@ Currency fixed effects & No & No & No & Yes \\
 {\small stable-route-share slope per $+10$ pp of relative depth\qquad SE \BridgeDepthDoseFirstSE}
 \end{beamercolorbox}
 \vspace{0.32cm}
-{\large\bfseries Availability opens the route set; relative depth determines penetration.\par}
-\decknote{\BridgeDepthDoseFirstRows{} first-month ordered-ultimate-pair days across \BridgeDepthDoseFirstEvents{} bridge events. Thresholds compare the best stablecoin two-atomic-trade bottleneck with WETH using prior-calendar deposited capital. The slope uses stablecoin share of joint stablecoin-plus-WETH bottleneck depth, absorbs event, event-age, and calendar-month effects, and clusters by ordered ultimate pair and date. Deposited capital is a reserve stock, not executable route cost.}
+{\large\bfseries Availability defines the route set; relative depth predicts penetration.\par}
+\decknote{\BridgeDepthDoseFirstRows{} first-month ordered-ultimate-pair days in \BridgeDepthDoseFirstEvents{} bridge events. Depth is prior-day deposited capital on the weaker atomic leg; the slope absorbs event, event-age, and month effects and clusters by ordered ultimate pair and date. Deposited capital measures a reserve stock.}
 \end{frame}
 
 % EVIDENCE-STATUS: current predictive capital-to-route result

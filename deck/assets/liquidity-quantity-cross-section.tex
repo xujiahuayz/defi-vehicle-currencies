@@ -7,9 +7,9 @@
 \tikzset{guide/.style={draw=muted,densely dashed,line width=0.8pt}}
 \begin{tikzpicture}[x=1cm,y=1cm]
 
-% Balance-sheet view: claims and token holdings are different objects.
+% Balance-sheet view: ownership rights and token holdings are different objects.
 \node[font=\small\bfseries,text=ucldark,anchor=west] at (0.0,3.18) {Pool state at time $t$};
-\node[callout,minimum width=2.05cm] (lp) at (0.90,2.48) {LP positions\\or claims};
+\node[callout,minimum width=2.05cm] (lp) at (0.90,2.48) {LP positions\\or receipts};
 \node[poolbin] (x) at (0.95,0.95) {$R_{X,p,t}$ units\\of token $X$};
 \node[poolbin] (y) at (3.42,0.95) {$R_{Y,p,t}$ units\\of token $Y$};
 \draw[route,draw=uclbright] (lp.south) -- ++(0,-0.40) -| (x.north);
@@ -18,7 +18,7 @@
 \draw[decorate,decoration={brace,mirror,amplitude=5pt},draw=stable,line width=1pt]
   (-0.14,0.26) -- (4.52,0.26);
 \node[callout,minimum width=3.40cm,anchor=north] at (2.18,-0.24)
-  {deposited capital: independently valued holdings\\or ownership claims};
+  {deposited capital: independently valued holdings\\or ownership rights};
 
 % Execution view: a trade size maps through current state into depth and a quote.
 \draw[rule,line width=0.8pt] (5.35,0.10) -- (5.35,3.05);

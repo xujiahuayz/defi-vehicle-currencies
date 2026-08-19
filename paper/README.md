@@ -20,5 +20,5 @@ Build from this directory with `latexmk -pdf -interaction=nonstopmode main.tex`,
 | `main.bbl` | generated bibliography used by the current PDF build |
 
 The manuscript is the only paper draft. Research design belongs in
-`../docs/research/`, current claim status in `../docs/findings/`, and generated
+`../docs/research/`, current result status in `../docs/findings/`, and generated
 tables/figures in `../output/`.

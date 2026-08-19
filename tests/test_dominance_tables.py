@@ -136,7 +136,7 @@ def test_pair_table_keeps_the_two_count_factorisations_apart() -> None:
     # The identity's labels appear once in its count panel and once in its
     # value panel, and nowhere else.
     for label in (
-        "Stablecoin share within continuing ultimate pairs",
+        "Net stablecoin-share change within continuing ultimate pairs",
         "Vehicle activity shifting across continuing ultimate pairs",
         "Weight of continuing versus year-specific ultimate pairs",
         "Ultimate pairs traded in only one year",
@@ -151,6 +151,11 @@ def test_pair_table_keeps_the_two_count_factorisations_apart() -> None:
         "PairPooledExclusive",
     ):
         assert macros[macro].removesuffix(" pp") in pair
+
+    assert "Pairs moving toward stablecoins (1,575) & $+1.3$" in pair
+    assert "Pairs moving toward native assets (1,489) & $-1.4$" in pair
+    assert "Pairs moving toward stablecoins (1,511) & $+2.3$" in pair
+    assert "Pairs moving toward native assets (1,445) & $-2.4$" in pair
 
 
 def test_paper_has_one_consumer_and_no_duplicate_inline_body() -> None:
