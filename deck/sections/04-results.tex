@@ -28,6 +28,9 @@
 \IfFileExists{../output/exhibits/v3_v4_lp_flow_protocol_deck_values.tex}{%
 \input{../output/exhibits/v3_v4_lp_flow_protocol_deck_values.tex}%
 }{\PackageError{dvc-deck}{Missing generated V3/V4 LP-flow protocol values}{Run scripts/analyze/run_v3_v4_lp_flow_protocol_contrast.py then scripts/tabulate/build_v3_v4_lp_flow_protocol_deck_values.py.}}
+\IfFileExists{../output/exhibits/v3_v4_tvl_protocol_deck_values.tex}{%
+\input{../output/exhibits/v3_v4_tvl_protocol_deck_values.tex}%
+}{\PackageError{dvc-deck}{Missing generated V3/V4 TVL protocol values}{Run scripts/analyze/run_v3_v4_tvl_protocol_contrast.py then scripts/tabulate/build_v3_v4_tvl_protocol_deck_values.py.}}
 \IfFileExists{../output/exhibits/bridge_liquidity_deck_values.tex}{%
 \input{../output/exhibits/bridge_liquidity_deck_values.tex}%
 }{\PackageError{dvc-deck}{Missing generated bridge-liquidity values}{Run scripts/analyze/run_bridge_liquidity_dominance.py then scripts/tabulate/build_bridge_liquidity_deck_values.py.}}
@@ -487,9 +490,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.44cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.2}{9.2}\selectfont V4 action response exceeds V3 by \VThreeVFourLpActionLongCoef{}. Gross/add flow is flat; remove turnover is \VThreeVFourLpFlowRemoveLongCoef{}. V4 flash intensity shifts value narrow/medium (internal \VFourFlashInternalFlowNarrowLongCoef{}, multi-leg \VFourFlashMultilegFlowNarrowLongCoef{}) while actions move wide (internal \VFourFlashInternalWideLongCoef{}, multi-leg \VFourFlashMultilegWideLongCoef{}).\par}
+{\fontsize{7.9}{8.9}\selectfont Same candidate-date: V4 action, reported TVL, and pool-footprint responses exceed V3 (\VThreeVFourLpActionLongCoef{}, \VThreeVFourTvlGrowthLongCoef{}, \VThreeVFourPoolFootprintLongCoef{}). Gross/add flow is flat; remove turnover is \VThreeVFourLpFlowRemoveLongCoef{}. Flash value shifts narrow/medium while actions move wide.\par}
 \end{minipage}}
-\decknote{Five-candidate V2 capital panel. V3 rows use \LiqBehVThreeLpActionRows{} mint/burn records. V4 rows use filtered candidate-token flow, flash-LP, and stable-gap interactions. Protocol contrasts use \VThreeVFourLpProtocolRows{} action rows and \VThreeVFourLpFlowProtocolRows{} flow rows with candidate-date and protocol effects. Not LP inventory or causal protocol treatment.}
+\decknote{Five-candidate V2 capital panel. V3 rows use \LiqBehVThreeLpActionRows{} mint/burn records and reported pool TVL; V4 rows use filtered candidate-token flow, flash-LP, reported pool TVL, and stable-gap interactions. Protocol contrasts use candidate-date and protocol effects. Reported TVL is candidate-linked full-pool TVL, not reconstructed capital, LP inventory, or causal protocol treatment.}
 \end{frame}
 
 % EVIDENCE-STATUS: current predictive mechanism result; the reciprocal rule records a non-pass
