@@ -51,6 +51,8 @@ def test_v4_flash_lp_mechanism_panel_and_regression_are_estimable() -> None:
                     "v4_gross_lp_flow_usd_screened": np.exp(4 + 4 * signal) - 1,
                     "v4_add_lp_flow_usd_screened": np.exp(3 + 3 * signal) - 1,
                     "v4_remove_lp_flow_usd_screened": np.exp(2 + 2 * signal) - 1,
+                    "v4_narrow_medium_flow_usd_screened": np.exp(3 + 5 * signal) - 1,
+                    "v4_broad_flow_usd_screened": np.exp(3 - 2 * signal) - 1,
                     "v4_lp_flow_screened_assignments": 3 + candidate_index,
                 }
             )
