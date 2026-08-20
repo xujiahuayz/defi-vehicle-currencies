@@ -154,11 +154,11 @@ def render_exact_vehicle_frontier(results: pd.DataFrame) -> str:
         r"\multicolumn{5}{l}{\textit{Panel A. Coverage and quote validation}} \\",
         "Linear routes in the exact venue set [\\%] & "
         + rf"\multicolumn{{4}}{{r}}{{{_pct(float(rows['support']['exact_venue_share']))}}} \\",
-        "Mapped chosen paths reproduced within 1 bp [\\%] & "
+        "Mapped observed routes reproduced within 1 bp [\\%] & "
         + rf"\multicolumn{{4}}{{r}}{{{_pct(float(rows['support']['chosen_reproduction_share']))}}} \\",
         r"\midrule",
         r"\multicolumn{5}{l}{\textit{Panel B. Nested opportunity set}} \\",
-        r" & Realised path & Same vehicle, used venues & Same vehicle, all exact venues & Any named vehicle or direct \\",
+        r" & Realised route & Same vehicle, used venues & Same vehicle, all exact venues & Any named vehicle or direct \\",
         r"\midrule",
         r"Routes with more than 1 bp higher output [\%] & "
         f"0.0 & {_pct(within)} & {_pct(same)} & {_pct(public)} " + r"\\",

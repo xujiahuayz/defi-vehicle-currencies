@@ -104,7 +104,21 @@ def build(target: Path) -> tuple[bool, str]:
         if "Output written" in ln:
             pages = ln.split("(")[-1].split(" page")[0]
     ok = r.returncode == 0 and undef == 0
-    return ok, (f"{pages} pages, {undef} undefined" if pages else f"exit {r.returncode}")
+    detail = f"{pages} pages, {undef} undefined" if pages else f"exit {r.returncode}"
+    if ok and target.name == "deck":
+        embed = subprocess.run(
+            [str(PY), "scripts/utils/embed_deck_video.py"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        ok = embed.returncode == 0
+        if ok:
+            detail += ", self-contained RichMedia film"
+        else:
+            message = (embed.stderr or embed.stdout).strip().splitlines()
+            detail += f", film embedding failed: {message[-1] if message else 'unknown error'}"
+    return ok, detail
 
 
 def main() -> int:

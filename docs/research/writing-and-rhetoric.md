@@ -62,18 +62,24 @@ substitute for this full-document review.
 - Keep distinct objects distinct: binary vehicle status, continuous vehicle
   dominance, realised route choice, counterfactual execution cost, deposited
   capital, liquidity-supply flow, inventory, executable depth, provider return,
-  atomic-pair venue formation, ultimate-pair entry, substitution, exit,
-  reversal, and persistence.
-- Keep the route vocabulary equally explicit. For \(A\rightarrow B\rightarrow C\),
-  \((A,C)\) is the ordered ultimate pair, \((A,B)\) and \((B,C)\) are atomic
-  pairs, and the corresponding pool executions are atomic trades. The complete
-  connected sequence is the route. A pool is the venue in which an atomic trade
-  executes. Shorten ultimate pair to pair only after local context rules out an
-  atomic or pool-level pair.
-- The ordered ultimate pair records endpoints and direction, not the intervening
-  execution sequence. Call \(A\rightarrow B\rightarrow C\) the realised route
-  (or path when discussing the graph). Do not append “market” to an ultimate
-  pair unless the text explicitly defines
+  leg-level venue formation, pair entry, substitution, exit, reversal, and
+  persistence.
+- Keep the route vocabulary equally explicit. For an observed exchange
+  \(A\rightarrow B\rightarrow C\), \((A,C)\) is the ordered \emph{endpoint
+  pair}, the pool executions \(A\rightarrow B\) and \(B\rightarrow C\) are its
+  two \emph{legs}, and the full ordered sequence of legs is the \emph{route}.
+  A pool is the venue in which a leg executes. Define endpoint pair once near
+  the start of each deliverable, then use \emph{pair} unless another kind of
+  pair is explicitly introduced.
+- Pair, leg, route, and path are directed by token flow unless a passage
+  explicitly says otherwise. The pair records the endpoints and direction; the
+  route records the observed intervening sequence. Reserve \emph{path} for a
+  feasible or counterfactual alternative. Do not use path as a synonym for an
+  observed route, and describe persistence from initial vehicle use without the
+  loose label “path dependence.” Use compact econometric units such as
+  \emph{pair-day} and \emph{pair-date-route class}; do not rebuild the full
+  definition inside a unit label.
+- Do not append “market” to an endpoint pair unless the text explicitly defines
   a broader market aggregating substitutable direct and indirect routes.
   Reserve corridor for an explicitly bilateral real-economy trade or payment
   relationship, where that term is conventional. These labels keep an endpoint
@@ -114,9 +120,9 @@ substitute for this full-document review.
 - Use **dominance** for a share-based role measure, **level** or **volume** for
   absolute activity, and **vehicle status** for the binary extensive margin.
   The compact description of the decomposition is that aggregate stablecoin
-  dominance changes through net vehicle substitution within continuing
-  ultimate pairs and through reallocation of routed activity across ultimate
-  pairs. Do not make “dominance,” “share,” and “volume” interchangeable merely
+  dominance changes through net vehicle substitution within continuing pairs
+  and through reallocation of routed activity across pairs. Do not make
+  “dominance,” “share,” and “volume” interchangeable merely
   to vary the prose.
 - Keep one result spine in the abstract and the introduction: state the
   aggregate change in stablecoin dominance, then the net within-continuing-pair

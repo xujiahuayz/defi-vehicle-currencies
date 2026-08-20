@@ -793,7 +793,7 @@ def render_bridge_establishment_table(estimates: pd.DataFrame) -> str:
         f"{_level_cell(equal_first)} & {_level_cell(equal_later)} \\\\",
         "Stable route share, depth $\\geq 2\\times$ WETH [\\%] & "
         f"{_level_cell(double_first)} & {_level_cell(double_later)} \\\\",
-        "Active ordered-ultimate-pair days & "
+        "Active pair-days & "
         f"{_integer(float(slope_first['n_observations']))} & "
         f"{_integer(float(slope_later['n_observations']))} \\\\",
     ]

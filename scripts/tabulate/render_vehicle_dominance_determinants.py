@@ -149,7 +149,7 @@ def render_vehicle_dominance_determinants(results: pd.DataFrame) -> str:
                 "Observations & "
                 + " & ".join(_integer(row["observations"]) for row in anchors)
                 + r" \\",
-                "Ordered ultimate-pair clusters & "
+                "Pair clusters & "
                 + " & ".join(_integer(row["ordered_pair_clusters"]) for row in anchors)
                 + r" \\",
                 "Month-day clusters & "

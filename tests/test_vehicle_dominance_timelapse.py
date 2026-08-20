@@ -6,6 +6,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pandas as pd
+from pypdf import PdfReader
 
 from scripts.plot.render_vehicle_dominance_timelapse import (
     SYMBOLS,
@@ -50,6 +51,13 @@ def choice_fixture() -> pd.DataFrame:
 
 
 class VehicleDominanceTimelapseTests(unittest.TestCase):
+    def test_checked_in_poster_uses_current_route_vocabulary(self) -> None:
+        poster = Path("output/figures/vehicle_dominance_timelapse_poster.pdf")
+        text = "\n".join(page.extract_text() or "" for page in PdfReader(poster).pages).lower()
+        for obsolete in ("ultimate pair", "atomic pair", "atomic trade"):
+            self.assertNotIn(obsolete, text)
+        self.assertIn("active pairs", text)
+
     def test_monthly_state_keeps_smaller_stables_in_the_denominator(self) -> None:
         state = monthly_vehicle_state(choice_fixture())
         self.assertEqual(len(state), 73)

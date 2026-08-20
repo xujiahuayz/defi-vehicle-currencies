@@ -11,6 +11,7 @@ from ddvc.deck_evidence import (
     rendered_page_density,
 )
 from ddvc.latex_text import strip_latex_comments
+from scripts.utils.embed_deck_video import inspect_deck_video
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -310,7 +311,7 @@ def test_deck_states_units_scopes_and_primary_protocol_sources() -> None:
     assert "native-WETH-versus-stablecoin routes" in secondary
     assert "common month-days" in secondary
     assert "Matched markets" not in decomposition
-    assert "Within-ultimate-pair change" in decomposition
+    assert "Within-pair change" in decomposition
 
     visible_identification = strip_latex_comments(identification)
     assert "\\RoutePanelRawSwaps" in visible_identification
@@ -374,8 +375,23 @@ def test_deck_mechanism_sequence_separates_route_settlement_and_capital() -> Non
     assert "vehicle_dominance_timelapse.mp4" in results
     assert "vehicle_dominance_timelapse_poster.pdf" in results
     assert "run:../output/figures/vehicle_dominance_timelapse.mp4" in results
-    assert "Play local 18-second film" in results
+    assert "Click the film to play in Adobe Acrobat" in results
     assert "\\movie" not in results
+
+
+def test_deck_pdf_contains_the_film_and_no_external_video_action() -> None:
+    mp4 = ROOT / "output" / "figures" / "vehicle_dominance_timelapse.mp4"
+    report = inspect_deck_video(DECK_PDF, mp4)
+    assert report.richmedia_annotations == 1
+    assert report.launch_actions == 0
+    assert report.uri_actions == 0
+    assert report.embedded_file_size == mp4.stat().st_size
+    assert len(report.pages) == 1
+
+    from pypdf import PdfReader
+
+    video_page = PdfReader(DECK_PDF).pages[report.pages[0] - 1]
+    assert "Vehicle leadership turns over through time" in video_page.extract_text()
 
 
 def test_deck_separates_weth_eligibility_from_value_composition() -> None:
@@ -389,7 +405,7 @@ def test_deck_separates_weth_eligibility_from_value_composition() -> None:
         ROOT / "deck" / "assets" / "non-weth-value-composition.tex"
     ).read_text(encoding="utf-8")
 
-    title = "A16. Ultimate-pair composition contains a mechanical component"
+    title = "A16. Pair composition contains a mechanical component"
     assert title in secondary
     assert "output/exhibits/route_methodology_heterogeneity.jsonl" in secondary
     assert "grouped-binomial" not in secondary
@@ -402,8 +418,8 @@ def test_deck_separates_weth_eligibility_from_value_composition() -> None:
     assert "provisional" not in rendered_frame.lower()
 
     assert r"Eligible intermediaries:\\stablecoins" in asset
-    assert "All matched ultimate pairs" in asset
-    assert r"Ultimate pairs without\\WETH endpoints" in asset
+    assert "All matched pairs" in asset
+    assert r"Pairs without\\WETH endpoints" in asset
     assert "cells" not in asset.lower()
     assert r"\WethCountFullChange" in asset
     assert r"\WethCountNoEndpointChange" in asset
@@ -416,7 +432,7 @@ def test_weth_frame_evidence_boundary_does_not_drift() -> None:
     secondary = (ROOT / "deck" / "sections" / "91-secondary-results.tex").read_text(
         encoding="utf-8"
     )
-    title = "A16. Ultimate-pair composition contains a mechanical component"
+    title = "A16. Pair composition contains a mechanical component"
     frame_start = secondary.index(rf"\begin{{frame}}{{{title}}}")
     metadata = secondary[secondary.rfind("% EVIDENCE-STATUS:", 0, frame_start):frame_start]
 

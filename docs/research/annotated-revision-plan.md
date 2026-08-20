@@ -51,7 +51,7 @@ sensitivity that slightly strengthens the aggregate rotation. Each major revisio
   not hold the destination currency. Use BIS Project Nexus, Project Rialto, and
   Project Mariana as authoritative examples of third-party FX provision,
   vehicle currencies, and pooled liquidity in prospective cross-border systems.
-- Introduce DeFi as the setting in which the complete pool path is observable,
+- Introduce DeFi as the setting in which the complete pool route is observable,
   not as the contribution by itself.
 - State the matched January--June 2024 and 2026 comparison immediately and
   define continuing, entering, and exiting endpoint pairs before using them.
@@ -61,9 +61,10 @@ sensitivity that slightly strengthens the aggregate rotation. Each major revisio
 
 ## Terminology, estimands, and sample boundaries
 
-- Use **endpoint pair** for the ordered source and destination and **leg** for
-  one pool trade. Shorten endpoint pair to pair only where no pool pair is in
-  view. Reserve route for the connected execution sequence.
+- Define **endpoint pair** once as the ordered source and destination, then use
+  **pair**. A **leg** is one directed pool execution, a **route** is the observed
+  ordered sequence of legs, and a **path** is a feasible or counterfactual
+  alternative. All four are directed unless explicitly stated otherwise.
 - Explain that ETH and WETH are one economic settlement asset because wrapping
   is a one-for-one technical representation needed for token contracts, while
   reconstruction still occurs at the token-address level.
@@ -158,10 +159,9 @@ sensitivity that slightly strengthens the aggregate rotation. Each major revisio
   A control can absorb observable covariation but cannot turn a misvalued route
   into a valid dollar weight. The right response is transparent eligibility,
   coverage, and sensitivity alongside the unrestricted count result.
-- Bare "pair" cannot be universal because decentralised-exchange readers also
-  use pair for the assets in one pool. "Endpoint pair" is the shortest label
-  that preserves the distinction; "pair" is safe after local context fixes the
-  meaning.
+- Bare **pair** means the directed endpoint pair after the initial definition.
+  Pool-level discussion uses **leg**, pool, or token combination, so the paper
+  does not repeatedly rebuild the longer label.
 - The PYUSD-to-USDC step cannot be assigned to a vehicle without observing the
   instruction-level execution that produced it. The paper should bound the
   prevalence of disconnected components where possible, but it should not

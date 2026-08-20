@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render all-route participation and atomic-pair network position."""
+"""Render all-route participation and trading-network position."""
 
 from __future__ import annotations
 
@@ -63,7 +63,7 @@ def render_table(composition: pd.DataFrame, network: pd.DataFrame) -> str:
     rows.extend(
         [
             r"\addlinespace[0.6em]",
-            r"\multicolumn{5}{@{}l}{\textit{Panel B. Named currencies in the atomic-pair graph}} \\",
+            r"\multicolumn{5}{@{}l}{\textit{Panel B. Named currencies in the trading graph}} \\",
             r"Currency & Year & Betweenness (rank) & Intermediary-position share [\%] & Route-participation share [\%] \\",
             r"\midrule",
         ]

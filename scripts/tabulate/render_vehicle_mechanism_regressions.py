@@ -91,7 +91,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     TableRow(
         margin="Rolling hazard",
         outcome="Stable appears within 30d",
-        regressor_label="Ultimate-pair age",
+        regressor_label="Pair age",
         selector={
             "model_id": "stable_turn_on_hazard_fe",
             "outcome": "future_stable_turn_on",

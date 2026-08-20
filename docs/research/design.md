@@ -80,7 +80,7 @@ common trading demand and risk-bearing conditions remain viable explanations.
 
 The paper asks what makes a vehicle currency dominant and how that dominance
 changes. Decentralized exchange is the empirical setting because a transaction
-records the assets and pools used along its path. It lets us observe a currency
+records the assets and pools used along its route. It lets us observe a currency
 role that conventional pair-level turnover data usually leave latent.
 
 The main contribution is a distinction between two margins:
@@ -119,11 +119,12 @@ competition.
 The first family compares the stablecoin share of native-plus-stable
 intermediaries in 2024 and 2026 on common January-to-June dates.
 
-- Unit: ordered endpoint pair × date × observed integration scope.
-- Main coefficient: the 2026 indicator with endpoint-pair × month-day × scope
+- Unit: pair-day by observed integration scope. As defined above, every pair is
+  ordered by token flow.
+- Main coefficient: the 2026 indicator with pair × month-day × scope
   fixed effects.
 - Weights: the applicable native-plus-stable route mass.
-- Inference: two-way clustering by endpoint pair and date, with Holm adjustment
+- Inference: two-way clustering by pair and date, with Holm adjustment
   across the three registered count/value measures.
 - Interpretation: descriptive within-market substitution. Calendar time is not a treatment,
   and realised cross-venue routing is not assigned integration.
@@ -181,7 +182,7 @@ The monthly exact-price comparison asks whether the realised intermediary
 survives a broader public opportunity set. The calendar is the fifteenth day of
 each month from June 2020 through June 2026. The unit is a coherent two-leg route
 executed on Uniswap V2, SushiSwap V2, or Uniswap V3. Source, destination, input
-amount, and pre-transaction state remain fixed, and the chosen path must
+amount, and pre-transaction state remain fixed, and the observed route must
 reproduce realised output within one basis point.
 
 The comparison widens the price set in three nested stages: the same vehicle in
@@ -206,8 +207,8 @@ reported shares unchanged at one decimal place.
 
 ## Boundaries
 
-- Architecture availability, adoption, leg-level venue formation,
-  endpoint-pair entry, substitution, and reversal are different objects.
+- Architecture availability, adoption, leg-level venue formation, pair entry,
+  substitution, and reversal are different objects.
 - Counts and values answer different questions and are never silently pooled.
 - Unsupported values stay visible through coverage rather than being imputed.
 - Symbols label assets; contract addresses establish identity.

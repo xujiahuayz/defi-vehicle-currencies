@@ -64,9 +64,11 @@ the present paper makes no aggregator-causality or market-efficiency claim.
 ## Reporting rules
 
 - Say **executor**, not route author, unless authorship is separately established.
-- Say **ordered endpoint pair** for the direction-specific input-to-output
-  endpoints, **route** for the realised execution sequence (or **path** when
-  discussing the graph), and **leg** for each pool execution.
+- Define **endpoint pair** once as the direction-specific input-to-output
+  endpoints, then say **pair**. Use **route** for the realised execution
+  sequence, **leg** for each pool execution, and **path** only for a feasible or
+  counterfactual alternative. All four are directed unless explicitly stated
+  otherwise.
 - Keep route complexity, market integration, search performance, and
   vehicle-currency economics separate.
 - Count-weighted routing is primary; value-weighted routing always reports its

@@ -36,7 +36,7 @@ A12--A13 References\par
 \par\vspace{0.10cm}
 A14 Graph position and realised use\par
 A15 Endpoint demand\par
-A16--A17 Ultimate-pair composition\par
+A16--A17 Pair composition\par
 A18 Local and network depth\par
 A19 Pool activation and growth\par
 A20 V4 participation\par
@@ -128,7 +128,7 @@ A20 V4 participation\par
 \draw[route,draw=accent] (rk)--(rb);
 \end{tikzpicture}
 \par\vspace{0.1cm}
-{\small Vehicle choice directs indirect order flow toward particular assets and pools. Transaction-level paths make that choice visible inside aggregate turnover.\par}
+{\small Vehicle choice directs indirect order flow toward particular assets and pools. Transaction-level routes make that choice visible inside aggregate turnover.\par}
 \end{frame}
 
 % VISUAL-FUNCTION: time-varying backing | token-by-period regime heatmap | show why stablecoin backing cannot be treated as fixed
@@ -153,7 +153,7 @@ A20 V4 participation\par
 \centering
 \resizebox{0.92\textwidth}{!}{\input{assets/sample-measurement-funnel.tex}}\par
 \vspace{0.05cm}
-{\fontsize{8.0}{8.8}\selectfont Atomic token pairs inside multi-asset pools can supply route legs. V1/V2 architecture evidence is separate; dollar support changes value weighting.\par}
+{\fontsize{8.0}{8.8}\selectfont Token combinations inside multi-asset pools can supply route legs. V1/V2 architecture evidence is separate; dollar support changes value weighting.\par}
 \end{frame}
 
 % VISUAL-FUNCTION: causal event ordering | numbered replay sequence | explain same-state counterfactual timing
@@ -231,7 +231,7 @@ V4 singleton
 % literature/text/2021-AdamsZinsmeisterRobinson2021UniswapV3-whitepaper-uniswap-v3-core.txt;
 % https://app.uniswap.org/whitepaper-v4.pdf, Adams et al. (2024), Sections 1 and 3;
 % docs/research/design.md.
-% SCIENTIFIC-LIMITATION: protocol rules change atomic-pair availability, atomic-pair-specific active liquidity, or the accounting scope. The slide reports no adoption, liquidity, routing, or causal estimate.
+% SCIENTIFIC-LIMITATION: protocol rules change leg availability, leg-specific active liquidity, or the accounting scope. The slide reports no adoption, liquidity, routing, or causal estimate.
 % VISUAL-FUNCTION: architecture-to-economic-object map | three protocol-mechanism panels | show how V1--V4 alter the opportunity set without treating calendar version as an estimated effect
 \begin{frame}{A5.1. Pool formation determines available paths}
 \vspace{-0.08cm}

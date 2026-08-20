@@ -21,7 +21,7 @@ def test_exact_frontier_table_and_values_are_bound_to_the_result() -> None:
     assert "Same vehicle, all exact venues" in table
     assert "Full-set minus realised stablecoin share" in table
     assert "Panel A. Coverage and quote validation" in table
-    assert "Mapped chosen paths reproduced within 1 bp" in table
+    assert "Mapped observed routes reproduced within 1 bp" in table
     assert "\\ExactFrontierSameVehicleShare" in values
     assert "\\ExactFrontierStableChange" in values
     assert "\\ExactFrontierExtremeRoutes" in values

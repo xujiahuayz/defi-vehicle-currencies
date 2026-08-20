@@ -20,9 +20,9 @@ Start with a familiar payment problem.
 
 A payment provider receives currency A and needs to deliver currency B. It may have no deep A–B market and may not hold B. So it goes through a common currency, (k).
 
-This is more than drawing a network. Someone has to quote both atomic trades and hold enough liquidity on both sides. A to (k). Then (k) to B.
+This is more than drawing a network. Someone has to quote both legs and hold enough liquidity on both sides. A to (k). Then (k) to B.
 
-That is why I start with the market maker. A vehicle currency is useful because two liquid atomic pairs can bridge a difficult ultimate pair.
+That is why I start with the market maker. A vehicle currency is useful because two liquid legs can bridge a difficult pair.
 
 Now, in traditional FX, seeing that full connection is difficult. In DeFi, the route is recorded inside the transaction.
 
@@ -30,9 +30,9 @@ Now, in traditional FX, seeing that full connection is difficult. In DeFi, the r
 
 Since we are in Singapore, take SGD to NOK.
 
-The payment may go SGD to USD, then USD to NOK. USD is the vehicle. The ultimate pair is SGD–NOK. The atomic pairs are SGD–USD and USD–NOK.
+The payment may go SGD to USD, then USD to NOK. USD is the vehicle. The ordered endpoint pair, which I will just call the pair, is SGD to NOK. The legs are SGD to USD and USD to NOK. The full sequence is the route. Pair, leg, and route all follow the direction of the payment.
 
-Conventional turnover data normally show the two atomic trades separately. Linking them back to one ultimate exchange needs extra assumptions.
+Conventional turnover data normally show the two legs separately. Linking them back to one customer exchange needs extra assumptions.
 
 Inside a DeFi transaction, the pool calls are ordered. We see A go into one pool, (k) come out, then (k) go into the next pool and B come out. So the vehicle is observed directly.
 
@@ -56,11 +56,11 @@ Here is a real transaction from January 2026.
 
 The explorer describes a PYUSD to USDe instruction. The connected pool route we observe begins with USDC. Fluid turns USDC into USDT; Uniswap v4 turns USDT into USDe.
 
-So, inside the observed route, USDC–USDe is the ultimate pair. USDC–USDT and USDT–USDe are the atomic pairs. USDT is the vehicle.
+So, inside the observed route, the pair is USDC to USDe. The legs are USDC to USDT and USDT to USDe. USDT is the vehicle.
 
 What happened between PYUSD and USDC? The data allow two possibilities. Another trade outside our exchange panel, or USDC supplied from the executor's inventory. We stop at USDC because that is where the pool evidence begins.
 
-This example also makes the language concrete. Ultimate pair, atomic pairs, complete route. I will use those terms throughout.
+This example also makes the language concrete. Pair, legs, complete route. All directed by the token flow.
 
 ## The full route and the one-vehicle choice answer different questions (7:10 to 8:40)
 
@@ -70,7 +70,7 @@ First, all route lengths. Every intermediary position counts. If a route uses tw
 
 We also report route participation: the fraction of complete routes containing each currency. Those shares can add above 100 percent because one long route may contain several intermediary currencies. That is fine; it is a presence measure.
 
-Second, the exact two-atomic-trade route. One route, one intermediary, one vehicle choice. This is the clean sample for decomposing stablecoin against WETH use.
+Second, the exact two-leg route. One route, one intermediary, one vehicle choice. This is the clean sample for decomposing stablecoin against WETH use.
 
 Why stablecoins and the native asset? They are the two broad vehicle families present throughout the sample. The all-route figure still shows the other categories.
 
@@ -80,11 +80,11 @@ With the measures clear, we can ask where aggregate dominance comes from.
 
 Three possibilities.
 
-One: the same continuing ultimate pair switches its vehicle.
+One: the same continuing pair switches its vehicle.
 
-Two: the ultimate pairs continue, but trading moves toward ultimate pairs that already use one vehicle more heavily.
+Two: the pairs continue, but trading moves toward pairs that already use one vehicle more heavily.
 
-Three: ultimate pairs enter or leave, and those relationships arrive with a vehicle.
+Three: pairs enter or leave, and those relationships arrive with a vehicle.
 
 The aggregate series alone mixes all three. The decomposition separates them exactly.
 
@@ -94,7 +94,7 @@ Before that result, one historical reason to expect persistence: Ethereum's earl
 
 In Uniswap v1, token-to-token trading had to pass through ETH. We recover 217,003 such trades. Native intermediation was written into the protocol.
 
-V2 removed that rule. Any two tokens could form a pool. Yet WETH pairing remained overwhelming: 95.5 percent of single-atomic-trade v2 trades use a WETH pool in 2026, and 97.9 percent of ultimate pairs first traded in 2026 include WETH.
+V2 removed that rule. Any two tokens could form a pool. Yet WETH pairing remained overwhelming: 95.5 percent of single-leg v2 trades use a WETH pool in 2026, and 97.9 percent of pairs first traded in 2026 include WETH.
 
 Part of the early persistence is mechanical. V2 inherited liquidity, users, and routing habits from v1. Then deep WETH pools and common launch conventions kept reinforcing the structure.
 
@@ -110,55 +110,55 @@ So this is no smooth, one-way technology trend. The leadership actually turns ov
 
 Among all intermediary positions, the stablecoin share rises from 17.2 percent in 2024 to 41.9 percent in 2026 H1. Route participation tells the same story: 17.6 to 46.1 percent. Longer routes are part of the result, not discarded observations.
 
-The value shift is even larger. The short film makes the turnover easier to see because frequency, value, and ultimate-pair breadth move at the same time.
+The value shift is even larger. The short film makes the turnover easier to see because frequency, value, and pair breadth move at the same time.
 
 ## Vehicle leadership turns over through time (13:25 to 14:25)
 
 Let this run for 18 seconds.
 
-Horizontal position is route-count share. Vertical position is supported-value share. Bubble size is the number of active ultimate pairs. The trail keeps only six months.
+Horizontal position is route-count share. Vertical position is supported-value share. Bubble size is the number of active pairs. The trail keeps only six months.
 
-Watch WETH first. Large, high, far to the right. Then USDC gains value weight. Later USDT rises sharply. By the end, the stablecoin family carries most supported value even while WETH remains broad across ultimate pairs.
+Watch WETH first. Large, high, far to the right. Then USDC gains value weight. Later USDT rises sharply. By the end, the stablecoin family carries most supported value even while WETH remains broad across pairs.
 
 No final frame tells that whole story. The movement is the object here.
 
-Now the central question: did existing ultimate pairs switch, or did trading form around different ultimate pairs?
+Now the central question: did existing pairs switch, or did trading form around different pairs?
 
-## Ultimate-pair formation supplies most of the rotation (14:25 to 17:00)
+## Pair formation supplies most of the rotation (14:25 to 17:00)
 
 This is the central decomposition. Same January-to-June dates in 2024 and 2026.
 
 Stablecoin share rises from 16.9 to 42.5 percent. A 25.7 percentage-point rotation.
 
-Inside continuing ultimate pairs, positive and negative switches almost exactly offset: minus 0.1 point net.
+Inside continuing pairs, positive and negative switches almost exactly offset: minus 0.1 point net.
 
-Trading reallocation across continuing ultimate pairs adds 8.6 points.
+Trading reallocation across continuing pairs adds 8.6 points.
 
-Ultimate pairs present in only one period add 17.8 points. The largest component.
+Pairs present in only one period add 17.8 points. The largest component.
 
-This does not say every continuing ultimate pair is frozen. Many move toward stablecoins and many move back toward WETH. The net is near zero. The aggregate rise comes from where trading grows and which relationships appear.
+This does not say every continuing pair is frozen. Many move toward stablecoins and many move back toward WETH. The net is near zero. The aggregate rise comes from where trading grows and which relationships appear.
 
 That changes the economic story. Dominance can move because the network grows around a vehicle, even when established relationships show little net replacement.
 
 The next question is whether the first vehicle of a new relationship lasts.
 
-## The vehicle chosen at ultimate-pair entry predicts later use (17:00 to 19:00)
+## The vehicle chosen at pair entry predicts later use (17:00 to 19:00)
 
-Take a newly observed ultimate pair. Look at its stablecoin share at entry. Then follow the same pair.
+Take a newly observed pair. Look at its stablecoin share at entry. Then follow the same pair.
 
 One percentage point more stablecoin use at entry predicts 0.86 points more over the next 30 days and 0.74 points more over 120 days.
 
-Large persistence. Same ultimate pair, long after the first routes.
+Large persistence. Same pair, long after the first routes.
 
-“Initial” simply means the first observed routes of that new ultimate pair. The ultimate pair is new to the data; its first vehicle identity is still well defined.
+“Initial” simply means the first observed routes of that new pair. The pair is new to the data; its first vehicle identity is still well defined.
 
-The estimates control for entry size, cohort, endpoint type, direct routing, and route complexity. The first vehicle remains an equilibrium outcome. The result is path dependence, not random assignment.
+The estimates control for entry size, cohort, endpoint type, direct routing, and route complexity. The first vehicle remains an equilibrium outcome. The result is persistence from initial vehicle use, not random assignment.
 
-Once a route convention forms, challengers face a real hurdle. But persistence can reflect shallow competing routes. So next we measure the two atomic pairs behind the challenger.
+Once a route convention forms, challengers face a real hurdle. But persistence can reflect shallow competing routes. So next we measure the two legs behind the challenger.
 
 ## A shallow stablecoin bridge attracts little route flow (19:00 to 21:20)
 
-A stablecoin route needs two atomic pairs: source to stablecoin, then stablecoin to destination. The weaker one is the bottleneck.
+A stablecoin route needs two legs: source to stablecoin, then stablecoin to destination. The weaker one is the bottleneck.
 
 When the best stablecoin bridge has less than one tenth of WETH's depth, stablecoins carry only 2.4 percent of routes.
 
@@ -176,7 +176,7 @@ This also helps interpret persistence. Some challengers fail to attract flow bec
 
 Day zero is the first observed use of a supported stablecoin. The pool bridge already exists before then.
 
-Over the preceding week, capital on the weaker stablecoin atomic pair rises by 0.86 log points. Relative to the matched WETH bridge, the increase is 0.78.
+Over the preceding week, capital on the weaker stablecoin leg rises by 0.86 log points. Relative to the matched WETH bridge, the increase is 0.78.
 
 Human version: liquidity builds, then the first routed trade appears.
 
@@ -204,11 +204,11 @@ So routers often leave venue-level price improvement on the table. Vehicle ident
 
 Let me leave you with three things.
 
-First, new trading relationships. The largest part of the stablecoin rotation comes from ultimate-pair formation and trading reallocation.
+First, new trading relationships. The largest part of the stablecoin rotation comes from pair formation and trading reallocation.
 
-Second, a first vehicle. What a new ultimate pair uses at entry predicts what it keeps using months later.
+Second, a first vehicle. What a new pair uses at entry predicts what it keeps using months later.
 
-Third, two deep atomic pairs. A challenger begins to attract flow when both sides of its route become competitive.
+Third, two deep legs. A challenger begins to attract flow when both sides of its route become competitive.
 
 And there is the contrast with price. Price competition is very active across venues. Opening more venues often improves the quote. Opening another vehicle changes vehicle identity much less.
 
@@ -237,7 +237,7 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 ## A1. One reconstructed route is one unit
 
 - A connected (i\rightarrow k\rightarrow o) sequence counts as one route.
-- (k) occupies one intermediary position; the route contains two atomic trades.
+- (k) occupies one intermediary position; the route contains two legs.
 - Dominance can weight that route once or weight the supported dollars it carries.
 
 ## How we reconstruct a route from one transaction
@@ -255,7 +255,7 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 ## A3. One route universe supports two measurements
 
 - All route lengths describe participation across the whole network.
-- Exact two-atomic-trade routes isolate one vehicle choice.
+- Exact two-leg routes isolate one vehicle choice.
 - Both come from the same reconstructed routes; the denominator changes with the question.
 
 ## A4. State is reconstructed immediately before execution
@@ -292,7 +292,7 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 
 - Two token-exchange contracts, same transaction, matching ETH out and ETH in.
 - That exact ETH flow identifies forced token-to-ETH-to-token routing.
-- Missing token crosswalks limit uniform ultimate-pair identification, which is why v1 stays separate.
+- Missing token crosswalks limit uniform pair identification, which is why v1 stays separate.
 
 ## A7. Daily and weekly frequencies answer different questions
 
@@ -333,7 +333,7 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 ## A11. Additional venues expand the feasible route set
 
 - More venues can add a better pool for the same vehicle.
-- They can also add a different vehicle path or a direct route.
+- They can also add a different vehicle path or a direct path.
 - The exact-price exercise opens those sets step by step.
 
 ## A11b. Venue scope and vehicle type differ in 2026
@@ -356,7 +356,7 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 
 ## A14. WETH stays the graph hub as realised use shifts
 
-- WETH ranks first in betweenness in every annual atomic-pair graph and remains at 0.927 in 2026 H1.
+- WETH ranks first in betweenness in every annual trading graph and remains at 0.927 in 2026 H1.
 - Its realised intermediary-position share still falls from 76.2 to 42.3 percent; USDC and USDT together rise from 14.9 to 37.4.
 - A binary edge records an available connection. It does not record route depth or execution cost, so graph position alone cannot explain realised use.
 
@@ -366,23 +366,23 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 - With date and currency effects, one extra percentage point of endpoint demand maps into 0.98 points of intermediary use.
 - Currency effects absorb permanent asset-class indicators, so those rows disappear in model 4.
 
-## A16. Ultimate-pair composition contains a mechanical component
+## A16. Pair composition contains a mechanical component
 
 - WETH at an endpoint rules out WETH as the intermediary.
-- Removing those ultimate pairs reduces the count rotation sharply.
-- Fixed ultimate pairs still show only small net stablecoin movement, so the central composition result survives the eligibility issue.
+- Removing those pairs reduces the count rotation sharply.
+- Fixed pairs still show only small net stablecoin movement, so the central composition result survives the eligibility issue.
 
 ## A17. Endpoint direction separates count and value channels
 
-- Other ultimate pairs supply the largest count and value contribution.
-- Ultimate pairs with two stablecoin endpoints are small by count and large by value.
+- Other pairs supply the largest count and value contribution.
+- Pairs with two stablecoin endpoints are small by count and large by value.
 - USDT supplies essentially that entire high-value two-stable-endpoint channel.
 
 ## A18. Local depth remains informative alongside network reach
 
 - The deepest supported bridge carries 84.1 percent of routes.
-- Local weak-atomic-pair capital and broader same-day reach both predict route share.
-- Betweenness asks a related graph-position question; this regression uses observed reach outside the local ultimate pair.
+- Local weak-leg capital and broader same-day reach both predict route share.
+- Betweenness asks a related graph-position question; this regression uses observed reach outside the local pair.
 
 ## A19. Most first-use capital sits in pools already active
 

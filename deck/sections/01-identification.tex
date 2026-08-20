@@ -27,7 +27,7 @@
 \draw[route,draw=ucldark,line width=1.55pt] (src)--(veh);
 \draw[route,draw=ucldark,line width=1.55pt] (veh)--(dst);
 \draw[rule,densely dashed,line width=1.2pt] (src) to[bend right=28] (dst);
-\node[softbox,text width=5.15cm,align=center] at (2.50,1.15) {\small Currency $k$ bridges an illiquid ultimate pair.};
+\node[softbox,text width=5.15cm,align=center] at (2.50,1.15) {\small Currency $k$ bridges an illiquid pair.};
 \node[font=\scriptsize\bfseries,text=white,fill=ucldark,rounded corners=2pt,inner sep=4pt] at (2.50,0.30) {vehicle currency};
 \end{tikzpicture}
 \end{column}
@@ -56,7 +56,7 @@
 \draw[route,draw=ucldark,line width=1.7pt] (jpy)--(usd);
 \draw[route,draw=ucldark,line width=1.7pt] (usd)--(eur);
 \node[font=\scriptsize\bfseries,text=white,fill=ucldark,rounded corners=2pt,inner sep=4pt] at (2.55,1.45) {vehicle};
-\node[softbox,text width=5.30cm,align=center] at (2.55,0.42) {\small Pool logs reveal the path.};
+\node[softbox,text width=5.30cm,align=center] at (2.55,0.42) {\small Pool logs reveal the route.};
 \end{tikzpicture}
 \end{column}
 \end{columns}
@@ -64,12 +64,12 @@
 \begin{beamercolorbox}[wd=\textwidth,sep=0.15cm]{block body}
 {\small \textbf{DeFi} is on-chain finance executed by smart contracts; decentralised exchanges (DEXs) trade tokens through liquidity pools. \textbf{Stablecoins} are tokens designed to track a reference currency, usually the US dollar.\par}
 \end{beamercolorbox}
-\decknote{The currency labels illustrate a possible indirect conversion, not an observed customer route. Conventional FX records report turnover in each currency pair but generally do not link the two legs to one instruction. The DEX setting preserves the transaction-level pool path, so the intermediary asset is observed directly.}
+\decknote{The currency labels illustrate a possible indirect conversion, not an observed customer route. Conventional FX records report turnover in each currency pair but generally do not link the two legs to one instruction. The DEX setting preserves the transaction-level pool route, so the intermediary asset is observed directly.}
 \end{frame}
 
 % EVIDENCE-STATUS: principal route-panel scope; counts and dates come from the aggregate reconstruction-quality exhibit and the daily routing series.
 % EVIDENCE-SOURCES: output/exhibits/unified_route_quality.jsonl; output/exhibits/cross_venue_routing_series.jsonl; output/exhibits/presentation_values.tex; src/ddvc/fetch/sources.py
-% SCIENTIFIC-LIMITATION: Uniswap v1 is excluded from the principal panel because the retained records do not recover ultimate-pair identities; it enters the separate forced-routing architecture analysis.
+% SCIENTIFIC-LIMITATION: Uniswap v1 is excluded from the principal panel because the retained records do not recover pair identities; it enters the separate forced-routing architecture analysis.
 % VISUAL-FUNCTION: sample perimeter | three large scope statistics plus deployment list | establish scale, time span, and venue coverage before the transaction example
 \begin{frame}{The route panel links pool-level swaps}
 \vspace{0.16cm}
@@ -94,7 +94,7 @@
 \vspace{0.16cm}
 {\small Uniswap v2, v3, and v4; SushiSwap v2 and v3; Curve; Balancer; and Fluid.\par}
 \end{beamercolorbox}
-\decknote{The listed deployments form the principal Ethereum route panel. Uniswap v1 enters the separate protocol-architecture analysis because its retained records do not recover ultimate-pair identities.}
+\decknote{The listed deployments form the principal Ethereum route panel. Uniswap v1 enters the separate protocol-architecture analysis because its retained records do not recover pair identities.}
 \end{frame}
 
 \input{../output/exhibits/route_replay_deck_values.tex}
@@ -128,7 +128,7 @@
 \vspace{0.15cm}
 \begin{minipage}{0.78\textwidth}
 \centering
-{\small The ultimate pair is USDC $\rightarrow$ USDe. Its atomic pairs are USDC--USDT and USDT--USDe; USDT is the vehicle that links them.\par}
+{\small The ordered endpoint pair, or pair, is USDC $\rightarrow$ USDe. Its legs are USDC $\rightarrow$ USDT and USDT $\rightarrow$ USDe; USDT is the vehicle.\par}
 \end{minipage}
 \par\vspace{0.04cm}
 {\raggedright\decknote{The route is the connected pool-swap component of transaction \ethtx{0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9}{0xbda1d07f\ldots 9bf67ad9} on 10 January 2026. The pool component begins at USDC. It does not reveal whether PYUSD became USDC in an unobserved pool or through the executor's inventory.}}
@@ -141,7 +141,7 @@
 \evidencekicker{Measurement}
 \begin{itemize}
 \item Every complete route contributes each currency used in an intermediary position.
-\item Exact two-atomic-trade routes isolate one vehicle choice.
+\item Exact two-leg routes isolate one vehicle choice.
 \end{itemize}
 \end{column}
 \begin{column}{0.53\textwidth}
@@ -155,9 +155,9 @@
 \node[anchor=west,font=\small\bfseries,text=ucldark] at (0,2.10) {All route lengths};
 \node[anchor=west,font=\small,align=left,text width=6.0cm] at (0,1.58) {Presence on a route and share of all intermediary positions};
 \node[anchor=west,font=\small\bfseries,text=stable] at (0,0.78) {One vehicle per route};
-\node[anchor=west,font=\small,align=left,text width=6.0cm] at (0,0.26) {Exact two-atomic-trade routes support decomposition and choice tests};
+\node[anchor=west,font=\small,align=left,text width=6.0cm] at (0,0.26) {Exact two-leg routes support decomposition and choice tests};
 \end{tikzpicture}
 \end{column}
 \end{columns}
-\decknote{Route-participation shares can sum above 100\% because a longer route may use several intermediary currencies. Intermediary-position shares divide all realised intermediary uses and sum to 100\%. Exact two-atomic-trade routes map one route to one vehicle.}
+\decknote{Route-participation shares can sum above 100\% because a longer route may use several intermediary currencies. Intermediary-position shares divide all realised intermediary uses and sum to 100\%. Exact two-leg routes map one route to one vehicle.}
 \end{frame}

@@ -211,11 +211,14 @@ class PaperProseTests(unittest.TestCase):
 
     def test_reader_facing_route_vocabulary_is_current(self) -> None:
         obsolete = re.compile(
-            r"\bendpoint[- ]pair\b|\bcorridor\b|\bultimate[- ]pair market\b",
+            r"\bultimate[- ]pairs?\b|\batomic[- ]pairs?\b|\batomic[- ]trades?\b|\bcorridor\b|\bendpoint[- ]pair market\b",
             re.IGNORECASE,
         )
-        for path in source_files(ROOT / "paper") + source_files(DECK_DIR):
-            body = strip_latex_comments(path.read_text(encoding="utf-8"))
+        paths = source_files(ROOT / "paper") + source_files(DECK_DIR)
+        paths.append(DECK_DIR / "script.md")
+        for path in paths:
+            raw = path.read_text(encoding="utf-8")
+            body = strip_latex_comments(raw) if path.suffix == ".tex" else raw
             match = obsolete.search(body)
             if match:
                 self.fail(
@@ -223,9 +226,27 @@ class PaperProseTests(unittest.TestCase):
                     f"uses ambiguous audience term {match.group(0)!r}"
                 )
         introduction = (PAPER_DIR / "01-introduction.tex").read_text(encoding="utf-8")
-        self.assertRegex(introduction, r"\\emph\{ultimate pair\}")
-        self.assertRegex(introduction, r"\\emph\{atomic pair\}")
-        self.assertRegex(introduction, r"\\emph\{atomic trade\}")
+        self.assertRegex(introduction, r"\\emph\{endpoint pair\}")
+        self.assertRegex(introduction, r"\\emph\{pair\}")
+        self.assertRegex(introduction, r"\\emph\{leg\}")
+        self.assertRegex(introduction, r"\\emph\{route\}")
+
+    def test_path_is_reserved_for_feasible_or_counterfactual_alternatives(self) -> None:
+        observed_path = re.compile(
+            r"\b(?:observed|realised|transaction[- ]level|pool|chosen|self[- ]returning) paths?\b|\bpath length\b|\bpath dependence\b",
+            re.IGNORECASE,
+        )
+        paths = source_files(ROOT / "paper") + source_files(DECK_DIR)
+        paths.append(DECK_DIR / "script.md")
+        for path in paths:
+            raw = path.read_text(encoding="utf-8")
+            body = strip_latex_comments(raw) if path.suffix == ".tex" else raw
+            match = observed_path.search(body)
+            if match:
+                self.fail(
+                    f"{path.relative_to(ROOT)}:{body.count(chr(10), 0, match.start()) + 1} "
+                    f"uses path for an observed route: {match.group(0)!r}"
+                )
 
     def test_percentage_point_abbreviation_is_defined_before_compact_use(self) -> None:
         preamble = (PAPER_DIR.parent / "main.tex").read_text(encoding="utf-8")

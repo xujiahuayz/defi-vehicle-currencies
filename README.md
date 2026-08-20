@@ -6,13 +6,16 @@ currencies form and change in decentralized exchange.
 
 The economic question is whether an intermediary asset remains dominant only
 because market design requires it, or because liquidity and trading activity
-make its role self-reinforcing after the requirement disappears. For a routed
-trade `A → B → C`, `(A,C)` is the ordered **endpoint pair**, `A → B` and
-`B → C` are the two **legs**, and the full connected sequence is the **route**.
-A pool is the venue in which a leg executes. Code may retain legacy field names
-for compatibility, but generated labels, the paper, and the deck use endpoint
-pair, leg, and route. Reserve “corridor” for a bilateral real-economy trade or
-payment relationship.
+make its role self-reinforcing after the requirement disappears. For an
+observed exchange `A → B → C`, `(A,C)` is the ordered **endpoint pair**, `A →
+B` and `B → C` are its two **legs**, and the full ordered sequence of legs is
+the **route**. A pool is the venue in which a leg executes. After defining the
+endpoint pair once, audience prose uses **pair**. Pair, leg, route, and path are
+directed unless a passage explicitly says otherwise. **Path** is reserved for a
+feasible or counterfactual alternative; it does not rename an observed route.
+Econometric units use compact forms such as **pair-day** and **pair-date-route
+class**. Code may retain legacy field names for compatibility. Reserve
+“corridor” for a bilateral real-economy trade or payment relationship.
 
 ## Iterative workflow graph and current position
 
@@ -53,8 +56,8 @@ reproducible, but not yet submission-ready. The current research mode is
 parallel: keep the paper and slides presentable, integrate provisional results
 with explicit status labels, and continue the scoped mechanism and review loops.
 Current provisional layers cover vehicle birth, active-day birth-state
-hysteresis, controlled entry-state path dependence, value-supported entry path dependence, non-WETH entry drivers, route-architecture entry interactions,
-large-entrant routing, low-activity endpoint-pair turn-on with a direct-route by thinness
+hysteresis, controlled persistence from entry conditions, value-supported entry persistence, non-WETH entry drivers, route-architecture entry interactions,
+large-entrant routing, low-activity pair turn-on with a direct-route by thinness
 interaction, rolling native-only-to-stable turn-on hazards, same-day and
 prior-30-day candidate-network reach inside observed mixed-risk-set rival checks,
 endpoint claim-class formation splits, endpoint price-history formation screens,
@@ -128,17 +131,16 @@ slide titles, or result framing.
 
 ## Scientific contracts
 
-- Directed token flow defines ultimate endpoints, atomic legs, intermediaries,
-  and route topology. Dollar values may weight or audit a route but do not define
-  it.
+- Directed token flow defines endpoint pairs, legs, intermediaries, and route
+  topology. Dollar values may weight or audit a route but do not define it.
 - Vehicle status is binary; vehicle dominance is a continuous share. Cost
   domination is a different object and is never called vehicle dominance.
 - Counts and values answer different questions and are reported separately.
 - Route-flow coherence and quote-notional proximity are separate support axes.
 - Deposited capital, liquidity-supply flows, inventory, local depth, executable
   depth, and provider returns are distinct quantities.
-- Architecture availability, adoption, leg-level venue formation,
-  endpoint-pair entry, substitution, exit, reversal, and hysteresis are
+- Architecture availability, adoption, leg-level venue formation, pair entry,
+  substitution, exit, reversal, and hysteresis are
   distinct events. Calendar time is not a substitute for architecture.
 - Descriptive comparisons remain descriptive. Predictive capital associations
   are not causal feedback, and a global protocol launch alone is not a treatment
@@ -181,6 +183,7 @@ Run commands through the stable wrapper so they use this checkout's package:
 ./scripts/run -m unittest discover -s tests
 (cd paper && latexmk -pdf -interaction=nonstopmode main.tex)
 (cd deck && latexmk -pdf -interaction=nonstopmode main.tex)
+./scripts/run scripts/utils/embed_deck_video.py
 ./scripts/run scripts/verify/check_deliverable_conformance.py
 ```
 

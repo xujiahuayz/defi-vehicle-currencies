@@ -3,8 +3,8 @@
 
 Each frame is a monthly cross-section rather than a partial line chart.  The
 horizontal position is route-count share, the vertical position is supported-
-value share, and bubble area records the breadth of active ordered ultimate
-pairs.  Six-month fading trails reveal recent momentum without allowing the
+value share, and bubble area records the breadth of active directed pairs.
+Six-month fading trails reveal recent momentum without allowing the
 last frame to reproduce the full history.
 """
 
@@ -239,7 +239,7 @@ def spread_label_positions(
 
 
 def bubble_area(active_pairs: float, *, maximum: float) -> float:
-    """Map ultimate-pair breadth to a visible but bounded bubble area."""
+    """Map pair breadth to a visible but bounded bubble area."""
 
     if active_pairs < 0 or maximum <= 0:
         raise ValueError("bubble breadth must be nonnegative with a positive maximum")
@@ -440,7 +440,7 @@ def _draw_frame(
     )
     detail.text(0.48, 0.895, "route share", fontsize=9.4, color=MUTED, ha="right")
     detail.text(0.74, 0.895, "value share", fontsize=9.4, color=MUTED, ha="right")
-    detail.text(0.98, 0.895, "ultimate pairs", fontsize=9.4, color=MUTED, ha="right")
+    detail.text(0.98, 0.895, "pairs", fontsize=9.4, color=MUTED, ha="right")
     count_leader = max(SYMBOLS, key=lambda symbol: float(current[f"{symbol}_count_share"]))
     value_leader = max(SYMBOLS, key=lambda symbol: float(current[f"{symbol}_value_share"]))
     row_y = (0.82, 0.70, 0.58, 0.46)
@@ -535,7 +535,7 @@ def _draw_frame(
     detail.text(
         0.02,
         0.075,
-        "Bubble area: log active ordered ultimate pairs\nTrail: prior six months only",
+        "Bubble area: log active pairs\nTrail: prior six months only",
         fontsize=9.8,
         color=MUTED,
         linespacing=1.4,
@@ -544,7 +544,7 @@ def _draw_frame(
     figure.text(
         0.065,
         0.105,
-        "Exact two-atomic-trade routes. Value shares require source, intermediary, and destination values to agree within 20%.",
+        "Exact two-leg routes. Value shares require source, intermediary, and destination values to agree within 20%.",
         fontsize=9.4,
         color=MUTED,
         ha="left",
@@ -671,7 +671,7 @@ def _draw_poster(
     figure.text(
         0.11,
         0.075,
-        "Bubble area: active ultimate pairs   |   Trail: prior six months",
+        "Bubble area: active pairs   |   Trail: prior six months",
         fontsize=11,
         color=MUTED,
         ha="left",

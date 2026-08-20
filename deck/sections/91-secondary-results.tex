@@ -11,7 +11,7 @@
 
 % VISUAL-FUNCTION: graph position and realised use | three currency comparison columns | separate binary connectivity from intermediary allocation
 \begin{frame}{A14. WETH stays the graph hub as realised use shifts}
-\evidencekicker{All route lengths; monthly atomic-pair graphs}
+\evidencekicker{All route lengths; monthly trading graphs}
 \vspace{0.18cm}
 \begin{columns}[T,totalwidth=0.92\textwidth]
 \begin{column}{0.28\textwidth}
@@ -43,7 +43,7 @@
 \end{columns}
 \vspace{0.48cm}
 {\large Binary network position changes much less than actual intermediary use.\par}
-\decknote{Betweenness is approximate and unweighted in annual atomic-pair graphs built from trades on the fifteenth day of each month, using 256 source nodes and a fixed seed. Realised shares use all intermediary positions on the same dates. A graph edge records an observed atomic pair, not its depth or execution cost.}
+\decknote{Betweenness is approximate and unweighted in annual trading graphs built from trades on the fifteenth day of each month, using 256 source nodes and a fixed seed. Realised shares use all intermediary positions on the same dates. A graph edge records an observed leg, not its depth or execution cost.}
 \end{frame}
 
 % VISUAL-FUNCTION: endpoint demand and intermediary use | four-model regression table | show within-date demand pass-through and fixed-effect progression
@@ -77,14 +77,14 @@ Currency fixed effects & No & No & No & Yes \\
 % VISUAL-FUNCTION: endpoint eligibility in the decomposition | two-branch composition diagram | isolate the mechanical WETH-endpoint component
 % EVIDENCE-STATUS: supporting deterministic eligibility decomposition.
 % EVIDENCE-SOURCES: output/exhibits/route_methodology_heterogeneity.jsonl; output/exhibits/route_methodology_heterogeneity_deck_values.tex
-\begin{frame}{A16. Ultimate-pair composition contains a mechanical component}
+\begin{frame}{A16. Pair composition contains a mechanical component}
 \vspace{-0.10cm}
 \begin{center}
 \resizebox{0.90\textwidth}{!}{\input{assets/vehicle-transition-pair-decomposition.tex}}
 \end{center}
 \vspace{-0.08cm}
-{\large Changes within fixed ultimate pairs are \WethCountWithinFullChange{} overall and \WethCountWithinNoEndpointChange{} after removing WETH endpoints.\par}
-\decknote{WETH cannot be both an ultimate-pair endpoint and the intermediary. Exact two-atomic-trade native-WETH-versus-stablecoin routes on common month-days; fixed-pair estimates also absorb month-day and route scope.}
+{\large Changes within fixed pairs are \WethCountWithinFullChange{} overall and \WethCountWithinNoEndpointChange{} after removing WETH endpoints.\par}
+\decknote{WETH cannot be both a pair endpoint and the intermediary. Exact two-leg native-WETH-versus-stablecoin routes on common month-days; fixed-pair estimates also absorb month-day and route scope.}
 \end{frame}
 
 % VISUAL-FUNCTION: endpoint direction and rotation | paired count-value contribution bars | distinguish broad count growth from stable-to-stable value concentration
@@ -95,7 +95,7 @@ Currency fixed effects & No & No & No & Yes \\
 \end{center}
 \vspace{-0.08cm}
 {\large USDT supplies \StableStableUsdtValueContribution{} of the \StableStableValueContribution{} two-stable-endpoint value channel.\par}
-\decknote{Exact additive decomposition on 181 matched dates in 2024 and 2026. Endpoint direction describes the ultimate pair; the vehicle remains the intermediary token.}
+\decknote{Exact additive decomposition on 181 matched dates in 2024 and 2026. Endpoint direction describes the pair; the vehicle remains the intermediary token.}
 \end{frame}
 
 % VISUAL-FUNCTION: local and network liquidity | three coefficient columns | compare bridge depth with broader network reach
@@ -118,8 +118,8 @@ Currency fixed effects & No & No & No & Yes \\
 \end{column}
 \end{columns}
 \vspace{0.68cm}
-{\large Local two-atomic-pair depth and broader network position both matter.\par}
-\decknote{Five vehicle currencies compared within the same ultimate-pair--date--route-scope set. Depth is prior-calendar deposited capital on the weaker atomic pair. The regression absorbs set and vehicle effects and clusters by ultimate pair and date.}
+{\large Local two-leg depth and broader network position both matter.\par}
+\decknote{Five vehicle currencies compared within the same set defined by pair, date, and route scope. Depth is prior-calendar deposited capital on the weaker leg. The regression absorbs set and vehicle effects and clusters by pair and date.}
 \end{frame}
 
 % VISUAL-FUNCTION: source of pre-use capital | three capital-allocation estimates | distinguish deepening from newly active pools
@@ -142,7 +142,7 @@ Currency fixed effects & No & No & No & Yes \\
 {\small greater probability of a newly active pool\par}
 \end{column}
 \end{columns}
-\decknote{\BridgePoolMarginEvents{} first-use events. A newly active pool has positive prior-calendar capital on day zero and none on day -7; continuing pools are positive on both dates. Difference inference clusters by ultimate pair and adoption date.}
+\decknote{\BridgePoolMarginEvents{} first-use events. A newly active pool has positive prior-calendar capital on day zero and none on day -7; continuing pools are positive on both dates. Difference inference clusters by pair and adoption date.}
 \end{frame}
 
 % VISUAL-FUNCTION: V4 routing and later participation | three horizon-state estimates | show how account participation broadens over time

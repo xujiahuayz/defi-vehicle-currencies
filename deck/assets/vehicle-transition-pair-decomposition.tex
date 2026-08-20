@@ -2,7 +2,7 @@
 % output/exhibits/route_methodology_heterogeneity_deck_values.tex.
 % WETH is the native intermediary in this comparison. If WETH is an endpoint,
 % it cannot also be the intermediary; the eligible intermediary set contains stablecoins.
-% Within-ultimate-pair change is reported in the authored frame text below the graphic.
+% Within-pair change is reported in the authored frame text below the graphic.
 \begin{tikzpicture}[x=1cm,y=1cm]
 \tikzset{panel/.style={draw=rule,fill=white,rounded corners=3pt,line width=0.8pt}}
 
@@ -20,7 +20,7 @@
 \node[anchor=west,font=\fontsize{21}{22}\selectfont\bfseries,text=stable]
   at (3.72,3.43) {\WethCountFullChange};
 \node[anchor=west,font=\fontsize{8.3}{9.1}\selectfont\bfseries,text=ucldark,align=left,text width=5.8cm]
-  at (6.55,3.77) {All matched ultimate pairs};
+  at (6.55,3.77) {All matched pairs};
 \node[anchor=west,font=\fontsize{7.2}{8.0}\selectfont,text=ink]
   at (6.55,3.18) {WETH-linked route-count mass: \WethCountMassBase{} $\rightarrow$ \WethCountMassEnd};
 
@@ -28,7 +28,7 @@
 \node[anchor=west,font=\fontsize{21}{22}\selectfont\bfseries,text=accent]
   at (3.72,1.26) {\WethCountNoEndpointChange};
 \node[anchor=west,font=\fontsize{8.3}{9.1}\selectfont\bfseries,text=ucldark,align=left,text width=5.8cm]
-  at (6.55,1.60) {Ultimate pairs without\\WETH endpoints};
+  at (6.55,1.60) {Pairs without\\WETH endpoints};
 \node[anchor=west,font=\fontsize{7.2}{8.0}\selectfont,text=ink]
   at (6.55,1.01) {\WethCountNoEndpointGroups{} matched groups};
 \end{tikzpicture}

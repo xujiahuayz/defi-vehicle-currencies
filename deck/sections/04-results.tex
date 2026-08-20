@@ -22,7 +22,7 @@
 \hspace{0.55cm}
 \tikz[baseline=-0.4ex]\draw[muted,dashed,line width=1.3pt] (0,0)--(0.55,0);\;Other\par}
 \vspace{-0.08cm}
-\decknote{Each complete route contributes once for every intermediary position, including routes with more than two atomic trades. Historical points through 2025 use full calendar years; 2026 covers January through June. Routed value requires source, intermediary, and destination values to agree within 20\%.}
+\decknote{Each complete route contributes once for every intermediary position, including routes with more than two legs. Historical points through 2025 use full calendar years; 2026 covers January through June. Routed value requires source, intermediary, and destination values to agree within 20\%.}
 \end{frame}
 
 % EVIDENCE-SOURCES: output/figures/vehicle_dominance_timelapse.mp4; output/figures/vehicle_dominance_timelapse_poster.pdf
@@ -34,24 +34,24 @@
 \href{run:../output/figures/vehicle_dominance_timelapse.mp4}{%
 \includegraphics[width=0.88\textwidth,height=0.68\textheight,keepaspectratio]{../output/figures/vehicle_dominance_timelapse_poster.pdf}}
 \par\vspace{-0.06cm}
-\href{run:../output/figures/vehicle_dominance_timelapse.mp4}{\beamergotobutton{Play local 18-second film}}
-\decknote{The film follows WETH, USDC, USDT, and DAI in route participation, supported value, and ultimate-pair breadth. Each frame retains six months of history, so no single frame contains the full transition. The poster is the PDF fallback.}
+{\scriptsize\bfseries\color{ucldark}Click the film to play in Adobe Acrobat\par}
+\decknote{The film follows WETH, USDC, USDT, and DAI in route participation, supported value, and pair breadth. Each frame retains six months of history, so no single frame contains the full transition. The poster is the PDF fallback.}
 \end{frame}
 
 % EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_decomposition.jsonl
 % EVIDENCE-STATUS: central exact decomposition.
-% VISUAL-FUNCTION: sources of aggregate rotation | three contribution cards and share arrow | make ultimate-pair formation and near-zero net switching memorable
-\begin{frame}{Ultimate-pair formation supplies most of the rotation}
+% VISUAL-FUNCTION: sources of aggregate rotation | three contribution cards and share arrow | make pair formation and near-zero net switching memorable
+\begin{frame}{Pair formation supplies most of the rotation}
 \evidencekicker{Exact decomposition in percentage points (pp): 2024 H1 to 2026 H1}
 \vspace{0.06cm}
 \begin{center}
 \begin{tikzpicture}[x=1cm,y=1cm]
 \node[softbox,text width=3.05cm,minimum height=1.45cm,align=center] at (-4.35,1.55)
-{\small Same continuing ultimate pair\\[0.14cm]{\fontsize{21}{23}\selectfont\bfseries\color{accent}\mbox{\PairPooledWithin}}};
+{\small Same continuing pair\\[0.14cm]{\fontsize{21}{23}\selectfont\bfseries\color{accent}\mbox{\PairPooledWithin}}};
 \node[softbox,text width=3.05cm,minimum height=1.45cm,align=center] at (0,1.55)
 {\small Trading reallocation\\[0.14cm]{\fontsize{21}{23}\selectfont\bfseries\color{ucldark}\mbox{\PairPooledReweight}}};
 \node[softbox,text width=3.05cm,minimum height=1.45cm,align=center,fill=stable!9] at (4.35,1.55)
-{\small Ultimate pairs in one period\\[0.14cm]{\fontsize{21}{23}\selectfont\bfseries\color{stable}\mbox{\PairPooledExclusive}}};
+{\small Pairs in one period\\[0.14cm]{\fontsize{21}{23}\selectfont\bfseries\color{stable}\mbox{\PairPooledExclusive}}};
 \draw[rule,line width=1pt] (-5.95,-0.05)--(5.95,-0.05);
 \node[font=\normalsize\bfseries,text=ink,align=left] at (-4.30,-0.72) {Stablecoin\\share};
 \node[font=\scriptsize\bfseries,text=muted] at (-1.45,-0.42) {2024 H1};
@@ -62,21 +62,21 @@
 \end{tikzpicture}
 \end{center}
 \vspace{0.02cm}
-{\large\bfseries\color{ucldark}The aggregate rises \PairPooledTotal; net switching inside continuing ultimate pairs is \PairPooledWithin.\par}
-\decknote{Exact two-atomic-trade native-or-stable vehicle routes on matched January--June dates. A further \PairPooledSupportMass{} comes from the changing weight of continuing versus period-specific ultimate pairs. Components use unrounded values and sum to the aggregate change.}
+{\large\bfseries\color{ucldark}The aggregate rises \PairPooledTotal; net switching inside continuing pairs is \PairPooledWithin.\par}
+\decknote{Exact two-leg native-or-stable vehicle routes on matched January--June dates. A further \PairPooledSupportMass{} comes from the changing weight of continuing versus period-specific pairs. Components use unrounded values and sum to the aggregate change.}
 \end{frame}
 
 % EVIDENCE-SOURCES: output/exhibits/vehicle_formation_exploration.jsonl; output/tables/vehicle_formation_regressions.tex
 % EVIDENCE-STATUS: main predictive persistence result.
-% VISUAL-FUNCTION: persistence after ultimate-pair entry | three-horizon coefficient sequence | connect first vehicle use to later allocation
-\begin{frame}{The vehicle chosen at ultimate-pair entry predicts later use}
-\evidencekicker{Ultimate pairs with complete follow-up support}
+% VISUAL-FUNCTION: persistence after pair entry | three-horizon coefficient sequence | connect first vehicle use to later allocation
+\begin{frame}{The vehicle chosen at pair entry predicts later use}
+\evidencekicker{Pairs with complete follow-up support}
 \vspace{0.15cm}
 \begin{columns}[T,totalwidth=0.92\textwidth]
 \begin{column}{0.25\textwidth}
 {\color{muted}\scriptsize INITIAL STABLECOIN SHARE\par}\vspace{0.08cm}
 {\fontsize{26}{28}\selectfont\bfseries\color{stable}+1 pp}\par
-{\small at ultimate-pair entry\par}
+{\small at pair entry\par}
 \end{column}
 \begin{column}{0.06\textwidth}
 \centering\vspace{0.50cm}{\Large$\Longrightarrow$}
@@ -97,7 +97,7 @@
 \end{columns}
 \vspace{0.72cm}
 {\large The first vehicle becomes a durable focal point for the new trading relationship.\par}
-\decknote{\FormationPathDependenceRows{} non-WETH ultimate-pair--route-scope observations. Regressions control for entry size, cohort year, endpoint class, direct-route share, and route complexity. Standard errors are clustered by entry date. Initial vehicle use is observed, not randomly assigned.}
+\decknote{\FormationPathDependenceRows{} non-WETH pairs observed by route scope. Regressions control for entry size, cohort year, endpoint class, direct-route share, and route complexity. Standard errors are clustered by entry date. Initial vehicle use is observed, not randomly assigned.}
 \end{frame}
 
 % EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl
@@ -120,7 +120,7 @@
 \end{center}
 \vspace{0.28cm}
 {\large\bfseries First-month use rises from \BridgeTimingShallowMonthShare{} below $0.1\times$ WETH depth to \BridgeTimingCompetitiveMonthShare{} above it.\par}
-\decknote{Depth is prior-calendar deposited capital on the weaker atomic pair. The route-share comparison uses \BridgeDepthDoseFirstRows{} ultimate-pair days across \BridgeDepthDoseFirstEvents{} bridge events. Support, depth, and first use refer to the same stablecoin set. Capital and route demand are jointly determined.}
+\decknote{Depth is prior-calendar deposited capital on the weaker leg. The route-share comparison uses \BridgeDepthDoseFirstRows{} pair-days across \BridgeDepthDoseFirstEvents{} bridge events. Support, depth, and first use refer to the same stablecoin set. Capital and route demand are jointly determined.}
 \end{frame}
 
 % EVIDENCE-SOURCES: output/figures/experiments/bridge_adoption_capital_path.pdf
@@ -143,8 +143,8 @@
 \end{column}
 \end{columns}
 \vspace{0.02cm}
-{\large Capital on the weaker atomic pair rises before the route appears.\par}
-\decknote{Equal-event path for \BridgeAdoptionCapitalEvents{} ultimate-pair events whose supported stablecoin is first used 7 to 119 days after persistent support. Capital is lagged one calendar day; shading gives 95\% confidence intervals clustered by ultimate pair and adoption date. The sample conditions on eventual use.}
+{\large Capital on the weaker leg rises before the route appears.\par}
+\decknote{Equal-event series for \BridgeAdoptionCapitalEvents{} pair events whose supported stablecoin is first used 7 to 119 days after persistent support. Capital is lagged one calendar day; shading gives 95\% confidence intervals clustered by pair and adoption date. The sample conditions on eventual use.}
 \end{frame}
 
 % EVIDENCE-SOURCES: output/exhibits/exact_vehicle_frontier_monthly.jsonl
