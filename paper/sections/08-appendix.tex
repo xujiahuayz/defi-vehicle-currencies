@@ -13,6 +13,20 @@
 
 Route construction begins with the contract and event format of each exchange. We identify pools from the protocol's factory or registry, map contract addresses to tokens, and convert raw integer amounts using the token precision that applied at the time of the trade. Contract addresses define token identity because unrelated tokens can share a symbol and the same economic asset can appear in native and wrapped form. ETH and WETH are consolidated only after this address-level reconstruction; every other token remains distinct unless a stated economic classification combines it. Within each transaction, pool-swap legs are ordered by block, transaction, and log position. The resulting token flows reveal the exchange that occurred. A single connected chain gives one route and therefore one endpoint exchange between its endpoints; parallel chains identify an order split, and disconnected event groups remain separate. Because one transaction can contain unrelated calls as well as trades across several exchanges, this procedure also prevents two simultaneous routes from being mistaken for one longer route. The output records the sequence of token pairs and pools traversed, together with the endpoint pair. It does not infer that sequence from the transaction sender or router label.
 
+Disconnected event groups become more common late in the sample. They comprise \DisconnectedShareBase{} of reconstructed components in 2024 and \DisconnectedShareEnd{} in 2026. In 2026 the rate is \DisconnectedVFourShareEnd{} among components touching Uniswap v4 and \DisconnectedOtherShareEnd{} among other components. Table~\ref{tab:app:disconnected} uses the internally connected token flow of each group as a separate route. This alternative preserves the principal economic result: the 2026 stablecoin share is \ComponentRouteCountEnd{} by count and \ComponentRouteValueEnd{} by value, both slightly above the connected-transaction estimates.
+% output/exhibits/disconnected_component_boundary.jsonl; output/exhibits/disconnected_component_boundary_values.tex
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Disconnected transaction components and vehicle dominance}
+\label{tab:app:disconnected}
+\input{../output/tables/disconnected_component_boundary.tex}
+\exhibitnote{Panel A reports the share of reconstructed components belonging to transactions with more than one disconnected token-flow group. Uniswap v4 begins during 2025, so its 2024 cell is empty. Panel B compares the principal connected-transaction rule with an alternative that treats each internally well-formed component as a separate route. Stablecoin shares use native and stable two-leg vehicles as the denominator and equal-weight matched January through June dates in 2024 and 2026. Value estimates require source, intermediary, and destination values to agree within 20\%. Standard errors use a Newey--West covariance with a 30-day Bartlett bandwidth. The alternative assigns no unobserved handoff between components.}
+\end{table}
+% output/exhibits/disconnected_component_boundary.jsonl; scripts/analyze/run_disconnected_component_boundary.py
+\clearpage
+
 A complete token sequence is sufficient for the route-count sample. Value weighting additionally requires coherent amounts on every leg and a common dollar valuation. A failed valuation removes the observation from the value calculation while preserving the observed route. Appendix~\ref{app:roundtrip} gives the separate exclusion for self-returning paths.
 
 Historical token precision cannot be verified for 13 tokens traded in 22 constant-product pools. Reserve-reconstruction analyses omit those pools. An upper-bound check removes every route involving any of the 13 tokens: the resulting bound is 5,950 routes and \$10.91 million of route value. Only 1,036 of those routes use one of the affected tokens as an intermediary, representing \$1.284 million, or 0.00043\% of value on routes whose legs can all be valued. All 13 tokens lie outside the native and stablecoin groups used in the main comparison. The exclusion affects exact reserve reconstruction; the route-composition result is unchanged.

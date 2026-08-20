@@ -40,8 +40,9 @@ stablecoin in the event's exact support set, and event-day depth separates
 shallow availability from subsequent adoption. The pre-use capital path now
 separates newly capital-positive pools from scaling inside pools active one week
 earlier, with a matched WETH comparison and multiplicity-adjusted inference.
-Issuance remains outside the local data perimeter. The open revision class is
-to quantify the disconnected-component boundary. Each major revision follows the decision rule in
+Issuance remains outside the local data perimeter. The disconnected-component
+boundary is now quantified, including its V4 concentration and a component-as-route
+sensitivity that slightly strengthens the aggregate rotation. Each major revision follows the decision rule in
 [`writing-and-rhetoric.md`](writing-and-rhetoric.md) before implementation.
 
 ## Economic motivation and contribution

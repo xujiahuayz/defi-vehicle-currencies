@@ -11,6 +11,7 @@ belongs in `../plot/` or `../tabulate/`.
 | `run_integration_date_fe_ladder.py` | integration ladder; paper/deck values |
 | `run_liquidity_capital_v2_predictability.py` | V2 predictability results, support, and table; paper/deck |
 | `run_bridge_liquidity_dominance.py` | local two-leg bridge depth plus first stable-bridge establishment, adoption, and displacement; paper/deck |
+| `run_disconnected_component_boundary.py` | connected-component prevalence and component-as-route rotation sensitivity; paper/deck |
 | `run_liquidity_provision_behavior_exploration.py` | exploratory V2 capital-allocation and vehicle-use behavior |
 | `run_bridge_liquidity_feedback.py` | exploratory dynamic feedback between local bridge depth and vehicle use |
 | `run_mechanism_expansion_exploration.py` | provisional JFE-expansion mechanism regressions and formation summaries |

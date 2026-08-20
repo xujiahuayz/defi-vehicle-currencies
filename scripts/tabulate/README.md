@@ -8,6 +8,7 @@ Captions, labels, placement, and interpretation stay in the paper/deck source.
 | Owner | Output | Manuscript label |
 |---|---|---|
 | `render_dominance_rotation.py` | `dominance_rotation.tex/.pdf` | `tab:rotation` |
+| `render_disconnected_component_boundary.py` | `disconnected_component_boundary.tex/.pdf` and generated values | `tab:app:disconnected` |
 | `render_pair_composition.py` | `pair_composition.tex/.pdf` | `tab:pair-composition` |
 | `render_usdt_transition.py` | `usdt_transition.tex/.pdf` | `tab:usdt-transition` |
 | `render_within_day_ladder.py` | `within_day_ladder.tex/.pdf` | `tab:within-day-ladder` |
