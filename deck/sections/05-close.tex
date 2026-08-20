@@ -6,7 +6,7 @@
 }{\PackageError{dvc-deck}{Missing generated formation values}{Run scripts/tabulate/build_vehicle_formation_deck_values.py.}}
 
 % EVIDENCE-STATUS: current descriptive route decomposition
-% EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_fixed_effects.jsonl; output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex; output/exhibits/vehicle_formation_deck_values.tex; output/exhibits/v4_flash_lp_mechanism_exploration.jsonl; output/exhibits/v4_flash_lp_deck_values.tex
+% EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_fixed_effects.jsonl; output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex; output/exhibits/vehicle_formation_deck_values.tex; output/exhibits/v4_lp_origin_timing.jsonl; output/exhibits/v4_lp_origin_timing_deck_values.tex
 % VISUAL-FUNCTION: economic conclusion | three concise takeaways | close on endpoint-pair formation, liquidity contestability, and provider response
 \begin{frame}{Dominance forms through entry, depth, and provider response}
 \vspace{0.18cm}
@@ -38,8 +38,8 @@
 {\fontsize{26}{28}\selectfont\bfseries\color{uclbright}3}
 \end{column}
 \begin{column}{0.84\textwidth}
-{\large\bfseries V4 internal routing predicts provider repositioning.}\par
-{\small At 120 days: \VFourFlashInternalTvlLongCoef{} log points of vehicle-linked TVL and \VFourFlashInternalWideLongCoef{} in wide/very-wide action share.}
+{\large\bfseries V4 internal routing: incumbents act first, new origins follow.}\par
+{\small Incumbent actions rise \VFourOriginNearIncumbentCoef{} within 30 days; first-active origins rise \VFourOriginLateEntryCoef{} in days 31 to 120.}
 \end{column}
 \end{columns}
 

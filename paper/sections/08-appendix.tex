@@ -524,7 +524,19 @@ Across the quantile rows of Table~\ref{tab:app:roundtrip}, the Share by value co
 \section{Additional liquidity-provider estimates}
 \label{app:lp-detail}
 
-Table~\ref{tab:v4-flash-gap-flow} reports the vehicle-token flow outcomes that accompany the V4 stock, action, and range estimates in Table~\ref{tab:v4-flash-gap}. Tables~\ref{tab:v3-v4-lp-protocol}, \ref{tab:v3-v4-lp-flow-protocol}, and \ref{tab:v3-v4-tvl-protocol} report every horizon and outcome underlying the main-text protocol comparison. These estimates retain the same vehicle-date comparison and observational interpretation as Equation~\eqref{eq:v3-v4-protocol-contrast}.
+Table~\ref{tab:app:v4-origin-timing} separates actions by incumbent and first-active transaction origins. Table~\ref{tab:v4-flash-gap-flow} reports the vehicle-token flow outcomes that accompany the V4 stock, action, and range estimates in Table~\ref{tab:v4-flash-gap}. Tables~\ref{tab:v3-v4-lp-protocol}, \ref{tab:v3-v4-lp-flow-protocol}, and \ref{tab:v3-v4-tvl-protocol} report every horizon and outcome underlying the main-text protocol comparison. These estimates retain the same vehicle-date comparison and observational interpretation as Equation~\eqref{eq:v3-v4-protocol-contrast}.
+
+\begin{table}[tbp]
+\centering
+\caption{V4 internal settlement and transaction-origin participation}
+\label{tab:app:v4-origin-timing}
+{\tiny
+\renewcommand{\arraystretch}{0.90}
+\input{../output/tables/v4_lp_origin_timing.tex}
+}
+\exhibitnote{Each cell reports the response to a 10 pp increase in the row's V4 accounting proxy, with standard errors in parentheses. The unit is a vehicle-day. The primary sample excludes modify-liquidity updates with zero liquidity change. An incumbent origin was active for the same vehicle during the preceding 180 days. A newly active origin in days 1 to 30 was absent from that prior window. A first-active origin in days 31 to 120 was absent both from the prior window and from days 1 to 30. All specifications absorb vehicle and origin-date effects, include origin-day swap activity, vehicle-token-side LP flow, vehicle-linked reported liquidity, LP actions, and range composition, and cluster by origin date. P-values are Holm-adjusted across the twelve displayed estimates. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively. Transaction origins proxy for account participation, not beneficial ownership of LP positions. The estimates are predictive associations.}
+\end{table}
+% output/exhibits/v4_lp_origin_timing.jsonl; output/tables/v4_lp_origin_timing.tex; producer scripts/analyze/run_v4_lp_origin_timing.py and scripts/tabulate/render_v4_lp_origin_timing.py.
 
 \begin{table}[tbp]
 \centering

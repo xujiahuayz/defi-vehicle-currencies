@@ -17,10 +17,10 @@ PREDICTORS = {
     "netting_reduction_share": "Gross-to-net reduction share",
 }
 OUTCOMES = {
-    "near_log1p_new_origins": "Newly active origins, days 1--30",
-    "near_log1p_incumbent_actions": "Incumbent-origin actions, days 1--30",
-    "late_log1p_first_active_origins": "First-active origins, days 31--120",
-    "late_log1p_incumbent_actions": "Incumbent-origin actions, days 31--120",
+    "near_log1p_new_origins": "Newly active origins, days 1 to 30",
+    "near_log1p_incumbent_actions": "Incumbent-origin actions, days 1 to 30",
+    "late_log1p_first_active_origins": "First-active origins, days 31 to 120",
+    "late_log1p_incumbent_actions": "Incumbent-origin actions, days 31 to 120",
 }
 
 
@@ -92,7 +92,7 @@ def render_v4_lp_origin_timing(results: pd.DataFrame) -> str:
         r"\toprule",
         "Flash-accounting proxy ($M_{c,t}$) & "
         + " & ".join(OUTCOMES.values())
-        + r" \\ ",
+        + r" \\",
         r"\midrule",
     ]
     for predictor, label in PREDICTORS.items():
