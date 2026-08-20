@@ -7,17 +7,15 @@ Test 1, the differential migration. V1 died after V2 launched, which is mechanic
 
 Test 2, voluntary vehicle persistence. For an unordered token pair that acquired a direct non-ETH V2 pool, how long did trade between those tokens keep routing through ETH afterwards? Before the direct pool exists, ETH routing is mandatory and measures nothing. After it exists, ETH routing is a choice. This is the paper's core question with the mandate held fixed by construction.
 
-The V1 restriction, and why it may fail. Test 2 is sharpest on tokens that lived under the V1 mandate. But the V1 raw fetch never requested `tokenAddress`, so no V1 exchange in this repo carries a token identity, and it cannot be looked up. The only recoverable route is a statistical crosswalk: match each V1 exchange's `tokenPriceUSD` series against the V2 token price panel, under a hard constraint on token decimals recovered from the printed precision of V1 token balances, and under the V1 factory's own one-exchange-per-token rule which makes a duplicate claim evidence of a mismatch. Resolution is reported as a rate, split-half stability is reported, and unresolved exchanges stay unresolved. Test 2 then runs twice: on all V2 pairs, and restricted to crosswalk-resolved V1 tokens.
+The V1 restriction. Test 2 is sharpest on tokens that lived under the V1 mandate. The original V1 pull omitted token addresses, so a separate static fetch now retains the subgraph's exact one-exchange-per-token registry. Test 2 runs on all V2 pairs and then on pairs whose two tokens are both present in that V1 registry.
 
 Sanity filters, because this project has repeatedly been misled by null-symbol tokens producing absurd notionals. Pairs need both symbols present in the V2 panel, a minimum trade count, and per-trade notionals inside a plausible band. Every filter reports how much it removed.
 
 Reads   data/processed/v1_trade_classes_daily.parquet
         data/processed/v1_exchange_day.parquet
-        data/processed/v2_token_price_daily.parquet
-        data/processed/v2_token_decimals.parquet
+        data/processed/v1_exchange_token_crosswalk.parquet
         data/unified/YYYYMMDD.parquet
-Writes  data/processed/v1_exchange_token_crosswalk.parquet
-        data/processed/v2_pair_routing_daily.parquet
+Writes  data/processed/v2_pair_routing_daily.parquet
         output/exhibits/v1_forced_vehicle_*.jsonl
 
 Run     ./scripts/run scripts/analyze/run_v1_forced_vehicle_tests.py [--workers N]
@@ -45,17 +43,6 @@ WETH = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
 NATIVE_ETH = {WETH, "0x0000000000000000000000000000000000000000",
               "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"}
 
-# --- crosswalk thresholds. Each is a declared choice, not a fact. ---
-XW_MIN_DAYS = 20        # overlapping priced days required to attempt a match
-XW_MAX_GAP = 0.05       # median |log(p_v1 / p_v2)| accepted for the winner
-XW_MIN_SEP = 3.0        # runner-up gap must exceed the winner's by this factor
-# Candidate V2 tokens are restricted to those priced on at least this many days in the
-# crosswalk window. 397,738 tokens ever traded on V2, so the unrestricted comparison is
-# both intractable and dominated by tokens with a handful of price points that can match
-# anything by chance. At 20 days the candidate set is roughly 7,800 tokens and 94% of
-# them have decimals in the V2 map; below that, decimals coverage collapses.
-XW_CAND_MIN_DAYS = 20
-XW_WINDOW = (pd.Timestamp("2020-05-05"), pd.Timestamp("2022-12-31"))
 # --- pair-routing sanity filters ---
 PR_MIN_TRADES = 20      # trades of a pair inside the window
 PR_USD_LO, PR_USD_HI = 100.0, 50_000_000.0
@@ -210,182 +197,34 @@ def test1_thinning_check(d: pd.DataFrame, out: list[str]) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Crosswalk: V1 exchange address -> ERC20 token, by price series and decimals
+# Crosswalk: exact V1 exchange address -> ERC20 token registry
 # ---------------------------------------------------------------------------
-def build_crosswalk(out: list[str]) -> pd.DataFrame:
-    v1 = pd.read_parquet(PROC / "v1_exchange_day.parquet")
-    v2p = pd.read_parquet(PROC / "v2_token_price_daily.parquet")
-    dec = pd.read_parquet(PROC / "v2_token_decimals.parquet")
-
-    n_ex_all = v1.exchange.nunique()
-    lo, hi = XW_WINDOW
-    v1 = v1[(v1.date >= lo) & (v1.date <= hi) & (v1.token_price_usd > 0)].copy()
-    out.append(f"\nV1 exchanges ever seen: {n_ex_all:,}. "
-               f"With a positive price inside the crosswalk window "
-               f"{lo.date()} to {hi.date()}: {v1.exchange.nunique():,}.\n")
-
-    # decimals evidence per exchange, and per V2 token
-    v1dec = v1.groupby("exchange").token_frac_digits.max()
-    dmap = dict(zip(dec.token, dec.decimals, strict=True))
-
-    v2p = v2p[(v2p.price_usd > 0) & (v2p.date >= lo) & (v2p.date <= hi)].copy()
-    n_tok_all = v2p.token.nunique()
-    keep_tok = v2p.groupby("token").size()
-    keep_tok = set(keep_tok[keep_tok >= XW_CAND_MIN_DAYS].index)
-    v2p = v2p[v2p.token.isin(keep_tok)]
-    v2w = v2p.pivot_table(index="date", columns="token", values="price_usd",
-                          aggfunc="median")
-    sym = dict(zip(v2p.token, v2p.symbol.fillna(""), strict=True))
-
-    lp2 = np.log(v2w)
-    cand = list(v2w.columns)
-    cand_dec = np.array([dmap.get(c, -1) for c in cand])
-    out.append(f"Candidate V2 tokens: {len(cand):,} of {n_tok_all:,} priced in the "
-               f"window, after requiring at least {XW_CAND_MIN_DAYS} priced days. "
-               f"Decimals known for {(cand_dec >= 0).mean():.1%} of candidates; a "
-               f"candidate with unknown decimals is left in rather than dropped, since "
-               f"dropping it would silently delete the true match.\n")
-
-    # V1-era exchanges are the population the natural experiment is about: an
-    # exchange that only ever traded after the V2 launch never operated under the
-    # mandate. Flagged rather than filtered, so both rates can be reported.
-    v1all = pd.read_parquet(PROC / "v1_exchange_day.parquet")
-    v1era = set(v1all[(v1all.date < V2_LAUNCH)
-                      & ((v1all.n_pair.fillna(0) + v1all.n_t2t.fillna(0)) > 0)].exchange)
-
-    def best_match(s: pd.Series, need: int) -> tuple | None:
-        """Closest V2 token by median absolute log price gap, and the runner-up."""
-        idx = lp2.index.intersection(s.index)
-        if len(idx) < XW_MIN_DAYS:
-            return None
-        lp1 = np.log(s.loc[idx]).to_numpy()[:, None]
-        with np.errstate(invalid="ignore"):
-            gap = np.nanmedian(np.abs(lp2.loc[idx].to_numpy() - lp1), axis=0)
-        # decimals constraint: V1's printed precision is a LOWER bound on the token's
-        # decimals, so a candidate must have at least as many. A candidate whose
-        # decimals are unknown is kept, since dropping it could delete the true match.
-        ok = ((cand_dec >= need) | (cand_dec < 0)) & np.isfinite(gap)
-        if not ok.any():
-            return None
-        gapm = np.where(ok, gap, np.inf)
-        order = np.argsort(gapm)
-        b, sec = order[0], order[1] if len(order) > 1 else order[0]
-        return b, float(gapm[b]), float(gapm[sec]), len(idx)
-
-    def accept(gap: float, runner: float) -> bool:
-        return gap <= XW_MAX_GAP and (
-            runner / max(gap, 1e-12) >= XW_MIN_SEP or runner > XW_MAX_GAP)
-
-    recs = []
-    for ex, g in v1.groupby("exchange"):
-        s = g.set_index("date").token_price_usd
-        s = s[s > 0]
-        need = int(v1dec.get(ex, 0))
-        r = best_match(s, need)
-        if r is None:
-            recs.append({"exchange": ex, "status": "too_few_days_or_no_candidate",
-                         "n_days": len(s), "v1_era": ex in v1era})
-            continue
-        b, gap, runner, nd = r
-        # PLACEBO. The same series shifted forward 180 days describes the same token,
-        # so a match driven by that token's actual price path must break under the
-        # shift. A shifted series that still passes the acceptance rule is a false
-        # positive, and the share of those is this procedure's false-positive rate.
-        sp = s.copy()
-        sp.index = sp.index + pd.Timedelta(days=180)
-        rp = best_match(sp, need)
-        recs.append({
-            "exchange": ex, "n_days": nd, "token": cand[b], "symbol": sym.get(cand[b]),
-            "gap": gap, "gap_runner_up": runner,
-            "v1_frac_digits": need, "v2_decimals": int(cand_dec[b]),
-            "status": "candidate", "v1_era": ex in v1era,
-            "placebo_accept": bool(rp is not None and accept(rp[1], rp[2])),
-            "placebo_gap": float(rp[1]) if rp else float("nan"),
-        })
-
-    xw = pd.DataFrame(recs)
-    cand_df = xw[xw.status == "candidate"].copy()
-    cand_df["sep"] = cand_df.gap_runner_up / cand_df.gap.replace(0, np.nan)
-    cand_df["resolved"] = [accept(a, b) for a, b in
-                           zip(cand_df.gap, cand_df.gap_runner_up, strict=True)]
-
-    # V1's factory allowed exactly one exchange per token, so two exchanges claiming
-    # the same token means at least one is wrong. Keep the tighter fit, demote the rest.
-    res = cand_df[cand_df.resolved].sort_values("gap")
-    dup = res[res.duplicated("token", keep="first")].index
-    cand_df.loc[dup, "resolved"] = False
-    cand_df.loc[dup, "status"] = "duplicate_token"
-
-    n_attempt = len(cand_df)
-    real_rate = cand_df.resolved.mean() if n_attempt else 0.0
-    plac_rate = cand_df.placebo_accept.mean() if n_attempt else 0.0
-
-    out.append("\n### V1 exchange to token crosswalk, and why it fails\n")
-    out.append(md(pd.DataFrame([
-        {"step": "V1 exchanges priced in the window", "exchanges": v1.exchange.nunique()},
-        {"step": "match attempted (enough overlapping days)", "exchanges": n_attempt},
-        {"step": "of those, traded before the V2 launch", "exchanges": int(cand_df.v1_era.sum())},
-        {"step": "accepted by the price-and-decimals rule", "exchanges": int(cand_df.resolved.sum())},
-        {"step": "same rule on a 180-day-shifted PLACEBO series", "exchanges": int(cand_df.placebo_accept.sum())},
-    ])))
-    out.append(f"\nAcceptance rate on the real series **{real_rate:.1%}**, on the "
-               f"placebo **{plac_rate:.1%}**. The placebo cannot carry any true "
-               f"identity, so the procedure's false-positive rate is essentially its "
-               f"hit rate and it has no identifying power. With {len(cand):,} candidate "
-               f"price series spanning many orders of magnitude, some series lies within "
-               f"5% of any target series on most days by chance.\n")
-
-    if plac_rate > 0.5 * real_rate:
-        cand_df["resolved"] = False
-        cand_df["status"] = "unidentified_placebo_gate"
-        out.append("\n**Gate applied: the crosswalk is declared unidentified and every "
-                   "match is discarded.** The pre-stated rule is that a placebo "
-                   "acceptance rate above half the real rate voids the procedure. "
-                   "Nothing downstream uses a V1 token identity, so the V1-restricted "
-                   "version of Test 2 cannot be run at all.\n")
-    return cand_df
-
-
-def crosswalk_stability_note(xw: pd.DataFrame, out: list[str]) -> None:
-    """Split-half agreement, reported to show that stability is not correctness."""
-    v1 = pd.read_parquet(PROC / "v1_exchange_day.parquet")
-    v2p = pd.read_parquet(PROC / "v2_token_price_daily.parquet")
-    lo, hi = XW_WINDOW
-    v1 = v1[(v1.date >= lo) & (v1.date <= hi) & (v1.token_price_usd > 0)]
-    v2p = v2p[(v2p.price_usd > 0) & (v2p.date >= lo) & (v2p.date <= hi)]
-    k = v2p.groupby("token").size()
-    v2p = v2p[v2p.token.isin(set(k[k >= XW_CAND_MIN_DAYS].index))]
-    v2w = v2p.pivot_table(index="date", columns="token", values="price_usd",
-                          aggfunc="median")
-    lp2 = np.log(v2w)
-    cand = list(v2w.columns)
-    keep = set(xw[xw.status == "candidate"].exchange) | set(
-        xw[xw.status == "unidentified_placebo_gate"].exchange)
-    agree = tot = 0
-    for _, g in v1[v1.exchange.isin(keep)].groupby("exchange"):
-        picks = []
-        for par in (0, 1):
-            s = g[g.date.dt.dayofyear % 2 == par].set_index("date").token_price_usd
-            idx = lp2.index.intersection(s.index)
-            if len(idx) < 8:
-                picks = []
-                break
-            lp1 = np.log(s.loc[idx]).to_numpy()[:, None]
-            with np.errstate(invalid="ignore"):
-                gap = np.nanmedian(np.abs(lp2.loc[idx].to_numpy() - lp1), axis=0)
-            picks.append(cand[int(np.argmin(np.where(np.isfinite(gap), gap, np.inf)))])
-        if len(picks) == 2:
-            tot += 1
-            agree += picks[0] == picks[1]
-    out.append(f"\nSplit-half agreement: of {tot:,} attempted exchanges with enough "
-               f"days in both halves, only {agree:,} ({agree / max(tot, 1):.1%}) pick "
-               f"the same token when the match is estimated on odd and on even days "
-               f"separately. The nearest neighbour is not even stable under a random "
-               f"halving of the same series, which is a second and independent reason "
-               f"the crosswalk carries no information. Note that high agreement here "
-               f"would NOT have established correctness either, since both halves come "
-               f"from one series and would reproduce one spurious neighbour; the "
-               f"placebo is the test that discriminates.\n")
+def load_crosswalk(out: list[str]) -> pd.DataFrame:
+    path = PROC / "v1_exchange_token_crosswalk.parquet"
+    xw = pd.read_parquet(path)
+    required = {"exchange", "token", "symbol", "resolved", "v1_era"}
+    if not required.issubset(xw.columns) or xw.empty:
+        raise ValueError(f"exact V1 crosswalk is incomplete: {path}")
+    resolved = xw[xw.resolved].copy()
+    if resolved.exchange.duplicated().any() or resolved.token.duplicated().any():
+        raise ValueError("exact V1 crosswalk is not one-to-one")
+    observed = pd.read_parquet(PROC / "v1_exchange_day.parquet", columns=["exchange"])
+    observed_exchanges = set(observed.exchange.astype(str).str.lower())
+    missing = observed_exchanges - set(resolved.exchange.astype(str).str.lower())
+    if missing:
+        raise ValueError(
+            f"exact V1 crosswalk misses {len(missing):,}/{len(observed_exchanges):,} "
+            "observed exchanges"
+        )
+    out.append("\n### Exact V1 exchange-to-token map\n")
+    out.append(
+        f"The retained V1 exchange registry resolves all {len(observed_exchanges):,} "
+        f"exchange addresses in the daily panel. It contains {resolved.token.nunique():,} "
+        f"distinct tokens, including {int(resolved.v1_era.sum()):,} whose exchanges "
+        "traded before V2 launched. Token identities come directly from the V1 "
+        "subgraph; no price-series matching is used.\n"
+    )
+    return resolved
 
 
 # ---------------------------------------------------------------------------
@@ -668,9 +507,7 @@ def main() -> int:
     out: list[str] = []
 
     test1_differential(out)
-    xw = build_crosswalk(out)
-    xw.to_parquet(PROC / "v1_exchange_token_crosswalk.parquet", index=False)
-    crosswalk_stability_note(xw, out)
+    xw = load_crosswalk(out)
 
     prp = PROC / "v2_pair_routing_daily.parquet"
     if args.reuse_pair_routing and prp.exists():

@@ -8,6 +8,7 @@ data and analysis-ready panels. Each current panel has one owner.
 | `run_reconstruct.py` | daily routed-swap components under `data/unified/` |
 | `build_v1_forced_vehicle.py` | V1 trade classes and exchange-day panels |
 | `build_v1_exchange_class_panel.py` | V1 exchange classes and token-to-token pair days |
+| `build_v1_exchange_token_crosswalk.py` | exact V1 exchange-to-token map from the retained registry |
 | `build_v1_route_case.py` | authenticated V1 case manifest and deck values |
 | `build_v2_token_panel.py` | V2 token prices, decimals, and pair-first-trade dates |
 | `build_market_state.py` | reusable market-state quality panel |

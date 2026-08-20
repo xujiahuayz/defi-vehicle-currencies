@@ -1,15 +1,11 @@
 #!/usr/bin/env python3
 """Uniswap V2 token panel: daily USD prices, decimals, and the arrival date of every pair.
 
-Why this exists. Two questions about the V1-to-V2 architectural discontinuity need V2-side inputs that no existing artefact in this repo supplies.
-
-First, the exchange-to-token crosswalk. The V1 raw fetch (see `src/ddvc/fetch/schemas.py`) requested `exchangeAddress` but never `tokenAddress`, so no direct exchange-to-token map exists. What the V1 daily stream does carry per exchange per day is `tokenPriceUSD` and a token balance printed at the token's own decimal precision. Both are identifying signals against a V2 token panel, so this script builds that panel: a daily median USD price per token, and a token decimals map. Identification is then a price-series match under a decimals constraint, executed in `scripts/analyze/run_v1_forced_vehicle_tests.py`, which reports its resolution rate rather than assuming success.
-
-Second, pair arrival. The sharpest test of voluntary vehicle persistence asks how long ETH stayed the routing intermediary between two tokens AFTER a direct non-ETH pair between them became available. That needs, per unordered token pair, the first date the pair traded on V2.
+Why this exists. The V1-to-V2 architecture test needs the V2 arrival date of every directly traded pair. The sharpest persistence comparison asks how long ETH stayed the routing intermediary between two tokens after a direct non-ETH pair became available.
 
 Availability is dated at FIRST TRADE, not pair creation, because the `swaps` stream is 329 MB against 2.4 GB for `hourly_reserves` and a pair that has never traded is weak evidence of a usable alternative. This dates availability weakly LATE, which shortens any measured persistence window, so it biases against finding persistence rather than manufacturing it. The direction is stated where the result is reported.
 
-Token USD prices come from `amountUSD` divided by the token amount on the same side of the swap, medianed within a token-day. The subgraph's own `amountUSD` is used rather than a reconstruction, so the price panel inherits whatever repricing failures the subgraph has; that is the reason the crosswalk demands a decimals match as well as a price match, and the reason unresolved exchanges are reported as unresolved instead of matched loosely.
+Token USD prices come from `amountUSD` divided by the token amount on the same side of the swap, medianed within a token-day. The subgraph's own `amountUSD` is used rather than a reconstruction, so the price panel inherits its valuation limits. The V1 exchange-to-token map is fetched directly and does not use this price panel.
 
 Reads   the released canonical Uniswap V2 constant-product state partitions
 Writes  data/processed/v2_token_price_daily.parquet
