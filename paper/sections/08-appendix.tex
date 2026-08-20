@@ -221,11 +221,11 @@ The label a pool carries in the source plays no part in this. A pool-day whose o
 % WEIGHT_RATIO_MIN/MAX and FEE_MIN/MAX; scripts/verify/validate_weighted_quoter.py, fit_pool_day tier order
 % and the alternate-trade fitting and evaluation split
 
-The frequency with which the parameter search binds measures the sufficiency of reported pool state. Of the 256 pool-days accepted across the twelve validation days, 209 clear the gate on reported parameters with nothing identified, 43 need the swap fee alone, and 4 need per-token-pair weight ratios. Four fifths of the priced sample therefore carries no fitted parameter, and identification repairs a stale field in a minority of pool-days instead of supplying the invariant.
+The frequency with which the parameter search binds measures the sufficiency of reported pool state. Of the 256 pool-days accepted across the twelve validation days, 209 satisfy the error threshold on reported parameters with nothing identified, 43 need the swap fee alone, and 4 need per-token-pair weight ratios. Four fifths of the priced sample therefore carries no fitted parameter, and identification repairs a stale field in a minority of pool-days instead of supplying the invariant.
 % output/exhibits/weighted_quoter_validation.jsonl, pools_by_fit_mode summed over the 12 validation
 % days: reported 209, fee_fitted 43, weight_fitted 4, against 256 pools_priced
 
-The gate $\bar e$ is set at 0.1\% and not at the 1\% Curve uses, because the achieved errors separate cleanly there. The threshold separates weighted pools, whose held-out errors range from $10^{-9}$ to 0.004\%, from stable, composable-stable, and elliptic-curve pools, whose held-out errors range from 0.05\% to 1.08\% and have a 99th percentile of 12\%. At a 1\% gate the second group clears on a fitted weight ratio and arrives quoted instead of excluded, which is the Curve lesson in a second form: there the over-permissive object was a parameter range and here it is an error threshold.
+We set $\bar e$ at 0.1\% instead of the 1\% Curve uses because the achieved errors separate cleanly there. The threshold separates weighted pools, whose held-out errors range from $10^{-9}$ to 0.004\%, from stable, composable-stable, and elliptic-curve pools, whose held-out errors range from 0.05\% to 1.08\% and have a 99th percentile of 12\%. At a 1\% threshold, fitted weight ratios would admit the second group. The 0.1\% rule excludes it. Curve's failed validation arose from an over-permissive parameter range; here, an over-permissive error threshold would produce the same mistake.
 % src/ddvc/pricing/weighted.py, MAX_CALIBRATION_ERROR at 0.001 with the measured separation
 
 \begin{table}[t]

@@ -197,8 +197,9 @@ class AppendixTierIncidenceTests(unittest.TestCase):
         body = self.APPENDIX.read_text(encoding="utf-8")
         sentence = (
             f"Of the {priced} pool-days accepted across the twelve validation days, "
-            f"{modes.get('reported', 0)} clear the gate on reported parameters with nothing "
-            f"identified, {modes.get('fee_fitted', 0)} need the swap fee alone, and "
+            f"{modes.get('reported', 0)} satisfy the error threshold on reported "
+            f"parameters with nothing identified, {modes.get('fee_fitted', 0)} need "
+            "the swap fee alone, and "
             f"{modes.get('weight_fitted', 0)} need per-token-pair weight ratios."
         )
         self.assertIn(sentence, body)
