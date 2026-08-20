@@ -25,6 +25,7 @@ belongs in `../plot/` or `../tabulate/`.
 | `run_vehicle_transition_exploration.py` | umbrella command for the two vehicle-transition owners above |
 | `run_vehicle_dominance_mechanism_sweep.py` | provisional driver screen for stable-vehicle gains, turn-ons, and leader switches |
 | `run_vehicle_market_size_exploration.py` | exploratory realised-market-size screen for stable vehicle use |
+| `run_endpoint_direction_decomposition.py` | exploratory endpoint-direction decomposition of stable vehicle rotation |
 | `run_venue_coverage_bounds.py` | venue-coverage and excluded-source bounds; appendix and findings |
 | `run_venue_technology_rival.py` | venue-technology comparison; paper/deck and generated table |
 

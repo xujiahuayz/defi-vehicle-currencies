@@ -1,0 +1,33 @@
+% Presentation geometry only. Numerical labels are generated from
+% output/exhibits/endpoint_direction_decomposition.jsonl.
+\begin{tikzpicture}[x=1cm,y=1cm]
+\tikzset{endpointpanel/.style={draw=rule,fill=white,rounded corners=3pt,line width=0.8pt}}
+\tikzset{endpointlabel/.style={font=\fontsize{7.4}{8.2}\selectfont\bfseries,text=ucldark,align=left,text width=3.05cm}}
+\path[use as bounding box] (0,0.05) rectangle (13.15,4.62);
+
+\node[anchor=west,font=\fontsize{8.2}{9.0}\selectfont\bfseries,text=muted] at (0.10,4.37) {CONTRIBUTION TO THE STABLECOIN-SHARE INCREASE};
+
+\draw[endpointpanel] (0.05,0.22) rectangle (6.40,4.08);
+\node[anchor=west,font=\fontsize{15}{16}\selectfont\bfseries,text=stable] at (0.35,3.61) {Route count: \EndpointCountChange};
+\node[endpointlabel,anchor=west] at (0.35,2.81) {Other endpoint pairs};
+\fill[stable!85] (3.35,2.58) rectangle ({3.35+0.12*\EndpointOtherCountContributionNumber},2.99);
+\node[anchor=west,font=\fontsize{8.3}{9}\selectfont\bfseries,text=ink] at (5.28,2.78) {\EndpointOtherCountContribution};
+\node[endpointlabel,anchor=west] at (0.35,1.91) {One native, one stable};
+\fill[accent!85] (3.35,1.68) rectangle ({3.35+0.12*\EndpointNativeStableCountContributionNumber},2.09);
+\node[anchor=west,font=\fontsize{8.3}{9}\selectfont\bfseries,text=ink] at (4.57,1.88) {\EndpointNativeStableCountContribution};
+\node[endpointlabel,anchor=west] at (0.35,1.01) {Two stable endpoints};
+\fill[ucldark!75] (3.35,0.78) rectangle ({3.35+0.12*\EndpointStableStableCountContributionNumber},1.19);
+\node[anchor=west,font=\fontsize{8.3}{9}\selectfont\bfseries,text=ink] at (3.62,0.98) {\EndpointStableStableCountContribution};
+
+\draw[endpointpanel] (6.70,0.22) rectangle (13.10,4.08);
+\node[anchor=west,font=\fontsize{15}{16}\selectfont\bfseries,text=stable] at (7.00,3.61) {Routed value: \EndpointValueChange};
+\node[endpointlabel,anchor=west] at (7.00,2.81) {Other endpoint pairs};
+\fill[stable!85] (10.00,2.58) rectangle ({10.00+0.10*\EndpointOtherValueContributionNumber},2.99);
+\node[anchor=west,font=\fontsize{8.3}{9}\selectfont\bfseries,text=ink] at (12.16,2.78) {\EndpointOtherValueContribution};
+\node[endpointlabel,anchor=west] at (7.00,1.91) {One native, one stable};
+\fill[accent!85] (10.00,1.68) rectangle ({10.00+0.10*\EndpointNativeStableValueContributionNumber},2.09);
+\node[anchor=west,font=\fontsize{8.3}{9}\selectfont\bfseries,text=ink] at (11.16,1.88) {\EndpointNativeStableValueContribution};
+\node[endpointlabel,anchor=west] at (7.00,1.01) {Two stable endpoints};
+\fill[ucldark!75] (10.00,0.78) rectangle ({10.00+0.10*\EndpointStableStableValueContributionNumber},1.19);
+\node[anchor=west,font=\fontsize{8.3}{9}\selectfont\bfseries,text=ink] at (11.42,0.98) {\EndpointStableStableValueContribution};
+\end{tikzpicture}
