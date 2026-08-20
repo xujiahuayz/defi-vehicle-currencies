@@ -570,7 +570,9 @@ def require_mergeable_partial_metadata(
 def read_source_day_metadata(
     source: DexSource, day: dt.date, *, data_root: Path = DATA_DIR
 ) -> dict[str, Any]:
-    path = meta_path(source.name, day, data_root=data_root)
+    _, path = installed_source_day_paths(
+        source.name, "swaps", day, data_root=data_root
+    )
     if not path.exists():
         return {}
     try:
@@ -630,29 +632,46 @@ def repair_source_day_metadata(
     streams: set[str] | None = None,
     data_root: Path = DATA_DIR,
 ) -> dict[str, Any]:
-    schema = get_schema(source.schema)
-    selected = [
-        entity for entity in schema.entities
-        if streams is None or entity.stream in streams
-    ]
+    if source.backend == "dune":
+        names = ("swaps", "daily")
+        selected = [
+            EntitySpec(stream=name, entity=f"dune_{name}", fields="")
+            for name in names
+            if streams is None or name in streams
+        ]
+    else:
+        schema = get_schema(source.schema)
+        selected = [
+            entity for entity in schema.entities
+            if streams is None or entity.stream in streams
+        ]
     existing = read_source_day_metadata(source, day, data_root=data_root)
     stream_meta: dict[str, dict[str, Any]] = {}
     for entity in selected:
-        path = _raw_path_at(source.name, entity.stream, day, data_root)
+        path, _ = installed_source_day_paths(
+            source.name, entity.stream, day, data_root=data_root
+        )
         if not path.is_file():
             raise FileNotFoundError(f"installed raw stream is missing: {path}")
         stream_meta[entity.stream] = index_existing_stream(path, entity)
     fresh = {
         "source": source.name,
-        "backend": "thegraph",
+        "backend": source.backend,
         "schema": source.schema,
-        "subgraph_id": source.subgraph_id,
         "day": day.isoformat(),
         "streams": stream_meta,
         "metadata_indexed_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
     }
+    if source.backend == "thegraph":
+        fresh["subgraph_id"] = source.subgraph_id
+    else:
+        fresh["dune_project"] = source.dune_project
+        fresh["dune_version"] = source.dune_version
     merged = merge_stream_metadata(existing, fresh)
-    write_json(meta_path(source.name, day, data_root=data_root), merged)
+    marker = installed_source_day_paths(
+        source.name, "swaps", day, data_root=data_root
+    )[1]
+    write_json(marker, merged)
     return merged
 
 

@@ -695,8 +695,6 @@ def _repair_meta(args: argparse.Namespace) -> int:
     failures: list[tuple[str, str, str]] = []
     for name in source_names(args.dex):
         source = get_source(name)
-        if source.backend != "thegraph":
-            raise ValueError(f"metadata repair currently supports The Graph sources only: {name}")
         start, end = effective_range(name, args.start, args.end)
         days = iter_days(start, end)
         if args.max_days:

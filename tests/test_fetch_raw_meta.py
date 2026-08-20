@@ -114,3 +114,23 @@ def test_metadata_repair_counts_installed_rows(tmp_path: Path) -> None:
     assert marker.is_file()
     assert repaired["streams"]["swaps"]["rows"] == 1
     assert "sha256" not in json.dumps(repaired).lower()
+
+
+def test_metadata_repair_indexes_an_installed_dune_stream(tmp_path: Path) -> None:
+    directory = tmp_path / "raw" / "dune" / "fluid"
+    payload = directory / "fluid_swaps_20250101.jsonl.gz"
+    marker = directory / "fluid_meta_20250101.json"
+    write_jsonl_gz(payload, [{"tx_hash": "one", "block_number": 10}])
+
+    repaired = repair_source_day_metadata(
+        get_source("fluid"), DAY, streams={"swaps"}, data_root=tmp_path
+    )
+
+    assert marker.is_file()
+    assert repaired["source"] == "fluid"
+    assert repaired["backend"] == "dune"
+    assert repaired["streams"]["swaps"]["rows"] == 1
+    with verified_source_day_rows(
+        "fluid", "swaps", DAY, data_root=tmp_path
+    ) as rows:
+        assert list(rows) == [{"tx_hash": "one", "block_number": 10}]
