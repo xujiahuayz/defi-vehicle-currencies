@@ -265,6 +265,11 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         record_type="bridge_establishment_timing_regression",
         model_id="adoption_within_30_on_competitive_depth",
     )
+    timing_month_controlled = _single(
+        estimates,
+        record_type="bridge_establishment_timing_regression",
+        model_id="adoption_within_30_on_competitive_depth_controls",
+    )
     depth_slope_first = _single(
         estimates,
         record_type="bridge_establishment_depth_regression",
@@ -364,6 +369,8 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         > float(timing_shallow_month["adoption_share"])
         and float(timing_month_difference["coefficient"]) > 0
         and float(timing_month_difference["p_value"]) < 0.01
+        and float(timing_month_controlled["coefficient"]) > 0
+        and float(timing_month_controlled["p_value"]) < 0.01
         and float(depth_slope_first["coefficient"]) > 0
         and float(depth_slope_first["p_value"]) < 0.01
         and float(depth_slope_later["coefficient"]) > 0
@@ -441,6 +448,8 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         f"\\newcommand{{\\BridgeTimingCompetitiveMonthShare}}{{{_pct(float(timing_competitive_month['adoption_share']))}}}",
         f"\\newcommand{{\\BridgeTimingCompetitiveDiff}}{{{_signed_pp(float(timing_month_difference['coefficient']), decimals=1)}}}",
         f"\\newcommand{{\\BridgeTimingCompetitiveSE}}{{{_unsigned_pp(float(timing_month_difference['standard_error']), decimals=1)}}}",
+        f"\\newcommand{{\\BridgeTimingControlledDiff}}{{{_signed_pp(float(timing_month_controlled['coefficient']), decimals=1)}}}",
+        f"\\newcommand{{\\BridgeTimingControlledSE}}{{{_unsigned_pp(float(timing_month_controlled['standard_error']), decimals=1)}}}",
         f"\\newcommand{{\\BridgeDepthDoseFirstCoef}}{{{_signed_pp(0.01 * float(depth_slope_first['coefficient']))}}}",
         f"\\newcommand{{\\BridgeDepthDoseFirstSE}}{{{_unsigned_pp(0.01 * float(depth_slope_first['standard_error']))}}}",
         f"\\newcommand{{\\BridgeDepthDoseFirstRows}}{{{_integer(float(depth_slope_first['n_observations']))}}}",
@@ -603,6 +612,16 @@ def render_bridge_establishment_table(estimates: pd.DataFrame) -> str:
         record_type="bridge_establishment_timing_regression",
         model_id="adoption_within_120_on_competitive_depth",
     )
+    timing_controlled_first = _single(
+        estimates,
+        record_type="bridge_establishment_timing_regression",
+        model_id="adoption_within_30_on_competitive_depth_controls",
+    )
+    timing_controlled_later = _single(
+        estimates,
+        record_type="bridge_establishment_timing_regression",
+        model_id="adoption_within_120_on_competitive_depth_controls",
+    )
     depth_rows = [
         "Relative-depth slope [pp per +1 pp] & "
         f"{_estimate_cell(slope_first)} & "
@@ -628,6 +647,9 @@ def render_bridge_establishment_table(estimates: pd.DataFrame) -> str:
         "Difference [pp] & "
         f"{_estimate_cell(timing_difference_first, scale=100.0)} & "
         f"{_estimate_cell(timing_difference_later, scale=100.0)} \\\\",
+        "Difference with controls [pp] & "
+        f"{_estimate_cell(timing_controlled_first, scale=100.0)} & "
+        f"{_estimate_cell(timing_controlled_later, scale=100.0)} \\\\",
     ]
     return "\n".join(
         [

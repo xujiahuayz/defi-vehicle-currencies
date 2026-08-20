@@ -139,16 +139,27 @@ def test_bridge_establishment_timing_separates_presence_from_depth() -> None:
         else:
             lag = None
         event_date = pd.Timestamp("2024-01-01") + pd.Timedelta(days=index)
+        src = [USDC, WETH, f"0x{index:040x}"][index % 3]
+        tgt = f"0x{index + 100:040x}"
         rows.append(
             {
                 "event_id": f"event-{index}",
-                "ordered_pair": f"src-{index}|tgt-{index}",
+                "ordered_pair": f"{src}|{tgt}",
                 "event_date": event_date,
                 "first_stable_route_date": (
                     event_date + pd.Timedelta(days=lag) if lag is not None else pd.NaT
                 ),
                 "stable_bridge_min_capital_usd": 20.0 if competitive else 5.0,
                 "native_bridge_min_capital_usd": 100.0,
+                "src": src,
+                "tgt": tgt,
+                "integration_scope": (
+                    "single_venue" if index % 2 == 0 else "cross_venue"
+                ),
+                "event_stablecoins": ["DAI", "USDC", "USDT"][(index // 3) % 3],
+                "pre_native_routes": float(10 + index % 7),
+                "pre_native_value_usd": float(1000 + 100 * (index % 11)),
+                "pre_active_days": float(3 + index % 5),
             }
         )
     result = bridge_establishment_adoption_timing_from_events(
@@ -180,6 +191,13 @@ def test_bridge_establishment_timing_separates_presence_from_depth() -> None:
     ].iloc[0]
     assert math.isclose(regression["coefficient"], 0.4)
     assert regression["standard_error"] > 0
+    controlled = result[
+        result["record_type"].eq("bridge_establishment_timing_regression")
+        & result["model_id"].eq(
+            "adoption_within_30_on_competitive_depth_controls"
+        )
+    ].iloc[0]
+    assert math.isfinite(controlled["coefficient"])
 
 
 def test_bridge_establishment_continuous_depth_tracks_route_allocation() -> None:
@@ -1205,6 +1223,8 @@ def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
     for model_id, coefficient, standard_error in [
         ("adoption_within_30_on_competitive_depth", 0.409, 0.048),
         ("adoption_within_120_on_competitive_depth", 0.362, 0.046),
+        ("adoption_within_30_on_competitive_depth_controls", 0.242, 0.057),
+        ("adoption_within_120_on_competitive_depth_controls", 0.205, 0.053),
     ]:
         event_rows.append(
             {
@@ -1310,6 +1330,7 @@ def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
     assert "\\BridgeEstablishmentCountCoef" in rendered
     assert "\\BridgeTimingMonthShare" in rendered
     assert "\\newcommand{\\BridgeTimingComparableEvents}{853}" in rendered
+    assert "\\BridgeTimingControlledDiff" in rendered
     assert "\\BridgeDepthDoseFirstCoef" in rendered
     assert "\\BridgeDepthEqualFirstShare" in rendered
     assert "\\newcommand{\\BridgeDepthDoseFirstRows}{11{,}327}" in rendered

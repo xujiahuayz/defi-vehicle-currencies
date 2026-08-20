@@ -23,6 +23,7 @@ import duckdb
 import numpy as np
 import pandas as pd
 
+from ddvc.asset_types import asset_type
 from ddvc.analysis.regression import absorb_fixed_effects, linear_contrast, ols_clustered
 from ddvc.paths import OUTPUT_DIR, REPO_ROOT
 from ddvc.tables import write_exhibit
@@ -50,7 +51,10 @@ BRIDGE_ESTABLISHMENT_PRE_DAYS = 30
 BRIDGE_ESTABLISHMENT_POST_DAYS = 120
 BRIDGE_ESTABLISHMENT_MIN_ACTIVE_DAYS = 3
 BRIDGE_ESTABLISHMENT_MIN_SUPPORT_DAYS_30 = 24
-CODE_SOURCES = ["scripts/analyze/run_bridge_liquidity_dominance.py"]
+CODE_SOURCES = [
+    "scripts/analyze/run_bridge_liquidity_dominance.py",
+    "src/ddvc/asset_types.py",
+]
 INPUTS = [
     "data/processed/endpoint_candidate_choices.parquet",
     "data/processed/endpoint_candidate_pair_support.parquet",
@@ -954,6 +958,13 @@ def bridge_establishment_adoption_timing_from_events(
         "first_stable_route_date",
         "stable_bridge_min_capital_usd",
         "native_bridge_min_capital_usd",
+        "src",
+        "tgt",
+        "integration_scope",
+        "event_stablecoins",
+        "pre_native_routes",
+        "pre_native_value_usd",
+        "pre_active_days",
     }
     missing = sorted(required - set(events.columns))
     if missing:
@@ -1016,6 +1027,13 @@ def bridge_establishment_adoption_timing_from_events(
     comparable["competitive_depth"] = comparable[
         "stable_to_native_depth_ratio"
     ].ge(0.1).astype(float)
+    comparable["stable_relative_depth_share"] = (
+        comparable["stable_bridge_min_capital_usd"]
+        / (
+            comparable["stable_bridge_min_capital_usd"]
+            + comparable["native_bridge_min_capital_usd"]
+        )
+    )
     for depth_group, competitive_depth in (
         ("below_0.1x", 0.0),
         ("at_least_0.1x", 1.0),
@@ -1046,6 +1064,55 @@ def bridge_establishment_adoption_timing_from_events(
                 }
             )
 
+    comparable["log_pre_native_routes_per_active_day"] = np.log1p(
+        comparable["pre_native_routes"] / comparable["pre_active_days"]
+    )
+    comparable["log_pre_native_value_per_active_day"] = np.log1p(
+        comparable["pre_native_value_usd"] / comparable["pre_active_days"]
+    )
+    comparable["event_month"] = comparable["event_date"].dt.to_period("M").astype(
+        str
+    )
+    comparable["endpoint_direction"] = (
+        comparable["src"].map(asset_type)
+        + "_to_"
+        + comparable["tgt"].map(asset_type)
+    )
+    control_data = pd.concat(
+        [
+            comparable[
+                [
+                    "log_pre_native_routes_per_active_day",
+                    "log_pre_native_value_per_active_day",
+                ]
+            ],
+            pd.get_dummies(
+                comparable["event_month"],
+                prefix="event_month",
+                drop_first=True,
+                dtype=float,
+            ),
+            pd.get_dummies(
+                comparable["integration_scope"],
+                prefix="route_scope",
+                drop_first=True,
+                dtype=float,
+            ),
+            pd.get_dummies(
+                comparable["endpoint_direction"],
+                prefix="endpoint_direction",
+                drop_first=True,
+                dtype=float,
+            ),
+            pd.get_dummies(
+                comparable["event_stablecoins"],
+                prefix="supporting_stablecoins",
+                drop_first=True,
+                dtype=float,
+            ),
+        ],
+        axis=1,
+    )
     for horizon_label, horizon_days in (("30", 29), ("120", 119)):
         outcome = f"adopted_within_{horizon_label}_days"
         comparable[outcome] = comparable["adoption_lag_days"].between(
@@ -1079,6 +1146,7 @@ def bridge_establishment_adoption_timing_from_events(
                 "ordered_pair_clusters": int(fit.cluster_counts[0]),
                 "date_clusters": int(fit.cluster_counts[1]),
                 "fixed_effects": "none",
+                "controls": "none",
                 "covariance": "two_way_ordered_pair_event_date_cr1",
                 "weight": "equal_event",
                 "interpretation": (
@@ -1087,6 +1155,68 @@ def bridge_establishment_adoption_timing_from_events(
                 ),
             }
         )
+
+        for focal, model_suffix in (
+            ("competitive_depth", "competitive_depth_controls"),
+            ("stable_relative_depth_share", "relative_depth_controls"),
+        ):
+            regressors = pd.concat([comparable[[focal]], control_data], axis=1)
+            controlled_fit = ols_clustered(
+                comparable[outcome],
+                regressors,
+                comparable["ordered_pair"],
+                additional_clusters=(comparable["event_date"],),
+                min_observations=min_observations,
+                min_clusters=min_clusters,
+            )
+            coefficient = float(controlled_fit.beta[1])
+            standard_error = float(controlled_fit.standard_errors[1])
+            rows.append(
+                {
+                    "claim_status": "provisional_exploratory",
+                    "record_type": "bridge_establishment_timing_regression",
+                    "model_id": (
+                        f"adoption_within_{horizon_label}_on_{model_suffix}"
+                    ),
+                    "outcome": outcome,
+                    "regressor": focal,
+                    "coefficient": coefficient,
+                    "standard_error": standard_error,
+                    "t_statistic": float(controlled_fit.t_statistics[1]),
+                    "p_value": float(controlled_fit.p_values[1]),
+                    "coefficient_pp": 100.0 * coefficient,
+                    "standard_error_pp": 100.0 * standard_error,
+                    "coefficient_pp_per_10pp_relative_depth_share": (
+                        10.0 * coefficient
+                        if focal == "stable_relative_depth_share"
+                        else None
+                    ),
+                    "standard_error_pp_per_10pp_relative_depth_share": (
+                        10.0 * standard_error
+                        if focal == "stable_relative_depth_share"
+                        else None
+                    ),
+                    "n_observations": int(controlled_fit.n_observations),
+                    "events": int(len(comparable)),
+                    "ordered_pair_clusters": int(controlled_fit.cluster_counts[0]),
+                    "date_clusters": int(controlled_fit.cluster_counts[1]),
+                    "fixed_effects": (
+                        "event_month+integration_scope+endpoint_direction+"
+                        "supporting_stablecoin_set"
+                    ),
+                    "controls": (
+                        "log_pre_native_routes_per_active_day+"
+                        "log_pre_native_value_per_active_day"
+                    ),
+                    "covariance": "two_way_ordered_pair_event_date_cr1",
+                    "weight": "equal_event",
+                    "interpretation": (
+                        "descriptive adoption association conditional on prior "
+                        "native-route activity, endpoint direction, route scope, "
+                        "supporting stablecoins, and event month"
+                    ),
+                }
+            )
     return pd.DataFrame(rows)
 
 
@@ -1108,6 +1238,7 @@ def bridge_establishment_adoption_timing(
         "src",
         "tgt",
         "integration_scope",
+        "event_stablecoins",
     ]
     missing = sorted(set(event_columns) - set(panel.columns))
     if missing:
@@ -1116,6 +1247,20 @@ def bridge_establishment_adoption_timing(
     if events["event_id"].duplicated().any():
         raise ValueError("bridge event timing fields vary within an event")
     events["origin_date"] = events["event_date"]
+    pre_event = (
+        panel[panel["period"].eq("pre_30")]
+        .groupby("event_id", as_index=False)
+        .agg(
+            pre_native_routes=("native_routes", "sum"),
+            pre_native_value_usd=("native_value_usd", "sum"),
+            pre_active_days=("native_routes", "size"),
+        )
+    )
+    events = events.merge(pre_event, on="event_id", how="left", validate="one_to_one")
+    if events[
+        ["pre_native_routes", "pre_native_value_usd", "pre_active_days"]
+    ].isna().any().any():
+        raise ValueError("bridge timing lacks pre-event native-route activity")
     events = _attach_bridge_establishment_depth(
         events,
         pool_capital_path=pool_capital_path,
