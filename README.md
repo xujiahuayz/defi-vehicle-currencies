@@ -71,6 +71,8 @@ local bridge-liquidity dominance, entry-date local bridge-depth choice screens,
 first stable-bridge establishment, continuous stable-versus-WETH bottleneck depth,
 and depth-conditioned route reallocation,
 stable-specific dynamic local bridge-depth feedback, and V2 capital predictability. A
+matched-calendar endpoint-direction decomposition and its stable-to-stable
+intermediary-identity split locate the value channel in USDT. A
 result becomes headline evidence only if it is economically material,
 distinguishes at least one serious rival story, fits the literature contribution,
 and has a complete producer-to-deliverable path.

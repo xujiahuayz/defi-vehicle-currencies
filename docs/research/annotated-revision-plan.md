@@ -32,11 +32,11 @@ the compact pair decomposition, conventional regression equations and table
 notes, the matched-window labels, and a core V4 liquidity-provider result. The
 rendered PDFs remain tracked review artifacts.
 
-Open revision classes: test whether the prior tightening removed useful economic
-intuition; compress or reorganize the long liquidity section without deleting
-its mechanism; collect the four endpoint-transition quadrants; quantify the
-disconnected-component boundary; and evaluate issuance-to-pool-to-vehicle timing.
-Each major revision follows the decision rule in
+The prior tightening and liquidity-section reviews are complete. The four
+endpoint directions are now collected in one exact decomposition, with a
+separate issuer split showing that USDT accounts for the stable-to-stable value
+channel. Open revision classes are to quantify the disconnected-component
+boundary and evaluate issuance-to-pool-to-vehicle timing. Each major revision follows the decision rule in
 [`writing-and-rhetoric.md`](writing-and-rhetoric.md) before implementation.
 
 ## Economic motivation and contribution
@@ -124,8 +124,9 @@ Each major revision follows the decision rule in
   unless an exogenous design is found.
 - Compare liquidity-provider capital, flows, range concentration, and position
   updates around V4 flash-accounting intensity with comparable V3 measures.
-- Separate the stable-to-stable, stable-to-native, native-to-stable, and
-  native-to-native transition mechanisms.
+- The stable-to-stable, stable-to-native, native-to-stable, and
+  native-to-native endpoint directions are separated. The next use of this
+  result should test timing or liquidity, not repeat the same composition split.
 - Continue systematic specification searches only through registered outcomes,
   fixed effects, support rules, and multiplicity controls. The paper and deck
   remain presentable after every admitted result generation.

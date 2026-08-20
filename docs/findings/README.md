@@ -1,6 +1,6 @@
 ---
 title: Live research and deliverable state
-updated: 2026-08-19
+updated: 2026-08-20
 target: Journal of Financial Economics
 submission_ready: false
 freeze_status: green
@@ -109,6 +109,8 @@ bridge-liquidity dominance, entry-date local bridge-depth choice screens, plus
 first stable-bridge establishment, continuous stable-versus-WETH bottleneck depth,
 and depth-conditioned route reallocation, plus
 stable-specific dynamic local bridge-depth feedback. The deck
+also reports an exact endpoint-direction decomposition and the concentration of
+the stable-to-stable routed-value channel in USDT. The deck
 also carries the traditional-FX route analogy as motivation. These layers
 strengthen the
 mechanism story but do not change the registered confirmatory claim set.

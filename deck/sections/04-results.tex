@@ -10,6 +10,9 @@
 \IfFileExists{../output/exhibits/endpoint_direction_deck_values.tex}{%
 \input{../output/exhibits/endpoint_direction_deck_values.tex}%
 }{\PackageError{dvc-deck}{Missing endpoint-direction values}{Run scripts/analyze/run_endpoint_direction_decomposition.py then scripts/tabulate/build_endpoint_direction_deck_values.py.}}
+\IfFileExists{../output/exhibits/stable_stable_vehicle_values.tex}{%
+\input{../output/exhibits/stable_stable_vehicle_values.tex}%
+}{\PackageError{dvc-deck}{Missing stable-to-stable vehicle values}{Run scripts/analyze/run_stable_stable_vehicle_decomposition.py then scripts/tabulate/build_stable_stable_vehicle_values.py.}}
 \IfFileExists{../output/exhibits/liquidity_capital_v2_deck_values.tex}{%
 \input{../output/exhibits/liquidity_capital_v2_deck_values.tex}%
 }{\PackageError{dvc-deck}{Missing generated V2 capital-predictability values}{Run scripts/tabulate/build_liquidity_capital_v2_deck_values.py.}}
@@ -129,7 +132,7 @@ Currency fixed effects & No & No & No & Yes \\
 \end{frame}
 
 % EVIDENCE-STATUS: exploratory descriptive endpoint-direction decomposition
-% EVIDENCE-SOURCES: output/exhibits/endpoint_direction_decomposition.jsonl; output/exhibits/endpoint_direction_deck_values.tex
+% EVIDENCE-SOURCES: output/exhibits/endpoint_direction_decomposition.jsonl; output/exhibits/endpoint_direction_deck_values.tex; output/exhibits/stable_stable_vehicle_decomposition.jsonl; output/exhibits/stable_stable_vehicle_robustness.jsonl; output/exhibits/stable_stable_vehicle_values.tex
 % VISUAL-FUNCTION: endpoint demand | count-versus-value contribution bars | locate the rotation across economically distinct trading relationships
 \begin{frame}{Who trades with whom makes the vehicle}
 \vspace{-0.18cm}
@@ -137,7 +140,7 @@ Currency fixed effects & No & No & No & Yes \\
 \resizebox{0.97\textwidth}{!}{\input{assets/endpoint-direction-rotation.tex}}
 \end{center}
 \vspace{-0.12cm}
-{\large Other endpoint pairs supply \EndpointOtherCountShare{} of the count rotation; two-stable endpoint pairs supply \EndpointStableStableValueShare{} of the value rotation.\par}
+{\large USDT supplies \StableStableUsdtValueContribution{} of the \StableStableValueContribution{} two-stable endpoint value channel.\par}
 \decknote{181 common days. Exact additive decomposition; descriptive.}
 \end{frame}
 

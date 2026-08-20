@@ -27,6 +27,7 @@ Captions, labels, placement, and interpretation stay in the paper/deck source.
 | `render_v3_v4_tvl_protocol_contrast.py` | `v3_v4_tvl_protocol_contrast.tex/.pdf` | `tab:v3-v4-tvl-protocol` |
 | `render_v3_v4_lp_summary.py` | `v3_v4_lp_summary.tex/.pdf` | `tab:v3-v4-lp-summary` |
 | `build_endpoint_direction_deck_values.py` | `endpoint_direction_deck_values.tex` | endpoint-direction paper/deck values |
+| `build_stable_stable_vehicle_values.py` | `stable_stable_vehicle_values.tex` | stable-to-stable intermediary-identity values |
 | `render_venue_coverage.py` | `venue_coverage.tex/.pdf` | `tab:app:venues` |
 
 The remaining active manuscript tables are intentionally inline because each is
