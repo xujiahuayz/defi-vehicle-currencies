@@ -9,15 +9,9 @@
   "page_allowances": [
     {
       "page": 3,
-      "title": "Vehicle currencies are routes",
-      "words": 60,
-      "note_words": 36
-    },
-    {
-      "page": 6,
-      "title": "Inside the pools, USDT links USDC to USDe",
-      "words": 56,
-      "note_words": 17
+      "title": "Pool routes reveal the vehicle currency",
+      "words": 63,
+      "note_words": 35
     },
     {
       "page": 22,
@@ -88,13 +82,13 @@
     {
       "page": 38,
       "title": "A9. Intermediary and route-endpoint use are separate",
-      "words": 67,
+      "words": 71,
       "note_words": 0
     },
     {
       "page": 39,
       "title": "A10. Capital, inventory, and depth differ",
-      "words": 67,
+      "words": 71,
       "note_words": 0
     },
     {

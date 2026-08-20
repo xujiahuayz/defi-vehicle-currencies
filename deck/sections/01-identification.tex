@@ -1,50 +1,50 @@
 % VISUAL-MANAGED-FILE
-% Framing and institutional setting. Sources: Krugman (1980); Flandreau and Jobst (2009); PBoC Brazil clearing memorandum; project route-release audit.
+% Framing and institutional setting. Sources: Krugman (1980); BIS Project Nexus FX provision; BIS Project Rialto; project route-release audit.
 \IfFileExists{../output/exhibits/presentation_values.tex}{%
 \input{../output/exhibits/presentation_values.tex}%
 }{\PackageError{dvc-deck}{Missing generated route-results values}{Run scripts/tabulate/render_presentation_values.py.}}
 
-% EVIDENCE-STATUS: conceptual motivation from vehicle-currency theory and bilateral-clearing intuition; no empirical estimate is displayed.
-% SOURCE: Krugman (1980), vehicle currency theory; PBoC memorandum with Banco Central do Brasil on renminbi clearing arrangements in Brazil; paper introduction footnote records the source and boundary.
-% SCIENTIFIC-BOUNDARY: the clearing example motivates allocation across bilateral trading relationships only. The paper's estimand is the executed DEX pool route; the example supplies no identification event.
-% VISUAL-FUNCTION: bilateral-activity allocation | traditional-finance route schematic plus two margin boxes | motivate why aggregate vehicle dominance can move while one relationship keeps its vehicle
-\begin{frame}{Dominance changes when bilateral trading activity moves}
+% EVIDENCE-STATUS: conceptual motivation from official cross-border payment designs; no empirical estimate is displayed.
+% SOURCE: BIS Project Nexus FX provision, https://docs.bis.org/nexus/fx-provision/key-points; BIS Project Rialto, https://www.bis.org/about/bisih/topics/cbdc/rialto.htm.
+% SCIENTIFIC-BOUNDARY: the payment-system examples motivate the currency-conversion and liquidity problem. The paper's estimand is the executed DEX pool route; these examples supply no identification event.
+% VISUAL-FUNCTION: cross-border liquidity problem | payment-provider route schematic plus vehicle reveal | motivate why a third currency and its liquidity are economically necessary
+\begin{frame}{A cross-border payment needs someone to make the FX market}
 \begin{columns}[T,totalwidth=\textwidth]
 \begin{column}{0.48\textwidth}
-\evidencekicker{Traditional-finance intuition}
+\evidencekicker{The liquidity-provider problem}
 \vspace{0.10cm}
-{\large A treasury desk keeps routing one thin bilateral relationship through dollars while aggregate dollar share falls.\par}
+{\large A payment provider receives one currency but must deliver another it does not hold.\par}
 \vspace{0.22cm}
-{\small Growth in other bilateral relationships changes the denominator while this relationship keeps using dollars.\par}
+{\small Project Nexus requires an FX provider. Project Rialto uses a vehicle when direct exchange is unavailable.\par}
 \end{column}
 \begin{column}{0.48\textwidth}
 \centering
 \begin{tikzpicture}[x=1cm,y=1cm]
-\node[nodepoint,minimum size=36pt,font=\small\bfseries] (brl) at (0.15,2.70) {BRL};
-\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=38pt,font=\small\bfseries] (usd) at (2.50,2.70) {USD};
-\node[nodepoint,minimum size=36pt,font=\small\bfseries] (cny) at (4.85,2.70) {RMB};
-\draw[route,draw=rule,line width=1.25pt] (brl)--(usd);
-\draw[route,draw=rule,line width=1.25pt] (usd)--(cny);
-\draw[route,draw=stable,line width=1.85pt] (brl) to[bend right=28] (cny);
-\node[softbox,text width=5.15cm,align=center] at (2.50,1.15) {\small Growth elsewhere lowers the dollar's aggregate share.};
-\node[font=\scriptsize\bfseries,text=white,fill=stable,rounded corners=2pt,inner sep=4pt] at (2.50,0.30) {composition margin};
+\node[nodepoint,minimum size=36pt,font=\small\bfseries] (src) at (0.15,2.70) {A};
+\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=38pt,font=\small\bfseries] (veh) at (2.50,2.70) {$k$};
+\node[nodepoint,minimum size=36pt,font=\small\bfseries] (dst) at (4.85,2.70) {B};
+\draw[route,draw=ucldark,line width=1.55pt] (src)--(veh);
+\draw[route,draw=ucldark,line width=1.55pt] (veh)--(dst);
+\draw[rule,densely dashed,line width=1.2pt] (src) to[bend right=28] (dst);
+\node[softbox,text width=5.15cm,align=center] at (2.50,1.15) {\small Currency $k$ bridges an illiquid pair.};
+\node[font=\scriptsize\bfseries,text=white,fill=ucldark,rounded corners=2pt,inner sep=4pt] at (2.50,0.30) {vehicle currency};
 \end{tikzpicture}
 \end{column}
 \end{columns}
-\decknote{The clearing example is an analogy for the denominator problem. The empirical object in this paper is the intermediary asset observed inside DEX pool routes.}
+\decknote{Project Nexus states that every cross-border, cross-currency payment needs an actor willing and able to exchange the currencies. Project Rialto experimentally uses a vehicle currency when direct exchange is unavailable. The paper studies the intermediary asset observed inside DEX pool routes.}
 \end{frame}
 
 % EVIDENCE-STATUS: conceptual motivation from vehicle-currency theory and FX reporting limits; no empirical estimate is displayed.
 % SOURCE: Krugman (1980), vehicle currency theory; Somogyi (2026), dollar dominance inference from pair-level FX volumes; BIS Triennial reporting guidelines, pair-level turnover.
 % VISUAL-FUNCTION: traditional-FX route analogy | two-leg schematic plus measurement contrast | motivate why transaction-level route reconstruction matters
-\begin{frame}{Vehicle currencies are routes}
+\begin{frame}{Pool routes reveal the vehicle currency}
 \begin{columns}[T,totalwidth=\textwidth]
 \begin{column}{0.47\textwidth}
 \evidencekicker{FX analogy}
 \vspace{0.10cm}
 {\large Yen--euro may trade through dollars.\par}
 \vspace{0.24cm}
-{\small Atomic-pair turnover data show two legs, not the customer route.\par}
+{\small Conventional turnover data show two legs, not the customer's connected route.\par}
 \end{column}
 \begin{column}{0.49\textwidth}
 \centering
@@ -63,7 +63,7 @@
 \begin{beamercolorbox}[wd=\textwidth,sep=0.15cm]{block body}
 {\small \textbf{DeFi} is on-chain finance executed by smart contracts; decentralised exchanges (DEXs) trade tokens through liquidity pools. \textbf{Stablecoins} are tokens designed to track a reference currency, usually the US dollar.\par}
 \end{beamercolorbox}
-\decknote{Traditional FX records show turnover in each atomic currency pair, but not whether two legs belong to one customer route. The DEX setting preserves the transaction-level pool path, so the intermediary asset is observed directly.}
+\decknote{Traditional FX records show turnover in each currency pair, but not whether two legs belong to one customer route. The DEX setting preserves the transaction-level pool path, so the intermediary asset is observed directly.}
 \end{frame}
 
 % EVIDENCE-STATUS: principal route-panel scope; counts and dates come from the aggregate reconstruction-quality exhibit and the daily routing series.
@@ -102,20 +102,20 @@
 % LITERATURE-PRECEDENT: Lehar and Parlour (2025), Appendix B, pairs one named explorer transaction with decoded logs before handing off to the population reconstruction.
 % VISUAL-FUNCTION: source-versus-pool-route handoff | authentic explorer screenshot plus settlement trace | separate the user's PYUSD instruction from the USDC-funded pool component
 \input{../output/exhibits/route_replay_deck_values.tex}
-\begin{frame}{The PYUSD swap reaches a USDC-funded pool route}
+\begin{frame}{Pool data may start after the user instruction}
 \evidencekicker{User instruction recorded by the explorer}
 \vspace{0.02cm}
 \centering
-\fcolorbox{rule}{white}{\includegraphics[width=0.88\textwidth,height=1.38cm,keepaspectratio,trim=270 820 430 170,clip]{assets/observed_route_blockscout.png}}
+\fcolorbox{rule}{white}{\includegraphics[width=0.88\textwidth,height=1.25cm,keepaspectratio,trim=270 820 430 170,clip]{assets/observed_route_blockscout.png}}
 \par\vspace{0.15cm}
 \evidencekicker{The decisive settlement transfers}
 \vspace{0.02cm}
-\fcolorbox{rule}{white}{\includegraphics[width=0.94\textwidth,height=1.04cm,keepaspectratio,trim=280 415 324 615,clip]{assets/observed_route_blockscout.png}}
+\fcolorbox{rule}{white}{\includegraphics[width=0.94\textwidth,height=0.94cm,keepaspectratio,trim=280 415 324 615,clip]{assets/observed_route_blockscout.png}}
 \par\vspace{0.08cm}
-\fcolorbox{rule}{white}{\includegraphics[width=0.94\textwidth,height=1.04cm,keepaspectratio,trim=280 320 324 700,clip]{assets/observed_route_blockscout.png}}
+\fcolorbox{rule}{white}{\includegraphics[width=0.94\textwidth,height=0.94cm,keepaspectratio,trim=280 320 324 700,clip]{assets/observed_route_blockscout.png}}
 \par\vspace{0.14cm}
-{\normalsize\raggedright The instruction is PYUSD $\rightarrow$ USDe. The maker supplies the USDC used by the Fluid leg, which begins the connected pool route.\par}
-\decknote{The explorer screenshot and transfer trace refer to transaction \ethtx{0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9}{0xbda1d07f\ldots 9bf67ad9} on 10 January 2026.}
+{\normalsize\raggedright The instruction is PYUSD $\rightarrow$ USDe. The connected pool route begins with USDC.\par}
+\decknote{Transaction \ethtx{0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9}{0xbda1d07f\ldots 9bf67ad9}, 10 January 2026. The data do not reveal whether PYUSD--USDC is another vehicle leg or executor inventory.}
 \end{frame}
 
 % EVIDENCE-STATUS: authentic connected pool-swap component from the same transaction; exact same-state alternative remains outside this exhibit
@@ -148,7 +148,7 @@
 \vspace{0.15cm}
 \begin{minipage}{0.78\textwidth}
 \centering
-{\small The observed ultimate trade is USDC $\rightarrow$ USDe. Its atomic trades are USDC $\rightarrow$ USDT and USDT $\rightarrow$ USDe; USDT is the vehicle that links them.\par}
+{\small The observed endpoint pair is USDC $\rightarrow$ USDe. Its legs are USDC $\rightarrow$ USDT and USDT $\rightarrow$ USDe; USDT is the vehicle that links them.\par}
 \end{minipage}
 \par\vspace{0.04cm}
 {\raggedright\decknote{The route is the connected pool-swap component of transaction \ethtx{0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9}{0xbda1d07f\ldots 9bf67ad9} on 10 January 2026.}}
