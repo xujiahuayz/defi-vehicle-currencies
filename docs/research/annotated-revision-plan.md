@@ -139,6 +139,12 @@ sensitivity that slightly strengthens the aggregate rotation. Each major revisio
   strengthens the participation evidence without calling transaction origins
   verified LP-position owners. Any stronger supply interpretation still
   requires an exogenous provider-side shift or provider-level identification.
+- Persistent 30-day WETH volatility shifts the internal-routing association
+  away from near-term incumbent actions and toward first-active origins during
+  days 31 to 120. Vehicle-specific and control-specific volatility slopes,
+  alternative activity windows, zero-update inclusion, and leave-one-vehicle
+  estimates retain the later-entry result. This is state-dependent predictive
+  evidence, not an exogenous risk-bearing shock.
 - The stable-to-stable, stable-to-native, native-to-stable, and
   native-to-native endpoint directions are separated. The next use of this
   result should test timing or liquidity, not repeat the same composition split.

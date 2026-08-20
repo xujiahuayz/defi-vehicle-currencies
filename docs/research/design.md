@@ -54,6 +54,16 @@ later by origins absent from the prior window. The family uses the existing
 vehicle and date effects, origin-day controls, date clustering, and Holm
 adjustment across the three accounting proxies and four timing outcomes.
 
+The state-dependent extension uses lagged 30-day mean realised WETH volatility
+from one-minute prices. It interacts that state with internal same-asset routing,
+allows every vehicle and origin-day control its own volatility slope, and keeps
+vehicle and date effects. The registered outcomes are actions by 180-day
+incumbent origins during days 1 to 30 and first-active origins during days 31 to
+120. A seven-day state, zero-liquidity updates, a 90-day prior window, and
+leave-one-vehicle-out estimates are sensitivities. This test distinguishes
+persistent risk-bearing conditions from an architecture-only account without
+calling volatility an exogenous provider constraint.
+
 ## Question and contribution
 
 The paper asks what makes a vehicle currency dominant and how that dominance
