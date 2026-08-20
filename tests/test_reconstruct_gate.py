@@ -74,7 +74,9 @@ def write_v2_swap(data_root: Path, amount_in: str = "100") -> Path:
     return path
 
 
-def write_v1_route(data_root: Path, *, bought_eth: str = "1") -> None:
+def write_v1_route(
+    data_root: Path, *, bought_eth: str = "1", shared_event_prefix: bool = False
+) -> None:
     registry, registry_meta = v1_registry_paths(data_root=data_root)
     registry.parent.mkdir(parents=True, exist_ok=True)
     with gzip.open(registry, "wt", encoding="utf-8") as handle:
@@ -101,7 +103,13 @@ def write_v1_route(data_root: Path, *, bought_eth: str = "1") -> None:
             "block": 10_000_000,
             "timestamp": 1_588_291_201,
             "ethPurchaseEvents": [],
-            "tokenPurchaseEvents": [{"id": "9-tp", "tokenAmount": "200", "ethAmount": bought_eth}],
+            "tokenPurchaseEvents": [
+                {
+                    "id": f"{'4' if shared_event_prefix else '9'}-tp",
+                    "tokenAmount": "200",
+                    "ethAmount": bought_eth,
+                }
+            ],
         },
     ]
     with gzip.open(path, "wt", encoding="utf-8") as handle:
@@ -161,6 +169,26 @@ class ReconstructGateTests(unittest.TestCase):
             self.assertTrue(quality["passed"])
             self.assertEqual(frame.route_class.unique().tolist(), ["tricky_independent"])
             self.assertTrue(frame.ambiguous.all())
+
+    def test_v1_shared_event_prefix_preserves_both_directed_legs(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_v1_route(root, shared_event_prefix=True)
+            frame, quality = reconstruct_day_with_quality(
+                "2020-05-01", ["uniswap_v1"], data_root=root
+            )
+            frame = frame.sort_values("log_index").reset_index(drop=True)
+            self.assertTrue(quality["passed"])
+            self.assertEqual(quality["conflicting_events"], 0)
+            self.assertEqual(frame.log_index.tolist(), [8, 9])
+            self.assertEqual(frame.token_in.tolist(), [
+                TOKEN_A,
+                "0x0000000000000000000000000000000000000000",
+            ])
+            self.assertEqual(frame.token_out.tolist(), [
+                "0x0000000000000000000000000000000000000000",
+                USDC,
+            ])
 
     def test_raw_preflight_fails_before_output_mutation(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

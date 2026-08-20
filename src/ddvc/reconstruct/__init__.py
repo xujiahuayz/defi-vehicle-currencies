@@ -79,7 +79,7 @@ RECONSTRUCT_CODE_SOURCES = [
     "src/ddvc/reconstruct/__init__.py",
     *ROUTE_SEMANTIC_SOURCES,
 ]
-RECONSTRUCTION_ENGINE = "direct-v3"
+RECONSTRUCTION_ENGINE = "direct-v4"
 ROUTE_SAMPLE_START = V1_GENESIS_START
 UNIFIED_QUALITY_COLUMNS = [
     "schema_version",
@@ -309,10 +309,16 @@ def _norm_fluid(rec: dict) -> dict | None:
     }
 
 
-def _v1_event_log(event: dict) -> int:
-    """The V1 event id is `<log index>-tp` or `<log index>-ep`."""
+def _v1_event_log(event: dict, *, leg_offset: int) -> int:
+    """Map V1's event sequence and side onto one collision-free leg index.
 
-    return _i(str(event.get("id") or "").split("-", 1)[0])
+    The V1 subgraph occasionally gives the token-purchase and ETH-purchase
+    events in one token-to-token transaction the same numeric prefix.  Doubling
+    that prefix leaves the original sequence intact; the side offset preserves
+    both directed legs instead of treating them as conflicting records.
+    """
+
+    return 2 * _i(str(event.get("id") or "").split("-", 1)[0]) + leg_offset
 
 
 def _norm_uniswap_v1(
@@ -341,7 +347,7 @@ def _norm_uniswap_v1(
         legs.append(
             {
                 **common,
-                "log": _v1_event_log(event),
+                "log": _v1_event_log(event, leg_offset=0),
                 "tin": symbol,
                 "tin_id": token,
                 "tout": "ETH",
@@ -356,7 +362,7 @@ def _norm_uniswap_v1(
         legs.append(
             {
                 **common,
-                "log": _v1_event_log(event),
+                "log": _v1_event_log(event, leg_offset=1),
                 "tin": "ETH",
                 "tin_id": NATIVE_ETH_ADDR,
                 "tout": symbol,
