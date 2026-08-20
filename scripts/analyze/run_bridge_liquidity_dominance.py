@@ -311,6 +311,8 @@ first_events AS (
         integration_scope,
         first_stable_bridge_date AS event_date,
         string_agg(candidate_symbol, ',' ORDER BY candidate_symbol) AS event_stablecoins,
+        string_agg(candidate_address, ',' ORDER BY candidate_address)
+            AS event_stablecoin_addresses,
         max(support_days_30)::INTEGER AS support_days_30
     FROM ranked_events
     WHERE event_date = first_stable_bridge_date
@@ -388,6 +390,7 @@ SELECT
     e.tgt,
     e.integration_scope,
     e.event_stablecoins,
+    e.event_stablecoin_addresses,
     e.support_days_30,
     e.pre_active_days,
     e.post30_active_days,
@@ -780,6 +783,68 @@ def _attach_bridge_establishment_depth(
     return merged
 
 
+def _attach_first_supported_stable_route_date(
+    frame: pd.DataFrame,
+    *,
+    choices_path: Path,
+) -> pd.DataFrame:
+    """Date first route use of a stablecoin in the event's exact support set."""
+
+    required = {
+        "event_id",
+        "src",
+        "tgt",
+        "integration_scope",
+        "event_date",
+        "event_stablecoin_addresses",
+    }
+    missing = sorted(required - set(frame.columns))
+    if missing:
+        raise ValueError(f"bridge events lack supported-route fields: {missing}")
+    events = frame.loc[:, sorted(required)].drop_duplicates().copy()
+    if events["event_id"].duplicated().any():
+        raise ValueError("supported-route fields vary within a bridge event")
+    connection = duckdb.connect()
+    try:
+        connection.execute("PRAGMA threads=4")
+        connection.execute("PRAGMA preserve_insertion_order=false")
+        connection.register("bridge_support_events", events)
+        dates = connection.execute(
+            """
+            SELECT
+                e.event_id,
+                min(CAST(c.date AS DATE)) AS first_stable_route_date
+            FROM bridge_support_events e
+            LEFT JOIN read_parquet(?) c
+              ON lower(c.src) = e.src
+             AND lower(c.tgt) = e.tgt
+             AND c.integration_scope = e.integration_scope
+             AND CAST(c.date AS DATE) >= CAST(e.event_date AS DATE)
+             AND list_contains(
+                 string_split(e.event_stablecoin_addresses, ','),
+                 lower(c.candidate_address)
+             )
+             AND c.route_count > 0
+            GROUP BY 1
+            """,
+            [str(choices_path)],
+        ).fetchdf()
+    finally:
+        connection.close()
+    if len(dates) != len(events) or dates["event_id"].duplicated().any():
+        raise ValueError("supported stable-route dates are incomplete")
+    result = frame.merge(dates, on="event_id", how="left", validate="many_to_one")
+    result["first_stable_route_date"] = pd.to_datetime(
+        result["first_stable_route_date"], errors="coerce"
+    ).dt.normalize()
+    if (
+        result["first_stable_route_date"].notna()
+        & result["first_stable_route_date"].lt(result["event_date"])
+    ).any():
+        raise ValueError("supported stable route predates bridge establishment")
+    return result
+
+
 def load_bridge_establishment_event_panel(
     *,
     choices_path: Path = CHOICES_INPUT,
@@ -838,6 +903,13 @@ def load_bridge_establishment_event_panel(
         + frame["integration_scope"].astype(str)
     )
     frame["ordered_pair"] = frame["src"] + "|" + frame["tgt"]
+    frame = frame.rename(
+        columns={"first_stable_route_date": "first_any_stable_route_date"}
+    )
+    frame = _attach_first_supported_stable_route_date(
+        frame,
+        choices_path=choices_path,
+    )
     frame = _attach_bridge_establishment_depth(
         frame,
         pool_capital_path=pool_capital_path,
@@ -1011,7 +1083,8 @@ def bridge_establishment_adoption_timing_from_events(
                 ),
                 "timing_definition": (
                     "calendar days from first persistent two-leg stable support "
-                    "to first observed stable route"
+                    "to first observed route through a stablecoin in the exact "
+                    "event support set"
                 ),
             }
         )
@@ -1328,13 +1401,13 @@ def bridge_adoption_capital_path_summaries(
     min_observations: int = 100,
     min_clusters: int = 30,
 ) -> pd.DataFrame:
-    """Summarize bottleneck capital around the first observed stable route.
+    """Summarize bottleneck capital around first use of the supported stablecoin.
 
-    The balanced event sample is indexed to the first stablecoin route after
-    persistent support.  Deposited capital is lagged to the prior calendar day,
-    so the event-day stock precedes execution on the adoption date.  The sample
-    requires support to have appeared at least seven days earlier.  This orders
-    measured capital and route use without identifying provider intent.
+    The balanced event sample is indexed to the first route through a stablecoin
+    in the exact event support set. Deposited capital is lagged to the prior
+    calendar day, so the event-day stock precedes execution on the adoption date.
+    The sample requires support to have appeared at least seven days earlier.
+    This orders measured capital and route use without identifying provider intent.
     """
 
     required = {
@@ -1447,12 +1520,15 @@ def bridge_adoption_capital_path_summaries(
                     "ordered_pair_clusters": int(cluster_counts[0]),
                     "date_clusters": int(cluster_counts[1]),
                     "outcome": "change in log one plus weak-leg deposited capital",
-                    "baseline": "seven calendar days before first stable route",
+                    "baseline": (
+                        "seven calendar days before first route through a "
+                        "stablecoin in the event support set"
+                    ),
                     "weight": "equal_event",
                     "covariance": "two_way_ordered_pair_adoption_date_cr1",
                     "interpretation": (
-                        "descriptive capital path around first stable route after "
-                        "persistent bridge support"
+                        "descriptive capital path around first use of a stablecoin "
+                        "in the persistent bridge support set"
                     ),
                 }
             )
@@ -1524,7 +1600,7 @@ def bridge_adoption_capital_path_summaries(
                     "covariance": "two_way_ordered_pair_adoption_date_cr1",
                     "interpretation": (
                         "descriptive comparison of capital accumulation before "
-                        "and after the first observed stable route"
+                        "and after first use of a stablecoin in the event support set"
                     ),
                 }
             )
@@ -1604,7 +1680,8 @@ def bridge_adoption_capital_path_summaries(
                     "covariance": "two_way_ordered_pair_adoption_date_cr1",
                     "interpretation": (
                         "descriptive matched-route comparison of capital "
-                        "accumulation before and after first stable route use"
+                        "accumulation before and after first use of the supported "
+                        "stablecoin"
                     ),
                 }
             )
@@ -1619,7 +1696,7 @@ def bridge_establishment_adoption_capital_path(
     min_observations: int = 100,
     min_clusters: int = 30,
 ) -> pd.DataFrame:
-    """Build a balanced prior-calendar capital path around stable-route adoption."""
+    """Build a capital path around first route use of the supported stablecoin."""
 
     event_columns = [
         "event_id",

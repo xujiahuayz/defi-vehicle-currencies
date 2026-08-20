@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the bridge-capital path around first stablecoin route use."""
+"""Build the bridge-capital path around first use of the supported stablecoin."""
 
 from __future__ import annotations
 
@@ -39,8 +39,8 @@ def main() -> int:
         code_sources=CODE_SOURCES,
         notes=(
             "Equal-event changes in prior-calendar weak-leg deposited capital "
-            "around first stablecoin route use; sample requires persistent stable "
-            "support at least seven days before route use"
+            "around first use of a stablecoin in the exact support set; sample "
+            "requires persistent support at least seven days before route use"
         ),
         script=str(Path(__file__).resolve().relative_to(REPO_ROOT)),
     )

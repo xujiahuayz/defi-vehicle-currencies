@@ -716,10 +716,10 @@ def render_bridge_establishment_table(estimates: pd.DataFrame) -> str:
         f"{_integer(float(slope_later['n_observations']))} \\\\",
     ]
     timing_rows = [
-        "Stable route observed, depth $<0.1\\times$ WETH [\\%] & "
+        "Supported stablecoin used, depth $<0.1\\times$ WETH [\\%] & "
         f"{100.0 * float(timing_shallow_first['adoption_share']):.1f} & "
         f"{100.0 * float(timing_shallow_later['adoption_share']):.1f} \\\\",
-        "Stable route observed, depth $\\geq0.1\\times$ WETH [\\%] & "
+        "Supported stablecoin used, depth $\\geq0.1\\times$ WETH [\\%] & "
         f"{100.0 * float(timing_competitive_first['adoption_share']):.1f} & "
         f"{100.0 * float(timing_competitive_later['adoption_share']):.1f} \\\\",
         "Difference [pp] & "
@@ -748,7 +748,7 @@ def render_bridge_establishment_table(estimates: pd.DataFrame) -> str:
             "\\multicolumn{3}{@{}l}{\\textit{Panel B. Stable-bridge competitiveness relative to WETH}} \\\\",
             *depth_rows,
             "\\addlinespace[0.35em]",
-            "\\multicolumn{3}{@{}l}{\\textit{Panel C. Stable-route adoption after persistent support}} \\\\",
+            "\\multicolumn{3}{@{}l}{\\textit{Panel C. Adoption of supported stablecoin after persistent support}} \\\\",
             "Outcome & First 30 days & First 120 days \\\\",
             *timing_rows,
             "\\bottomrule",

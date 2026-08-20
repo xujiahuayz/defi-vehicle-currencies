@@ -6,7 +6,7 @@ not read raw data or define a new estimand.
 | Owner | Output and consumer |
 |---|---|
 | `build_vehicle_excess_use_transition.py` | transition figure used by paper/deck |
-| `build_bridge_adoption_capital_path.py` | stablecoin and WETH bridge-capital paths around first stablecoin route use |
+| `build_bridge_adoption_capital_path.py` | stablecoin and WETH bridge-capital paths around first use of the supported stablecoin |
 | `build_within_day_contrasts.py` | within-day role-contrast figure used by paper/deck |
 | `build_visual_experiments.py` | named experimental figures used by the deck |
 | `build_route_replay.py` | route-replay manifest and deck macros |

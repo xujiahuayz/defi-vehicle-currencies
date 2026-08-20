@@ -138,6 +138,19 @@ def test_bridge_establishment_separates_support_from_route_adoption() -> None:
                     "within_20pct_value_usd": 100.0 * stable_routes,
                 }
             )
+    choice_rows.append(
+        {
+            "date": pd.Timestamp("2024-02-05"),
+            "src": "src",
+            "tgt": "tgt",
+            "integration_scope": "single_venue",
+            "candidate_type": "stable",
+            "candidate_symbol": "FRAX",
+            "candidate_address": "frax",
+            "route_count": 1,
+            "within_20pct_value_usd": 100.0,
+        }
+    )
     pool_rows = []
     for date in pd.date_range("2024-02-01", periods=24, freq="D"):
         for token0, token1, pool, current_capital, lagged_capital in [
@@ -170,6 +183,12 @@ def test_bridge_establishment_separates_support_from_route_adoption() -> None:
             pool_capital_path=pool_path,
         )
     assert event["event_date"].nunique() == 1
+    assert event["first_any_stable_route_date"].drop_duplicates().item() == pd.Timestamp(
+        "2024-02-05"
+    )
+    assert event["first_stable_route_date"].drop_duplicates().item() == pd.Timestamp(
+        "2024-02-10"
+    )
     assert event["event_date"].iloc[0] == pd.Timestamp("2024-02-01")
     assert event["first_stable_route_date"].iloc[0] == pd.Timestamp("2024-02-10")
     assert event["event_stablecoins"].iloc[0] == "USDC"
@@ -1463,4 +1482,4 @@ def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
     assert "Stable route share [pp]" in table
     assert "Bridge events" in table
     assert "Stable-bridge competitiveness relative to WETH" in table
-    assert "Stable-route adoption after persistent support" in table
+    assert "Adoption of supported stablecoin after persistent support" in table

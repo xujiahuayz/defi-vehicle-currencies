@@ -82,7 +82,7 @@ def bridge_adoption_capital_path(frame: pd.DataFrame) -> pd.DataFrame:
 
 
 def render_bridge_adoption_capital_path(frame: pd.DataFrame, output: Path) -> None:
-    """Render bridge-capital changes around the first stablecoin route."""
+    """Render bridge-capital changes around first use of the supported stablecoin."""
 
     data = bridge_adoption_capital_path(frame)
     colours = {"stablecoin": PALETTE["stable"], "WETH": PALETTE["native"]}
@@ -123,7 +123,7 @@ def render_bridge_adoption_capital_path(frame: pd.DataFrame, output: Path) -> No
             axis.axhline(0, color="#6B7280", linewidth=0.9)
             axis.axvline(0, color="#111827", linewidth=1.0, linestyle="--")
             axis.annotate(
-                "first stablecoin route",
+                "first use of supported stablecoin",
                 xy=(0, axis.get_ylim()[1]),
                 xytext=(5, -5),
                 textcoords="offset points",
@@ -132,7 +132,7 @@ def render_bridge_adoption_capital_path(frame: pd.DataFrame, output: Path) -> No
                 fontsize=9,
                 color="#374151",
             )
-            axis.set_xlabel("Calendar days from first stablecoin route")
+            axis.set_xlabel("Calendar days from first use of supported stablecoin")
             axis.set_ylabel("Change in log weak-leg deposited capital")
             axis.set_xticks(range(-7, 8, 2))
             axis.grid(axis="y", color="#D1D5DB", linewidth=0.6, alpha=0.75)
