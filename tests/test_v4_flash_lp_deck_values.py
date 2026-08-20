@@ -33,6 +33,22 @@ def _complete_rows() -> list[dict[str, object]]:
     return [
         _row(
             predictor="internal_tx_share",
+            outcome="future_log1p_gross_lp_flow_usd",
+            effect=0.035,
+            p_value=0.08,
+        ),
+        _row(
+            predictor="internal_tx_share",
+            outcome="future_delta_log1p_tvl_usd",
+            effect=0.265,
+        ),
+        _row(
+            predictor="internal_tx_share",
+            outcome="future_log1p_lp_actions",
+            effect=0.071,
+        ),
+        _row(
+            predictor="internal_tx_share",
             outcome="future_narrow_medium_action_share",
             effect=-0.024,
         ),
@@ -88,6 +104,10 @@ def test_v4_flash_lp_deck_values_render_range_reallocation() -> None:
     rendered = render_v4_flash_lp_deck_values(pd.DataFrame(_complete_rows()))
 
     assert "\\VFourFlashInternalNarrowLongCoef" in rendered
+    assert "\\VFourFlashInternalTvlLongCoef" in rendered
+    assert "\\VFourFlashInternalActionsLongCoef" in rendered
+    assert "$+0.265^{***}$" in rendered
+    assert "$+0.071^{***}$" in rendered
     assert "\\VFourFlashInternalWideLongCoef" in rendered
     assert "\\VFourFlashInternalFlowNarrowLongCoef" in rendered
     assert "\\VFourFlashNettingFlowBroadLongCoef" in rendered

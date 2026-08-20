@@ -16,6 +16,9 @@
 \IfFileExists{../output/exhibits/excess_use_date_fe_deck_values.tex}{%
 \input{../output/exhibits/excess_use_date_fe_deck_values.tex}%
 }{\PackageError{dvc-deck}{Missing generated within-day vehicle-use values}{Run scripts/analyze/run_excess_use_date_fe_ladder.py then scripts/tabulate/build_excess_use_date_fe_deck_values.py.}}
+\IfFileExists{../output/exhibits/v4_flash_lp_deck_values.tex}{%
+\input{../output/exhibits/v4_flash_lp_deck_values.tex}%
+}{\PackageError{dvc-deck}{Missing generated V4 flash-accounting LP values}{Run scripts/tabulate/build_v4_flash_lp_deck_values.py.}}
 
 % EVIDENCE-STATUS: current descriptive route result
 % EVIDENCE-SOURCES: output/figures/experiments/annual_vehicle_composition_bands.pdf; output/exhibits/intermediation_by_type.jsonl; output/exhibits/vehicle_transition_pair_fixed_effects.jsonl
@@ -230,6 +233,42 @@ Currency fixed effects & No & No & No & Yes \\
 \vspace{0.28cm}
 {\large\bfseries Availability defines the route set; relative depth predicts penetration.\par}
 \decknote{\BridgeDepthDoseFirstRows{} endpoint-pair days across \BridgeDepthDoseFirstEvents{} bridge events. Depth is prior-day deposited capital on the shallower atomic leg.}
+\end{frame}
+
+% EVIDENCE-STATUS: exploratory predictive V4 mechanism result
+% EVIDENCE-SOURCES: output/exhibits/v4_flash_lp_mechanism_exploration.jsonl; output/exhibits/v4_flash_lp_deck_values.tex; output/tables/v4_flash_lp_mechanism.tex
+% VISUAL-FUNCTION: V4 flash accounting and provider behavior | estimating equation plus three economic margins | connect internal settlement to subsequent LP positioning
+\begin{frame}{V4 internal routing is followed by LP repositioning}
+\evidencekicker{120-day response to 10 pp more internal same-asset routing}
+\vspace{0.02cm}
+{\large
+\[
+Y_{c,t+120}=\beta M_{c,t}+\mathbf X_{c,t}'\gamma+\eta_c+\tau_t+\varepsilon_{c,t}
+\]
+}
+\vspace{-0.08cm}
+\begin{columns}[T,totalwidth=0.94\textwidth]
+\begin{column}{0.29\textwidth}
+{\fontsize{22}{24}\selectfont\bfseries\color{stable}\VFourFlashInternalTvlLongCoef}\par\vspace{0.12cm}
+{\small vehicle-linked TVL [log points]\par}
+{\scriptsize s.e. \VFourFlashInternalTvlLongSE}
+\end{column}
+\hfill
+\begin{column}{0.29\textwidth}
+{\fontsize{22}{24}\selectfont\bfseries\color{stable}\VFourFlashInternalActionsLongCoef}\par\vspace{0.12cm}
+{\small LP actions [log points]\par}
+{\scriptsize s.e. \VFourFlashInternalActionsLongSE}
+\end{column}
+\hfill
+\begin{column}{0.29\textwidth}
+{\fontsize{22}{24}\selectfont\bfseries\color{stable}\VFourFlashInternalWideLongCoef}\par\vspace{0.12cm}
+{\small wide/very-wide action share\par}
+{\scriptsize s.e. \VFourFlashInternalWideLongSE}
+\end{column}
+\end{columns}
+\vspace{0.30cm}
+{\large More capital remains linked to the vehicle while providers reposition across broader ranges.\par}
+\decknote{\VFourFlashLpRows{} V4 vehicle-days and \VFourFlashLpDateClusters{} date clusters. Vehicle and origin-date effects; origin-day swap activity, current vehicle-token-side LP flow, vehicle-linked TVL, LP actions, and range composition. Standard errors cluster by origin date. Predictive association, not a causal effect of V4 adoption. Asterisks \(*\), \(**\), and \(***\) denote significance at 10\%, 5\%, and 1\%.}
 \end{frame}
 
 % RETIRED CORE CAPITAL-PREDICTION FRAME. The pre-specified 30-day estimate has

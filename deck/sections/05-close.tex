@@ -6,9 +6,9 @@
 }{\PackageError{dvc-deck}{Missing generated formation values}{Run scripts/tabulate/build_vehicle_formation_deck_values.py.}}
 
 % EVIDENCE-STATUS: current descriptive route decomposition
-% EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_fixed_effects.jsonl; output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex; output/exhibits/vehicle_formation_deck_values.tex
-% VISUAL-FUNCTION: economic conclusion | three concise takeaways | close on endpoint-pair formation and liquidity contestability
-\begin{frame}{Entry and local depth form stablecoin dominance}
+% EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_fixed_effects.jsonl; output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex; output/exhibits/vehicle_formation_deck_values.tex; output/exhibits/v4_flash_lp_mechanism_exploration.jsonl; output/exhibits/v4_flash_lp_deck_values.tex
+% VISUAL-FUNCTION: economic conclusion | three concise takeaways | close on endpoint-pair formation, liquidity contestability, and provider response
+\begin{frame}{Entry, depth, and provider response form dominance}
 \vspace{0.18cm}
 
 \begin{columns}[T,totalwidth=0.94\textwidth]
@@ -16,8 +16,8 @@
 {\fontsize{26}{28}\selectfont\bfseries\color{uclbright}1}
 \end{column}
 \begin{column}{0.84\textwidth}
-{\large\bfseries The stablecoin used at entry tends to persist.}\par
-{\small Own-stable share over 120 days: USDC \FormationUSDCEntryOwnOneTwenty{}; USDT \FormationUSDTEntryOwnOneTwenty{}.}
+{\large\bfseries New endpoint pairs carry the rotation and tend to persist.}\par
+{\small Entry contributes \MarginNewPairTotal{}; 120-day own-stable shares: USDC \FormationUSDCEntryOwnOneTwenty{}, USDT \FormationUSDTEntryOwnOneTwenty{}.}
 \end{column}
 \end{columns}
 
@@ -27,7 +27,7 @@
 {\fontsize{26}{28}\selectfont\bfseries\color{uclbright}2}
 \end{column}
 \begin{column}{0.84\textwidth}
-{\large\bfseries Local depth predicts contestable route leadership.}\par
+{\large\bfseries Local depth predicts route leadership.}\par
 {\small Stable route share: \BridgeDepthThinFirstShare{} below $0.1\times$ WETH depth; \BridgeDepthDoubleFirstShare{} at least $2\times$.}
 \end{column}
 \end{columns}
@@ -38,14 +38,14 @@
 {\fontsize{26}{28}\selectfont\bfseries\color{uclbright}3}
 \end{column}
 \begin{column}{0.84\textwidth}
-{\large\bfseries Newly traded endpoint pairs supply the largest margin.}\par
-{\small Entry: \MarginNewPairTotal{}; continuing-endpoint-pair reallocation: \MarginReweightTotal{}.}
+{\large\bfseries V4 internal routing predicts provider repositioning.}\par
+{\small At 120 days: \VFourFlashInternalTvlLongCoef{} log points of vehicle-linked TVL and \VFourFlashInternalWideLongCoef{} in wide/very-wide action share.}
 \end{column}
 \end{columns}
 
 \vfill
 \begin{beamercolorbox}[wd=\textwidth,sep=0.30cm,center]{structure}
-{\large\bfseries Endpoint-pair entry forms dominance; local depth predicts which vehicle leads.}
+{\large\bfseries Dominance forms through market entry, local capital, and provider adjustment.}
 \end{beamercolorbox}
 \note{The close follows the retained finance-deck pattern: compress each empirical result into its mechanism, then end on the joint economic implication.}
 \end{frame}
