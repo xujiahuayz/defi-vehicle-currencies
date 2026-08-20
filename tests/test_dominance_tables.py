@@ -71,7 +71,7 @@ def test_pair_panel_d_contains_all_three_fixed_effect_rows() -> None:
         "All two-leg routes, count share & $+0.22\\ (0.76)$ & 188,520"
         in pair
     )
-    assert "Margin or estimate & Estimate [pp] & Obs." in pair
+    assert "Component or estimate & Estimate [pp] & Obs." in pair
     assert (
         "20\\% agreement sample, count share & $+0.32\\ (0.75)$ & 182,834"
         in pair
@@ -126,20 +126,20 @@ def test_pair_table_keeps_the_two_count_factorisations_apart() -> None:
 
     # Panel A's labels belong to Panel A alone.
     for label in (
-        "Market activity shifting across continuing ultimate pairs",
-        "Change in how often continuing ultimate pairs use a vehicle",
-        "Stablecoin share within continuing vehicle-using ultimate pairs",
-        "Ultimate pairs entering or leaving the sample",
+        "Market activity shifting across continuing endpoint pairs",
+        "Change in how often continuing endpoint pairs use a vehicle",
+        "Stablecoin share within continuing vehicle-using endpoint pairs",
+        "Endpoint pairs entering or leaving the sample",
     ):
         assert pair.count(label) == 1
 
     # The identity's labels appear once in its count panel and once in its
     # value panel, and nowhere else.
     for label in (
-        "Net stablecoin-share change within continuing ultimate pairs",
-        "Vehicle activity shifting across continuing ultimate pairs",
-        "Weight of continuing versus year-specific ultimate pairs",
-        "Ultimate pairs traded in only one year",
+        "Net stablecoin-share change within continuing endpoint pairs",
+        "Vehicle activity shifting across continuing endpoint pairs",
+        "Weight of continuing versus year-specific endpoint pairs",
+        "Endpoint pairs traded in only one year",
     ):
         assert pair.count(label) == 2
 
@@ -166,12 +166,12 @@ def test_paper_has_one_consumer_and_no_duplicate_inline_body() -> None:
         assert section.count(rf"\input{{../output/tables/{stem}.tex}}") == 1
     assert r"\begin{tabular}" not in section
     assert r"\begin{tabularx}" not in section
-    assert r"s^{(m)}_{c,y}=\alpha^{(m)}_{c}+\beta^{(m)}\mathbf{1}\{y=2026\}" in section
-    assert "2024 is the omitted year" in section
-    assert "pair--calendar-date--route-type combination" in section
-    assert "number or dollar value of native-plus-stable routes as weights" in section
-    assert "clustered by ordered ultimate pair and calendar date" in section
-    assert "comparison remains descriptive" in section
+    assert r"S^{(m)}_{pds,y}=\alpha^{(m)}_{pds}+\beta^{(m)}\mathbf 1\{y=2026\}" in section
+    assert r"y\in\{2024,2026\}" in section
+    assert "pair, date within the year, and realised single- or cross-exchange route class" in section
+    assert "weighted by native-plus-stable route count or supported routed value" in section
+    assert "standard errors cluster by endpoint pair and date" in section
+    assert "The comparison is descriptive" in section
 
 
 @pytest.mark.parametrize(

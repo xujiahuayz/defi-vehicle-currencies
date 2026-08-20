@@ -91,7 +91,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     TableRow(
         margin="Rolling hazard",
         outcome="Stable appears within 30d",
-        regressor_label="Ultimate-pair age",
+        regressor_label="Endpoint-pair age",
         selector={
             "model_id": "stable_turn_on_hazard_fe",
             "outcome": "future_stable_turn_on",
@@ -213,7 +213,7 @@ def render_vehicle_mechanism_regressions(results: pd.DataFrame) -> str:
         r"cr@{}}"
     )
     rows.append(r"\toprule")
-    rows.append(r"Margin & Outcome & Regressor & Coefficient [pp] & Obs. / clusters \\")
+    rows.append(r"Model & Outcome & Regressor & Coefficient / (s.e.) [pp] & Obs. / clusters \\")
     rows.append(r"\midrule")
     for table_row in TABLE_ROWS:
         row = _select_one(results, table_row.selector)

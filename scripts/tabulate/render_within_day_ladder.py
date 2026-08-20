@@ -113,7 +113,6 @@ def render_within_day_ladder(rows: list[dict]) -> str:
             "Dates & " + " & ".join(f"{int(row['dates']):,}" for row in anchors) + r" \\",
             r"Date fixed effects & No & Yes & Yes & Yes \\",
             r"Currency fixed effects & No & No & No & Yes \\",
-            r"Date and currency clustered SE & Yes & Yes & Yes & Yes \\",
         ]
     )
     return "\n".join(
