@@ -134,8 +134,11 @@ sensitivity that slightly strengthens the aggregate rotation. Each major revisio
   perimeter.
 - V4 flash-accounting intensity is linked to subsequent capital, range, and
   position-update outcomes, with same-candidate-date V3 comparisons retained as
-  supporting evidence. Any stronger supply interpretation still requires an
-  exogenous provider-side shift or provider-level identification.
+  supporting evidence. A new timing split separates actions by transaction
+  origins active in the prior 180 days from origins first active later. This
+  strengthens the participation evidence without calling transaction origins
+  verified LP-position owners. Any stronger supply interpretation still
+  requires an exogenous provider-side shift or provider-level identification.
 - The stable-to-stable, stable-to-native, native-to-stable, and
   native-to-native endpoint directions are separated. The next use of this
   result should test timing or liquidity, not repeat the same composition split.

@@ -44,6 +44,16 @@ literature, and can be rebuilt from declared inputs. If those conditions are not
 met, the workflow loops back to mechanism search and additional experiments
 while the current draft remains presentable.
 
+The current V4 participation extension distinguishes transaction origins active
+in the preceding 180 days from origins first active after the measurement date.
+It excludes zero-liquidity updates in the primary sample and separates days
+1--30 from days 31--120. Transaction origin is a participation proxy, not a
+verified LP-position owner. The registered comparison asks whether internal
+same-asset routing is followed first by more actions from incumbent origins and
+later by origins absent from the prior window. The family uses the existing
+vehicle and date effects, origin-day controls, date clustering, and Holm
+adjustment across the three accounting proxies and four timing outcomes.
+
 ## Question and contribution
 
 The paper asks what makes a vehicle currency dominant and how that dominance
