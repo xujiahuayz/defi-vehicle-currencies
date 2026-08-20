@@ -37,7 +37,9 @@ endpoint directions are now collected in one exact decomposition, with a
 separate issuer split showing that USDT accounts for the stable-to-stable value
 channel. Persistent stable-bridge support is now dated against first use of a
 stablecoin in the event's exact support set, and event-day depth separates
-shallow availability from subsequent adoption.
+shallow availability from subsequent adoption. The pre-use capital path now
+separates newly capital-positive pools from scaling inside pools active one week
+earlier, with a matched WETH comparison and multiplicity-adjusted inference.
 Issuance remains outside the local data perimeter. The open revision class is
 to quantify the disconnected-component boundary. Each major revision follows the decision rule in
 [`writing-and-rhetoric.md`](writing-and-rhetoric.md) before implementation.
@@ -125,10 +127,14 @@ to quantify the disconnected-component boundary. Each major revision follows the
 - The pool-to-route timing test is complete: persistent two-leg support commonly
   precedes stable-vehicle use, event-day depth predicts whether adoption follows,
   and the matched event path shows bridge capital accumulating before first use
-  of the supported stablecoin. Stablecoin issuance timing remains unmeasured because no
-  verified issuance series is in the local data perimeter.
-- Compare liquidity-provider capital, flows, range concentration, and position
-  updates around V4 flash-accounting intensity with comparable V3 measures.
+  of the supported stablecoin. Pool-level decomposition shows both activation
+  and continuing-pool scaling before first use. Stablecoin issuance timing
+  remains unmeasured because no verified issuance series is in the local data
+  perimeter.
+- V4 flash-accounting intensity is linked to subsequent capital, range, and
+  position-update outcomes, with same-candidate-date V3 comparisons retained as
+  supporting evidence. Any stronger supply interpretation still requires an
+  exogenous provider-side shift or provider-level identification.
 - The stable-to-stable, stable-to-native, native-to-stable, and
   native-to-native endpoint directions are separated. The next use of this
   result should test timing or liquidity, not repeat the same composition split.

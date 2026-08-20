@@ -71,7 +71,8 @@ local bridge-liquidity dominance, entry-date local bridge-depth choice screens,
 first stable-bridge establishment, continuous stable-versus-WETH bottleneck depth,
 depth-conditioned route reallocation, adoption timing after persistent support,
 capital accumulation before first use of the supported stablecoin, stable-specific dynamic
-local bridge-depth feedback, and V2 capital predictability. A
+local bridge-depth feedback, pool activation and continuing-pool scaling before first use,
+and V2 capital predictability. A
 matched-calendar endpoint-direction decomposition and its stable-to-stable
 intermediary-identity split locate the value channel in USDT. A
 result becomes headline evidence only if it is economically material,

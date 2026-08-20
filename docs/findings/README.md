@@ -108,7 +108,8 @@ stable-shortfall x V4 flash-accounting LP repositioning, and local
 bridge-liquidity dominance, entry-date local bridge-depth choice screens, plus
 first stable-bridge establishment, continuous stable-versus-WETH bottleneck depth,
 depth-conditioned route reallocation, and adoption timing after persistent support, plus
-stable-specific dynamic local bridge-depth feedback. The deck
+stable-specific dynamic local bridge-depth feedback and the split between newly active and
+continuing pools before first use. The deck
 also reports an exact endpoint-direction decomposition and the concentration of
 the stable-to-stable routed-value channel in USDT. The deck
 also carries the traditional-FX route analogy as motivation. These layers
