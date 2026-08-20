@@ -75,7 +75,7 @@ If $f_p$ is the pool fee and $\varphi_p=1-f_p$, an exact input $\Delta_i$ return
 \frac{\varphi_p\Delta_i\widetilde R_{o,p,e^-}}
      {\widetilde R_{i,p,e^-}+\varphi_p\Delta_i}
 \]
-until the trade reaches the next initialized tick. Range boundaries lie on a geometric grid, and crossing tick $j$ updates active liquidity by its signed change,
+until the trade reaches the next initialized tick. Range endpoints lie on a geometric grid, and crossing tick $j$ updates active liquidity by its signed change,
 \[
 \sqrt{\rho(j)}=1.0001^{j/2},
 \qquad L_{p,e^-}\mapsto L_{p,e^-}\pm\Delta L_j,
@@ -570,7 +570,7 @@ USDC and USDT together account for \JointStableContribution{} of the increase in
 \exhibitnote{Intermediary and endpoint shares are formed across native, staked-native, stable, and imported currencies on complete routes that do not return to their starting asset. Direct routes enter the endpoint denominator. Intermediation intensity is intermediary share divided by endpoint share; the gap is their difference. Ratios use full-year 2024 and January--June 2026, while the share gap uses matched January--June dates. Dollar-weighted measures apply the 20\% value-agreement rule. The ratio measures specialisation, not aggregate importance.}
 \end{table}
 
-On matched dates, USDT's intermediary share minus its endpoint share rises from \USDTEndpointGapBase{} to \USDTEndpointGapEnd{}. Its intermediation-intensity ratio rises from \USDTCountExcessBase{} to \USDTCountExcessEnd{} by count and from \USDTValueExcessBase{} to \USDTValueExcessEnd{} by value. Observed route boundaries can be affected by executor inventory, so the direct additive decomposition remains the issuer-level result.
+On matched dates, USDT's intermediary share minus its endpoint share rises from \USDTEndpointGapBase{} to \USDTEndpointGapEnd{}. Its intermediation-intensity ratio rises from \USDTCountExcessBase{} to \USDTCountExcessEnd{} by count and from \USDTValueExcessBase{} to \USDTValueExcessEnd{} by value. The observed route can begin after the user's broader instruction when the executor supplies inventory, so the direct additive decomposition remains the issuer-level result.
 
 Let $I_{a,t}$ be currency $a$'s share of the day's intermediary uses and $D_{a,t}$ its share of route-endpoint appearances, both in pp. We estimate
 \begin{equation}

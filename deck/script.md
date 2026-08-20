@@ -44,9 +44,11 @@ We collected 472 million pool-level swaps, across 2,332 calendar dates, from Feb
 
 Eight Ethereum deployments: Uniswap v2, v3 and v4; SushiSwap v2 and v3; Curve; Balancer; and Fluid.
 
-Why no Uniswap v1 here? Its retained records give us the exchange contracts but no complete exchange-to-token map. We can still recover forced ETH routes from matching transaction hashes and ETH amounts. That is enough for the architecture exercise later. It is not enough to identify every ultimate pair uniformly, so v1 stays outside this main panel.
+Why no Uniswap v1 here? This comes down to the old data pull. For the other exchanges, we retained pool metadata that links each pool to its token contracts. The v1 pull kept the exchange address but never requested the token address.
 
-One important boundary before the results: our pool route can begin after the user's broader instruction begins.
+We can still pair the two v1 exchange calls through the transaction hash and the matching ETH amount. That gives us the forced-ETH result later. To add v1 to the full route panel, we would need to re-fetch its exchange records with the token address and symbol, then rebuild the historical crosswalk.
+
+One caveat before the results: the pool route we observe can begin after the user's broader instruction begins.
 
 ## Inside the pools, USDT links USDC to USDe (5:40 to 7:10)
 
@@ -56,7 +58,7 @@ The explorer describes a PYUSD to USDe instruction. The connected pool route we 
 
 So, inside the observed route, USDC–USDe is the ultimate pair. USDC–USDT and USDT–USDe are the atomic pairs. USDT is the vehicle.
 
-What happened between PYUSD and USDC? The data allow two possibilities. Another trade outside our exchange panel, or USDC supplied from the executor's inventory. We keep the boundary exactly where the pool evidence ends.
+What happened between PYUSD and USDC? The data allow two possibilities. Another trade outside our exchange panel, or USDC supplied from the executor's inventory. We stop at USDC because that is where the pool evidence begins.
 
 This example also makes the language concrete. Ultimate pair, atomic pairs, complete route. I will use those terms throughout.
 
@@ -230,7 +232,7 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 
 - Same transaction as the core example, now with the explorer trace visible.
 - The user begins with PYUSD; our connected pool component begins with USDC.
-- The boundary is observable pool execution. Executor inventory stays outside the measured route.
+- We observe pool execution. Executor inventory and any earlier transfer stay outside the measured route.
 
 ## A1. One reconstructed route is one unit
 

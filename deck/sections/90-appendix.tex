@@ -231,7 +231,7 @@ V4 singleton
 % literature/text/2021-AdamsZinsmeisterRobinson2021UniswapV3-whitepaper-uniswap-v3-core.txt;
 % https://app.uniswap.org/whitepaper-v4.pdf, Adams et al. (2024), Sections 1 and 3;
 % docs/research/design.md.
-% SCIENTIFIC-BOUNDARY: protocol rules change atomic-pair availability, atomic-pair-specific active liquidity, or the accounting boundary. The slide reports no adoption, liquidity, routing, or causal estimate.
+% SCIENTIFIC-LIMITATION: protocol rules change atomic-pair availability, atomic-pair-specific active liquidity, or the accounting scope. The slide reports no adoption, liquidity, routing, or causal estimate.
 % VISUAL-FUNCTION: architecture-to-economic-object map | three protocol-mechanism panels | show how V1--V4 alter the opportunity set without treating calendar version as an estimated effect
 \begin{frame}{A5.1. Pool formation determines available paths}
 \vspace{-0.08cm}
@@ -302,7 +302,7 @@ V4 singleton
 {\small\bfseries\color{ucldark}Economic implication: executable depth is path- and size-specific.\par}
 \end{frame}
 
-% VISUAL-FUNCTION: singleton settlement | PoolManager lock diagram | locate the settlement boundary for a multi-pool route
+% VISUAL-FUNCTION: singleton settlement | PoolManager lock diagram | locate where a multi-pool route settles
 \begin{frame}{A5.3. Shared accounting moves route settlement}
 \begin{columns}[T,totalwidth=\textwidth]
 \begin{column}{0.66\textwidth}
@@ -330,7 +330,7 @@ V4 singleton
 \begin{column}{0.30\textwidth}\end{column}
 \end{columns}
 \vspace{0.18cm}
-{\small\bfseries\color{ucldark}Economic implication: shared accounting changes the settlement boundary.\par}
+{\small\bfseries\color{ucldark}Economic implication: shared accounting changes where route obligations settle.\par}
 \end{frame}
 
 % EVIDENCE-STATUS: authentic registered forced-route transaction; selection rule and stage counts in the case manifest

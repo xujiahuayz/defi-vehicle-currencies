@@ -370,11 +370,11 @@ def test_deck_mechanism_sequence_separates_route_settlement_and_capital() -> Non
     assert "https://app.uniswap.org/whitepaper-v4.pdf" in appendix
     assert "V4: shared accounting" in design
     assert "one PoolManager" in design
-    assert "the singleton changes the settlement boundary" in design
+    assert "the singleton changes where balances settle" in design
     assert "vehicle_dominance_timelapse.mp4" in results
     assert "vehicle_dominance_timelapse_poster.pdf" in results
-    assert "raw.githubusercontent.com/xujiahuayz/defi-vehicle-currencies" in results
-    assert "Play 18-second film" in results
+    assert "run:../output/figures/vehicle_dominance_timelapse.mp4" in results
+    assert "Play local 18-second film" in results
     assert "\\movie" not in results
 
 
