@@ -254,6 +254,33 @@ Currency fixed effects & No & No & No & Yes \\
 \decknote{The route-share cards use \BridgeDepthDoseFirstRows{} endpoint-pair days across \BridgeDepthDoseFirstEvents{} events. The adoption comparison gives equal weight to \BridgeTimingComparableEvents{} events with positive stable and WETH depth. The adjusted gap is \BridgeTimingControlledDiff{} (SE \BridgeTimingControlledSE{}); with two non-stablecoin endpoints, it is \BridgeTimingNoStableEndpointDiff{} (SE \BridgeTimingNoStableEndpointSE{}). Capital and demand are jointly determined.}
 \end{frame}
 
+% EVIDENCE-STATUS: exploratory descriptive adoption-capital path
+% EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl; output/figures/experiments/bridge_adoption_capital_path.pdf; output/exhibits/bridge_liquidity_deck_values.tex
+% VISUAL-FUNCTION: capital timing | indexed event path plus three magnitudes | distinguish capital present before use from capital that follows route demand
+\begin{frame}{Bridge capital builds before the first route}
+\evidencekicker{First stablecoin route at day zero}
+\vspace{0.03cm}
+\begin{columns}[T,totalwidth=0.95\textwidth]
+\begin{column}{0.64\textwidth}
+\includegraphics[width=\textwidth,height=0.64\textheight,keepaspectratio]{../output/figures/experiments/bridge_adoption_capital_path.pdf}
+\end{column}
+\hfill
+\begin{column}{0.28\textwidth}
+{\fontsize{22}{24}\selectfont\bfseries\color{stable}\BridgeAdoptionCapitalPreCoef}\par
+{\small stablecoin bridge, day -7 to 0\par}
+\vspace{0.28cm}
+{\fontsize{22}{24}\selectfont\bfseries\color{ucldark}\BridgeAdoptionCapitalMatchedPreCoef}\par
+{\small pre-route change relative to WETH\par}
+\vspace{0.28cm}
+{\fontsize{22}{24}\selectfont\bfseries\color{muted}\BridgeAdoptionCapitalPostCoef}\par
+{\small stablecoin bridge, day 0 to +7\par}
+\end{column}
+\end{columns}
+\vspace{0.05cm}
+{\large Route-specific capital accumulates before use, then partially recedes.\par}
+\decknote{Equal-event path for \BridgeAdoptionCapitalEvents{} first-route events occurring 7 to 119 days after persistent support. Capital is prior-calendar V2-family deposited capital on the weaker leg; shading gives 95\% confidence intervals clustered by ordered endpoint pair and adoption date. The sample conditions on eventual use and does not identify provider intent.}
+\end{frame}
+
 % EVIDENCE-STATUS: exploratory predictive V4 mechanism result
 % EVIDENCE-SOURCES: output/exhibits/v4_flash_lp_mechanism_exploration.jsonl; output/exhibits/v4_flash_lp_deck_values.tex; output/tables/v4_flash_lp_mechanism.tex
 % VISUAL-FUNCTION: V4 flash accounting and provider behavior | estimating equation plus three economic margins | connect internal settlement to subsequent LP positioning

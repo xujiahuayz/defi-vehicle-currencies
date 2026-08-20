@@ -275,6 +275,36 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         record_type="bridge_establishment_timing_regression",
         model_id="adoption_within_30_on_competitive_depth_no_stable_endpoint",
     )
+    adoption_capital_pre = _single(
+        estimates,
+        record_type="bridge_adoption_capital_contrast",
+        model_id="stablecoin_pre_route_week",
+    )
+    adoption_capital_post = _single(
+        estimates,
+        record_type="bridge_adoption_capital_contrast",
+        model_id="stablecoin_post_route_week",
+    )
+    adoption_capital_matched_pre = _single(
+        estimates,
+        record_type="bridge_adoption_capital_contrast",
+        model_id="stablecoin_minus_weth_pre_route_week_unwinsorized",
+    )
+    adoption_capital_matched_post = _single(
+        estimates,
+        record_type="bridge_adoption_capital_contrast",
+        model_id="stablecoin_minus_weth_post_route_week_unwinsorized",
+    )
+    adoption_capital_matched_difference = _single(
+        estimates,
+        record_type="bridge_adoption_capital_contrast",
+        model_id="stablecoin_minus_weth_pre_minus_post_unwinsorized",
+    )
+    adoption_capital_matched_winsor = _single(
+        estimates,
+        record_type="bridge_adoption_capital_contrast",
+        model_id="stablecoin_minus_weth_pre_minus_post_winsorized_5_95",
+    )
     depth_slope_first = _single(
         estimates,
         record_type="bridge_establishment_depth_regression",
@@ -378,6 +408,18 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         and float(timing_month_controlled["p_value"]) < 0.01
         and float(timing_month_no_stable_endpoint["coefficient"]) > 0
         and float(timing_month_no_stable_endpoint["p_value"]) < 0.01
+        and float(adoption_capital_pre["coefficient"]) > 0
+        and float(adoption_capital_pre["p_value"]) < 0.01
+        and float(adoption_capital_post["coefficient"]) < 0
+        and float(adoption_capital_post["p_value"]) < 0.05
+        and float(adoption_capital_matched_pre["coefficient"]) > 0
+        and float(adoption_capital_matched_pre["p_value"]) < 0.01
+        and float(adoption_capital_matched_post["coefficient"]) < 0
+        and float(adoption_capital_matched_post["p_value"]) < 0.05
+        and float(adoption_capital_matched_difference["coefficient"]) > 0
+        and float(adoption_capital_matched_difference["p_value"]) < 0.01
+        and float(adoption_capital_matched_winsor["coefficient"]) > 0
+        and float(adoption_capital_matched_winsor["p_value"]) < 0.01
         and float(depth_slope_first["coefficient"]) > 0
         and float(depth_slope_first["p_value"]) < 0.01
         and float(depth_slope_later["coefficient"]) > 0
@@ -459,6 +501,23 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         f"\\newcommand{{\\BridgeTimingControlledSE}}{{{_unsigned_pp(float(timing_month_controlled['standard_error']), decimals=1)}}}",
         f"\\newcommand{{\\BridgeTimingNoStableEndpointDiff}}{{{_signed_pp(float(timing_month_no_stable_endpoint['coefficient']), decimals=1)}}}",
         f"\\newcommand{{\\BridgeTimingNoStableEndpointSE}}{{{_unsigned_pp(float(timing_month_no_stable_endpoint['standard_error']), decimals=1)}}}",
+        f"\\newcommand{{\\BridgeAdoptionCapitalEvents}}{{{_integer(float(adoption_capital_pre['events']))}}}",
+        f"\\newcommand{{\\BridgeAdoptionCapitalPreCoef}}{{${float(adoption_capital_pre['coefficient']):+.2f}$}}",
+        f"\\newcommand{{\\BridgeAdoptionCapitalPreSE}}{{${abs(float(adoption_capital_pre['standard_error'])):.2f}$}}",
+        f"\\newcommand{{\\BridgeAdoptionCapitalPostCoef}}{{${float(adoption_capital_post['coefficient']):+.2f}$}}",
+        f"\\newcommand{{\\BridgeAdoptionCapitalPostSE}}{{${abs(float(adoption_capital_post['standard_error'])):.2f}$}}",
+        f"\\newcommand{{\\BridgeAdoptionCapitalPreMedian}}{{${float(adoption_capital_pre['median']):+.2f}$}}",
+        f"\\newcommand{{\\BridgeAdoptionCapitalPrePositiveShare}}{{{_pct(float(adoption_capital_pre['positive_share']))}}}",
+        f"\\newcommand{{\\BridgeAdoptionCapitalPreWinsorMean}}{{${float(adoption_capital_pre['winsorized_5_95_mean']):+.2f}$}}",
+        f"\\newcommand{{\\BridgeAdoptionCapitalPreTopTenShare}}{{{_pct(float(adoption_capital_pre['top_ten_positive_change_share']))}}}",
+        f"\\newcommand{{\\BridgeAdoptionCapitalMatchedPreCoef}}{{${float(adoption_capital_matched_pre['coefficient']):+.2f}$}}",
+        f"\\newcommand{{\\BridgeAdoptionCapitalMatchedPreSE}}{{${abs(float(adoption_capital_matched_pre['standard_error'])):.2f}$}}",
+        f"\\newcommand{{\\BridgeAdoptionCapitalMatchedPostCoef}}{{${float(adoption_capital_matched_post['coefficient']):+.2f}$}}",
+        f"\\newcommand{{\\BridgeAdoptionCapitalMatchedPostSE}}{{${abs(float(adoption_capital_matched_post['standard_error'])):.2f}$}}",
+        f"\\newcommand{{\\BridgeAdoptionCapitalMatchedDifferenceCoef}}{{${float(adoption_capital_matched_difference['coefficient']):+.2f}$}}",
+        f"\\newcommand{{\\BridgeAdoptionCapitalMatchedDifferenceSE}}{{${abs(float(adoption_capital_matched_difference['standard_error'])):.2f}$}}",
+        f"\\newcommand{{\\BridgeAdoptionCapitalMatchedWinsorCoef}}{{${float(adoption_capital_matched_winsor['coefficient']):+.2f}$}}",
+        f"\\newcommand{{\\BridgeAdoptionCapitalMatchedWinsorSE}}{{${abs(float(adoption_capital_matched_winsor['standard_error'])):.2f}$}}",
         f"\\newcommand{{\\BridgeDepthDoseFirstCoef}}{{{_signed_pp(0.01 * float(depth_slope_first['coefficient']))}}}",
         f"\\newcommand{{\\BridgeDepthDoseFirstSE}}{{{_unsigned_pp(0.01 * float(depth_slope_first['standard_error']))}}}",
         f"\\newcommand{{\\BridgeDepthDoseFirstRows}}{{{_integer(float(depth_slope_first['n_observations']))}}}",

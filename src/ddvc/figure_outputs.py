@@ -32,6 +32,123 @@ PALETTE = {
 }
 
 
+def bridge_adoption_capital_path(frame: pd.DataFrame) -> pd.DataFrame:
+    """Select the balanced stablecoin and WETH adoption-capital paths."""
+
+    required = {
+        "record_type",
+        "vehicle_class",
+        "event_time_days",
+        "coefficient",
+        "standard_error",
+        "events",
+    }
+    missing = sorted(required - set(frame.columns))
+    if missing:
+        raise ValueError(f"bridge adoption path is missing {', '.join(missing)}")
+    data = frame.loc[
+        frame["record_type"].eq("bridge_adoption_capital_path"),
+        list(required),
+    ].copy()
+    data["event_time_days"] = pd.to_numeric(
+        data["event_time_days"], errors="raise"
+    ).astype(int)
+    for column in ("coefficient", "standard_error", "events"):
+        data[column] = pd.to_numeric(data[column], errors="raise")
+    expected = {
+        (vehicle_class, event_time)
+        for vehicle_class in ("stablecoin", "WETH")
+        for event_time in range(-7, 8)
+    }
+    observed = set(
+        data[["vehicle_class", "event_time_days"]].itertuples(
+            index=False, name=None
+        )
+    )
+    if (
+        data.duplicated(["vehicle_class", "event_time_days"]).any()
+        or observed != expected
+    ):
+        raise ValueError("bridge adoption path lacks one unique row per class-day")
+    if data["events"].nunique() != 1 or int(data["events"].iloc[0]) < 100:
+        raise ValueError("bridge adoption path lacks common event support")
+    if data["standard_error"].lt(0).any():
+        raise ValueError("bridge adoption path has negative standard errors")
+    order = {"stablecoin": 0, "WETH": 1}
+    data["vehicle_order"] = data["vehicle_class"].map(order)
+    return data.sort_values(
+        ["vehicle_order", "event_time_days"], kind="stable"
+    ).reset_index(drop=True)
+
+
+def render_bridge_adoption_capital_path(frame: pd.DataFrame, output: Path) -> None:
+    """Render bridge-capital changes around the first stablecoin route."""
+
+    data = bridge_adoption_capital_path(frame)
+    colours = {"stablecoin": PALETTE["stable"], "WETH": PALETTE["native"]}
+    labels = {"stablecoin": "Stablecoin bridge", "WETH": "WETH bridge"}
+    with plt.rc_context(
+        {
+            "font.family": "DejaVu Sans",
+            "pdf.fonttype": 42,
+            "axes.labelcolor": "#111827",
+            "text.color": "#111827",
+        }
+    ):
+        figure, axis = plt.subplots(figsize=(8.8, 4.2))
+        try:
+            for vehicle_class in ("stablecoin", "WETH"):
+                group = data[data["vehicle_class"].eq(vehicle_class)]
+                x = group["event_time_days"].to_numpy(dtype=float)
+                y = group["coefficient"].to_numpy(dtype=float)
+                se = group["standard_error"].to_numpy(dtype=float)
+                colour = colours[vehicle_class]
+                axis.fill_between(
+                    x,
+                    y - 1.96 * se,
+                    y + 1.96 * se,
+                    color=colour,
+                    alpha=0.12,
+                    linewidth=0,
+                )
+                axis.plot(
+                    x,
+                    y,
+                    color=colour,
+                    linewidth=2.4,
+                    marker="o",
+                    markersize=3.5,
+                    label=labels[vehicle_class],
+                )
+            axis.axhline(0, color="#6B7280", linewidth=0.9)
+            axis.axvline(0, color="#111827", linewidth=1.0, linestyle="--")
+            axis.annotate(
+                "first stablecoin route",
+                xy=(0, axis.get_ylim()[1]),
+                xytext=(5, -5),
+                textcoords="offset points",
+                ha="left",
+                va="top",
+                fontsize=9,
+                color="#374151",
+            )
+            axis.set_xlabel("Calendar days from first stablecoin route")
+            axis.set_ylabel("Change in log weak-leg deposited capital")
+            axis.set_xticks(range(-7, 8, 2))
+            axis.grid(axis="y", color="#D1D5DB", linewidth=0.6, alpha=0.75)
+            axis.spines[["top", "right"]].set_visible(False)
+            axis.legend(frameon=False, loc="upper left")
+            figure.tight_layout()
+            figure.savefig(
+                output,
+                format="pdf",
+                bbox_inches="tight",
+                metadata={"Creator": "ddvc", "CreationDate": None, "ModDate": None},
+            )
+        finally:
+            plt.close(figure)
+
+
 def vehicle_excess_use_transition(
     frame: pd.DataFrame,
     *,

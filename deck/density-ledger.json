@@ -4,7 +4,7 @@
   "budget_words": 55,
   "hard_ceiling_words": 70,
   "core_frame_limit": 24,
-  "appendix_first_page": 23,
+  "appendix_first_page": 24,
   "appendix_title": "Appendix map",
   "page_allowances": [
     {
@@ -14,91 +14,91 @@
       "note_words": 35
     },
     {
-      "page": 21,
+      "page": 22,
       "title": "V4 internal routing is followed by LP repositioning",
       "words": 60,
       "note_words": 45
     },
     {
-      "page": 22,
+      "page": 23,
       "title": "Dominance forms through entry, depth, and provider",
       "words": 70,
       "note_words": 0
     },
     {
-      "page": 23,
+      "page": 24,
       "title": "Appendix map",
       "words": 65,
       "note_words": 0
     },
     {
-      "page": 25,
+      "page": 26,
       "title": "How we reconstruct a route from one transaction",
       "words": 57,
       "note_words": 0
     },
     {
-      "page": 27,
+      "page": 28,
       "title": "A3. One route universe supports two measurements",
       "words": 67,
       "note_words": 0
     },
     {
-      "page": 28,
+      "page": 29,
       "title": "A4. State is reconstructed immediately before execution",
       "words": 60,
       "note_words": 0
     },
     {
-      "page": 29,
+      "page": 30,
       "title": "A5. Each AMM family has a different state vector",
       "words": 59,
       "note_words": 0
     },
     {
-      "page": 31,
+      "page": 32,
       "title": "A5.2. Executable depth comes from active liquidity",
       "words": 62,
       "note_words": 0
     },
     {
-      "page": 32,
+      "page": 33,
       "title": "A5.3. Shared accounting moves route settlement",
       "words": 61,
       "note_words": 0
     },
     {
-      "page": 34,
+      "page": 35,
       "title": "A7. Daily and weekly frequencies answer different questions",
       "words": 62,
       "note_words": 0
     },
     {
-      "page": 37,
+      "page": 38,
       "title": "Vehicle dominance aggregates realised intermediary choices",
       "words": 69,
       "note_words": 0
     },
     {
-      "page": 38,
+      "page": 39,
       "title": "A9. Intermediary and route-endpoint use are separate",
       "words": 71,
       "note_words": 0
     },
     {
-      "page": 39,
+      "page": 40,
       "title": "A10. Capital, inventory, and depth differ",
       "words": 71,
       "note_words": 0
     },
     {
-      "page": 41,
+      "page": 42,
       "title": "A11b. Venue scope and vehicle type differ in 2026",
       "words": 56,
       "note_words": 16
     },
     {
-      "page": 43,
+      "page": 44,
       "title": "A13. References: decentralised exchange design",
       "words": 59,
       "note_words": 0

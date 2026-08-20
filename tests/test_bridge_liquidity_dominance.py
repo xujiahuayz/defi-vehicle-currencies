@@ -7,6 +7,8 @@ from pathlib import Path
 import pandas as pd
 
 from scripts.analyze.run_bridge_liquidity_dominance import (
+    BRIDGE_ADOPTION_PATH_DAYS,
+    bridge_adoption_capital_path_summaries,
     bridge_establishment_adoption_timing_from_events,
     bridge_establishment_depth_regressions,
     bridge_establishment_depth_summaries,
@@ -33,6 +35,66 @@ WBTC = "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"
 DAI = "0x6b175474e89094c44da98b954eedeac495271d0f"
 USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
 USDT = "0xdac17f958d2ee523a2206206994597c13d831ec7"
+
+
+def test_bridge_adoption_capital_path_orders_funding_before_route_use() -> None:
+    rows = []
+    for event_number in range(40):
+        event_id = f"event-{event_number}"
+        ordered_pair = f"src-{event_number}|tgt-{event_number}"
+        adoption_date = pd.Timestamp("2024-06-01") + pd.Timedelta(
+            days=event_number
+        )
+        for adoption_time in BRIDGE_ADOPTION_PATH_DAYS:
+            if adoption_time <= 0:
+                stable_log_capital = 1.0 + (adoption_time + 7) / 7
+            else:
+                stable_log_capital = 2.0 - 0.5 * adoption_time / 7
+            rows.append(
+                {
+                    "event_id": event_id,
+                    "ordered_pair": ordered_pair,
+                    "first_stable_route_date": adoption_date,
+                    "adoption_time": adoption_time,
+                    "stable_bridge_min_capital_usd": math.expm1(
+                        stable_log_capital
+                    ),
+                    "native_bridge_min_capital_usd": math.expm1(3.0),
+                }
+            )
+    result = bridge_adoption_capital_path_summaries(
+        pd.DataFrame(rows),
+        min_observations=20,
+        min_clusters=20,
+    )
+    stable_pre = result[
+        result["model_id"].eq("stablecoin_pre_route_week")
+    ].iloc[0]
+    stable_post = result[
+        result["model_id"].eq("stablecoin_post_route_week")
+    ].iloc[0]
+    stable_contrast = result[
+        result["model_id"].eq("stablecoin_pre_minus_post")
+    ].iloc[0]
+    weth_contrast = result[
+        result["model_id"].eq("weth_pre_minus_post")
+    ].iloc[0]
+    matched_contrast = result[
+        result["model_id"].eq(
+            "stablecoin_minus_weth_pre_minus_post_unwinsorized"
+        )
+    ].iloc[0]
+    stable_event = result[
+        result["model_id"].eq("stablecoin_capital_path")
+        & result["event_time_days"].eq(0)
+    ].iloc[0]
+    assert math.isclose(stable_pre["coefficient"], 1.0)
+    assert math.isclose(stable_post["coefficient"], -0.5)
+    assert math.isclose(stable_contrast["coefficient"], 1.5)
+    assert math.isclose(weth_contrast["coefficient"], 0.0, abs_tol=1e-12)
+    assert math.isclose(matched_contrast["coefficient"], 1.5)
+    assert math.isclose(stable_event["coefficient"], 1.0)
+    assert stable_event["events"] == 40
 
 
 def test_bridge_establishment_separates_support_from_route_adoption() -> None:
@@ -1332,6 +1394,49 @@ def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
                 "events": 855 if period == "post_0_29" else 737,
             }
         )
+    for model_id, coefficient, standard_error, p_value in [
+        ("stablecoin_pre_route_week", 0.60, 0.15, 0.001),
+        ("stablecoin_post_route_week", -0.34, 0.15, 0.02),
+        (
+            "stablecoin_minus_weth_pre_route_week_unwinsorized",
+            0.52,
+            0.15,
+            0.001,
+        ),
+        (
+            "stablecoin_minus_weth_post_route_week_unwinsorized",
+            -0.35,
+            0.16,
+            0.02,
+        ),
+        (
+            "stablecoin_minus_weth_pre_minus_post_unwinsorized",
+            0.87,
+            0.23,
+            0.001,
+        ),
+        (
+            "stablecoin_minus_weth_pre_minus_post_winsorized_5_95",
+            1.02,
+            0.17,
+            0.001,
+        ),
+    ]:
+        event_rows.append(
+            {
+                "claim_status": "provisional_exploratory",
+                "record_type": "bridge_adoption_capital_contrast",
+                "model_id": model_id,
+                "coefficient": coefficient,
+                "standard_error": standard_error,
+                "p_value": p_value,
+                "events": 267,
+                "median": 0.05,
+                "positive_share": 0.61,
+                "winsorized_5_95_mean": 0.53,
+                "top_ten_positive_change_share": 0.45,
+            }
+        )
     estimates = pd.concat([estimates, pd.DataFrame(event_rows)], ignore_index=True)
     rendered = render_bridge_liquidity_deck_values(estimates)
     table = render_bridge_establishment_table(estimates)
@@ -1349,6 +1454,8 @@ def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
     assert "\\newcommand{\\BridgeTimingComparableEvents}{853}" in rendered
     assert "\\BridgeTimingControlledDiff" in rendered
     assert "\\BridgeTimingNoStableEndpointDiff" in rendered
+    assert "\\newcommand{\\BridgeAdoptionCapitalEvents}{267}" in rendered
+    assert "\\BridgeAdoptionCapitalMatchedDifferenceCoef" in rendered
     assert "\\BridgeDepthDoseFirstCoef" in rendered
     assert "\\BridgeDepthEqualFirstShare" in rendered
     assert "\\newcommand{\\BridgeDepthDoseFirstRows}{11{,}327}" in rendered

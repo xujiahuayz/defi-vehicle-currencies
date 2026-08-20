@@ -69,8 +69,9 @@ bounded V3 fee/rent-incidence and TVL-normalized fee-yield screens, V3 mint/burn
 stable-shortfall x V4 flash-accounting LP repositioning,
 local bridge-liquidity dominance, entry-date local bridge-depth choice screens,
 first stable-bridge establishment, continuous stable-versus-WETH bottleneck depth,
-depth-conditioned route reallocation, and adoption timing after persistent support,
-stable-specific dynamic local bridge-depth feedback, and V2 capital predictability. A
+depth-conditioned route reallocation, adoption timing after persistent support,
+capital accumulation around first stablecoin route use, stable-specific dynamic
+local bridge-depth feedback, and V2 capital predictability. A
 matched-calendar endpoint-direction decomposition and its stable-to-stable
 intermediary-identity split locate the value channel in USDT. A
 result becomes headline evidence only if it is economically material,

@@ -51,6 +51,8 @@ BRIDGE_ESTABLISHMENT_PRE_DAYS = 30
 BRIDGE_ESTABLISHMENT_POST_DAYS = 120
 BRIDGE_ESTABLISHMENT_MIN_ACTIVE_DAYS = 3
 BRIDGE_ESTABLISHMENT_MIN_SUPPORT_DAYS_30 = 24
+BRIDGE_ADOPTION_PATH_DAYS = tuple(range(-7, 8))
+BRIDGE_ADOPTION_MIN_LAG_DAYS = 7
 CODE_SOURCES = [
     "scripts/analyze/run_bridge_liquidity_dominance.py",
     "src/ddvc/asset_types.py",
@@ -1315,6 +1317,356 @@ def bridge_establishment_adoption_timing(
     )
     return bridge_establishment_adoption_timing_from_events(
         events,
+        min_observations=min_observations,
+        min_clusters=min_clusters,
+    )
+
+
+def bridge_adoption_capital_path_summaries(
+    depth_panel: pd.DataFrame,
+    *,
+    min_observations: int = 100,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Summarize bottleneck capital around the first observed stable route.
+
+    The balanced event sample is indexed to the first stablecoin route after
+    persistent support.  Deposited capital is lagged to the prior calendar day,
+    so the event-day stock precedes execution on the adoption date.  The sample
+    requires support to have appeared at least seven days earlier.  This orders
+    measured capital and route use without identifying provider intent.
+    """
+
+    required = {
+        "event_id",
+        "ordered_pair",
+        "first_stable_route_date",
+        "adoption_time",
+        "stable_bridge_min_capital_usd",
+        "native_bridge_min_capital_usd",
+    }
+    missing = sorted(required - set(depth_panel.columns))
+    if missing:
+        raise ValueError(f"bridge adoption capital path lacks columns: {missing}")
+    data = depth_panel.copy()
+    if data.duplicated(["event_id", "adoption_time"]).any():
+        raise ValueError("bridge adoption capital path has duplicate event-times")
+    data["first_stable_route_date"] = pd.to_datetime(
+        data["first_stable_route_date"], errors="raise"
+    ).dt.normalize()
+    data["adoption_time"] = pd.to_numeric(
+        data["adoption_time"], errors="raise"
+    ).astype(int)
+    expected_times = set(BRIDGE_ADOPTION_PATH_DAYS)
+    event_times = data.groupby("event_id")["adoption_time"].agg(set)
+    balanced_events = event_times[event_times.eq(expected_times)].index
+    data = data[data["event_id"].isin(balanced_events)].copy()
+    if data.empty:
+        raise ValueError("bridge adoption capital path has no balanced events")
+    data["log_stable_bridge_capital"] = np.log1p(
+        data["stable_bridge_min_capital_usd"].clip(lower=0)
+    )
+    data["log_weth_bridge_capital"] = np.log1p(
+        data["native_bridge_min_capital_usd"].clip(lower=0)
+    )
+
+    def clustered_mean(
+        values: pd.Series,
+        ordered_pairs: pd.Series,
+        adoption_dates: pd.Series,
+    ) -> tuple[float, float, float, float, int, tuple[int, ...]]:
+        fit = ols_clustered(
+            values,
+            np.empty((len(values), 0), dtype=float),
+            ordered_pairs,
+            additional_clusters=(adoption_dates,),
+            min_observations=min_observations,
+            min_clusters=min_clusters,
+        )
+        return (
+            float(fit.beta[0]),
+            float(fit.standard_errors[0]),
+            float(fit.t_statistics[0]),
+            float(fit.p_values[0]),
+            int(fit.n_observations),
+            fit.cluster_counts,
+        )
+
+    rows: list[dict[str, object]] = []
+    for vehicle_class, outcome in (
+        ("stablecoin", "log_stable_bridge_capital"),
+        ("WETH", "log_weth_bridge_capital"),
+    ):
+        baseline = data[data["adoption_time"].eq(-7)][
+            ["event_id", outcome]
+        ].rename(columns={outcome: "baseline_log_capital"})
+        indexed = data.merge(
+            baseline,
+            on="event_id",
+            how="inner",
+            validate="many_to_one",
+        )
+        indexed["log_capital_change"] = (
+            indexed[outcome] - indexed["baseline_log_capital"]
+        )
+        for event_time, period in indexed.groupby("adoption_time", sort=True):
+            if int(event_time) == -7:
+                estimate = standard_error = t_statistic = 0.0
+                p_value = 1.0
+                n_observations = int(len(period))
+                cluster_counts = (
+                    int(period["ordered_pair"].nunique()),
+                    int(period["first_stable_route_date"].nunique()),
+                )
+            else:
+                (
+                    estimate,
+                    standard_error,
+                    t_statistic,
+                    p_value,
+                    n_observations,
+                    cluster_counts,
+                ) = clustered_mean(
+                    period["log_capital_change"],
+                    period["ordered_pair"],
+                    period["first_stable_route_date"],
+                )
+            rows.append(
+                {
+                    "claim_status": "provisional_exploratory",
+                    "record_type": "bridge_adoption_capital_path",
+                    "model_id": f"{vehicle_class.lower()}_capital_path",
+                    "vehicle_class": vehicle_class,
+                    "event_time_days": int(event_time),
+                    "coefficient": estimate,
+                    "standard_error": standard_error,
+                    "t_statistic": t_statistic,
+                    "p_value": p_value,
+                    "n_observations": n_observations,
+                    "events": int(period["event_id"].nunique()),
+                    "ordered_pair_clusters": int(cluster_counts[0]),
+                    "date_clusters": int(cluster_counts[1]),
+                    "outcome": "change in log one plus weak-leg deposited capital",
+                    "baseline": "seven calendar days before first stable route",
+                    "weight": "equal_event",
+                    "covariance": "two_way_ordered_pair_adoption_date_cr1",
+                    "interpretation": (
+                        "descriptive capital path around first stable route after "
+                        "persistent bridge support"
+                    ),
+                }
+            )
+
+        wide = (
+            data[data["adoption_time"].isin((-7, 0, 7))]
+            .pivot(
+                index=["event_id", "ordered_pair", "first_stable_route_date"],
+                columns="adoption_time",
+                values=outcome,
+            )
+            .reset_index()
+        )
+        changes = {
+            "pre_route_week": wide[0] - wide[-7],
+            "post_route_week": wide[7] - wide[0],
+        }
+        changes["pre_minus_post"] = (
+            changes["pre_route_week"] - changes["post_route_week"]
+        )
+        for period_id, values in changes.items():
+            lower, upper = values.quantile([0.05, 0.95])
+            winsorized = values.clip(lower=lower, upper=upper)
+            positive_values = values.clip(lower=0).sort_values(ascending=False)
+            positive_total = float(positive_values.sum())
+            (
+                estimate,
+                standard_error,
+                t_statistic,
+                p_value,
+                n_observations,
+                cluster_counts,
+            ) = clustered_mean(
+                values,
+                wide["ordered_pair"],
+                wide["first_stable_route_date"],
+            )
+            rows.append(
+                {
+                    "claim_status": "provisional_exploratory",
+                    "record_type": "bridge_adoption_capital_contrast",
+                    "model_id": f"{vehicle_class.lower()}_{period_id}",
+                    "vehicle_class": vehicle_class,
+                    "period": period_id,
+                    "sample": "unwinsorized",
+                    "coefficient": estimate,
+                    "standard_error": standard_error,
+                    "t_statistic": t_statistic,
+                    "p_value": p_value,
+                    "n_observations": n_observations,
+                    "events": int(wide["event_id"].nunique()),
+                    "ordered_pair_clusters": int(cluster_counts[0]),
+                    "date_clusters": int(cluster_counts[1]),
+                    "median": float(values.median()),
+                    "positive_share": float(values.gt(0).mean()),
+                    "winsorized_5_95_mean": float(winsorized.mean()),
+                    "top_one_positive_change_share": (
+                        float(positive_values.iloc[:1].sum() / positive_total)
+                        if positive_total > 0
+                        else None
+                    ),
+                    "top_ten_positive_change_share": (
+                        float(positive_values.iloc[:10].sum() / positive_total)
+                        if positive_total > 0
+                        else None
+                    ),
+                    "outcome": "change in log one plus weak-leg deposited capital",
+                    "weight": "equal_event",
+                    "covariance": "two_way_ordered_pair_adoption_date_cr1",
+                    "interpretation": (
+                        "descriptive comparison of capital accumulation before "
+                        "and after the first observed stable route"
+                    ),
+                }
+            )
+
+    wide = (
+        data[data["adoption_time"].isin((-7, 0, 7))]
+        .pivot(
+            index=["event_id", "ordered_pair", "first_stable_route_date"],
+            columns="adoption_time",
+            values=["log_stable_bridge_capital", "log_weth_bridge_capital"],
+        )
+        .reset_index()
+    )
+    stable_pre = (
+        wide[("log_stable_bridge_capital", 0)]
+        - wide[("log_stable_bridge_capital", -7)]
+    )
+    stable_post = (
+        wide[("log_stable_bridge_capital", 7)]
+        - wide[("log_stable_bridge_capital", 0)]
+    )
+    weth_pre = (
+        wide[("log_weth_bridge_capital", 0)]
+        - wide[("log_weth_bridge_capital", -7)]
+    )
+    weth_post = (
+        wide[("log_weth_bridge_capital", 7)]
+        - wide[("log_weth_bridge_capital", 0)]
+    )
+    matched_changes = {
+        "pre_route_week": stable_pre - weth_pre,
+        "post_route_week": stable_post - weth_post,
+        "pre_minus_post": (stable_pre - weth_pre) - (stable_post - weth_post),
+    }
+    for period_id, raw_values in matched_changes.items():
+        lower, upper = raw_values.quantile([0.05, 0.95])
+        samples = (
+            ("unwinsorized", raw_values),
+            ("winsorized_5_95", raw_values.clip(lower=lower, upper=upper)),
+        )
+        for sample, values in samples:
+            (
+                estimate,
+                standard_error,
+                t_statistic,
+                p_value,
+                n_observations,
+                cluster_counts,
+            ) = clustered_mean(
+                values,
+                wide["ordered_pair"],
+                wide["first_stable_route_date"],
+            )
+            rows.append(
+                {
+                    "claim_status": "provisional_exploratory",
+                    "record_type": "bridge_adoption_capital_contrast",
+                    "model_id": f"stablecoin_minus_weth_{period_id}_{sample}",
+                    "vehicle_class": "stablecoin_minus_WETH",
+                    "period": period_id,
+                    "sample": sample,
+                    "coefficient": estimate,
+                    "standard_error": standard_error,
+                    "t_statistic": t_statistic,
+                    "p_value": p_value,
+                    "n_observations": n_observations,
+                    "events": int(wide["event_id"].nunique()),
+                    "ordered_pair_clusters": int(cluster_counts[0]),
+                    "date_clusters": int(cluster_counts[1]),
+                    "median": float(values.median()),
+                    "positive_share": float(values.gt(0).mean()),
+                    "outcome": (
+                        "stablecoin minus WETH change in log one plus weak-leg "
+                        "deposited capital"
+                    ),
+                    "weight": "equal_event",
+                    "covariance": "two_way_ordered_pair_adoption_date_cr1",
+                    "interpretation": (
+                        "descriptive matched-route comparison of capital "
+                        "accumulation before and after first stable route use"
+                    ),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def bridge_establishment_adoption_capital_path(
+    panel: pd.DataFrame,
+    *,
+    pool_capital_path: Path = POOL_CAPITAL_INPUT,
+    capital_status: str = CAPITAL_STATUS,
+    min_observations: int = 100,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Build a balanced prior-calendar capital path around stable-route adoption."""
+
+    event_columns = [
+        "event_id",
+        "ordered_pair",
+        "event_date",
+        "first_stable_route_date",
+        "src",
+        "tgt",
+        "integration_scope",
+    ]
+    missing = sorted(set(event_columns + ["origin_date"]) - set(panel.columns))
+    if missing:
+        raise ValueError(f"bridge event panel lacks adoption-path columns: {missing}")
+    events = panel.loc[:, event_columns].drop_duplicates().copy()
+    if events["event_id"].duplicated().any():
+        raise ValueError("bridge adoption-path fields vary within an event")
+    events["adoption_lag_days"] = (
+        events["first_stable_route_date"] - events["event_date"]
+    ).dt.days
+    events = events[
+        events["adoption_lag_days"].between(
+            BRIDGE_ADOPTION_MIN_LAG_DAYS,
+            BRIDGE_ESTABLISHMENT_POST_DAYS - 1,
+        )
+    ].copy()
+    lower_date = pd.Timestamp(panel["origin_date"].min()).normalize()
+    upper_date = pd.Timestamp(panel["origin_date"].max()).normalize()
+    events = events[
+        events["first_stable_route_date"].sub(pd.Timedelta(days=7)).ge(lower_date)
+        & events["first_stable_route_date"].add(pd.Timedelta(days=7)).le(upper_date)
+    ].copy()
+    if events.empty:
+        raise ValueError("bridge adoption capital path has no eligible events")
+    grid = events.merge(
+        pd.DataFrame({"adoption_time": BRIDGE_ADOPTION_PATH_DAYS}),
+        how="cross",
+    )
+    grid["origin_date"] = grid["first_stable_route_date"] + pd.to_timedelta(
+        grid["adoption_time"], unit="D"
+    )
+    depth = _attach_bridge_establishment_depth(
+        grid,
+        pool_capital_path=pool_capital_path,
+        capital_status=capital_status,
+    )
+    return bridge_adoption_capital_path_summaries(
+        depth,
         min_observations=min_observations,
         min_clusters=min_clusters,
     )
@@ -2749,6 +3101,10 @@ def run(
             bridge_liquidity_stable_issuer_regressions(panel),
             bridge_establishment_period_summaries(establishment_panel),
             bridge_establishment_adoption_timing(
+                establishment_panel,
+                pool_capital_path=pool_capital_path,
+            ),
+            bridge_establishment_adoption_capital_path(
                 establishment_panel,
                 pool_capital_path=pool_capital_path,
             ),

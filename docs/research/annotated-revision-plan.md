@@ -122,9 +122,10 @@ to quantify the disconnected-component boundary. Each major revision follows the
 ## Scientific extensions
 
 - The pool-to-route timing test is complete: persistent two-leg support commonly
-  precedes stable-vehicle use, and event-day depth predicts whether adoption
-  follows. Stablecoin issuance timing remains unmeasured because no verified
-  issuance series is in the local data perimeter.
+  precedes stable-vehicle use, event-day depth predicts whether adoption follows,
+  and the matched event path shows stablecoin bridge capital accumulating before
+  first route use. Stablecoin issuance timing remains unmeasured because no
+  verified issuance series is in the local data perimeter.
 - Compare liquidity-provider capital, flows, range concentration, and position
   updates around V4 flash-accounting intensity with comparable V3 measures.
 - The stable-to-stable, stable-to-native, native-to-stable, and

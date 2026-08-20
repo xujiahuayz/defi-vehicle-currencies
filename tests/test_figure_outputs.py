@@ -7,9 +7,28 @@ from pathlib import Path
 import pandas as pd
 
 from ddvc.figure_outputs import (
+    bridge_adoption_capital_path,
+    render_bridge_adoption_capital_path,
     render_vehicle_excess_use_transition,
     vehicle_excess_use_transition,
 )
+
+
+def bridge_path_fixture() -> pd.DataFrame:
+    rows = []
+    for vehicle_class, slope in (("stablecoin", 0.10), ("WETH", 0.02)):
+        for event_time in range(-7, 8):
+            rows.append(
+                {
+                    "record_type": "bridge_adoption_capital_path",
+                    "vehicle_class": vehicle_class,
+                    "event_time_days": event_time,
+                    "coefficient": slope * (event_time + 7),
+                    "standard_error": 0.02,
+                    "events": 267,
+                }
+            )
+    return pd.DataFrame(rows)
 
 
 def transition_fixture() -> pd.DataFrame:
@@ -35,6 +54,21 @@ def transition_fixture() -> pd.DataFrame:
 
 
 class FigureOutputTests(unittest.TestCase):
+    def test_bridge_path_requires_both_vehicle_classes_and_all_days(self) -> None:
+        result = bridge_adoption_capital_path(bridge_path_fixture())
+        self.assertEqual(len(result), 30)
+        with self.assertRaisesRegex(ValueError, "one unique row"):
+            bridge_adoption_capital_path(bridge_path_fixture().iloc[:-1])
+
+    def test_bridge_path_renderer_writes_vector_pdf(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "bridge-path.pdf"
+            render_bridge_adoption_capital_path(bridge_path_fixture(), output)
+            payload = output.read_bytes()
+            self.assertGreater(len(payload), 1_000)
+            self.assertEqual(payload[:4], b"%PDF")
+            self.assertNotIn(b"/Subtype /Image", payload)
+
     def test_transition_requires_both_candidates_and_years(self) -> None:
         result = vehicle_excess_use_transition(transition_fixture())
         self.assertEqual(
