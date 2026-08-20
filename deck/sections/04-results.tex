@@ -1,50 +1,20 @@
 % EVIDENCE-MANAGED-FILE
 % VISUAL-MANAGED-FILE
-% Numerical cells are generated; evidence status and identities stay in comments.
-\IfFileExists{../output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex}{%
-\input{../output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex}%
-}{\PackageError{dvc-deck}{Missing generated vehicle-pair decomposition values}{Run scripts/tabulate/build_vehicle_transition_pair_deck_values.py.}}
-\IfFileExists{../output/exhibits/route_methodology_heterogeneity_deck_values.tex}{%
-\input{../output/exhibits/route_methodology_heterogeneity_deck_values.tex}%
-}{\PackageError{dvc-deck}{Missing WETH allocation values}{Run scripts/analyze/run_route_heterogeneity.py.}}
-\IfFileExists{../output/exhibits/endpoint_direction_deck_values.tex}{%
-\input{../output/exhibits/endpoint_direction_deck_values.tex}%
-}{\PackageError{dvc-deck}{Missing endpoint-direction values}{Run scripts/analyze/run_endpoint_direction_decomposition.py then scripts/tabulate/build_endpoint_direction_deck_values.py.}}
-\IfFileExists{../output/exhibits/stable_stable_vehicle_values.tex}{%
-\input{../output/exhibits/stable_stable_vehicle_values.tex}%
-}{\PackageError{dvc-deck}{Missing stable-to-stable vehicle values}{Run scripts/analyze/run_stable_stable_vehicle_decomposition.py then scripts/tabulate/build_stable_stable_vehicle_values.py.}}
-\IfFileExists{../output/exhibits/liquidity_capital_v2_deck_values.tex}{%
-\input{../output/exhibits/liquidity_capital_v2_deck_values.tex}%
-}{\PackageError{dvc-deck}{Missing generated V2 capital-predictability values}{Run scripts/tabulate/build_liquidity_capital_v2_deck_values.py.}}
-\IfFileExists{../output/exhibits/bridge_liquidity_deck_values.tex}{%
-\input{../output/exhibits/bridge_liquidity_deck_values.tex}%
-}{\PackageError{dvc-deck}{Missing generated bridge-liquidity values}{Run scripts/analyze/run_bridge_liquidity_dominance.py then scripts/tabulate/build_bridge_liquidity_deck_values.py.}}
-\IfFileExists{../output/exhibits/excess_use_date_fe_deck_values.tex}{%
-\input{../output/exhibits/excess_use_date_fe_deck_values.tex}%
-}{\PackageError{dvc-deck}{Missing generated within-day vehicle-use values}{Run scripts/analyze/run_excess_use_date_fe_ladder.py then scripts/tabulate/build_excess_use_date_fe_deck_values.py.}}
-\IfFileExists{../output/exhibits/v4_flash_lp_deck_values.tex}{%
-\input{../output/exhibits/v4_flash_lp_deck_values.tex}%
-}{\PackageError{dvc-deck}{Missing generated V4 flash-accounting LP values}{Run scripts/tabulate/build_v4_flash_lp_deck_values.py.}}
-\IfFileExists{../output/exhibits/v4_lp_origin_timing_deck_values.tex}{%
-\input{../output/exhibits/v4_lp_origin_timing_deck_values.tex}%
-}{\PackageError{dvc-deck}{Missing generated V4 transaction-origin timing values}{Run scripts/tabulate/build_v4_lp_origin_timing_deck_values.py.}}
-\IfFileExists{../output/exhibits/v4_lp_volatility_state_deck_values.tex}{%
-\input{../output/exhibits/v4_lp_volatility_state_deck_values.tex}%
-}{\PackageError{dvc-deck}{Missing generated V4 volatility-state values}{Run scripts/tabulate/build_v4_lp_volatility_state_deck_values.py.}}
-\IfFileExists{../output/exhibits/exact_vehicle_frontier_values.tex}{%
-\input{../output/exhibits/exact_vehicle_frontier_values.tex}%
-}{\PackageError{dvc-deck}{Missing generated exact-frontier values}{Run scripts/tabulate/render_exact_vehicle_frontier.py.}}
+\input{../output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex}
+\input{../output/exhibits/vehicle_formation_deck_values.tex}
+\input{../output/exhibits/bridge_liquidity_deck_values.tex}
+\input{../output/exhibits/exact_vehicle_frontier_values.tex}
 
-% EVIDENCE-STATUS: current descriptive route result
-% EVIDENCE-SOURCES: output/figures/experiments/annual_vehicle_composition_bands.pdf; output/exhibits/intermediation_by_type.jsonl; output/exhibits/vehicle_transition_pair_fixed_effects.jsonl
-% VISUAL-FUNCTION: realised vehicle rotation | large annual count-and-value paths | establish when stablecoins take the routed-value lead
+% EVIDENCE-SOURCES: output/figures/experiments/annual_vehicle_composition_bands.pdf; output/exhibits/intermediation_by_type.jsonl
+% EVIDENCE-STATUS: main descriptive result using all complete route lengths.
+% VISUAL-FUNCTION: all-route vehicle rotation | annual two-panel line chart | establish turnover in frequency and routed value
 \begin{frame}{Stablecoins regain the routed-value lead by 2026 H1}
-\evidencekicker{Headline comparison: 2024 H1 versus 2026 H1}
+\evidencekicker{All complete route lengths}
 \vspace{-0.18cm}
 \begin{center}
-\includegraphics[width=0.98\textwidth,height=0.59\textheight,keepaspectratio,trim=400 62 8 4,clip]{../output/figures/experiments/annual_vehicle_composition_bands.pdf}
+\includegraphics[width=0.98\textwidth,height=0.60\textheight,keepaspectratio,trim=400 62 8 4,clip]{../output/figures/experiments/annual_vehicle_composition_bands.pdf}
 \end{center}
-\vspace{-0.24cm}
+\vspace{-0.25cm}
 {\small\centering
 \tikz[baseline=-0.4ex]\draw[native,line width=1.7pt] (0,0)--(0.55,0);\;Native
 \hspace{0.55cm}
@@ -52,341 +22,172 @@
 \hspace{0.55cm}
 \tikz[baseline=-0.4ex]\draw[muted,dashed,line width=1.3pt] (0,0)--(0.55,0);\;Other\par}
 \vspace{-0.08cm}
-\decknote{Historical points through 2025 use each full calendar year; 2026 covers January through June. The headline change compares the same January through June dates in 2024 and 2026. Exact two-leg routes. Routed value requires agreement among source, intermediary, and destination dollar values.}
-\note{Holding endpoint pair, calendar date, and route scope fixed, stablecoin share changes by \MatchedMarketCountChange{} by count and \MatchedMarketValueChange{} by value. The aggregate movement therefore comes primarily from the allocation of routed activity across endpoint pairs.}
+\decknote{Each complete route contributes once for every intermediary position, including routes with more than two atomic trades. Historical points through 2025 use full calendar years; 2026 covers January through June. Routed value requires source, intermediary, and destination values to agree within 20\%.}
 \end{frame}
 
-% EVIDENCE-STATUS: supporting within-day descriptive regression
-% EVIDENCE-SOURCES: output/exhibits/excess_use_date_fe_ladder.jsonl; output/exhibits/excess_use_date_fe_deck_values.tex; data/processed/vehicle_excess_use_daily.parquet
-% VISUAL-FUNCTION: estimating equation | large equation plus compact variable map | expose the comparison before coefficients
-\begin{frame}{Endpoint demand predicts vehicle use within day}
-\vspace{0.45cm}
-{\Large
-\[
-I_{a,t}=\alpha+\beta D_{a,t}+\mathbf{A}_{a}'\theta+\mu_t+\eta_a+\varepsilon_{a,t}
-\]
-}
-\vspace{0.40cm}
-\begin{columns}[T,totalwidth=0.94\textwidth]
-\begin{column}{0.47\textwidth}
-{\normalsize
-\(I_{a,t}\)\quad intermediary episode share\par\vspace{0.22cm}
-\(D_{a,t}\)\quad own endpoint-demand share\par\vspace{0.22cm}
-\(\mathbf A_a\)\quad asset-class indicators\par}
-\end{column}
-\begin{column}{0.47\textwidth}
-{\normalsize
-\(\mu_t\)\quad date effects\par\vspace{0.22cm}
-\(\eta_a\)\quad currency effects\par}
-\end{column}
-\end{columns}
-\decknote{Outcome and demand are shares of the same day's route universe, measured in percentage points (pp). The estimates are descriptive within-day associations.}
-\end{frame}
-
-% EVIDENCE-STATUS: supporting within-day descriptive regression
-% EVIDENCE-SOURCES: output/exhibits/excess_use_date_fe_ladder.jsonl; output/exhibits/excess_use_date_fe_deck_values.tex; output/tables/within_day_ladder.tex
-% VISUAL-FUNCTION: regression specification ladder | compact finance-style coefficient table | show demand pass-through after date and currency effects
-\begin{frame}{The demand relationship survives currency and date effects}
-\vspace{0.04cm}
+% EVIDENCE-SOURCES: output/figures/vehicle_dominance_timelapse.mp4; output/figures/vehicle_dominance_timelapse_poster.pdf
+% EVIDENCE-STATUS: main dynamic view of generated monthly composition.
+% VISUAL-FUNCTION: vehicle leadership through time | embedded time-lapse scatter film | reveal movement that no single frame contains
+\begin{frame}{Vehicle leadership turns over through time}
 \centering
-{\footnotesize
-\renewcommand{\arraystretch}{1.02}
-\begin{tabularx}{0.94\textwidth}{@{}Xcccc@{}}
-\toprule
- & \multicolumn{4}{c}{Intermediary share \((I_{a,t})\) [pp]} \\
-\cmidrule(lr){2-5}
- & (1) & (2) & (3) & (4) \\
- & Pooled & Date FE & {}+ demand & {}+ currency FE \\
-\midrule
-Native currency & \DateFEPooledNativeTable{} & \DateFEDayNativeTable{} & \DateFEDemandNativeTable{} & --- \\
- & (\DateFEPooledNativeTableSE{}) & (\DateFEDayNativeTableSE{}) & (\DateFEDemandNativeTableSE{}) & --- \\
-Stablecoin & \DateFEPooledStableTable{} & \DateFEDayStableTable{} & \DateFEDemandStableTable{} & --- \\
- & (\DateFEPooledStableTableSE{}) & (\DateFEDayStableTableSE{}) & (\DateFEDemandStableTableSE{}) & --- \\
-Endpoint-demand share \((D_{a,t})\) & --- & --- & \DateFESlopeTable{} & \DateFESlopeWithinTokenTable{} \\
- & --- & --- & (\DateFESlopeTableSE{}) & (\DateFESlopeWithinTokenTableSE{}) \\
-\midrule
-Date fixed effects & No & Yes & Yes & Yes \\
-Currency fixed effects & No & No & No & Yes \\
-\bottomrule
-\end{tabularx}\par}
-\vspace{0.08cm}
-{\small Endpoint-demand share passes through almost one for one after both fixed effects.\par}
-\decknote{\DateFETokenDays{} currency-days and \DateFEDays{} dates. Parentheses report currency/date-clustered standard errors. Class coefficients are percentage-point differences; the demand coefficient is percentage points of intermediary share per percentage point of endpoint-demand share. Asterisks \(*\), \(**\), and \(***\) denote significance at 10\%, 5\%, and 1\%, respectively.}
-\end{frame}
-
-% EVIDENCE-STATUS: supporting deterministic endpoint-eligibility decomposition
-% EVIDENCE-SOURCES: output/exhibits/route_methodology_heterogeneity.jsonl; output/exhibits/route_methodology_heterogeneity_deck_values.tex; output/exhibits/vehicle_transition_pair_panel.parquet
-% VISUAL-FUNCTION: WETH endpoint eligibility | stacked restriction-and-estimate comparison | locate the count rotation in endpoint-pair composition
-\begin{frame}{WETH-linked endpoint pairs carry the count rotation}
-\vspace{-0.12cm}
-\begin{center}
-\resizebox{0.92\textwidth}{!}{\input{assets/vehicle-transition-pair-decomposition.tex}}
-\end{center}
 \vspace{-0.10cm}
-{\large Changes within fixed endpoint pairs are \WethCountWithinFullChange{} overall and \WethCountWithinNoEndpointChange{} without WETH endpoints.\par}
-\decknote{Exact two-leg native-WETH-versus-stablecoin routes on common month-days. Within-endpoint-pair estimates fix endpoint pair, month-day, and route scope.}
+\movie[poster,showcontrols,width=0.88\textwidth,height=0.70\textheight]%
+{\includegraphics[width=0.88\textwidth,height=0.70\textheight,keepaspectratio]{../output/figures/vehicle_dominance_timelapse_poster.pdf}}%
+{../output/figures/vehicle_dominance_timelapse.mp4}
+\par\vspace{-0.10cm}
+{\small\color{muted}Click the figure to play the 18-second route film.\par}
+\decknote{The film follows WETH, USDC, USDT, and DAI in route participation, supported value, and ultimate-pair breadth. Each frame retains six months of history, so no single frame contains the full transition. The poster is the PDF fallback.}
 \end{frame}
 
-% EVIDENCE-STATUS: exploratory descriptive endpoint-direction decomposition
-% EVIDENCE-SOURCES: output/exhibits/endpoint_direction_decomposition.jsonl; output/exhibits/endpoint_direction_deck_values.tex; output/exhibits/stable_stable_vehicle_decomposition.jsonl; output/exhibits/stable_stable_vehicle_robustness.jsonl; output/exhibits/stable_stable_vehicle_values.tex
-% VISUAL-FUNCTION: endpoint demand | count-versus-value contribution bars | locate the rotation across economically distinct trading relationships
-\begin{frame}{Who trades with whom makes the vehicle}
-\vspace{-0.18cm}
+% EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_decomposition.jsonl
+% EVIDENCE-STATUS: central exact decomposition.
+% VISUAL-FUNCTION: sources of aggregate rotation | three contribution cards and share arrow | make ultimate-pair formation and near-zero net switching memorable
+\begin{frame}{Ultimate-pair formation supplies most of the rotation}
+\evidencekicker{Exact decomposition in percentage points (pp): 2024 H1 to 2026 H1}
+\vspace{0.06cm}
 \begin{center}
-\resizebox{0.97\textwidth}{!}{\input{assets/endpoint-direction-rotation.tex}}
-\end{center}
-\vspace{-0.12cm}
-{\large USDT supplies \StableStableUsdtValueContribution{} of the \StableStableValueContribution{} two-stable endpoint value channel.\par}
-\decknote{181 common days. Exact additive decomposition; descriptive.}
-\end{frame}
-
-% EVIDENCE-STATUS: supporting exact routed-value decomposition
-% EVIDENCE-SOURCES: output/exhibits/route_methodology_heterogeneity.jsonl; output/exhibits/route_methodology_heterogeneity_deck_values.tex
-% VISUAL-FUNCTION: routed-value composition | enlarged exact midpoint decomposition | separate activity reallocation from within-group switching
-\begin{frame}{Trading shifts toward stablecoin-heavy endpoint pairs}
-\vspace{-0.16cm}
-\begin{center}
-\resizebox{0.98\textwidth}{!}{\input{assets/non-weth-value-composition.tex}}
-\end{center}
-\decknote{The daily midpoint identity is exact after removing WETH endpoints. Routed value requires agreement among source, intermediary, and destination dollar values.}
-\end{frame}
-
-% EVIDENCE-STATUS: supporting exact route-count decomposition
-% EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_contributions.parquet; output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex
-% VISUAL-FUNCTION: route-count rotation mechanism | cumulative three-stage decomposition | reveal aggregate change, incumbent margins, then endpoint-pair entry and exit
-\newcommand{\rotationdecomposition}[1]{%
 \begin{tikzpicture}[x=1cm,y=1cm]
-\tikzset{rotationpanel/.style={draw=rule,fill=white,rounded corners=3pt,line width=0.8pt}}
-\tikzset{rotationlabel/.style={font=\fontsize{7.2}{8.0}\selectfont,text=ink,text width=2.75cm,align=left}}
-\tikzset{rotationsection/.style={font=\small\bfseries,align=left}}
-\path[use as bounding box] (0,0.38) rectangle (13.0,4.32);
-\draw[rotationpanel,fill=panel] (0,2.95) rectangle (13.0,4.32);
-\node[font=\scriptsize\bfseries,text=muted] at (1.10,3.64) {2024};
-\node[font=\fontsize{22}{23}\selectfont\bfseries,text=ucldark] at (2.80,3.64) {\PairPooledBase};
-\ifnum#1>1\relax
-  \draw[-{Stealth[length=6pt]},line width=1.5pt,draw=stable] (4.18,3.64)--(5.22,3.64);
-  \node[font=\scriptsize\bfseries,text=muted] at (6.10,3.64) {2026};
-  \node[font=\fontsize{22}{23}\selectfont\bfseries,text=ucldark] at (7.75,3.64) {\PairPooledEnd};
-  \node[anchor=east,font=\fontsize{23}{24}\selectfont\bfseries,text=stable] at (12.56,3.75) {\PairPooledTotal};
-  \node[anchor=east,font=\scriptsize,text=muted] at (12.56,3.25) {aggregate rotation};
-  \draw[rotationpanel,fill=ucldark!4] (0,0.38) rectangle (6.20,2.60);
-  \node[anchor=west,rotationsection,text=ucldark] at (0.38,2.22) {Continuing endpoint pairs};
-  \node[anchor=west,font=\fontsize{15}{16}\selectfont\bfseries,text=accent] at (0.42,1.48) {\MarginWithinTotal};
-  \node[anchor=west,rotationlabel] at (2.65,1.48) {net within-endpoint-pair change};
-  \node[anchor=west,font=\fontsize{15}{16}\selectfont\bfseries,text=stable] at (0.42,0.76) {\MarginReweightTotal};
-  \node[anchor=west,rotationlabel] at (2.65,0.76) {activity reallocation};
-\fi
-\ifnum#1>2\relax
-  \draw[rotationpanel,fill=stable!7] (6.80,0.38) rectangle (13.00,2.60);
-  \node[anchor=west,rotationsection,text=ucldark] at (7.18,2.22) {Endpoint-pair entry and exit};
-  \node[anchor=west,font=\fontsize{15}{16}\selectfont\bfseries,text=stable] at (7.22,1.48) {\MarginNewPairTotal};
-  \node[anchor=west,rotationlabel] at (9.54,1.48) {newly traded endpoint pairs};
-  \node[anchor=west,font=\fontsize{15}{16}\selectfont\bfseries,text=muted] at (7.22,0.76) {\MarginRetiredPairTotal};
-  \node[anchor=west,rotationlabel] at (9.54,0.76) {endpoint-pair exit};
-\fi
-\end{tikzpicture}%
-}
-% EVIDENCE-STATUS: supporting exact route-count decomposition
-% EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_contributions.parquet; output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex
-% VISUAL-FUNCTION: route-count rotation | complete midpoint decomposition | separate switching within continuing pairs from activity reallocation and pair entry
-\begin{frame}{New endpoint pairs deliver the largest positive component}
-\evidencekicker{Exact pooled decomposition, 2024 to 2026}
-\vspace{-0.06cm}
-\begin{center}
-\rotationdecomposition{3}
+\node[softbox,text width=3.05cm,minimum height=1.45cm,align=center] at (-4.35,1.55)
+{\small Same continuing ultimate pair\\[0.14cm]{\fontsize{24}{26}\selectfont\bfseries\color{accent}\PairPooledWithin}};
+\node[softbox,text width=3.05cm,minimum height=1.45cm,align=center] at (0,1.55)
+{\small Trading reallocation\\[0.14cm]{\fontsize{24}{26}\selectfont\bfseries\color{ucldark}\PairPooledReweight}};
+\node[softbox,text width=3.05cm,minimum height=1.45cm,align=center,fill=stable!9] at (4.35,1.55)
+{\small Ultimate pairs in one period\\[0.14cm]{\fontsize{24}{26}\selectfont\bfseries\color{stable}\PairPooledExclusive}};
+\draw[rule,line width=1pt] (-5.95,-0.05)--(5.95,-0.05);
+\node[font=\large\bfseries,text=ink] at (-2.10,-0.72) {Stablecoin share};
+\node[font=\fontsize{24}{26}\selectfont\bfseries,text=ucldark] at (0.50,-0.72) {\PairPooledBase};
+\draw[-{Stealth[length=7pt]},draw=stable,line width=1.7pt] (1.45,-0.72)--(2.45,-0.72);
+\node[font=\fontsize{24}{26}\selectfont\bfseries,text=stable] at (3.40,-0.72) {\PairPooledEnd};
+\end{tikzpicture}
 \end{center}
-\vspace{-0.12cm}
-{\large Pair entry contributes \MarginNewPairTotal{}; net switching inside continuing pairs contributes \MarginWithinTotal{}.\par}
-\decknote{Matched January--June periods in 2024 and 2026. The within-pair component combines \MarginWithinGrossUp{} toward stablecoins and \MarginWithinGrossDown{} toward native assets. The remaining continuing-pair-weight component is \PairPooledSupportMass{}. Components sum using unrounded values.}
+\vspace{0.02cm}
+{\large\bfseries\color{ucldark}The aggregate rises \PairPooledTotal; net switching inside continuing ultimate pairs is \PairPooledWithin.\par}
+\decknote{Exact two-atomic-trade native-or-stable vehicle routes on matched January--June dates. A further \PairPooledSupportMass{} comes from the changing weight of continuing versus period-specific ultimate pairs. Components use unrounded values and sum to the aggregate change.}
 \end{frame}
 
-% EVIDENCE-STATUS: exploratory descriptive local-depth result
-% EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl; output/exhibits/bridge_liquidity_dominance_support.jsonl; output/exhibits/bridge_liquidity_deck_values.tex
-% VISUAL-FUNCTION: local bridge depth | three large economic magnitudes | link endpoint-pair-specific capital to realised route choice
-\begin{frame}{Local bridge depth predicts route choice}
-\vspace{0.18cm}
+% EVIDENCE-SOURCES: output/exhibits/vehicle_formation_exploration.jsonl; output/tables/vehicle_formation_regressions.tex
+% EVIDENCE-STATUS: main predictive persistence result.
+% VISUAL-FUNCTION: persistence after ultimate-pair entry | three-horizon coefficient sequence | connect first vehicle use to later allocation
+\begin{frame}{The vehicle chosen at ultimate-pair entry predicts later use}
+\evidencekicker{Ultimate pairs with complete follow-up support}
+\vspace{0.15cm}
 \begin{columns}[T,totalwidth=0.92\textwidth]
-\begin{column}{0.27\textwidth}
-{\fontsize{23}{25}\selectfont\bfseries\color{ucldark}\BridgeLiquidityTopShare}\par\vspace{0.18cm}
-{\small route share captured by the deepest bridge}
+\begin{column}{0.25\textwidth}
+{\color{muted}\scriptsize INITIAL STABLECOIN SHARE\par}\vspace{0.08cm}
+{\fontsize{26}{28}\selectfont\bfseries\color{stable}+1 pp}\par
+{\small at ultimate-pair entry\par}
 \end{column}
-\hfill
-\begin{column}{0.27\textwidth}
-\begin{tabular}{@{}r@{\hspace{0.16cm}}l@{}}
-{\scriptsize 2024} & {\fontsize{18}{20}\selectfont\bfseries\color{ucldark}\BridgeLiquidityTopShareBase} \\[0.13cm]
-{\scriptsize 2026} & {\fontsize{18}{20}\selectfont\bfseries\color{ucldark}\BridgeLiquidityTopShareEnd}
-\end{tabular}
-\par\vspace{0.16cm}
-{\small deepest-bridge share}
+\begin{column}{0.06\textwidth}
+\centering\vspace{0.50cm}{\Large$\Longrightarrow$}
 \end{column}
-\hfill
-\begin{column}{0.27\textwidth}
-{\fontsize{23}{25}\selectfont\bfseries\color{stable}\BridgeLiquidityHorseRaceDepthCoef}\par\vspace{0.18cm}
-{\small per log point of weaker-leg deposited capital}
+\begin{column}{0.25\textwidth}
+{\color{muted}\scriptsize NEXT 30 DAYS\par}\vspace{0.08cm}
+{\fontsize{26}{28}\selectfont\bfseries\color{ucldark}\FormationPathEntryShareThirtyCoef}\par
+{\small stablecoin share\par}
+\end{column}
+\begin{column}{0.06\textwidth}
+\centering\vspace{0.50cm}{\Large$\Longrightarrow$}
+\end{column}
+\begin{column}{0.25\textwidth}
+{\color{muted}\scriptsize NEXT 120 DAYS\par}\vspace{0.08cm}
+{\fontsize{26}{28}\selectfont\bfseries\color{ucldark}\FormationPathEntryShareOneTwentyCoef}\par
+{\small stablecoin share\par}
 \end{column}
 \end{columns}
 \vspace{0.72cm}
-{\large The weaker atomic leg carries the economically relevant depth constraint.\par}
-\decknote{The analysis compares five vehicle assets within locally supported endpoint-date-route-scope sets. Depth is \(\log(1+\text{prior deposited capital in USD})\) on the weaker atomic leg; the regression also controls for vehicle reach.}
+{\large The first vehicle becomes a durable focal point for the new trading relationship.\par}
+\decknote{\FormationPathDependenceRows{} non-WETH ultimate-pair--route-scope observations. Regressions control for entry size, cohort year, endpoint class, direct-route share, and route complexity. Standard errors are clustered by entry date. Initial vehicle use is observed, not randomly assigned.}
 \end{frame}
 
-% EVIDENCE-STATUS: exploratory descriptive continuous-depth result
-% EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl; output/exhibits/bridge_liquidity_dominance_support.jsonl; output/exhibits/bridge_liquidity_deck_values.tex
-% VISUAL-FUNCTION: stable-bridge contestability | three relative-depth thresholds plus contextual slope | separate route-set availability from penetration
-\begin{frame}{Stablecoin penetration rises with relative bridge depth}
-\evidencekicker{First 30 days after stable-bridge availability}
-\vspace{0.02cm}
+% EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl
+% EVIDENCE-STATUS: main descriptive depth association.
+% VISUAL-FUNCTION: bridge depth and route use | ordered depth cards | show how a technically available route becomes competitive
+\begin{frame}{A shallow stablecoin bridge attracts little route flow}
+\evidencekicker{First 30 days after persistent stablecoin support}
+\vspace{0.05cm}
 \begin{center}
 \begin{tikzpicture}[x=1cm,y=1cm]
-\node[softbox,text width=3.15cm,minimum height=1.62cm,align=center] (thin) at (-4.20,1.45) {\small Below $0.1\times$ WETH depth\\[0.13cm]{\fontsize{23}{24}\selectfont\bfseries\color{muted}\BridgeDepthThinFirstShare}};
-\node[softbox,text width=3.15cm,minimum height=1.62cm,align=center,fill=stable!7] (equal) at (0,1.45) {\small At least WETH depth\\[0.13cm]{\fontsize{23}{24}\selectfont\bfseries\color{stable}\BridgeDepthEqualFirstShare}};
-\node[softbox,text width=3.15cm,minimum height=1.62cm,align=center,fill=stable!12] (double) at (4.20,1.45) {\small At least $2\times$ WETH depth\\[0.13cm]{\fontsize{23}{24}\selectfont\bfseries\color{stable}\BridgeDepthDoubleFirstShare}};
+\node[softbox,text width=3.25cm,minimum height=1.70cm,align=center] (thin) at (-4.25,1.35)
+{\small Below $0.1\times$ WETH depth\\[0.14cm]{\fontsize{24}{26}\selectfont\bfseries\color{muted}\BridgeDepthThinFirstShare}};
+\node[softbox,text width=3.25cm,minimum height=1.70cm,align=center,fill=stable!7] (equal) at (0,1.35)
+{\small At least WETH depth\\[0.14cm]{\fontsize{24}{26}\selectfont\bfseries\color{stable}\BridgeDepthEqualFirstShare}};
+\node[softbox,text width=3.25cm,minimum height=1.70cm,align=center,fill=stable!12] (double) at (4.25,1.35)
+{\small At least $2\times$ WETH depth\\[0.14cm]{\fontsize{24}{26}\selectfont\bfseries\color{stable}\BridgeDepthDoubleFirstShare}};
 \draw[-{Stealth[length=7pt]},line width=1.6pt,draw=stable] (thin)--(equal);
 \draw[-{Stealth[length=7pt]},line width=1.6pt,draw=stable] (equal)--(double);
 \end{tikzpicture}
 \end{center}
-\vspace{0.25cm}
-{\large\bfseries First-month use of the supported stablecoin: \BridgeTimingShallowMonthShare{} below $0.1\times$ WETH depth, \BridgeTimingCompetitiveMonthShare{} at or above it.\par}
-\decknote{The route-share cards use \BridgeDepthDoseFirstRows{} endpoint-pair days across \BridgeDepthDoseFirstEvents{} events. Adoption gives equal weight to \BridgeTimingComparableEvents{} events with positive stable and WETH depth and matches support, depth, and first use to the same stablecoin set. The adjusted gap is \BridgeTimingControlledDiff{} (SE \BridgeTimingControlledSE{}); with two non-stablecoin endpoints, it is \BridgeTimingNoStableEndpointDiff{} (SE \BridgeTimingNoStableEndpointSE{}). Capital and demand are jointly determined.}
+\vspace{0.28cm}
+{\large\bfseries First-month use rises from \BridgeTimingShallowMonthShare{} below $0.1\times$ WETH depth to \BridgeTimingCompetitiveMonthShare{} above it.\par}
+\decknote{Depth is prior-calendar deposited capital on the weaker atomic pair. The route-share comparison uses \BridgeDepthDoseFirstRows{} ultimate-pair days across \BridgeDepthDoseFirstEvents{} bridge events. Support, depth, and first use refer to the same stablecoin set. Capital and route demand are jointly determined.}
 \end{frame}
 
-% EVIDENCE-STATUS: exploratory descriptive adoption-capital path
-% EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl; output/figures/experiments/bridge_adoption_capital_path.pdf; output/exhibits/bridge_liquidity_deck_values.tex
-% VISUAL-FUNCTION: capital timing | indexed event path plus three magnitudes | distinguish capital present before use from capital that follows route demand
-\begin{frame}{Bridge capital builds before use}
+% EVIDENCE-SOURCES: output/figures/experiments/bridge_adoption_capital_path.pdf
+% EVIDENCE-STATUS: main event-time capital path among eventual users.
+% VISUAL-FUNCTION: capital before first use | event-time line chart and two estimates | establish that bridge depth rises before observed routing
+\begin{frame}{Bridge capital builds before first use}
 \evidencekicker{Supported stablecoin first used at day zero}
-\vspace{0.03cm}
-\begin{columns}[T,totalwidth=0.95\textwidth]
-\begin{column}{0.64\textwidth}
-\includegraphics[width=\textwidth,height=0.64\textheight,keepaspectratio]{../output/figures/experiments/bridge_adoption_capital_path.pdf}
-\end{column}
-\hfill
-\begin{column}{0.28\textwidth}
-{\fontsize{22}{24}\selectfont\bfseries\color{stable}\BridgeAdoptionCapitalPreCoef}\par
-{\small stablecoin bridge\\day -7 to 0\par}
-\vspace{0.28cm}
-{\fontsize{22}{24}\selectfont\bfseries\color{ucldark}\BridgeAdoptionCapitalMatchedPreCoef}\par
-{\small pre-route change\\relative to WETH\par}
-\vspace{0.28cm}
-{\fontsize{22}{24}\selectfont\bfseries\color{muted}\BridgeAdoptionCapitalPostCoef}\par
-{\small stablecoin bridge\\day 0 to +7\par}
-\end{column}
-\end{columns}
-\vspace{0.05cm}
-{\large Route-specific capital accumulates before use, then partially recedes.\par}
-\decknote{Equal-event path for \BridgeAdoptionCapitalEvents{} events whose supported stablecoin is first used 7 to 119 days after persistent support. Capital is prior-calendar V2-family deposited capital on the weaker leg; shading gives 95\% confidence intervals clustered by ordered endpoint pair and adoption date. The sample conditions on eventual use and does not identify provider intent.}
-\end{frame}
-
-% EVIDENCE-STATUS: exploratory descriptive pool-margin decomposition
-% EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl; output/tables/bridge_adoption_pool_margins.tex; output/exhibits/bridge_liquidity_deck_values.tex
-% VISUAL-FUNCTION: pre-use pool margins | three economic magnitudes | separate pool activation from scaling inside continuing pools
-\begin{frame}{Most first-use capital sits in pools already active}
-\evidencekicker{Supported stablecoin, day -7 to first use; matched WETH benchmark}
-\vspace{0.22cm}
-\begin{columns}[T,totalwidth=0.94\textwidth]
-\begin{column}{0.29\textwidth}
-{\fontsize{25}{27}\selectfont\bfseries\color{stable}\BridgePoolMarginContinuingCapitalShare}\par\vspace{0.14cm}
-{\small of first-use-day capital lies in pools active one week earlier\par}
-\end{column}
-\hfill
-\begin{column}{0.29\textwidth}
-{\fontsize{25}{27}\selectfont\bfseries\color{ucldark}\BridgePoolMarginContinuingDifference}\par\vspace{0.14cm}
-{\small continuing-pool capital growth relative to WETH [log points]\par}
-\end{column}
-\hfill
-\begin{column}{0.29\textwidth}
-{\fontsize{25}{27}\selectfont\bfseries\color{stable}\BridgePoolMarginNewPoolDifference}\par\vspace{0.14cm}
-{\small higher chance of a newly active pool relative to WETH\par}
-\end{column}
-\end{columns}
-\vspace{0.78cm}
-{\large Continuing pools hold most capital; pool activation also rises before adoption.\par}
-\decknote{Equal-event estimates for \BridgePoolMarginEvents{} first-use events. A newly active pool has positive prior-calendar deposited capital on day zero and none on day -7; continuing pools are positive on both dates. Difference-column inference is two-way clustered by ordered endpoint pair and adoption date, with Holm adjustment across four pool-composition outcomes. Deposited-capital stocks do not identify provider cash flow or intent.}
-\end{frame}
-
-% EVIDENCE-STATUS: exploratory predictive V4 mechanism result
-% EVIDENCE-SOURCES: output/exhibits/v4_lp_origin_timing.jsonl; output/exhibits/v4_lp_origin_timing_deck_values.tex; output/exhibits/v4_lp_volatility_state.jsonl; output/exhibits/v4_lp_volatility_state_deck_values.tex; output/exhibits/v3_v4_internal_routing_participation.jsonl
-% VISUAL-FUNCTION: V4 flash accounting and participation timing | timed response plus persistent-volatility interaction | distinguish incumbent activity from later first-active origins
-\begin{frame}{V4 internal routing forecasts later entry in volatile markets}
-\evidencekicker{10 pp more internal same-asset routing}
-\vspace{0.22cm}
-\begin{columns}[T,totalwidth=0.94\textwidth]
-\begin{column}{0.29\textwidth}
-{\color{muted}\scriptsize DAYS 1 TO 30\par}\vspace{0.08cm}
-{\fontsize{23}{25}\selectfont\bfseries\color{stable}\VFourOriginNearIncumbentCoef}\par\vspace{0.12cm}
-{\small actions by 180-day incumbent origins [log points]\par}
-{\scriptsize s.e. \VFourOriginNearIncumbentSE}
-\end{column}
-\hfill
-\begin{column}{0.29\textwidth}
-{\color{muted}\scriptsize DAYS 31 TO 120\par}\vspace{0.08cm}
-{\fontsize{23}{25}\selectfont\bfseries\color{stable}\VFourOriginLateEntryCoef}\par\vspace{0.12cm}
-{\small origins first active after measurement [log points]\par}
-{\scriptsize s.e. \VFourOriginLateEntrySE}
-\end{column}
-\hfill
-\begin{column}{0.29\textwidth}
-{\color{muted}\scriptsize PERSISTENT VOLATILITY\par}\vspace{0.08cm}
-{\fontsize{23}{25}\selectfont\bfseries\color{stable}\VFourVolStateLateInteractionCoef}\par\vspace{0.12cm}
-{\small additional first-active-origin response per 1 SD of 30-day WETH volatility [log points]\par}
-{\scriptsize s.e. \VFourVolStateLateInteractionSE}
-\end{column}
-\end{columns}
-\vspace{0.50cm}
-{\large Incumbents act within a month; first-active origins follow, especially when volatility stays high.\par}
-\decknote{\VFourVolStateRows{} V4 vehicle-days and \VFourVolStateClusters{} date clusters; zero-liquidity updates excluded; 180 prior days required. Volatility is the lagged 30-day mean of realised WETH volatility. Vehicle and date effects; origin-day controls; vehicle and control volatility slopes; date-clustered standard errors. The interaction uses Holm adjustment across two outcomes. A same-vehicle-date V3 comparison does not distinguish the mature-calendar level or volatility slope. Origins proxy for account participation, not LP-position ownership. Predictive associations.}
-\end{frame}
-
-% EVIDENCE-STATUS: supporting exact pre-transaction price comparison
-% EVIDENCE-SOURCES: output/exhibits/exact_vehicle_frontier_monthly.jsonl; output/exhibits/exact_vehicle_frontier_monthly_support.jsonl; output/exhibits/exact_vehicle_frontier_values.tex
-% VISUAL-FUNCTION: nested exact-price frontier | three widening opportunity sets | separate venue choice from vehicle identity
-\begin{frame}{Vehicle identity survives broader price competition}
-\evidencekicker{Same input and pre-transaction state}
 \vspace{0.02cm}
-{\small Share of routes with more than \ExactFrontierGainThreshold{} higher gross output\par}
-\vspace{0.10cm}
-\begin{columns}[T,totalwidth=0.94\textwidth]
-\begin{column}{0.29\textwidth}
-\begin{beamercolorbox}[rounded=true,sep=0.28cm,wd=\textwidth]{block body}
-{\color{muted}\scriptsize SAME VEHICLE, USED VENUES\par}\vspace{0.10cm}
-{\fontsize{25}{27}\selectfont\bfseries\color{ucldark}\ExactFrontierWithinShare\par}\vspace{0.08cm}
-\end{beamercolorbox}
+\begin{columns}[T,totalwidth=0.95\textwidth]
+\begin{column}{0.66\textwidth}
+\includegraphics[width=\textwidth,height=0.65\textheight,keepaspectratio]{../output/figures/experiments/bridge_adoption_capital_path.pdf}
 \end{column}
 \hfill
-\begin{column}{0.29\textwidth}
-\begin{beamercolorbox}[rounded=true,sep=0.28cm,wd=\textwidth]{block body}
-{\color{muted}\scriptsize SAME VEHICLE, ALL EXACT VENUES\par}\vspace{0.10cm}
-{\fontsize{25}{27}\selectfont\bfseries\color{stable}\ExactFrontierSameVehicleShare\par}\vspace{0.08cm}
-\end{beamercolorbox}
-\end{column}
-\hfill
-\begin{column}{0.29\textwidth}
-\begin{beamercolorbox}[rounded=true,sep=0.28cm,wd=\textwidth]{block body}
-{\color{muted}\scriptsize ANY NAMED VEHICLE OR DIRECT\par}\vspace{0.10cm}
-{\fontsize{25}{27}\selectfont\bfseries\color{stable}\ExactFrontierAllPathShare\par}\vspace{0.08cm}
-\end{beamercolorbox}
+\begin{column}{0.26\textwidth}
+{\fontsize{23}{25}\selectfont\bfseries\color{stable}\BridgeAdoptionCapitalPreCoef}\par
+{\small stablecoin bridge, day -7 to 0\par}
+\vspace{0.38cm}
+{\fontsize{23}{25}\selectfont\bfseries\color{ucldark}\BridgeAdoptionCapitalMatchedPreCoef}\par
+{\small relative to the matched WETH bridge\par}
 \end{column}
 \end{columns}
-\vspace{0.30cm}
-\begin{columns}[T,totalwidth=0.92\textwidth]
-\begin{column}{0.44\textwidth}
-{\fontsize{22}{24}\selectfont\bfseries\color{ucldark}\ExactFrontierVehicleAddition\par}
-{\small additional incidence after opening the vehicle set and direct path\par}
-\end{column}
-\hfill
-\begin{column}{0.44\textwidth}
-{\fontsize{22}{24}\selectfont\bfseries\color{stable}\ExactFrontierStableChange\par}
-{\small change in stablecoin vehicle share, s.e. \ExactFrontierStableChangeSE\par}
-\end{column}
-\end{columns}
-\decknote{\ExactFrontierRoutes{} common-support routes on \ExactFrontierDates{} monthly dates. Exact Uniswap V2, SushiSwap V2, and Uniswap V3 states; coherent values; at least \ExactFrontierMinimumInput{} input; \ExactFrontierImpactLimit{} own-price-impact limit. Improvements are gross of gas. The median gain among improved routes is \ExactFrontierMedianGain{}. Late-sample venue coverage declines as other exchanges expand.}
+\vspace{0.02cm}
+{\large Capital on the weaker atomic pair rises before the route appears.\par}
+\decknote{Equal-event path for \BridgeAdoptionCapitalEvents{} ultimate-pair events whose supported stablecoin is first used 7 to 119 days after persistent support. Capital is lagged one calendar day; shading gives 95\% confidence intervals clustered by ultimate pair and adoption date. The sample conditions on eventual use.}
 \end{frame}
 
-% RETIRED CORE CAPITAL-PREDICTION FRAME. The pre-specified 30-day estimate has
-% Holm-adjusted q=0.17, while the 120-day estimate is a sensitivity result. The
-% generated evidence remains available for the paper and Q&A, but combining the
-% two as a strengthening pattern would overstate the inference.
-
-% RETIRED CORE NULL FRAME: "Vehicle use barely changes subsequent capital."
-% Its generated bindings remain available for appendix/Q&A use:
-% \LiqPredCapRouteDayCoef, \LiqPredRouteCapDayCoef, and \LiqPredRouteCapMonthCoef.
+% EVIDENCE-SOURCES: output/exhibits/exact_vehicle_frontier_monthly.jsonl
+% EVIDENCE-STATUS: main exact pre-transaction price comparison.
+% VISUAL-FUNCTION: venue and vehicle price competition | nested opportunity-set cards | separate venue improvement from vehicle replacement
+\begin{frame}{Price competition usually changes the venue}
+\evidencekicker{Same input and pre-transaction state}
+\vspace{0.08cm}
+\begin{columns}[T,totalwidth=0.92\textwidth]
+\begin{column}{0.29\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.30cm,wd=\textwidth]{block body}
+{\color{muted}\scriptsize USED VENUES\par}\vspace{0.10cm}
+{\fontsize{25}{27}\selectfont\bfseries\color{ucldark}\ExactFrontierWithinShare\par}
+{\small better same-vehicle quote}
+\end{beamercolorbox}
+\end{column}
+\hfill
+\begin{column}{0.29\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.30cm,wd=\textwidth]{block body}
+{\color{muted}\scriptsize ALL EXACT VENUES\par}\vspace{0.10cm}
+{\fontsize{25}{27}\selectfont\bfseries\color{stable}\ExactFrontierSameVehicleShare\par}
+{\small better same-vehicle quote}
+\end{beamercolorbox}
+\end{column}
+\hfill
+\begin{column}{0.29\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.30cm,wd=\textwidth]{block body}
+{\color{muted}\scriptsize ALL VEHICLES + DIRECT\par}\vspace{0.10cm}
+{\fontsize{25}{27}\selectfont\bfseries\color{stable}\ExactFrontierAllPathShare\par}
+{\small better route}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\vspace{0.44cm}
+\begin{columns}[T,totalwidth=0.90\textwidth]
+\begin{column}{0.42\textwidth}
+{\fontsize{23}{25}\selectfont\bfseries\color{ucldark}\ExactFrontierVehicleAddition}\par
+{\small added by opening vehicle identity and the direct path\par}
+\end{column}
+\hfill
+\begin{column}{0.42\textwidth}
+{\fontsize{23}{25}\selectfont\bfseries\color{stable}\ExactFrontierStableChange}\par
+{\small change in stablecoin vehicle share\par}
+\end{column}
+\end{columns}
+\decknote{\ExactFrontierRoutes{} common-support routes on \ExactFrontierDates{} monthly dates. Exact Uniswap v2, SushiSwap v2, and Uniswap v3 states; at least \ExactFrontierMinimumInput{} input; \ExactFrontierImpactLimit{} own-price-impact limit. The median gain among improved routes is \ExactFrontierMedianGain{}. Improvements are gross of gas.}
+\end{frame}

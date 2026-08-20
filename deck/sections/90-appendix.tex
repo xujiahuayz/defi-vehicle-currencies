@@ -3,36 +3,43 @@
 
 % VISUAL-FUNCTION: appendix coverage | categorized navigation map | route audience questions to defensible evidence
 \begin{frame}{Appendix map}
-\begin{columns}[T]
-\begin{column}{0.47\textwidth}
+\footnotesize
+\begin{columns}[T,totalwidth=0.96\textwidth]
+\begin{column}{0.30\textwidth}
 \textbf{Definitions and data}
-\begin{itemize}
-\item A1 Route units and vehicle status
-\item A2 Asset types and backing regimes
-\item A3 Sample construction and exclusions
-\end{itemize}
-\vspace{0.45cm}
+\par\vspace{0.10cm}
+A1 Route units and vehicle status\par
+A2 Asset types and backing regimes\par
+A3 Sample construction and exclusions\par
+\vspace{0.24cm}
 \textbf{Reconstruction and validation}
-\begin{itemize}
-\item A4 Exact transaction state
-\item A5 Protocol-specific state
-\item A6 Forced routes in V1
-\end{itemize}
+\par\vspace{0.10cm}
+A4 Exact transaction state\par
+A5 Protocol-specific state\par
+A6 Forced routes in V1\par
 \end{column}
-\begin{column}{0.47\textwidth}
+\begin{column}{0.30\textwidth}
 \textbf{Robustness}
-\begin{itemize}
-\item A7 Timing and venue-scope robustness
-\item A8 Count and value weighting
-\item A9 Observed route endpoints
-\end{itemize}
-\vspace{0.45cm}
-\textbf{Mechanisms}
-\begin{itemize}
-\item A10 Capital, inventory, and depth
-\item A11 Coordination and integration
-\item A12--A13 References
-\end{itemize}
+\par\vspace{0.10cm}
+A7 Timing and venue scope\par
+A8 Count and value weighting\par
+A9 Observed route endpoints\par
+\vspace{0.24cm}
+\textbf{Market structure}
+\par\vspace{0.10cm}
+A10 Capital, inventory, and depth\par
+A11 Coordination and integration\par
+A12--A13 References\par
+\end{column}
+\begin{column}{0.30\textwidth}
+\textbf{Further results}
+\par\vspace{0.10cm}
+A14 Graph position and realised use\par
+A15 Endpoint demand\par
+A16--A17 Ultimate-pair composition\par
+A18 Local and network depth\par
+A19 Pool activation and growth\par
+A20 V4 participation\par
 \end{column}
 \end{columns}
 \end{frame}
@@ -41,7 +48,7 @@
 % EVIDENCE-SOURCES: output/exhibits/route_replay.json; data/unified/20260110.parquet; https://eth.blockscout.com/tx/0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9?tab=token_transfers (retrieved 2026-08-14)
 % EVIDENCE-CASE: transaction 0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9, component 0.
 % LITERATURE-PRECEDENT: Lehar and Parlour (2025), Appendix B, pairs one named explorer transaction with decoded logs before handing off to the population reconstruction.
-% VISUAL-FUNCTION: source-versus-pool-route handoff | authentic explorer screenshot plus settlement trace | separate the user's PYUSD instruction from the USDC-funded pool component
+% VISUAL-FUNCTION: source-versus-pool-route handoff | authentic explorer image plus settlement trace | separate the user's PYUSD instruction from the USDC-funded pool component
 \begin{frame}{Pool data may start after the user instruction}
 \evidencekicker{User instruction recorded by the explorer}
 \vspace{0.02cm}
@@ -146,7 +153,7 @@
 \centering
 \resizebox{0.92\textwidth}{!}{\input{assets/sample-measurement-funnel.tex}}\par
 \vspace{0.05cm}
-{\fontsize{8.0}{8.8}\selectfont Token pairs inside multi-asset pools can supply route legs. V1/V2 architecture evidence is separate; dollar support changes value weighting.\par}
+{\fontsize{8.0}{8.8}\selectfont Atomic token pairs inside multi-asset pools can supply route legs. V1/V2 architecture evidence is separate; dollar support changes value weighting.\par}
 \end{frame}
 
 % VISUAL-FUNCTION: causal event ordering | numbered replay sequence | explain same-state counterfactual timing
@@ -224,7 +231,7 @@ V4 singleton
 % literature/text/2021-AdamsZinsmeisterRobinson2021UniswapV3-whitepaper-uniswap-v3-core.txt;
 % https://app.uniswap.org/whitepaper-v4.pdf, Adams et al. (2024), Sections 1 and 3;
 % docs/research/design.md.
-% SCIENTIFIC-BOUNDARY: protocol rules change pair availability, pair-specific active liquidity, or the accounting boundary. The slide reports no adoption, liquidity, routing, or causal estimate.
+% SCIENTIFIC-BOUNDARY: protocol rules change atomic-pair availability, atomic-pair-specific active liquidity, or the accounting boundary. The slide reports no adoption, liquidity, routing, or causal estimate.
 % VISUAL-FUNCTION: architecture-to-economic-object map | three protocol-mechanism panels | show how V1--V4 alter the opportunity set without treating calendar version as an estimated effect
 \begin{frame}{A5.1. Pool formation determines available paths}
 \vspace{-0.08cm}
@@ -330,7 +337,7 @@ V4 singleton
 % EVIDENCE-SOURCES: output/exhibits/v1_route_case.json;
 % output/exhibits/v1_route_case_deck_values.tex; docs/findings/v1-forced-vehicle.md;
 % https://eth.blockscout.com/tx/0x4dca160d762184835f34925a8cc556d7283a7642c88d1bef3382a73596a0ca16?tab=token_transfers (retrieved 2026-08-15)
-% EVIDENCE-GENERATION: scripts/process/build_v1_route_case.py; largest routed ETH among the exact-leg mandate-era candidates
+% EVIDENCE-GENERATION: scripts/process/build_v1_route_case.py; largest routed ETH among the exact-leg mandate-era routes
 % Token labels MKR and DAI: the V1 subgraph rows identify exchange contracts only
 % (\VOneCaseSellExchange{} sells the token, \VOneCaseBuyExchange{} buys); the token
 % identities are verified against the public transfer record cited above.

@@ -100,6 +100,7 @@ def empty_day(day: str) -> dict[str, object]:
     }
     for asset_type in TYPES:
         out[f"cnt_{asset_type}"] = 0
+        out[f"route_cnt_{asset_type}"] = 0
         for support in VALUE_SUPPORT_SCOPES:
             out[value_field(asset_type, support=support)] = 0.0
         for scope in INTEGRATION_SCOPES:
@@ -148,9 +149,15 @@ def one_day(path: Path) -> dict[str, object]:
         routes[["tx_hash", "component_id"]].drop_duplicates().shape[0]
     )
     out["episodes"] = int(len(routes))
+    route_type_presence = routes[
+        ["tx_hash", "component_id", "asset_type"]
+    ].drop_duplicates()
     for asset_type in TYPES:
         selected = routes[routes["asset_type"].eq(asset_type)]
         out[f"cnt_{asset_type}"] = int(len(selected))
+        out[f"route_cnt_{asset_type}"] = int(
+            route_type_presence["asset_type"].eq(asset_type).sum()
+        )
         for support in VALUE_SUPPORT_SCOPES:
             supported = selected if support == "all_routes" else selected[selected[support]]
             out[value_field(asset_type, support=support)] = float(supported["usd"].sum())
@@ -208,7 +215,14 @@ def one_day(path: Path) -> dict[str, object]:
 def annual_composition(panel: pd.DataFrame) -> pd.DataFrame:
     data = panel.copy()
     data["year"] = pd.to_datetime(data["date"]).dt.year
-    columns = [column for column in data.columns if column.startswith("cnt_") or column.startswith("usd_")]
+    columns = [
+        column
+        for column in data.columns
+        if column.startswith("cnt_")
+        or column.startswith("route_cnt_")
+        or column.startswith("usd_")
+    ]
+    columns.append("routes_intermediated")
     annual = data.groupby("year", as_index=False)[columns].sum()
     rows: list[dict[str, object]] = []
     for observed in annual.itertuples(index=False):
@@ -227,6 +241,16 @@ def annual_composition(panel: pd.DataFrame) -> pd.DataFrame:
                     "episodes": int(count),
                     "episode_share": count / count_total if count_total else None,
                 }
+                if scope == "all":
+                    route_count = float(
+                        getattr(observed, f"route_cnt_{asset_type}")
+                    )
+                    row["route_count"] = int(route_count)
+                    row["route_participation_share"] = (
+                        route_count / float(getattr(observed, "routes_intermediated"))
+                        if getattr(observed, "routes_intermediated")
+                        else None
+                    )
                 for support in VALUE_SUPPORT_SCOPES:
                     value_columns = {
                         candidate: value_field(candidate, scope=scope, support=support)
@@ -673,7 +697,7 @@ def main() -> int:
     args = parser.parse_args()
     workers = bounded_workers(args.workers)
 
-    route_release = route_dataset(ROUTE_COLUMNS)
+    route_release = route_dataset(ROUTE_COLUMNS, nonempty=False)
     days = list(route_release.paths)
     if args.limit:
         days = days[: args.limit]
@@ -704,6 +728,10 @@ def main() -> int:
     for asset_type in TYPES:
         panel[f"share_{asset_type}"] = panel[f"cnt_{asset_type}"] / panel["episodes"].where(
             panel["episodes"].gt(0)
+        )
+        panel[f"route_participation_share_{asset_type}"] = (
+            panel[f"route_cnt_{asset_type}"]
+            / panel["routes_intermediated"].where(panel["routes_intermediated"].gt(0))
         )
     if args.limit is not None:
         print(

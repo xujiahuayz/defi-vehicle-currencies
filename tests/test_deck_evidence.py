@@ -298,16 +298,19 @@ def test_deck_states_units_scopes_and_primary_protocol_sources() -> None:
     appendix = (ROOT / "deck" / "sections" / "90-appendix.tex").read_text(
         encoding="utf-8"
     )
+    secondary = (ROOT / "deck" / "sections" / "91-secondary-results.tex").read_text(
+        encoding="utf-8"
+    )
     decomposition = (
         ROOT / "deck" / "assets" / "vehicle-transition-pair-decomposition.tex"
     ).read_text(encoding="utf-8")
 
-    assert "Routed value requires agreement among source" in results
-    assert "descriptive within-day associations" in results
-    assert "native-WETH-versus-stablecoin routes" in results
-    assert "common month-days" in results
+    assert "Routed value requires source, intermediary, and destination values to agree" in results
+    assert "Endpoint demand and intermediary use move together" in secondary
+    assert "native-WETH-versus-stablecoin routes" in secondary
+    assert "common month-days" in secondary
     assert "Matched markets" not in decomposition
-    assert "Within-endpoint-pair change" in decomposition
+    assert "Within-ultimate-pair change" in decomposition
 
     visible_identification = strip_latex_comments(identification)
     assert "\\RoutePanelRawSwaps" in visible_identification
@@ -337,6 +340,9 @@ def test_deck_mechanism_sequence_separates_route_settlement_and_capital() -> Non
     design = (ROOT / "deck" / "sections" / "03-design.tex").read_text(
         encoding="utf-8"
     )
+    secondary = (ROOT / "deck" / "sections" / "91-secondary-results.tex").read_text(
+        encoding="utf-8"
+    )
     liquidity_asset = (
         ROOT / "deck" / "assets" / "liquidity-quantity-cross-section.tex"
     ).read_text(encoding="utf-8")
@@ -344,34 +350,33 @@ def test_deck_mechanism_sequence_separates_route_settlement_and_capital() -> Non
     visible_results = strip_latex_comments(results)
     assert "Higher capital predicts lower vehicle use at longer horizons" not in visible_results
     assert "Vehicle use barely changes subsequent capital" not in visible_results
-    assert "RETIRED CORE CAPITAL-PREDICTION FRAME" in results
-    assert "Holm-adjusted q=0.17" in results
-    assert "120-day estimate is a sensitivity result" in results
     assert "Deposited capital at" not in visible_results
     assert "\\LiqPredCapRouteDayCoef" not in visible_results
     assert "\\LiqPredRouteCapDayCoef" not in visible_results
     assert "\\LiqPredLongCapRouteCoef" not in visible_results
-    assert "\\BridgeLiquidityHorseRaceDepthCoef" in visible_results
-    assert "per log point of weaker-leg deposited capital" in visible_results
-    assert "candidate-day" not in visible_results
-    assert "exact 1-, 7-, 30-, and 120-day horizons" not in visible_results
+    visible_secondary = strip_latex_comments(secondary)
+    assert "\\BridgeLiquidityHorseRaceDepthCoef" in visible_secondary
+    assert "per log point of weak-leg capital" in visible_secondary
+    assert "candidate-day" not in visible_secondary
 
     assert "inventory: exact token holdings" in liquidity_asset
     assert "deposited capital: independently valued holdings" in liquidity_asset
     assert "executable depth: quantity available" in liquidity_asset
     assert "quote quality" in liquidity_asset
 
-    assert "V4 can net settlement without removing the vehicle route" not in results
-    assert "https://app.uniswap.org/whitepaper-v4.pdf" in identification
-    assert "calendar date alone is not treatment" in identification
+    appendix = (ROOT / "deck" / "sections" / "90-appendix.tex").read_text(
+        encoding="utf-8"
+    )
+    assert "https://app.uniswap.org/whitepaper-v4.pdf" in appendix
     assert "V4: shared accounting" in design
     assert "one PoolManager" in design
     assert "the singleton changes the settlement boundary" in design
-    assert ".mp4" not in results
+    assert "vehicle_dominance_timelapse.mp4" in results
+    assert "vehicle_dominance_timelapse_poster.pdf" in results
 
 
 def test_deck_separates_weth_eligibility_from_value_composition() -> None:
-    results = (ROOT / "deck" / "sections" / "04-results.tex").read_text(
+    secondary = (ROOT / "deck" / "sections" / "91-secondary-results.tex").read_text(
         encoding="utf-8"
     )
     asset = (
@@ -381,38 +386,36 @@ def test_deck_separates_weth_eligibility_from_value_composition() -> None:
         ROOT / "deck" / "assets" / "non-weth-value-composition.tex"
     ).read_text(encoding="utf-8")
 
-    title = "WETH-linked endpoint pairs carry the count rotation"
-    assert title in results
-    assert "output/exhibits/route_methodology_heterogeneity.jsonl" in results
-    assert "grouped-binomial" not in results
-    assert "Challenger cost advantage predicts subsequent vehicle share" not in results
-    assert "Trading shifts toward stablecoin-heavy endpoint pairs" in results
-    assert "stablecoin-heavy corridors" not in results
+    title = "A16. Ultimate-pair composition contains a mechanical component"
+    assert title in secondary
+    assert "output/exhibits/route_methodology_heterogeneity.jsonl" in secondary
+    assert "grouped-binomial" not in secondary
+    assert "endpoint pairs" not in secondary.lower()
+    assert "corridors" not in secondary.lower()
 
-    frame_start = results.index(rf"\begin{{frame}}{{{title}}}")
-    frame_end = results.index(r"\end{frame}", frame_start)
-    rendered_frame = results[frame_start:frame_end]
+    frame_start = secondary.index(rf"\begin{{frame}}{{{title}}}")
+    frame_end = secondary.index(r"\end{frame}", frame_start)
+    rendered_frame = secondary[frame_start:frame_end]
     assert "provisional" not in rendered_frame.lower()
 
     assert r"Eligible intermediaries:\\stablecoins" in asset
-    assert "All matched endpoint pairs" in asset
-    assert r"Endpoint pairs without\\WETH endpoints" in asset
+    assert "All matched ultimate pairs" in asset
+    assert r"Ultimate pairs without\\WETH endpoints" in asset
     assert "cells" not in asset.lower()
     assert r"\WethCountFullChange" in asset
     assert r"\WethCountNoEndpointChange" in asset
-    assert "The daily midpoint identity is exact" in results
     assert r"\WethValueNoEndpointChange" in value_asset
     assert r"\WethValueActivityChange" in value_asset
     assert r"\WethValueWithinChange" in value_asset
 
 
 def test_weth_frame_evidence_boundary_does_not_drift() -> None:
-    results = (ROOT / "deck" / "sections" / "04-results.tex").read_text(
+    secondary = (ROOT / "deck" / "sections" / "91-secondary-results.tex").read_text(
         encoding="utf-8"
     )
-    title = "WETH-linked endpoint pairs carry the count rotation"
-    frame_start = results.index(rf"\begin{{frame}}{{{title}}}")
-    metadata = results[results.rfind("% EVIDENCE-STATUS:", 0, frame_start):frame_start]
+    title = "A16. Ultimate-pair composition contains a mechanical component"
+    frame_start = secondary.index(rf"\begin{{frame}}{{{title}}}")
+    metadata = secondary[secondary.rfind("% EVIDENCE-STATUS:", 0, frame_start):frame_start]
 
     status = re.search(r"^% EVIDENCE-STATUS: (.+)$", metadata, flags=re.MULTILINE)
     sources = re.search(r"^% EVIDENCE-SOURCES: (.+)$", metadata, flags=re.MULTILINE)

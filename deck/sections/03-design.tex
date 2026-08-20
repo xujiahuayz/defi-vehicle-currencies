@@ -2,21 +2,24 @@
 % Mechanisms and estimands. Sources: docs/specifications/confirmatory.json and README.md.
 % APPENDIX-NAVIGATION: V4: shared accounting, one PoolManager, and the conclusion that the singleton changes the settlement boundary are retained in the appendix frame "Protocol design changes markets, depth, and settlement."
 
-% VISUAL-FUNCTION: rival mechanisms | converging mechanism map | organize formation, liquidity provision, and market integration
-\begin{frame}{Three margins can make a vehicle dominant}
+% VISUAL-FUNCTION: aggregate decomposition | three-part map | distinguish switching, reallocation, and ultimate-pair entry
+\begin{frame}{Aggregate dominance can change in three ways}
 \begin{center}
-\begin{tikzpicture}[scale=0.86,transform shape]
-\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=46pt,font=\normalsize\bfseries,align=center] (d) at (0,0) {vehicle\\dominance};
-\node[softbox,minimum width=3.55cm,align=center] (def) at (0,2.38) {\textbf{Market formation}\\new trading pairs coordinate on a vehicle};
-\node[softbox,minimum width=3.55cm,align=center] (liq) at (-4.35,-1.95) {\textbf{Liquidity provision}\\local bridge capital supports route choice};
-\node[softbox,minimum width=3.55cm,align=center] (int) at (4.35,-1.95) {\textbf{Market integration}\\additional venues broaden price competition};
-\draw[route,draw=native] (liq)--(d);
-\draw[route,draw=uclbright] (def)--(d);
-\draw[route,draw=stable] (int)--(d);
+\begin{tikzpicture}[x=1cm,y=1cm]
+\node[softbox,text width=3.35cm,minimum height=1.55cm,align=center] (switch) at (-4.30,1.70)
+{\large\bfseries Vehicle switching\\[0.10cm]\small the same ultimate pair changes vehicle};
+\node[softbox,text width=3.35cm,minimum height=1.55cm,align=center] (reweight) at (0,1.70)
+{\large\bfseries Trading reallocation\\[0.10cm]\small activity moves across continuing ultimate pairs};
+\node[softbox,text width=3.35cm,minimum height=1.55cm,align=center,fill=stable!8] (entry) at (4.30,1.70)
+{\large\bfseries Ultimate-pair formation\\[0.10cm]\small ultimate pairs enter or exit with a vehicle};
+\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=50pt,font=\small\bfseries,align=center] (d) at (0,-0.50) {aggregate\\dominance};
+\draw[route,draw=accent] (switch)--(d);
+\draw[route,draw=uclbright] (reweight)--(d);
+\draw[route,draw=stable] (entry)--(d);
 \end{tikzpicture}
 \end{center}
-\vspace{0.2cm}
-\decknote{The evidence separates the formation of new endpoint pairs, the capital available on both legs of a vehicle route, and the price opportunity set across exchanges. Volatility enters the V4 provider analysis as a market state, not as a fourth symmetric mechanism.}
+\vspace{0.16cm}
+\decknote{The decomposition is exact. The next step asks why an ultimate pair keeps its first vehicle and when a competing two-atomic-pair bridge becomes deep enough to attract routes.}
 \end{frame}
 
 \IfFileExists{../output/exhibits/v1_architecture_deck_values.tex}{%
@@ -48,7 +51,7 @@
 {\Large$\Longrightarrow$}
 \end{column}
 \begin{column}{0.45\textwidth}
-\evidencekicker{V2: market choice}
+\evidencekicker{V2: ultimate-pair formation}
 \vspace{0.20cm}
 \begin{beamercolorbox}[sep=0.28cm,wd=\textwidth]{block body}
 {\fontsize{24}{26}\selectfont\bfseries\color{ucldark}\VTwoWethTradeShare}\par
@@ -57,9 +60,9 @@
 \vspace{0.26cm}
 \begin{beamercolorbox}[sep=0.28cm,wd=\textwidth]{block body}
 {\fontsize{24}{26}\selectfont\bfseries\color{stable}\VTwoWethNewPairShare}\par
-{\small of endpoint pairs first traded in 2026 include WETH}
+{\small of ultimate pairs first traded in 2026 include WETH}
 \end{beamercolorbox}
 \end{column}
 \end{columns}
-\decknote{V1 links token-to-ETH and ETH-to-token swaps within one transaction. V2 reports single-leg trades and newly traded endpoint pairs on that venue.}
+\decknote{V1 links token-to-ETH and ETH-to-token swaps within one transaction. V2 reports atomic trades and newly traded ultimate pairs on that venue. Early V2 inherited liquidity, users, and routing conventions from V1, so part of the initial persistence is mechanical; later ultimate-pair formation shows how long that structure lasts.}
 \end{frame}

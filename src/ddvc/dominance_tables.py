@@ -218,45 +218,45 @@ def render_pair_composition(
         r"\midrule",
         r"\multicolumn{3}{l}{\emph{Panel A. Route-count share: market activity and"
         r" vehicle incidence}} \\",
-        f"Endpoint pairs entering or leaving the sample & {display['MarketSupportBridge']} & \\\\",
-        f"Endpoint pairs gaining or losing a vehicle route & {display['VehicleRoleSupportBridge']} & \\\\",
-        f"Market activity shifting across continuing endpoint pairs & {display['MarketActivityReweight']} & \\\\",
-        f"Change in how often continuing endpoint pairs use a vehicle & {display['VehicleIncidenceReweight']} & \\\\",
-        f"Stablecoin share within continuing vehicle-using endpoint pairs & {display['WithinPairStableShare']} & \\\\",
+        f"Ultimate pairs entering or leaving the sample & {display['MarketSupportBridge']} & \\\\",
+        f"Ultimate pairs gaining or losing a vehicle route & {display['VehicleRoleSupportBridge']} & \\\\",
+        f"Market activity shifting across continuing ultimate pairs & {display['MarketActivityReweight']} & \\\\",
+        f"Change in how often continuing ultimate pairs use a vehicle & {display['VehicleIncidenceReweight']} & \\\\",
+        f"Stablecoin share within continuing vehicle-using ultimate pairs & {display['WithinPairStableShare']} & \\\\",
         r"\midrule",
         f"Total route-count change & {display['MarketBridgeTotal']} & \\\\",
         r"\addlinespace",
         r"\multicolumn{3}{l}{\emph{Panel B. Route-count share: continuing and"
-        r" year-specific endpoint pairs}} \\",
-        f"Net stablecoin-share change within continuing endpoint pairs & {display['PairPooledWithin']} & \\\\",
-        r"\quad Pairs moving toward stablecoins ("
+        r" year-specific ultimate pairs}} \\",
+        f"Net stablecoin-share change within continuing ultimate pairs & {display['PairPooledWithin']} & \\\\",
+        r"\quad Ultimate pairs moving toward stablecoins ("
         + display["MarginWithinGainPairs"]
         + f") & {display['MarginWithinGrossUp']} & \\\\",
-        r"\quad Pairs moving toward native assets ("
+        r"\quad Ultimate pairs moving toward native assets ("
         + display["MarginWithinLossPairs"]
         + f") & {display['MarginWithinGrossDown']} & \\\\",
-        f"Vehicle activity shifting across continuing endpoint pairs & {display['PairPooledReweight']} & \\\\",
-        f"Weight of continuing versus year-specific endpoint pairs & {display['PairPooledSupportMass']} & \\\\",
-        f"Endpoint pairs traded in only one year & {display['PairPooledExclusive']} & \\\\",
+        f"Vehicle activity shifting across continuing ultimate pairs & {display['PairPooledReweight']} & \\\\",
+        f"Weight of continuing versus year-specific ultimate pairs & {display['PairPooledSupportMass']} & \\\\",
+        f"Ultimate pairs traded in only one year & {display['PairPooledExclusive']} & \\\\",
         r"\midrule",
         f"Total route-count change & {display['PairPooledTotal']} & \\\\",
         r"\addlinespace",
         r"\multicolumn{3}{l}{\emph{Panel C. Dollar-weighted share: continuing and"
-        r" year-specific endpoint pairs}} \\",
-        f"Net stablecoin-share change within continuing endpoint pairs & {display['PairValueWithin']} & \\\\",
-        r"\quad Pairs moving toward stablecoins ("
+        r" year-specific ultimate pairs}} \\",
+        f"Net stablecoin-share change within continuing ultimate pairs & {display['PairValueWithin']} & \\\\",
+        r"\quad Ultimate pairs moving toward stablecoins ("
         + display["MarginWithinValueGainPairs"]
         + f") & {display['MarginWithinValueGrossUp']} & \\\\",
-        r"\quad Pairs moving toward native assets ("
+        r"\quad Ultimate pairs moving toward native assets ("
         + display["MarginWithinValueLossPairs"]
         + f") & {display['MarginWithinValueGrossDown']} & \\\\",
-        f"Vehicle activity shifting across continuing endpoint pairs & {display['PairValueReweight']} & \\\\",
-        f"Weight of continuing versus year-specific endpoint pairs & {display['PairValueSupportMass']} & \\\\",
-        f"Endpoint pairs traded in only one year & {display['PairValueExclusive']} & \\\\",
+        f"Vehicle activity shifting across continuing ultimate pairs & {display['PairValueReweight']} & \\\\",
+        f"Weight of continuing versus year-specific ultimate pairs & {display['PairValueSupportMass']} & \\\\",
+        f"Ultimate pairs traded in only one year & {display['PairValueExclusive']} & \\\\",
         r"\midrule",
         f"Total change in dollar-weighted share & {display['PairValueTotal']} & \\\\",
         r"\addlinespace",
-        r"\multicolumn{3}{l}{\emph{Panel D. Matched ordered endpoint-pair estimates}} \\",
+        r"\multicolumn{3}{l}{\emph{Panel D. Matched ordered ultimate-pair estimates}} \\",
         r"\midrule",
     ]
     for label, row in regressions:

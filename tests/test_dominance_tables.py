@@ -126,20 +126,20 @@ def test_pair_table_keeps_the_two_count_factorisations_apart() -> None:
 
     # Panel A's labels belong to Panel A alone.
     for label in (
-        "Market activity shifting across continuing endpoint pairs",
-        "Change in how often continuing endpoint pairs use a vehicle",
-        "Stablecoin share within continuing vehicle-using endpoint pairs",
-        "Endpoint pairs entering or leaving the sample",
+        "Market activity shifting across continuing ultimate pairs",
+        "Change in how often continuing ultimate pairs use a vehicle",
+        "Stablecoin share within continuing vehicle-using ultimate pairs",
+        "Ultimate pairs entering or leaving the sample",
     ):
         assert pair.count(label) == 1
 
     # The identity's labels appear once in its count panel and once in its
     # value panel, and nowhere else.
     for label in (
-        "Net stablecoin-share change within continuing endpoint pairs",
-        "Vehicle activity shifting across continuing endpoint pairs",
-        "Weight of continuing versus year-specific endpoint pairs",
-        "Endpoint pairs traded in only one year",
+        "Net stablecoin-share change within continuing ultimate pairs",
+        "Vehicle activity shifting across continuing ultimate pairs",
+        "Weight of continuing versus year-specific ultimate pairs",
+        "Ultimate pairs traded in only one year",
     ):
         assert pair.count(label) == 2
 
@@ -152,25 +152,29 @@ def test_pair_table_keeps_the_two_count_factorisations_apart() -> None:
     ):
         assert macros[macro].removesuffix(" pp") in pair
 
-    assert "Pairs moving toward stablecoins (1,575) & $+1.3$" in pair
-    assert "Pairs moving toward native assets (1,489) & $-1.4$" in pair
-    assert "Pairs moving toward stablecoins (1,511) & $+2.3$" in pair
-    assert "Pairs moving toward native assets (1,445) & $-2.4$" in pair
+    assert "Ultimate pairs moving toward stablecoins (1,575) & $+1.3$" in pair
+    assert "Ultimate pairs moving toward native assets (1,489) & $-1.4$" in pair
+    assert "Ultimate pairs moving toward stablecoins (1,511) & $+2.3$" in pair
+    assert "Ultimate pairs moving toward native assets (1,445) & $-2.4$" in pair
 
 
 def test_paper_has_one_consumer_and_no_duplicate_inline_body() -> None:
     section = (ROOT / "paper" / "sections" / "03-dominance.tex").read_text(
         encoding="utf-8"
     )
+    appendix = (ROOT / "paper" / "sections" / "08-appendix.tex").read_text(
+        encoding="utf-8"
+    )
+    paper = section + "\n" + appendix
     for stem in ("dominance_rotation", "pair_composition", "usdt_transition"):
-        assert section.count(rf"\input{{../output/tables/{stem}.tex}}") == 1
+        assert paper.count(rf"\input{{../output/tables/{stem}.tex}}") == 1
     assert r"\begin{tabular}" not in section
     assert r"\begin{tabularx}" not in section
     assert r"S^{(m)}_{pds,y}=\alpha^{(m)}_{pds}+\beta^{(m)}\mathbf 1\{y=2026\}" in section
     assert r"y\in\{2024,2026\}" in section
-    assert "pair, date within the year, and realised single- or cross-exchange route class" in section
+    assert "ultimate pair, date within the year, and realised single- or cross-exchange route class" in section
     assert "weighted by native-plus-stable route count or supported routed value" in section
-    assert "standard errors cluster by endpoint pair and date" in section
+    assert "standard errors cluster by ultimate pair and date" in section
     assert "The comparison is descriptive" in section
 
 

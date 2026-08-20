@@ -59,7 +59,7 @@ def is_markup(line: str) -> bool:
     return (
         not s
         or s.startswith(("%", "\\", "&", "}", "{", "$$", "|"))
-        or s.endswith(("\\\\", "{", "}"))
+        or s.endswith(("\\\\", "\\par", "{", "}"))
         or "&" in s                       # tabular row
         or s.startswith(("-", "*"))
     )
@@ -210,15 +210,22 @@ class PaperProseTests(unittest.TestCase):
             )
 
     def test_reader_facing_route_vocabulary_is_current(self) -> None:
-        obsolete = re.compile(r"\bultimate[- ]pair\b|\batomic[- ](?:pair|trade)s?\b", re.IGNORECASE)
+        obsolete = re.compile(
+            r"\bendpoint[- ]pair\b|\bcorridor\b|\bultimate[- ]pair market\b",
+            re.IGNORECASE,
+        )
         for path in source_files(ROOT / "paper") + source_files(DECK_DIR):
             body = strip_latex_comments(path.read_text(encoding="utf-8"))
             match = obsolete.search(body)
             if match:
                 self.fail(
                     f"{path.relative_to(ROOT)}:{body.count(chr(10), 0, match.start()) + 1} "
-                    f"uses obsolete audience term {match.group(0)!r}"
+                    f"uses ambiguous audience term {match.group(0)!r}"
                 )
+        introduction = (PAPER_DIR / "01-introduction.tex").read_text(encoding="utf-8")
+        self.assertRegex(introduction, r"\\emph\{ultimate pair\}")
+        self.assertRegex(introduction, r"\\emph\{atomic pair\}")
+        self.assertRegex(introduction, r"\\emph\{atomic trade\}")
 
     def test_percentage_point_abbreviation_is_defined_before_compact_use(self) -> None:
         preamble = (PAPER_DIR.parent / "main.tex").read_text(encoding="utf-8")
@@ -233,8 +240,10 @@ class PaperProseTests(unittest.TestCase):
             encoding="utf-8"
         )
         definition = results.index("percentage points (pp)")
-        first_compact_use = results.index("[pp]")
-        self.assertLess(definition, first_compact_use)
+        first_compact_use = re.search(r"(?<!percentage points) pp\b", results)
+        self.assertIsNotNone(first_compact_use)
+        assert first_compact_use is not None
+        self.assertLess(definition, first_compact_use.start())
 
     def test_abstract_respects_jfe_submission_ceiling(self) -> None:
         abstract = PAPER_DIR / "abstract.tex"

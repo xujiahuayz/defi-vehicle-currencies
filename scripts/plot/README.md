@@ -10,7 +10,7 @@ not read raw data or define a new estimand.
 | `build_within_day_contrasts.py` | within-day role-contrast figure used by paper/deck |
 | `build_visual_experiments.py` | named experimental figures used by the deck |
 | `build_route_replay.py` | route-replay manifest and deck macros |
-| `render_vehicle_dominance_timelapse.py` | 18-second H.264 vehicle contest and final-month keyframe; route-count share, supported-value share, and active ultimate-pair breadth evolve from 2020 to 2026 |
+| `render_vehicle_dominance_timelapse.py` | 18-second H.264 vehicle contest and sparse final-month poster; route-count share, supported-value share, and active ultimate-pair breadth evolve from 2020 to 2026 |
 
 Edit the owner, never the generated file. An unconsumed figure is removed
 from the live tree.

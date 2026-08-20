@@ -17,6 +17,7 @@ Captions, labels, placement, and interpretation stay in the paper/deck source.
 | `render_venue_technology_rival.py` | `venue_technology_rival.tex/.pdf` | `tab:venue-technology` |
 | `render_vehicle_formation_regressions.py` | `vehicle_formation_regressions.tex/.pdf` | `tab:formation-regressions` |
 | `render_vehicle_mechanism_regressions.py` | `vehicle_mechanism_regressions.tex/.pdf` | `tab:vehicle-mechanism-regressions` |
+| `render_network_position.py` | `network_position.tex/.pdf` and generated deck values | `tab:network-position` |
 | `build_bridge_liquidity_deck_values.py` | `bridge_establishment_regressions.tex`, `bridge_adoption_pool_margins.tex` | `tab:bridge-establishment`, `tab:bridge-pool-margins` |
 | `render_bridge_liquidity_feedback.py` | `bridge_liquidity_feedback.tex/.pdf` | `tab:bridge-feedback` |
 | `render_liquidity_provision_regressions.py` | `liquidity_provision_regressions.tex/.pdf` | `tab:lp-behavior-regressions` |

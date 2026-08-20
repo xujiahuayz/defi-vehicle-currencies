@@ -62,16 +62,17 @@ substitute for this full-document review.
 - Keep distinct objects distinct: binary vehicle status, continuous vehicle
   dominance, realised route choice, counterfactual execution cost, deposited
   capital, liquidity-supply flow, inventory, executable depth, provider return,
-  leg-level venue formation, endpoint-pair entry, substitution, exit,
+  atomic-pair venue formation, ultimate-pair entry, substitution, exit,
   reversal, and persistence.
 - Keep the route vocabulary equally explicit. For \(A\rightarrow B\rightarrow C\),
-  \((A,C)\) is the ordered endpoint pair, \(A\rightarrow B\) and
-  \(B\rightarrow C\) are legs, and the complete connected sequence is the
-  route. A pool is the venue in which a leg executes. Shorten endpoint pair to
-  pair only after local context rules out a pool pair.
-- The ordered endpoint pair records endpoints and direction, not the intervening
+  \((A,C)\) is the ordered ultimate pair, \((A,B)\) and \((B,C)\) are atomic
+  pairs, and the corresponding pool executions are atomic trades. The complete
+  connected sequence is the route. A pool is the venue in which an atomic trade
+  executes. Shorten ultimate pair to pair only after local context rules out an
+  atomic or pool-level pair.
+- The ordered ultimate pair records endpoints and direction, not the intervening
   execution sequence. Call \(A\rightarrow B\rightarrow C\) the realised route
-  (or path when discussing the graph). Do not append “market” to an endpoint
+  (or path when discussing the graph). Do not append “market” to an ultimate
   pair unless the text explicitly defines
   a broader market aggregating substitutable direct and indirect routes.
   Reserve corridor for an explicitly bilateral real-economy trade or payment
@@ -114,7 +115,7 @@ substitute for this full-document review.
   absolute activity, and **vehicle status** for the binary extensive margin.
   The compact description of the decomposition is that aggregate stablecoin
   dominance changes through net vehicle substitution within continuing
-  endpoint pairs and through reallocation of routed activity across endpoint
+  ultimate pairs and through reallocation of routed activity across ultimate
   pairs. Do not make “dominance,” “share,” and “volume” interchangeable merely
   to vary the prose.
 - Keep one result spine in the abstract and the introduction: state the
@@ -266,6 +267,13 @@ substitute for this full-document review.
 - The closing slide is an economic ending. It should synthesize admitted route
   findings, lift them to the market-formation implication, and finish on that
   implication rather than on a test still to run.
+- Speaker notes share the empirical spine with the paper but use a different
+  register. Preserve Java's conversational delivery: short bridges, ordinary
+  words, occasional fragments, and a little repetition when it helps listeners
+  follow the argument. Do not expand slide notes into manuscript prose or polish
+  them into a formal essay. Every core slide has a spoken handoff; every backup
+  slide has concise bullets that explain the question it answers, the reading of
+  the exhibit, and its limitation.
 
 ## Visual rhetoric
 
@@ -295,6 +303,10 @@ substitute for this full-document review.
 - Reviewer comments, new experiments, draft integration, and motivation rewrite
   run in parallel. Do not wait for all experiments to finish before keeping the
   draft coherent.
+- Main-text and appendix placement is provisional. Promote a result when it
+  materially sharpens the central economic fact, its generality, or a serious
+  competing explanation; demote it when it diffuses that spine. Statistical
+  significance alone does not determine placement.
 - Use explicit evidence-state labels in source comments and review documents, where
   parallel work needs them; keep those labels out of audience-facing prose.
 - Use named branches or small focused commits on `main` for parallel work. Do

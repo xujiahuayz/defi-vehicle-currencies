@@ -1,229 +1,395 @@
-# 30-minute presentation transcript
+# 30-minute talk notes
 
-The timings below total 30 minutes and cover the core deck only. Appendix slides are for questions.
+These notes follow the current core deck. The tone is spoken on purpose. Short bridges, fragments, a little repetition. The backup section covers every appendix slide.
 
-## Cover (0:00 to 1:15)
+## Cover — The Making of Dominant Vehicle Currencies (0:00 to 1:30)
 
-Hi everyone. It is a great pleasure to be here. I have collaborated with several researchers at NTU, many of them in computer science, so I see both familiar faces and familiar names in the programme. My own background is in business economics and finance, but much of my work sits between finance and computer science. At UCL I am also part of the Financial Computing research group, which reflects that same interdisciplinary interest.
+Hi everyone. Great pleasure to be here.
 
-Today I will talk about the making of dominant vehicle currencies, using decentralised finance as the empirical setting. The question is familiar from international finance: when two currencies do not trade efficiently with each other, which third currency bridges them? The new part is that decentralised exchanges let us observe the connected trading path and the liquidity behind it. The line on the left is the argument I want to develop: new trading relationships can change which vehicle becomes dominant.
+I have worked with quite a few people at NTU, mainly in computer science. My own background is finance and business economics, and much of my work sits between finance and CS. So, familiar faces, familiar names, and also many new ones. Very nice to be back in Singapore.
 
-## A cross-border payment needs someone to make the FX market (1:15 to 2:30)
+Today: dominant vehicle currencies. Evidence from DeFi.
 
-Start with an ordinary cross-border payment. A payment provider receives one currency but has to deliver another currency that it may not hold. Someone must quote the exchange rate and supply the liquidity. Current payment-system projects make this explicit. Project Nexus requires an FX provider, and Project Rialto considers using a vehicle currency when direct conversion is unavailable.
+The basic question is old. If two assets do not trade easily with each other, what sits in the middle? The useful thing about DeFi is that we can actually see that middle asset, trade by trade. And then we can ask a second question: how does one asset get that role in the first place?
 
-So the vehicle is not merely a label in a network. It solves a balance-sheet and market-making problem. The provider can bridge currency A and currency B through currency k because liquidity in A against k and k against B is deeper than liquidity in A against B. This gives us the two sides of the paper: which currency occupies the middle of the route, and how liquidity providers support that position.
+That is the talk.
 
-## Pool routes reveal the vehicle currency (2:30 to 3:50)
+## A cross-border payment needs someone to make the FX market (1:30 to 3:00)
 
-Since we are in Singapore, consider a payment from Singapore dollars into Norwegian kroner. It may be converted first into US dollars and then into kroner. This is an illustration, not a claim that every SGD to NOK payment follows this exact route. The important point is that the dollar can bridge a pair that is costly to trade directly.
+Start with a familiar payment problem.
 
-In conventional FX data, we may observe turnover in SGD against USD and turnover in USD against NOK. We generally cannot tell whether those two trades came from one customer instruction. Connecting them requires assumptions.
+A payment provider receives currency A and needs to deliver currency B. It may have no deep A–B market and may not hold B. So it goes through a common currency, (k).
 
-In decentralised finance, or DeFi, exchanges execute trades through smart contracts and liquidity pools. The logs from one transaction preserve the ordered pool path. If a user trades token A for token B through a stablecoin or the native asset, we observe the intermediary directly. That is the measurement advantage of this setting.
+This is more than drawing a network. Someone has to quote both atomic trades and hold enough liquidity on both sides. A to (k). Then (k) to B.
 
-## The route panel links pool-level swaps (3:50 to 5:00)
+That is why I start with the market maker. A vehicle currency is useful because two liquid atomic pairs can bridge a difficult ultimate pair.
 
-We assemble 472 million pool-level swaps over 2,332 calendar dates, from February 2020 through June 2026. The panel covers eight major Ethereum deployments: Uniswap versions 2, 3, and 4; SushiSwap versions 2 and 3; Curve; Balancer; and Fluid.
+Now, in traditional FX, seeing that full connection is difficult. In DeFi, the route is recorded inside the transaction.
 
-I want to be precise about the perimeter. This is a large panel of the listed deployments, not every swap ever executed on Ethereum. We use structured Graph and Dune records, then reconstruct connected pool components within each transaction.
+## Pool routes reveal the vehicle currency (3:00 to 4:30)
 
-Uniswap V1 is treated separately. Its retained records identify the exchange contracts but do not provide a complete mapping from every exchange to the underlying token address. Shared transaction hashes and matching ETH legs let us recover forced token-to-token paths, which is enough to study the V1 architecture. They do not let us assign endpoint token identities uniformly, so V1 does not enter the principal endpoint-pair panel.
+Since we are in Singapore, take SGD to NOK.
 
-## Inside the pools, USDT links USDC to USDe (5:00 to 6:30)
+The payment may go SGD to USD, then USD to NOK. USD is the vehicle. The ultimate pair is SGD–NOK. The atomic pairs are SGD–USD and USD–NOK.
 
-This is one authentic transaction from January 2026. The user's broader instruction is PYUSD to USDe. The connected component that we observe in our exchange panel begins with USDC, then goes through USDT, and ends with USDe. The first pool is on Fluid and the second is on Uniswap V4. Within this observed component, USDC and USDe are the endpoints, and USDT is the vehicle.
+Conventional turnover data normally show the two atomic trades separately. Linking them back to one ultimate exchange needs extra assumptions.
 
-The distinction at the top matters. We do not claim that PYUSD was swapped into USDC on some exchange outside our panel. The executor may instead have supplied USDC from inventory. The pool logs identify the connected component, not the full economic instruction or the executor's inventory decision.
+Inside a DeFi transaction, the pool calls are ordered. We see A go into one pool, (k) come out, then (k) go into the next pool and B come out. So the vehicle is observed directly.
 
-We retain longer connected routes as well. In the supplementary all-length measure, every intermediary used in a route contributes an observation. For the headline native-versus-stable comparison, we use the cleaner exact two-leg case with one intermediary.
+That is the measurement advantage. Next, the scale.
 
-## Vehicle dominance is an intermediary share (6:30 to 7:55)
+## The route panel links pool-level swaps (4:30 to 5:40)
 
-Our central object is vehicle dominance. For asset k, it is k's share of indirect trade as an intermediary. Count-weighted dominance gives each route equal weight. Value-weighted dominance weights by the dollar value carried through the route.
+We collected 472 million pool-level swaps, across 2,332 calendar dates, from February 2020 to June 2026.
 
-The main comparison has an especially transparent denominator: exact two-leg routes whose sole intermediary is either the native currency or a stablecoin. For value weighting, the dollar values at the source, vehicle, and destination must agree within 20 percent. That restriction removes routes for which token pricing or route reconstruction gives inconsistent notions of value.
+Eight Ethereum deployments: Uniswap v2, v3 and v4; SushiSwap v2 and v3; Curve; Balancer; and Fluid.
 
-This is why we do not use betweenness centrality as the main outcome. Betweenness describes how central a token could be in the graph of available connections. Our dominance measure records how often traders actually route through it. Network reach remains useful as a predictor and a competing mechanism, but realised intermediary share is the economic outcome.
+Why no Uniswap v1 here? Its retained records give us the exchange contracts but no complete exchange-to-token map. We can still recover forced ETH routes from matching transaction hashes and ETH amounts. That is enough for the architecture exercise later. It is not enough to identify every ultimate pair uniformly, so v1 stays outside this main panel.
 
-## Architecture changes routing opportunities (7:55 to 9:25)
+One important boundary before the results: our pool route can begin after the user's broader instruction begins.
 
-The protocol architecture changes what traders and liquidity providers can choose. In Uniswap V1, every token pool is paired with ETH. A token-to-token trade therefore has to pass through ETH. Here the native vehicle is imposed by design.
+## Inside the pools, USDT links USDC to USDe (5:40 to 7:10)
 
-V2 allows an arbitrary token pair, so direct trading and alternative vehicles become feasible. The vehicle is now a market outcome. V3 adds another choice: providers place liquidity within price ranges and choose among fee tiers, so the active depth of a route depends on where liquidity sits, not only on total deposits.
+Here is a real transaction from January 2026.
 
-V4 changes the settlement boundary. Its singleton and flash accounting track token deltas across the transaction and settle the net amount at the end. Intermediate transfers can be netted, but the economic route does not disappear. The transaction still uses particular pools and particular intermediary liquidity. This distinction lets us ask whether internal routing under shared accounting predicts subsequent provider activity.
+The explorer describes a PYUSD to USDe instruction. The connected pool route we observe begins with USDC. Fluid turns USDC into USDT; Uniswap v4 turns USDT into USDe.
 
-## Three margins can make a vehicle dominant (9:25 to 10:25)
+So, inside the observed route, USDC–USDe is the ultimate pair. USDC–USDT and USDT–USDe are the atomic pairs. USDT is the vehicle.
 
-The rest of the talk separates three margins.
+What happened between PYUSD and USDC? The data allow two possibilities. Another trade outside our exchange panel, or USDC supplied from the executor's inventory. We keep the boundary exactly where the pool evidence ends.
 
-First, market formation: when a new endpoint pair begins trading, which vehicle does it coordinate on, and does that initial choice persist?
+This example also makes the language concrete. Ultimate pair, atomic pairs, complete route. I will use those terms throughout.
 
-Second, liquidity provision: does an endpoint pair route through the vehicle with deeper capital on both atomic legs, and does capital appear before the vehicle is first used?
+## The full route and the one-vehicle choice answer different questions (7:10 to 8:40)
 
-Third, market integration: if we widen the exact price opportunity set across exchanges and alternative vehicles, does the observed vehicle identity survive?
+We use the routes in two ways.
 
-Volatility enters later as a market state for the V4 provider response. I do not present it as a fourth mechanism on equal footing because the evidence does not support four symmetric claims.
+First, all route lengths. Every intermediary position counts. If a route uses two intermediary currencies, both appear. These shares divide all the intermediary work, so they sum to 100 percent across currencies.
 
-## Native-asset pairing persists after it becomes optional (10:25 to 11:40)
+We also report route participation: the fraction of complete routes containing each currency. Those shares can add above 100 percent because one long route may contain several intermediary currencies. That is fine; it is a presence measure.
 
-The move from V1 to V2 provides a useful institutional transition. In V1 we recover 217,003 token-to-token routes that pass through ETH because the contract requires it.
+Second, the exact two-atomic-trade route. One route, one intermediary, one vehicle choice. This is the clean sample for decomposing stablecoin against WETH use.
 
-V2 removes that mandate, but native pairing remains extraordinarily persistent. In 2026, 95.5 percent of single-leg V2 trades use a WETH pool, and 97.9 percent of endpoint pairs first traded on V2 include WETH.
+Why stablecoins and the native asset? They are the two broad vehicle families present throughout the sample. The all-route figure still shows the other categories.
 
-This slide is not yet the stablecoin result. Its purpose is to show why architecture alone is insufficient. Once arbitrary pairs are possible, traders and providers still coordinate around a common asset. The economic question becomes how a stablecoin can displace part of that inherited native-asset role. That takes us to the time series.
+With the measures clear, we can ask where aggregate dominance comes from.
 
-## Stablecoins regain the routed-value lead by 2026 H1 (11:40 to 13:05)
+## Aggregate dominance can change in three ways (8:40 to 10:10)
 
-The figure shows the annual history of intermediary composition. Native assets lead early, stablecoins move ahead, native assets regain share in 2023 and 2024, and stablecoins recover the routed-value lead in 2025. So this is not a smooth technological trend.
+Three possibilities.
 
-For the headline comparison, we match January through June in 2024 with the same dates in 2026 because the 2026 panel ends in June. Stablecoin dominance among native and stable vehicles rises from 16.9 to 42.3 percent by route count, an increase of 25.4 percentage points. By routed value it rises from 32.7 to 76.5 percent, an increase of 43.9 points.
+One: the same continuing ultimate pair switches its vehicle.
 
-The full-year points through 2025 provide the history; the 2026 endpoint is visibly H1. The next question is whether this reflects a general increase in demand for stablecoins as endpoints or a distinct intermediary role.
+Two: the ultimate pairs continue, but trading moves toward ultimate pairs that already use one vehicle more heavily.
 
-## Endpoint demand predicts vehicle use within day (13:05 to 14:15)
+Three: ultimate pairs enter or leave, and those relationships arrive with a vehicle.
 
-This equation formalises that comparison. The subscript a denotes an asset or currency, and t denotes the date. I is asset a's share of the day's intermediary episodes. D is the same asset's share of route-endpoint appearances. Both are measured in percentage points.
+The aggregate series alone mixes all three. The decomposition separates them exactly.
 
-The asset-class indicators distinguish native currencies, stablecoins, staked-native assets, imported currencies, and a residual group. Date effects absorb market-wide conditions on each day. Currency effects absorb persistent differences across individual currencies.
+Before that result, one historical reason to expect persistence: Ethereum's early pool architecture built the network around ETH.
 
-The coefficient beta asks a simple question: when a currency becomes more important in endpoint demand, how much more important does it become as an intermediary? This is descriptive, not a causal demand elasticity, because trading demand and route selection are jointly determined.
+## Native-asset pairing persists after it becomes optional (10:10 to 11:40)
 
-## The demand relationship survives currency and date effects (14:15 to 15:40)
+In Uniswap v1, token-to-token trading had to pass through ETH. We recover 217,003 such trades. Native intermediation was written into the protocol.
 
-Here is the regression table in the form commonly used in a finance paper. In the pooled and date-effect specifications, the native and stablecoin rows compare those classes with the residual asset class. Once endpoint demand enters, the native coefficient falls from about 34.6 points to essentially zero. The stablecoin coefficient is 0.85 points and only marginally precise.
+V2 removed that rule. Any two tokens could form a pool. Yet WETH pairing remained overwhelming: 95.5 percent of single-atomic-trade v2 trades use a WETH pool in 2026, and 97.9 percent of ultimate pairs first traded in 2026 include WETH.
 
-The important row is endpoint-demand share. Across currencies within a date, one additional percentage point of endpoint demand is associated with 1.59 points more intermediary share. After adding currency fixed effects, the estimate is 0.98. So within a given currency over time, endpoint demand passes through almost one for one into intermediary use.
+Part of the early persistence is mechanical. V2 inherited liquidity, users, and routing habits from v1. Then deep WETH pools and common launch conventions kept reinforcing the structure.
 
-The dashes in column four are deliberate: currency fixed effects absorb time-invariant native and stablecoin indicators. The table tells us that demand matters strongly. It does not by itself explain the large aggregate rotation, so we next decompose where the changing demand comes from.
+So architecture opens a choice, but it does not erase the inherited focal point. Now watch the stablecoins begin to challenge it.
 
-## WETH-linked endpoint pairs carry the count rotation (15:40 to 16:50)
+## Stablecoins regain the routed-value lead by 2026 H1 (11:40 to 13:25)
 
-Endpoint identity creates a mechanical restriction. If WETH is one endpoint, it cannot also be the intermediary, so stablecoins are the eligible vehicles in the native-versus-stable comparison.
+This uses every complete route length.
 
-Across all matched endpoint pairs, the stablecoin route-count share rises by 21.1 percentage points. When we remove pairs with WETH at an endpoint, the increase falls to 3.7 points. More importantly, after fixing the endpoint pair, month-day, and route scope, the within-pair changes are only 0.2 points overall and 0.3 points without WETH endpoints.
+Native assets lead early. Stablecoins gain in 2022. Native assets come back in 2023 and 2024. Then stablecoins take the routed-value lead again in 2025 and remain ahead in 2026 H1.
 
-The count rotation is therefore mainly about which endpoint relationships carry trading activity, especially WETH-linked relationships. It is not primarily incumbent pairs switching their vehicle en masse.
+So this is no smooth, one-way technology trend. The leadership actually turns over.
 
-## Who trades with whom makes the vehicle (16:50 to 18:10)
+Among all intermediary positions, the stablecoin share rises from 17.2 percent in 2024 to 41.9 percent in 2026 H1. Route participation tells the same story: 17.6 to 46.1 percent. Longer routes are part of the result, not discarded observations.
 
-This exact decomposition shows the contribution of three endpoint categories to the headline increase.
+The value shift is even larger. The short film makes the turnover easier to see because frequency, value, and ultimate-pair breadth move at the same time.
 
-By route count, other endpoint pairs contribute 15.2 percentage points, one-native-one-stable pairs contribute 9.2, and two-stable endpoint pairs contribute only 1.0.
+## Vehicle leadership turns over through time (13:25 to 14:25)
 
-By routed value, the pattern differs. Other pairs contribute 20.6 points, native-stable pairs contribute 10.1, and stable-to-stable endpoint pairs contribute 13.2 points, almost one third of the total 43.9-point increase.
+Let this run for 18 seconds.
 
-Issuer identity inside that high-value stable-to-stable channel is striking. USDT alone contributes 13.7 percentage points, while USDC, DAI, and the remaining stablecoin intermediaries jointly contribute minus 0.5. This is the direct additive issuer result. It avoids ranking currencies by intermediary use minus endpoint use.
+Horizontal position is route-count share. Vertical position is supported-value share. Bubble size is the number of active ultimate pairs. The trail keeps only six months.
 
-## Trading shifts toward stablecoin-heavy endpoint pairs (18:10 to 19:25)
+Watch WETH first. Large, high, far to the right. Then USDC gains value weight. Later USDT rises sharply. By the end, the stablecoin family carries most supported value even while WETH remains broad across ultimate pairs.
 
-Now remove WETH endpoints and focus on routed value, where the stablecoin increase is still 21.5 percentage points. The decomposition is exact day by day.
+No final frame tells that whole story. The movement is the object here.
 
-Routed-value reallocation across endpoint-pair groups contributes plus 23.5 points. The change in stablecoin share within the same groups contributes minus 2.0 points. In other words, aggregate dominance rises because value moves toward trading relationships that already use stablecoin vehicles more intensively. The fixed groups themselves show no broad conversion toward stablecoin routing.
+Now the central question: did existing ultimate pairs switch, or did trading form around different ultimate pairs?
 
-This is economically different from a representative pair switching vehicles. It is a composition result: the market creates and expands relationships whose routing convention is already stablecoin-heavy.
+## Ultimate-pair formation supplies most of the rotation (14:25 to 17:00)
 
-## New endpoint pairs deliver the largest positive component (19:25 to 20:45)
+This is the central decomposition. Same January-to-June dates in 2024 and 2026.
 
-The route-count decomposition makes the extensive margin explicit. Stablecoin share rises from 16.9 to 42.5 percent, a 25.7-point rotation.
+Stablecoin share rises from 16.9 to 42.5 percent. A 25.7 percentage-point rotation.
 
-Inside continuing endpoint pairs, net vehicle switching contributes minus 0.1 point. Reallocation of activity among those continuing pairs contributes plus 8.6 points. Newly traded endpoint pairs contribute plus 21.0 points, while endpoint-pair exit contributes minus 3.3 points. A small continuing-pair weight term closes the identity.
+Inside continuing ultimate pairs, positive and negative switches almost exactly offset: minus 0.1 point net.
 
-The key result is that entry is not a residual footnote. It is the largest positive component. The initial vehicle choice also persists: the first routes of a new pair predict its vehicle share 30 and 120 days later. That is the coordination margin in the title, and it turns the paper from measurement into a theory-relevant result about market formation.
+Trading reallocation across continuing ultimate pairs adds 8.6 points.
 
-## Local bridge depth predicts route choice (20:45 to 22:00)
+Ultimate pairs present in only one period add 17.8 points. The largest component.
 
-We now turn to liquidity provision. For each endpoint pair and date, we compare five possible vehicles. A vehicle route needs capital on two legs, so its effective local depth is the deposited capital on the weaker leg.
+This does not say every continuing ultimate pair is frozen. Many move toward stablecoins and many move back toward WETH. The net is near zero. The aggregate rise comes from where trading grows and which relationships appear.
 
-The vehicle with the deepest local bridge captures 84.1 percent of routes. That share rises from 75.5 percent in 2024 to 86.5 percent in 2026. In a horse-race regression that also controls for the vehicle's broader network reach, one log point more weaker-leg capital is associated with 6.79 percentage points more route share.
+That changes the economic story. Dominance can move because the network grows around a vehicle, even when established relationships show little net replacement.
 
-The bottleneck matters economically: abundant capital on only one leg is not enough. A vehicle becomes usable for a particular endpoint relationship when both legs are deep enough.
+The next question is whether the first vehicle of a new relationship lasts.
 
-## Stablecoin penetration rises with relative bridge depth (22:00 to 23:15)
+## The vehicle chosen at ultimate-pair entry predicts later use (17:00 to 19:00)
 
-This slide follows a stablecoin bridge after it first becomes available beside a WETH bridge. In the first 30 days, the supported stablecoin captures only 2.4 percent of routes when its depth is below one tenth of WETH depth. At parity with WETH, its share is 53.0 percent. At twice WETH depth, it reaches 69.9 percent.
+Take a newly observed ultimate pair. Look at its stablecoin share at entry. Then follow the same pair.
 
-The extensive-margin result is equally large. Only 42.6 percent of shallow stablecoin bridges are used within the first month, compared with 84.1 percent when their depth is at least one tenth of WETH depth. With controls, the gap is still 25.2 percentage points.
+One percentage point more stablecoin use at entry predicts 0.86 points more over the next 30 days and 0.74 points more over 120 days.
 
-These are predictive comparisons because demand and capital are jointly determined. The timing evidence on the next slide helps distinguish capital that is already present from capital that merely follows observed route use.
+Large persistence. Same ultimate pair, long after the first routes.
 
-## Bridge capital builds before use (23:15 to 24:30)
+“Initial” simply means the first observed routes of that new ultimate pair. The ultimate pair is new to the data; its first vehicle identity is still well defined.
 
-We align 246 events around the first use of a supported stablecoin vehicle. The sample requires the bridge to exist persistently before adoption, so day zero is first route use, not first pool creation.
+The estimates control for entry size, cohort, endpoint type, direct routing, and route complexity. The first vehicle remains an equilibrium outcome. The result is path dependence, not random assignment.
 
-From day minus seven to day zero, log deposited capital on the weaker stablecoin leg rises by 0.86. Relative to the matched WETH bridge, the pre-use increase is 0.78. From day zero to day plus seven, stablecoin bridge capital falls by 0.44.
+Once a route convention forms, challengers face a real hurdle. But persistence can reflect shallow competing routes. So next we measure the two atomic pairs behind the challenger.
 
-The shape is consistent with providers building route-specific capital before traders use the bridge, followed by partial retrenchment. It does not identify provider intent, and the sample conditions on eventual adoption. Still, the timing is difficult to reconcile with a story in which all measured capital arrives only after route demand becomes visible.
+## A shallow stablecoin bridge attracts little route flow (19:00 to 21:20)
 
-## Most first-use capital sits in pools already active (24:30 to 25:35)
+A stablecoin route needs two atomic pairs: source to stablecoin, then stablecoin to destination. The weaker one is the bottleneck.
 
-Where does that pre-use capital come from? At the first-use date, 92.5 percent of stablecoin bridge capital sits in pools that were already active one week earlier. Continuing-pool capital grows by 0.16 log points relative to the matched WETH pools.
+When the best stablecoin bridge has less than one tenth of WETH's depth, stablecoins carry only 2.4 percent of routes.
 
-There is also an entry margin. The probability of a newly active pool rises by 6.9 percentage points relative to WETH. So providers use both margins: they scale existing pools, which hold most of the capital, and they activate some additional pools before route adoption.
+At least as deep as WETH: 53 percent.
 
-These are deposited-capital stocks. They are not direct measures of provider cash flow, inventory, or profitability. The result is about where route-supporting capital is located and when it becomes available.
+Twice as deep: almost 70 percent.
 
-## V4 internal routing forecasts later entry in volatile markets (25:35 to 27:15)
+The first-use result says the same thing in ordinary language. Among shallow bridges, only 42.6 percent are used within 30 days. Once depth reaches one tenth of WETH, 84.1 percent are used.
 
-V4 lets us study provider behaviour under shared accounting. The predictor is internal same-asset routing: transfers that can be netted inside the singleton while the transaction still uses identifiable pools and vehicles.
+So “support exists” is too binary. A pool may exist and still sit close to the zero end of the useful-liquidity spectrum. Depth makes the contest meaningful.
 
-Ten percentage points more internal routing predicts 0.086 log points more actions by origins that were already active during the prior 180 days, measured over days 1 to 30. Over days 31 to 120, it predicts 0.153 log points more activity from origins that become active only after the measurement date.
+This also helps interpret persistence. Some challengers fail to attract flow because the alternative route never becomes deep enough. Next: when does that depth arrive?
 
-The state dependence is stronger. One standard deviation more persistent 30-day WETH volatility adds 0.318 log points to that later first-active-origin response. Incumbents move first; new origins follow later, especially when volatility remains high.
+## Bridge capital builds before first use (21:20 to 23:20)
 
-Origins are accounts, not identified beneficial owners of LP positions, and the design is predictive. A same-vehicle-date V3 comparison does not separate the mature-period level or volatility slope, so I do not interpret this as a clean causal V4 treatment effect. It is evidence that the flash-accounting routing state forecasts economically meaningful provider participation.
+Day zero is the first observed use of a supported stablecoin. The pool bridge already exists before then.
 
-## Vehicle identity survives broader price competition (27:15 to 28:50)
+Over the preceding week, capital on the weaker stablecoin atomic pair rises by 0.86 log points. Relative to the matched WETH bridge, the increase is 0.78.
 
-A serious rival is simple price improvement. Perhaps the observed vehicle appears dominant only because the router missed a better path.
+Human version: liquidity builds, then the first routed trade appears.
 
-For 777,651 routes on 73 monthly dates, we reconstruct the exact pre-transaction state and keep the same input. Within the venue families used by the realised route, 6.6 percent have more than one basis point higher gross output with the same vehicle. Searching all three exact exchanges raises that to 44.4 percent. This shows substantial venue-level price competition.
+Two readings remain possible. Traders may wait until the route is deep enough. Or providers may anticipate demand and build before it appears in our route data. The sequence fits both, so I keep both on the table.
 
-But opening the set to any named vehicle or a direct route raises the incidence only to 46.4 percent, another 2.0 points. Reassigning every route to its best path reduces stablecoin vehicle share by only 1.2 points, with a standard error of 0.2. So price improvements often change the venue, while rarely changing the vehicle identity. The median gain among improved standard quotes is 21.9 basis points, so this is not driven only by trivial numerical differences.
+Either way, this is more informative than a simple pool-exists indicator. Vehicle competition is continuous through depth.
 
-## Dominance forms through entry, depth, and provider response (28:50 to 30:00)
+One last rival: perhaps the observed vehicle survives only because the router missed a better price.
 
-Let me close with three findings.
+## Price competition usually changes the venue (23:20 to 25:30)
 
-First, dominant vehicles are made when new trading relationships enter and coordinate on them. Newly traded endpoint pairs provide the largest positive component of the stablecoin rotation, and their initial vehicle choices persist.
+We reconstruct the exact state immediately before each transaction and quote alternatives for the same input.
 
-Second, dominance is locally contestable through liquidity. The deepest two-leg bridge captures most routes, and stablecoin adoption rises sharply once its weaker leg becomes competitive with WETH.
+Among venues already used by the route, 6.6 percent have a same-vehicle quote at least one basis point better.
 
-Third, liquidity providers respond before and after route use. Capital builds before adoption, incumbents act quickly under V4 internal routing, and first-active origins follow later in volatile markets.
+Open all exact venues: 44.4 percent. Lots of venue competition.
 
-The broader implication is that a dominant currency is not only the asset with the largest aggregate network. It is the asset around which new trading relationships form, local liquidity becomes usable on both legs, and provider participation reinforces the route. Thank you.
+Then open every named vehicle and the direct route: 46.4 percent. Only another 2 points.
+
+If every route takes its best quoted path, stablecoin vehicle share moves by minus 1.2 percentage points.
+
+So routers often leave venue-level price improvement on the table. Vehicle identity is much more stable. That is consistent with a network formed around familiar liquid bridges.
+
+## What changes a dominant vehicle? (25:30 to 28:30)
+
+Let me leave you with three things.
+
+First, new trading relationships. The largest part of the stablecoin rotation comes from ultimate-pair formation and trading reallocation.
+
+Second, a first vehicle. What a new ultimate pair uses at entry predicts what it keeps using months later.
+
+Third, two deep atomic pairs. A challenger begins to attract flow when both sides of its route become competitive.
+
+And there is the contrast with price. Price competition is very active across venues. Opening more venues often improves the quote. Opening another vehicle changes vehicle identity much less.
+
+So the main message is simple: a vehicle becomes dominant when the trading network grows around it and liquidity makes that inherited route usable.
+
+Thank you.
 
 ---
 
-# Q&A backup notes
+# Backup slide speaking bullets
 
-These notes are not part of the timed 30-minute transcript.
+These are Q&A notes. Usually two or three bullets are enough; stop once the question is answered.
 
-## Why can V1 forced routes be recovered when endpoint identities cannot?
+## Appendix map
 
-The retained V1 records identify exchange contracts and transaction hashes but lack a complete exchange-to-token address mapping. Matching the two ETH legs inside one transaction reveals the forced token-to-ETH-to-token structure. Without the missing crosswalk, the two non-ETH token identities cannot be assigned uniformly, so V1 supports the architecture count but not the principal endpoint-pair analysis.
+- Left column: definitions and route construction.
+- Middle: robustness and market structure.
+- Right: extra empirical results. Jump directly to the relevant page.
 
-## Does the analysis include routes with more than two legs?
+## Pool data may start after the user instruction
 
-Yes. The route reconstruction retains complete connected routes. The supplementary all-length dominance measure counts every intermediary use. The headline native-versus-stable rotation uses exact two-leg routes with one intermediary because its denominator and vehicle identity are unambiguous.
+- Same transaction as the core example, now with the explorer trace visible.
+- The user begins with PYUSD; our connected pool component begins with USDC.
+- The boundary is observable pool execution. Executor inventory stays outside the measured route.
 
-## What does the PYUSD example establish?
+## A1. One reconstructed route is one unit
 
-It establishes only the connected pool component USDC to USDT to USDe. It does not establish how the broader PYUSD instruction became USDC. That could reflect an unobserved pool leg or executor inventory. The example therefore illustrates both the route measure and its economic boundary.
+- A connected (i\rightarrow k\rightarrow o) sequence counts as one route.
+- (k) occupies one intermediary position; the route contains two atomic trades.
+- Dominance can weight that route once or weight the supported dollars it carries.
 
-## Why is betweenness centrality not the dominance measure?
+## How we reconstruct a route from one transaction
 
-Betweenness measures feasible graph position. Vehicle dominance measures realised intermediary use. Network reach and related graph measures remain explanatory variables because they capture coordination and availability, but they are not substitutes for the realised outcome.
+- Direct trade, sequential vehicle route, parallel split, and round trip are different objects.
+- Sequential flows join when one pool's output funds a later pool input.
+- Round trips are removed from the dominance measures.
 
-## What exactly does V4 flash accounting change?
+## A2. Stablecoin backing changes over time
 
-V4 records token deltas across operations inside one singleton and settles net balances at the end of the transaction. This can avoid repeated intermediate transfers. It does not erase the pool sequence, the pricing state, or the liquidity used by the route.
+- The stablecoin family is economically heterogeneous: fiat reserve, mixed collateral, on-chain collateral, synthetic.
+- Classification follows the backing regime at the time, so a token can change category.
+- The headline family result is followed by issuer-level splits where they matter.
 
-## Why is excess use no longer a core slide?
+## A3. One route universe supports two measurements
 
-Intermediary share divided by endpoint share measures role specialisation, not aggregate dominance. It can rank a heavily used endpoint below an inactive token if interpreted incorrectly, and observed endpoint boundaries can be affected by executor inventory. The paper retains it as a bounded supplementary comparison. The talk uses the direct additive decomposition for the issuer claim.
+- All route lengths describe participation across the whole network.
+- Exact two-atomic-trade routes isolate one vehicle choice.
+- Both come from the same reconstructed routes; the denominator changes with the question.
 
-## Why not replace the annual chart with half-year points throughout?
+## A4. State is reconstructed immediately before execution
 
-Full-year points through 2025 show the non-monotonic historical path. The 2026 point is explicitly labelled H1, and the headline estimate compares January through June in both 2024 and 2026. Replacing every historical point with half-year estimates would add sampling noise while discarding the annual history.
+- Start from a verified pool state, apply events in blockchain order, then quote the route.
+- The relevant state is immediately before the transaction.
+- A daily closing reserve can already include the trade and gives the wrong counterfactual.
+
+## A5. Each AMM family has a different state vector
+
+- Constant-product pools need reserves and fees.
+- Concentrated-liquidity pools also need active liquidity and ticks.
+- Weighted pools and v4 hooks require their own pricing inputs. One formula cannot be imposed on all families.
+
+## A5.1. Pool formation determines available paths
+
+- V1 permits ETH-token pools, so ETH is built into the feasible route set.
+- V2 permits arbitrary token pairs, making direct paths and alternative vehicles possible.
+- Pool creation changes the opportunity set before any router chooses a path.
+
+## A5.2. Executable depth comes from active liquidity
+
+- V3 liquidity can sit outside the current price range.
+- Total deposits and executable depth can therefore differ sharply.
+- For a given trade size, the quote across the price curve is the relevant object.
+
+## A5.3. Shared accounting moves route settlement
+
+- V4 records deltas inside one singleton and settles net balances after the lock.
+- Intermediate token transfers can be netted.
+- The route still uses identifiable pools, prices, and liquidity.
+
+## A6. V1 forced routes have an on-chain signature
+
+- Two token-exchange contracts, same transaction, matching ETH out and ETH in.
+- That exact ETH flow identifies forced token-to-ETH-to-token routing.
+- Missing token crosswalks limit uniform ultimate-pair identification, which is why v1 stays separate.
+
+## A7. Daily and weekly frequencies answer different questions
+
+- Calendar-day comparisons preserve day-level variation.
+- Complete weeks give balanced weekly aggregates.
+- Exact future dates keep the stated 30- or 120-day horizon; they do not substitute a convenient nearby date.
+
+## A7b. Stablecoin use rises within every venue scope
+
+- Stablecoin shares rise within single-exchange and cross-exchange routes.
+- So exchange integration alone does not generate the rotation.
+- The bars show the same comparison by intermediary positions and routed value.
+
+## A8. Count versus value weighting
+
+- Count weighting gives each route one unit.
+- Value weighting lets economically larger routes carry more weight.
+- The same route population underlies both; only the weight changes.
+
+## Vehicle dominance aggregates realised intermediary choices
+
+- One route records who actually sits in the middle.
+- Aggregate dominance sums those realised choices.
+- Endpoint use, graph position, and execution cost are nearby objects and stay separate.
+
+## A9. Intermediary and route-endpoint use are separate
+
+- Intermediary share asks how often an asset sits inside a route.
+- Endpoint share asks how often it appears at either observed end.
+- Their difference or ratio describes role specialisation. It is supplementary because observed endpoints can reflect executor inventory.
+
+## A10. Capital, inventory, and depth differ
+
+- Inventory is the exact token balance held by a pool.
+- Deposited capital is the broader value supplied by liquidity providers.
+- Executable depth is the quantity available for this trade size within a price-impact band.
+
+## A11. Additional venues expand the feasible route set
+
+- More venues can add a better pool for the same vehicle.
+- They can also add a different vehicle path or a direct route.
+- The exact-price exercise opens those sets step by step.
+
+## A11b. Venue scope and vehicle type differ in 2026
+
+- Cross-exchange routing and stablecoin routing are related but distinct.
+- Both single- and cross-exchange routes contain native and stable vehicles.
+- This is why venue integration stays separate from vehicle identity.
+
+## A12. References: vehicle currencies and market structure
+
+- These papers provide the vehicle-currency, liquidity, coordination, and network foundations.
+- Somogyi is the closest empirical FX comparison; it infers connected vehicle use from separate market records.
+- Our route data observe the connection directly.
+
+## A13. References: decentralised exchange design
+
+- These papers provide the AMM pricing, routing, and liquidity-provision foundations.
+- The route-cost exercise sits closest to the optimal-routing literature.
+- Our distinctive object is the vehicle and the formation of the trading network around it.
+
+## A14. WETH stays the graph hub as realised use shifts
+
+- WETH ranks first in betweenness in every annual atomic-pair graph and remains at 0.927 in 2026 H1.
+- Its realised intermediary-position share still falls from 76.2 to 42.3 percent; USDC and USDT together rise from 14.9 to 37.4.
+- A binary edge records an available connection. It does not record route depth or execution cost, so graph position alone cannot explain realised use.
+
+## A15. Endpoint demand and intermediary use move together
+
+- (I_{a,t}) is currency (a)'s intermediary share on date (t); (D_{a,t}) is its endpoint-demand share.
+- With date and currency effects, one extra percentage point of endpoint demand maps into 0.98 points of intermediary use.
+- Currency effects absorb permanent asset-class indicators, so those rows disappear in model 4.
+
+## A16. Ultimate-pair composition contains a mechanical component
+
+- WETH at an endpoint rules out WETH as the intermediary.
+- Removing those ultimate pairs reduces the count rotation sharply.
+- Fixed ultimate pairs still show only small net stablecoin movement, so the central composition result survives the eligibility issue.
+
+## A17. Endpoint direction separates count and value channels
+
+- Other ultimate pairs supply the largest count and value contribution.
+- Ultimate pairs with two stablecoin endpoints are small by count and large by value.
+- USDT supplies essentially that entire high-value two-stable-endpoint channel.
+
+## A18. Local depth remains informative alongside network reach
+
+- The deepest supported bridge carries 84.1 percent of routes.
+- Local weak-atomic-pair capital and broader same-day reach both predict route share.
+- Betweenness asks a related graph-position question; this regression uses observed reach outside the local ultimate pair.
+
+## A19. Most first-use capital sits in pools already active
+
+- 92.5 percent of capital at first use sits in pools that were already active a week earlier.
+- Providers mainly deepen existing pools; newly active pools add a smaller route-formation channel.
+- The data show where capital appears, while trader waiting and provider anticipation remain observationally close.
+
+## A20. V4 participation broadens after internal routing
+
+- More internal same-asset routing predicts near-term activity from already active origins.
+- Later, it predicts activity from origins first seen after the measurement date.
+- Persistent volatility strengthens the later association. Origins are accounts, so beneficial ownership remains unknown.

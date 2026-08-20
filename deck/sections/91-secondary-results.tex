@@ -1,0 +1,172 @@
+% VISUAL-MANAGED-FILE
+% Secondary empirical results retained for discussion and promotion when they
+% sharpen the paper's central economic interpretation.
+\input{../output/exhibits/excess_use_date_fe_deck_values.tex}
+\input{../output/exhibits/route_methodology_heterogeneity_deck_values.tex}
+\input{../output/exhibits/endpoint_direction_deck_values.tex}
+\input{../output/exhibits/stable_stable_vehicle_values.tex}
+\input{../output/exhibits/v4_lp_origin_timing_deck_values.tex}
+\input{../output/exhibits/v4_lp_volatility_state_deck_values.tex}
+\input{../output/exhibits/network_position_deck_values.tex}
+
+% VISUAL-FUNCTION: graph position and realised use | three currency comparison columns | separate binary connectivity from intermediary allocation
+\begin{frame}{A14. WETH stays the graph hub as realised use shifts}
+\evidencekicker{All route lengths; monthly atomic-pair graphs}
+\vspace{0.18cm}
+\begin{columns}[T,totalwidth=0.92\textwidth]
+\begin{column}{0.28\textwidth}
+{\color{muted}\scriptsize WETH BETWENNESS\par}
+{\fontsize{23}{25}\selectfont\bfseries\color{ucldark}\#1}\par
+{\small in all \NetworkWethRankYears{} annual graphs\par}
+\vspace{0.18cm}
+{\large\bfseries\color{ucldark}\NetworkWethBetweennessTwentySix}\par
+{\small in 2026 H1\par}
+\end{column}
+\hfill
+\begin{column}{0.28\textwidth}
+{\color{muted}\scriptsize WETH REALISED SHARE\par}
+{\fontsize{22}{24}\selectfont\bfseries\color{ucldark}\NetworkWethPositionTwentyFour}\par
+{\small 2024\par}
+\vspace{0.16cm}
+{\fontsize{22}{24}\selectfont\bfseries\color{accent}\NetworkWethPositionTwentySix}\par
+{\small 2026 H1\par}
+\end{column}
+\hfill
+\begin{column}{0.28\textwidth}
+{\color{muted}\scriptsize USDC + USDT REALISED SHARE\par}
+{\fontsize{22}{24}\selectfont\bfseries\color{muted}\NetworkStableDuoPositionTwentyFour}\par
+{\small 2024\par}
+\vspace{0.16cm}
+{\fontsize{22}{24}\selectfont\bfseries\color{stable}\NetworkStableDuoPositionTwentySix}\par
+{\small 2026 H1\par}
+\end{column}
+\end{columns}
+\vspace{0.48cm}
+{\large Binary network position changes much less than actual intermediary use.\par}
+\decknote{Betweenness is approximate and unweighted in annual atomic-pair graphs built from trades on the fifteenth day of each month, using 256 source nodes and a fixed seed. Realised shares use all intermediary positions on the same dates. A graph edge records an observed atomic pair, not its depth or execution cost.}
+\end{frame}
+
+% VISUAL-FUNCTION: endpoint demand and intermediary use | four-model regression table | show within-date demand pass-through and fixed-effect progression
+\begin{frame}{A15. Endpoint demand and intermediary use move together}
+\centering
+{\scriptsize
+\renewcommand{\arraystretch}{0.96}
+\begin{tabularx}{0.94\textwidth}{@{}Xcccc@{}}
+\toprule
+ & \multicolumn{4}{c}{Intermediary share \((I_{a,t})\) [pp]} \\
+\cmidrule(lr){2-5}
+ & (1) & (2) & (3) & (4) \\
+ & Pooled & Date FE & {}+ demand & {}+ currency FE \\
+\midrule
+Native currency & \DateFEPooledNativeTable{} & \DateFEDayNativeTable{} & \DateFEDemandNativeTable{} & --- \\
+ & (\DateFEPooledNativeTableSE{}) & (\DateFEDayNativeTableSE{}) & (\DateFEDemandNativeTableSE{}) & --- \\
+Stablecoin & \DateFEPooledStableTable{} & \DateFEDayStableTable{} & \DateFEDemandStableTable{} & --- \\
+ & (\DateFEPooledStableTableSE{}) & (\DateFEDayStableTableSE{}) & (\DateFEDemandStableTableSE{}) & --- \\
+Endpoint-demand share \((D_{a,t})\) & --- & --- & \DateFESlopeTable{} & \DateFESlopeWithinTokenTable{} \\
+ & --- & --- & (\DateFESlopeTableSE{}) & (\DateFESlopeWithinTokenTableSE{}) \\
+\midrule
+Date fixed effects & No & Yes & Yes & Yes \\
+Currency fixed effects & No & No & No & Yes \\
+\bottomrule
+\end{tabularx}\par}
+\vspace{0.06cm}
+{\footnotesize After date and currency effects, endpoint demand passes through almost one for one into intermediary use.\par}
+\decknote{\DateFETokenDays{} currency-days over \DateFEDays{} dates. Parentheses report currency/date-clustered standard errors. The outcome and demand regressor are in pp. Currency effects absorb time-invariant asset-class indicators. Asterisks \(*\), \(**\), and \(***\) denote significance at 10\%, 5\%, and 1\%, respectively.}
+\end{frame}
+
+% VISUAL-FUNCTION: endpoint eligibility in the decomposition | two-branch composition diagram | isolate the mechanical WETH-endpoint component
+% EVIDENCE-STATUS: supporting deterministic eligibility decomposition.
+% EVIDENCE-SOURCES: output/exhibits/route_methodology_heterogeneity.jsonl; output/exhibits/route_methodology_heterogeneity_deck_values.tex
+\begin{frame}{A16. Ultimate-pair composition contains a mechanical component}
+\vspace{-0.10cm}
+\begin{center}
+\resizebox{0.90\textwidth}{!}{\input{assets/vehicle-transition-pair-decomposition.tex}}
+\end{center}
+\vspace{-0.08cm}
+{\large Changes within fixed ultimate pairs are \WethCountWithinFullChange{} overall and \WethCountWithinNoEndpointChange{} after removing WETH endpoints.\par}
+\decknote{WETH cannot be both an ultimate-pair endpoint and the intermediary. Exact two-atomic-trade native-WETH-versus-stablecoin routes on common month-days; fixed-pair estimates also absorb month-day and route scope.}
+\end{frame}
+
+% VISUAL-FUNCTION: endpoint direction and rotation | paired count-value contribution bars | distinguish broad count growth from stable-to-stable value concentration
+\begin{frame}{A17. Endpoint direction separates count and value channels}
+\vspace{-0.12cm}
+\begin{center}
+\resizebox{0.94\textwidth}{!}{\input{assets/endpoint-direction-rotation.tex}}
+\end{center}
+\vspace{-0.08cm}
+{\large USDT supplies \StableStableUsdtValueContribution{} of the \StableStableValueContribution{} two-stable-endpoint value channel.\par}
+\decknote{Exact additive decomposition on 181 matched dates in 2024 and 2026. Endpoint direction describes the ultimate pair; the vehicle remains the intermediary token.}
+\end{frame}
+
+% VISUAL-FUNCTION: local and network liquidity | three coefficient columns | compare bridge depth with broader network reach
+\begin{frame}{A18. Local depth remains informative alongside network reach}
+\vspace{0.18cm}
+\begin{columns}[T,totalwidth=0.92\textwidth]
+\begin{column}{0.28\textwidth}
+{\fontsize{24}{26}\selectfont\bfseries\color{ucldark}\BridgeLiquidityTopShare}\par
+{\small of routes use the deepest supported bridge\par}
+\end{column}
+\hfill
+\begin{column}{0.28\textwidth}
+{\fontsize{24}{26}\selectfont\bfseries\color{stable}\BridgeLiquidityHorseRaceDepthCoef}\par
+{\small route share per log point of weak-leg capital\par}
+\end{column}
+\hfill
+\begin{column}{0.28\textwidth}
+{\fontsize{24}{26}\selectfont\bfseries\color{uclbright}\BridgeLiquidityHorseRaceGlobalDayCoef}\par
+{\small route share per log point of same-day network reach\par}
+\end{column}
+\end{columns}
+\vspace{0.68cm}
+{\large Local two-atomic-pair depth and broader network position both matter.\par}
+\decknote{Five vehicle currencies compared within the same ultimate-pair--date--route-scope set. Depth is prior-calendar deposited capital on the weaker atomic pair. The regression absorbs set and vehicle effects and clusters by ultimate pair and date.}
+\end{frame}
+
+% VISUAL-FUNCTION: source of pre-use capital | three capital-allocation estimates | distinguish deepening from newly active pools
+\begin{frame}{A19. Most first-use capital sits in pools already active}
+\evidencekicker{Supported stablecoin, day -7 to first use}
+\vspace{0.20cm}
+\begin{columns}[T,totalwidth=0.92\textwidth]
+\begin{column}{0.28\textwidth}
+{\fontsize{24}{26}\selectfont\bfseries\color{stable}\BridgePoolMarginContinuingCapitalShare}\par
+{\small of first-use capital lies in continuing pools\par}
+\end{column}
+\hfill
+\begin{column}{0.28\textwidth}
+{\fontsize{24}{26}\selectfont\bfseries\color{ucldark}\BridgePoolMarginContinuingDifference}\par
+{\small continuing-pool growth relative to WETH\par}
+\end{column}
+\hfill
+\begin{column}{0.28\textwidth}
+{\fontsize{24}{26}\selectfont\bfseries\color{stable}\BridgePoolMarginNewPoolDifference}\par
+{\small greater probability of a newly active pool\par}
+\end{column}
+\end{columns}
+\decknote{\BridgePoolMarginEvents{} first-use events. A newly active pool has positive prior-calendar capital on day zero and none on day -7; continuing pools are positive on both dates. Difference inference clusters by ultimate pair and adoption date.}
+\end{frame}
+
+% VISUAL-FUNCTION: V4 routing and later participation | three horizon-state estimates | show how account participation broadens over time
+\begin{frame}{A20. V4 participation broadens after internal routing}
+\evidencekicker{10 pp more internal same-asset routing}
+\vspace{0.18cm}
+\begin{columns}[T,totalwidth=0.92\textwidth]
+\begin{column}{0.28\textwidth}
+{\color{muted}\scriptsize DAYS 1 TO 30\par}
+{\fontsize{23}{25}\selectfont\bfseries\color{stable}\VFourOriginNearIncumbentCoef}\par
+{\small actions by previously active origins\par}
+\end{column}
+\hfill
+\begin{column}{0.28\textwidth}
+{\color{muted}\scriptsize DAYS 31 TO 120\par}
+{\fontsize{23}{25}\selectfont\bfseries\color{stable}\VFourOriginLateEntryCoef}\par
+{\small origins first active after measurement\par}
+\end{column}
+\hfill
+\begin{column}{0.28\textwidth}
+{\color{muted}\scriptsize PERSISTENT VOLATILITY\par}
+{\fontsize{23}{25}\selectfont\bfseries\color{stable}\VFourVolStateLateInteractionCoef}\par
+{\small additional later first-active-origin association\par}
+\end{column}
+\end{columns}
+\decknote{V4 vehicle-days with 180 prior days used to classify origins. Specifications absorb vehicle and date effects, include origin-day controls, and cluster by date. Transaction origins proxy for account participation. The estimates are predictive.}
+\end{frame}

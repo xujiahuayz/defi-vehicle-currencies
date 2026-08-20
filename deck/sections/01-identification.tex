@@ -27,7 +27,7 @@
 \draw[route,draw=ucldark,line width=1.55pt] (src)--(veh);
 \draw[route,draw=ucldark,line width=1.55pt] (veh)--(dst);
 \draw[rule,densely dashed,line width=1.2pt] (src) to[bend right=28] (dst);
-\node[softbox,text width=5.15cm,align=center] at (2.50,1.15) {\small Currency $k$ bridges an illiquid pair.};
+\node[softbox,text width=5.15cm,align=center] at (2.50,1.15) {\small Currency $k$ bridges an illiquid ultimate pair.};
 \node[font=\scriptsize\bfseries,text=white,fill=ucldark,rounded corners=2pt,inner sep=4pt] at (2.50,0.30) {vehicle currency};
 \end{tikzpicture}
 \end{column}
@@ -69,7 +69,7 @@
 
 % EVIDENCE-STATUS: principal route-panel scope; counts and dates come from the aggregate reconstruction-quality exhibit and the daily routing series.
 % EVIDENCE-SOURCES: output/exhibits/unified_route_quality.jsonl; output/exhibits/cross_venue_routing_series.jsonl; output/exhibits/presentation_values.tex; src/ddvc/fetch/sources.py
-% SCIENTIFIC-BOUNDARY: Uniswap v1 is excluded from the principal panel because the retained records do not recover endpoint-pair identities; it enters the separate forced-routing architecture analysis.
+% SCIENTIFIC-BOUNDARY: Uniswap v1 is excluded from the principal panel because the retained records do not recover ultimate-pair identities; it enters the separate forced-routing architecture analysis.
 % VISUAL-FUNCTION: sample perimeter | three large scope statistics plus deployment list | establish scale, time span, and venue coverage before the transaction example
 \begin{frame}{The route panel links pool-level swaps}
 \vspace{0.16cm}
@@ -94,7 +94,7 @@
 \vspace{0.16cm}
 {\small Uniswap v2, v3, and v4; SushiSwap v2 and v3; Curve; Balancer; and Fluid.\par}
 \end{beamercolorbox}
-\decknote{The listed deployments form the principal Ethereum route panel. Uniswap v1 enters the separate protocol-architecture analysis because its retained records do not recover endpoint-pair identities.}
+\decknote{The listed deployments form the principal Ethereum route panel. Uniswap v1 enters the separate protocol-architecture analysis because its retained records do not recover ultimate-pair identities.}
 \end{frame}
 
 \input{../output/exhibits/route_replay_deck_values.tex}
@@ -128,20 +128,20 @@
 \vspace{0.15cm}
 \begin{minipage}{0.78\textwidth}
 \centering
-{\small The observed endpoint pair is USDC $\rightarrow$ USDe. Its legs are USDC $\rightarrow$ USDT and USDT $\rightarrow$ USDe; USDT is the vehicle that links them.\par}
+{\small The ultimate pair is USDC $\rightarrow$ USDe. Its atomic pairs are USDC--USDT and USDT--USDe; USDT is the vehicle that links them.\par}
 \end{minipage}
 \par\vspace{0.04cm}
 {\raggedright\decknote{The route is the connected pool-swap component of transaction \ethtx{0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9}{0xbda1d07f\ldots 9bf67ad9} on 10 January 2026. The pool component begins at USDC. It does not reveal whether PYUSD became USDC in an unobserved pool or through the executor's inventory.}}
 \end{frame}
 
 % VISUAL-FUNCTION: dominance denominator | route glyph plus paired measure definitions | separate count and value shares
-\begin{frame}{Vehicle dominance is an intermediary share}
+\begin{frame}{The full route and the one-vehicle choice answer different questions}
 \begin{columns}[T,totalwidth=\textwidth]
 \begin{column}{0.43\textwidth}
 \evidencekicker{Measurement}
 \begin{itemize}
-\item Dominance is the share of indirect trade intermediated by asset $k$.
-\item The main comparison uses exact two-leg routes with one native or stable intermediary.
+\item Every complete route contributes each currency used in an intermediary position.
+\item Exact two-atomic-trade routes isolate one vehicle choice.
 \end{itemize}
 \end{column}
 \begin{column}{0.53\textwidth}
@@ -152,105 +152,12 @@
 \node[nodepoint] (b) at (4.0,3.45) {$o$};
 \draw[route] (a) -- (k);
 \draw[route] (k) -- (b);
-\node[anchor=west,font=\small\bfseries,text=ucldark] at (0,2.10) {Count-weighted dominance};
-\node[anchor=west,font=\small,align=left,text width=6.0cm] at (0,1.58) {Share of indirect routes that pass through $k$};
-\node[anchor=west,font=\small\bfseries,text=stable] at (0,0.78) {Value-weighted dominance};
-\node[anchor=west,font=\small,align=left,text width=6.0cm] at (0,0.26) {Source, vehicle, and destination values agree within 20\%};
+\node[anchor=west,font=\small\bfseries,text=ucldark] at (0,2.10) {All route lengths};
+\node[anchor=west,font=\small,align=left,text width=6.0cm] at (0,1.58) {Presence on a route and share of all intermediary positions};
+\node[anchor=west,font=\small\bfseries,text=stable] at (0,0.78) {One vehicle per route};
+\node[anchor=west,font=\small,align=left,text width=6.0cm] at (0,0.26) {Exact two-atomic-trade routes support decomposition and choice tests};
 \end{tikzpicture}
 \end{column}
 \end{columns}
-\decknote{Count dominance weights each route equally. The supplementary all-length measure counts every intermediary used by a connected route; the main native-versus-stable rotation uses the exact two-leg perimeter shown here.}
-\end{frame}
-
-% EVIDENCE-STATUS: verified institutional mechanism; no empirical estimate is displayed.
-% SOURCE: docs/findings/v1-forced-vehicle.md (V1/V2 pairing contract).
-% SOURCE: literature/text/2021-AdamsZinsmeisterRobinson2021UniswapV3-whitepaper-uniswap-v3-core.txt (V3 ranges, ticks, and fee tiers).
-% SOURCE: https://app.uniswap.org/whitepaper-v4.pdf, Adams et al. (2024), Uniswap v4 Core, Sections 1 and 3 (singleton, hooks, and flash accounting).
-% SOURCE: docs/research/design.md (V4 settlement boundary).
-% SOURCE: src/ddvc/execution_contracts.py (supported V4 vanilla concentrated-liquidity contract).
-% SCIENTIFIC-BOUNDARY: architecture changes feasible pair formation, liquidity placement, or settlement. Pool adoption and realised route use are endogenous exposure, and calendar date alone is not treatment.
-% VISUAL-FUNCTION: V1-to-V4 architecture morph | four-panel mechanism strip | separate design, realised exposure, and calendar time
-\begin{frame}{Architecture changes routing opportunities}
-\setlength{\fboxsep}{5pt}
-\setlength{\fboxrule}{0.45pt}
-\begin{columns}[T,totalwidth=\textwidth]
-
-% V1: the pairing contract makes ETH the only token-to-token path.
-\begin{column}{0.238\textwidth}
-\fcolorbox{rule}{panel}{\begin{minipage}[t][3.15cm][t]{0.88\linewidth}
-{\small\bfseries\color{ucldark}V1}\hfill{\scriptsize\color{muted}mandatory hub}\par
-\vspace{0.18cm}
-\centering
-\begin{tikzpicture}[tinyasset/.style={circle,draw=ink,fill=white,minimum size=14pt,inner sep=0pt,font=\tiny},routearrow/.style={-{Stealth[length=4pt]},line width=1.15pt}]
-\node[tinyasset] (a) at (0,0) {A};
-\node[tinyasset,fill=ucldark,text=white,draw=ucldark,minimum size=23pt] (k) at (1.05,0) {ETH};
-\node[tinyasset] (b) at (2.10,0) {B};
-\draw[routearrow,draw=accent] (a)--(k);
-\draw[routearrow,draw=accent] (k)--(b);
-\draw[rule,densely dashed] (a) to[bend left=35] node[above,font=\tiny,text=muted] {vehicle-only} (b);
-\end{tikzpicture}
-\vfill
-{\scriptsize\bfseries\color{accent}Hub use is imposed}\par
-\end{minipage}}
-\end{column}
-
-% V2: arbitrary pairs add a direct opportunity while leaving vehicle routes feasible.
-\begin{column}{0.238\textwidth}
-\fcolorbox{rule}{panel}{\begin{minipage}[t][3.15cm][t]{0.88\linewidth}
-{\small\bfseries\color{ucldark}V2}\hfill{\scriptsize\color{muted}trading-pair choice}\par
-\vspace{0.18cm}
-\centering
-\begin{tikzpicture}[tinyasset/.style={circle,draw=ink,fill=white,minimum size=14pt,inner sep=0pt,font=\tiny},routearrow/.style={-{Stealth[length=4pt]},line width=1.15pt}]
-\node[tinyasset] (a) at (0,0) {A};
-\node[tinyasset,fill=ucldark,text=white,draw=ucldark,minimum size=23pt] (k) at (1.05,0) {$k$};
-\node[tinyasset] (b) at (2.10,0) {B};
-\draw[routearrow,draw=ucldark] (a)--(k);
-\draw[routearrow,draw=ucldark] (k)--(b);
-\draw[routearrow,draw=stable] (a) to[bend left=35] node[above,font=\tiny,text=stable] {direct} (b);
-\end{tikzpicture}
-\vfill
-{\scriptsize\bfseries\color{stable}Hub use becomes a choice}\par
-\end{minipage}}
-\end{column}
-
-% V3: bounded ranges make active depth depend on where liquidity is placed.
-\begin{column}{0.238\textwidth}
-\fcolorbox{rule}{panel}{\begin{minipage}[t][3.15cm][t]{0.88\linewidth}
-{\small\bfseries\color{ucldark}V3}\hfill{\scriptsize\color{muted}range choice}\par
-\vspace{0.25cm}
-\centering
-\begin{tikzpicture}[x=1cm,y=1cm]
-\node[anchor=east,font=\tiny] at (0.28,0.27) {A/B};
-\draw[rule,line width=0.85pt] (0.38,0.27)--(2.18,0.27);
-\draw[stable,line width=3pt] (0.83,0.27)--(1.35,0.27);
-\node[anchor=east,font=\tiny] at (0.28,-0.20) {via $k$};
-\draw[rule,line width=0.85pt] (0.38,-0.20)--(2.18,-0.20);
-\draw[ucldark,line width=3pt] (0.58,-0.20)--(1.08,-0.20);
-\draw[uclbright,line width=3pt] (1.48,-0.20)--(2.02,-0.20);
-\end{tikzpicture}
-\vfill
-{\scriptsize\bfseries\color{uclbright}Trading opportunities shift}\par
-\end{minipage}}
-\end{column}
-
-% V4: settlement can net movement without erasing the economic route or its pools.
-\begin{column}{0.238\textwidth}
-\fcolorbox{rule}{panel}{\begin{minipage}[t][3.15cm][t]{0.88\linewidth}
-{\small\bfseries\color{ucldark}V4}\hfill{\scriptsize\color{muted}net settlement}\par
-\vspace{0.18cm}
-\centering
-\begin{tikzpicture}[tinyasset/.style={circle,draw=ink,fill=white,minimum size=14pt,inner sep=0pt,font=\tiny},routearrow/.style={-{Stealth[length=4pt]},line width=1.15pt}]
-\node[rounded corners=2pt,draw=uclbright,densely dashed,minimum width=2.45cm,minimum height=0.92cm] at (1.05,0) {};
-\node[tinyasset] (a) at (0,0) {A};
-\node[tinyasset,fill=ucldark,text=white,draw=ucldark,minimum size=21pt] (k) at (1.05,0) {$k$};
-\node[tinyasset] (b) at (2.10,0) {B};
-\draw[routearrow,draw=ucldark] (a)--(k);
-\draw[routearrow,draw=ucldark] (k)--(b);
-\node[anchor=north,font=\tiny,text=uclbright] at (1.05,-0.50) {shared accounting};
-\end{tikzpicture}
-\vfill
-{\scriptsize\bfseries\color{ucldark}Settlement differs from route use}\par
-\end{minipage}}
-\end{column}
-\end{columns}
+\decknote{Route-participation shares can sum above 100\% because a longer route may use several intermediary currencies. Intermediary-position shares divide all realised intermediary uses and sum to 100\%. Exact two-atomic-trade routes map one route to one vehicle.}
 \end{frame}

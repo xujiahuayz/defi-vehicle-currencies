@@ -579,6 +579,105 @@ def _draw_frame(
     )
 
 
+def _draw_poster(
+    figure: plt.Figure,
+    timeline: pd.DataFrame,
+    frame_index: int,
+) -> None:
+    """Draw a sparse clickable poster while the film retains the full detail."""
+
+    figure.clear()
+    figure.patch.set_facecolor(BACKGROUND)
+    axis = figure.add_axes((0.11, 0.17, 0.78, 0.68))
+    current = timeline.iloc[frame_index]
+    current_date = pd.Timestamp(current["date"])
+    history = timeline.iloc[: frame_index + 1]
+    history = history.loc[
+        pd.to_datetime(history["date"]).ge(current_date - pd.Timedelta(days=TRAIL_DAYS))
+    ]
+
+    figure.text(
+        0.89,
+        0.91,
+        current_date.strftime("%B %Y"),
+        fontsize=19,
+        fontweight="bold",
+        color=ACCENT,
+        ha="right",
+        va="center",
+    )
+    axis.set_xlim(0, 0.90)
+    axis.set_ylim(0, 0.90)
+    axis.plot([0, 0.90], [0, 0.90], color=GRID, linestyle=(0, (4, 5)), linewidth=1.2)
+    axis.grid(color=GRID, linewidth=0.75, alpha=0.82)
+    axis.spines[["top", "right"]].set_visible(False)
+    axis.spines[["bottom", "left"]].set_color(GRID)
+    axis.tick_params(axis="both", length=0, labelcolor=MUTED, labelsize=10)
+    axis.xaxis.set_major_formatter(PercentFormatter(1, decimals=0))
+    axis.yaxis.set_major_formatter(PercentFormatter(1, decimals=0))
+    axis.set_xlabel("Share of intermediary routes", fontsize=12, color=INK, labelpad=10)
+    axis.set_ylabel(
+        "Share of supported intermediary value",
+        fontsize=12,
+        color=INK,
+        labelpad=10,
+    )
+
+    maximum_pairs = max(
+        float(timeline[f"{symbol}_active_pairs"].max()) for symbol in SYMBOLS
+    )
+    label_positions = spread_label_positions(
+        {
+            symbol: float(current[f"{symbol}_value_share"])
+            for symbol in SYMBOLS
+        }
+    )
+    for symbol in SYMBOLS:
+        _add_trail(axis, history, symbol)
+        x_value = float(current[f"{symbol}_count_share"])
+        y_value = float(current[f"{symbol}_value_share"])
+        axis.scatter(
+            [x_value],
+            [y_value],
+            s=bubble_area(
+                float(current[f"{symbol}_active_pairs"]),
+                maximum=maximum_pairs,
+            ),
+            facecolor=to_rgba(COLORS[symbol], 0.78),
+            edgecolor=BACKGROUND,
+            linewidth=2.2,
+            zorder=4,
+        )
+        label_x = x_value + 0.025 if x_value < 0.72 else x_value - 0.025
+        axis.annotate(
+            symbol,
+            (x_value, y_value),
+            xytext=(label_x, label_positions[symbol]),
+            textcoords="data",
+            ha="left" if x_value < 0.72 else "right",
+            va="center",
+            fontsize=12,
+            fontweight="bold",
+            color=COLORS[symbol],
+            clip_on=False,
+            arrowprops={
+                "arrowstyle": "-",
+                "color": COLORS[symbol],
+                "linewidth": 0.85,
+                "alpha": 0.62,
+            },
+        )
+
+    figure.text(
+        0.11,
+        0.075,
+        "Bubble area: active ultimate pairs   |   Trail: prior six months",
+        fontsize=11,
+        color=MUTED,
+        ha="left",
+    )
+
+
 def render_outputs(
     monthly: pd.DataFrame,
     *,
@@ -589,7 +688,7 @@ def render_outputs(
     fps: int = 24,
     poster_only: bool = False,
 ) -> None:
-    """Render a 16:9 H.264 film and a final-month PDF/PNG keyframe."""
+    """Render a 16:9 H.264 film and a sparse final-month PDF/PNG poster."""
 
     if seconds <= 0 or fps <= 0:
         raise ValueError("seconds and fps must be positive")
@@ -607,7 +706,7 @@ def render_outputs(
     ):
         figure = plt.figure(figsize=(16, 9), dpi=120)
         try:
-            _draw_frame(figure, timeline, len(timeline) - 1)
+            _draw_poster(figure, timeline, len(timeline) - 1)
             with tempfile.TemporaryDirectory(
                 prefix="vehicle-timelapse-", dir=poster_pdf_output.parent
             ) as temporary:
@@ -625,6 +724,7 @@ def render_outputs(
                 png.replace(poster_png_output)
             if poster_only:
                 return
+            _draw_frame(figure, timeline, 0)
             ffmpeg = shutil.which("ffmpeg")
             if ffmpeg is None:
                 raise FileNotFoundError("ffmpeg is required to render the MP4")
