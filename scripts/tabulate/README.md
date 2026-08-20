@@ -23,6 +23,7 @@ Captions, labels, placement, and interpretation stay in the paper/deck source.
 | `render_v4_flash_lp_mechanism.py` | `v4_flash_lp_mechanism.tex/.pdf` | `tab:v4-flash-lp` |
 | `render_v4_lp_origin_timing.py` | `v4_lp_origin_timing.tex/.pdf` | `tab:app:v4-origin-timing` |
 | `render_v4_lp_volatility_state.py` | `v4_lp_volatility_state.tex/.pdf` | `tab:v4-lp-volatility-state` |
+| `render_v3_v4_internal_routing_participation.py` | `v3_v4_internal_routing_participation.tex/.pdf` | `tab:app:v3-v4-routing-participation` |
 | `render_v4_flash_gap_interactions.py` | `v4_flash_gap_interactions.tex/.pdf` | `tab:v4-flash-gap` |
 | `render_v4_flash_gap_flow_interactions.py` | `v4_flash_gap_flow_interactions.tex/.pdf` | `tab:v4-flash-gap-flow` |
 | `render_v3_v4_lp_protocol_contrast.py` | `v3_v4_lp_protocol_contrast.tex/.pdf` | `tab:v3-v4-lp-protocol` |

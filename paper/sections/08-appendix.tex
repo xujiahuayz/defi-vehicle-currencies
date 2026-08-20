@@ -524,7 +524,7 @@ Across the quantile rows of Table~\ref{tab:app:roundtrip}, the Share by value co
 \section{Additional liquidity-provider estimates}
 \label{app:lp-detail}
 
-Table~\ref{tab:app:v4-origin-timing} separates actions by incumbent and first-active transaction origins. Table~\ref{tab:v4-flash-gap-flow} reports the vehicle-token flow outcomes that accompany the V4 stock, action, and range estimates in Table~\ref{tab:v4-flash-gap}. Tables~\ref{tab:v3-v4-lp-protocol}, \ref{tab:v3-v4-lp-flow-protocol}, and \ref{tab:v3-v4-tvl-protocol} report every horizon and outcome underlying the main-text protocol comparison. These estimates retain the same vehicle-date comparison and observational interpretation as Equation~\eqref{eq:v3-v4-protocol-contrast}.
+Table~\ref{tab:app:v4-origin-timing} separates actions by incumbent and first-active transaction origins. Table~\ref{tab:app:v3-v4-routing-participation} compares routing-linked participation in V3 and V4 on the same vehicle-dates. Table~\ref{tab:v4-flash-gap-flow} reports the vehicle-token flow outcomes that accompany the V4 stock, action, and range estimates in Table~\ref{tab:v4-flash-gap}. Tables~\ref{tab:v3-v4-lp-protocol}, \ref{tab:v3-v4-lp-flow-protocol}, and \ref{tab:v3-v4-tvl-protocol} report every horizon and outcome underlying the main-text protocol comparison. These estimates retain the same vehicle-date comparison and observational interpretation as Equation~\eqref{eq:v3-v4-protocol-contrast}.
 
 \begin{table}[tbp]
 \centering
@@ -537,6 +537,18 @@ Table~\ref{tab:app:v4-origin-timing} separates actions by incumbent and first-ac
 \exhibitnote{Each cell reports the response to a 10 pp increase in the row's V4 accounting proxy, with standard errors in parentheses. The unit is a vehicle-day. The primary sample excludes modify-liquidity updates with zero liquidity change. An incumbent origin was active for the same vehicle during the preceding 180 days. A newly active origin in days 1 to 30 was absent from that prior window. A first-active origin in days 31 to 120 was absent both from the prior window and from days 1 to 30. All specifications absorb vehicle and origin-date effects, include origin-day swap activity, vehicle-token-side LP flow, vehicle-linked reported liquidity, LP actions, and range composition, and cluster by origin date. P-values are Holm-adjusted across the twelve displayed estimates. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively. Transaction origins proxy for account participation, not beneficial ownership of LP positions. The estimates are predictive associations.}
 \end{table}
 % output/exhibits/v4_lp_origin_timing.jsonl; output/tables/v4_lp_origin_timing.tex; producer scripts/analyze/run_v4_lp_origin_timing.py and scripts/tabulate/render_v4_lp_origin_timing.py.
+
+\begin{table}[tbp]
+\centering
+\caption{Internal routing and subsequent participation in V3 and V4}
+\label{tab:app:v3-v4-routing-participation}
+{\scriptsize
+\renewcommand{\arraystretch}{0.90}
+\input{../output/tables/v3_v4_internal_routing_participation.tex}
+}
+\exhibitnote{Each coefficient is in log points for 10 pp more internal same-asset routing. Standard errors are in parentheses. Panel A reports protocol-specific slopes and their difference from 23 July 2025 through 2 March 2026, requiring 180 prior days to classify incumbent origins. Panel B interacts routing with one standard deviation more lagged 30-day mean realised WETH volatility on that calendar. Panel C uses a 90-day prior window and separates the mature calendar from 24 April through 27 July 2025; the Pooled dates row combines both periods. The unit is a vehicle-day with positive vehicle transaction counts in both protocols. Specifications first difference V4 and V3 outcomes for the same vehicle-day, absorb vehicle and origin-date effects, include protocol-specific routing-activity and prior-action controls, and cluster by origin date. State specifications also include vehicle-specific and protocol-control-specific volatility slopes. Stars appear only on V4-minus-V3 rows and use Holm adjustment across the two outcomes within each sample. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively. V3 participation uses nonzero mint and burn events; V4 participation uses nonzero modify-liquidity events. Transaction origins proxy for account participation, not beneficial ownership of LP positions. The estimates are predictive protocol comparisons.}
+\end{table}
+% output/exhibits/v3_v4_internal_routing_participation.jsonl; output/tables/v3_v4_internal_routing_participation.tex; producer scripts/process/build_v3_internal_routing_candidate_daily.py, scripts/process/build_v3_v4_lp_origin_candidate_daily.py, scripts/analyze/run_v3_v4_internal_routing_participation.py, and scripts/tabulate/render_v3_v4_internal_routing_participation.py.
 
 \begin{table}[tbp]
 \centering

@@ -16,6 +16,7 @@ belongs in `../plot/` or `../tabulate/`.
 | `run_bridge_liquidity_feedback.py` | exploratory dynamic feedback between local bridge depth and vehicle use |
 | `run_mechanism_expansion_exploration.py` | provisional JFE-expansion mechanism regressions and formation summaries |
 | `run_route_gas_economics.py` | exploratory receipt-gas hurdle for direct and extra-hop vehicle routes |
+| `run_v3_v4_internal_routing_participation.py` | same-candidate-day V3/V4 internal-routing, origin-participation, and persistent-volatility contrasts |
 | `run_stable_stress_event.py` | exploratory USDC/SVB stable-vehicle identity stress screen |
 | `run_route_heterogeneity.py` | WETH-eligibility and route-scope results plus deck values |
 | `run_usdt_integration_decomposition_e0.py` | USDT transition decomposition; pair-decomposition values |

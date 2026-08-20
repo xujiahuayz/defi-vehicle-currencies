@@ -64,6 +64,18 @@ leave-one-vehicle-out estimates are sensitivities. This test distinguishes
 persistent risk-bearing conditions from an architecture-only account without
 calling volatility an exogenous provider constraint.
 
+The protocol comparison constructs internal same-asset routing identically from
+V3 and V4 swap legs, pairs the same vehicle and calendar day, and measures future
+participation from nonzero V3 mint/burn and V4 modify-liquidity actions. The
+primary 180-day-history sample runs from 23 July 2025 through 2 March 2026. On
+that mature common calendar, neither the level difference in routing slopes nor
+the V4-minus-V3 difference in their persistent-volatility interactions survives
+the two-outcome Holm correction. A pooled 90-day-history sample produces large
+differences, but neither its early nor mature calendar segment reproduces that
+pooled estimate. The protocol-specific interpretation is therefore withheld:
+the V4 result describes participation under its singleton architecture, while
+common trading demand and risk-bearing conditions remain viable explanations.
+
 ## Question and contribution
 
 The paper asks what makes a vehicle currency dominant and how that dominance
