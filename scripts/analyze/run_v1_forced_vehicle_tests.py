@@ -410,9 +410,16 @@ def test2_persistence(pr: pd.DataFrame, xw: pd.DataFrame, out: list[str]) -> Non
             labels=["wk 0", "wk 1", "wk 2-3", "wk 4-7", "wk 8-12", "wk 13-25",
                     "wk 26-51", "wk 52+"]))
         g = b.groupby("bucket", observed=True).agg(
-            pairs=("t0", "nunique"), trades=("n_direct", "sum"),
-            eth_trades=("n_eth_routed", "sum"),
+            trades=("n_direct", "sum"), eth_trades=("n_eth_routed", "sum"),
             usd_direct=("usd_direct", "sum"), usd_eth=("usd_eth_routed", "sum"))
+        g.insert(
+            0,
+            "pairs",
+            b[["bucket", "t0", "t1"]]
+            .drop_duplicates()
+            .groupby("bucket", observed=True)
+            .size(),
+        )
         g["eth_share_count"] = g.eth_trades / (g.eth_trades + g.trades)
         g["eth_share_value"] = g.usd_eth / (g.usd_eth + g.usd_direct)
         # per-pair shares as well as pooled ones: the pooled figure is dominated by a
@@ -453,14 +460,17 @@ def test2_persistence(pr: pd.DataFrame, xw: pd.DataFrame, out: list[str]) -> Non
                    f"(rows) and weeks since availability (columns):\n")
         out.append(md(piv.reset_index()))
 
-    # restricted to tokens the crosswalk pins to a V1 exchange
-    v1tok = set(xw[xw.resolved].token)
-    r = post[post.t0.isin(v1tok) & post.t1.isin(v1tok)]
-    out.append(f"\nCrosswalk-resolved V1 tokens: {len(v1tok):,}. "
-               f"Pairs in the test with BOTH tokens resolved to a V1 exchange: "
+    # Restrict to tokens whose V1 exchange traded before V2 launched, and keep only
+    # days on which the newly available direct alternative remained active.
+    v1tok = set(xw[xw.v1_era].token)
+    r = post[post.alive & post.t0.isin(v1tok) & post.t1.isin(v1tok)]
+    out.append(f"\nTokens traded on V1 before V2 launched: {len(v1tok):,}. "
+               f"Pairs in the test with both tokens in that pre-V2 set and an active "
+               f"direct alternative: "
                f"{r.groupby(['t0', 't1']).ngroups:,}.\n")
     if r.groupby(["t0", "t1"]).ngroups >= 5:
-        profile(r, "**V1-token pairs only**, weeks since a direct pool first traded:")
+        profile(r, "**Pre-V2 V1-token pairs with an active direct alternative**, weeks "
+                   "since a direct pool first traded:")
     else:
         out.append("\nToo few V1-token pairs survive to profile; the V1-restricted "
                    "version of Test 2 is not identified and is not reported.\n")
