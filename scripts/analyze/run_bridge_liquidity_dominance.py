@@ -1073,10 +1073,12 @@ def bridge_establishment_adoption_timing_from_events(
     comparable["event_month"] = comparable["event_date"].dt.to_period("M").astype(
         str
     )
+    comparable["src_endpoint_type"] = comparable["src"].map(asset_type)
+    comparable["tgt_endpoint_type"] = comparable["tgt"].map(asset_type)
     comparable["endpoint_direction"] = (
-        comparable["src"].map(asset_type)
+        comparable["src_endpoint_type"]
         + "_to_"
-        + comparable["tgt"].map(asset_type)
+        + comparable["tgt_endpoint_type"]
     )
     control_data = pd.concat(
         [
@@ -1217,6 +1219,51 @@ def bridge_establishment_adoption_timing_from_events(
                     ),
                 }
             )
+        no_stable_endpoint = comparable[
+            comparable["src_endpoint_type"].ne("stable")
+            & comparable["tgt_endpoint_type"].ne("stable")
+        ].copy()
+        endpoint_fit = ols_clustered(
+            no_stable_endpoint[outcome],
+            no_stable_endpoint[["competitive_depth"]],
+            no_stable_endpoint["ordered_pair"],
+            additional_clusters=(no_stable_endpoint["event_date"],),
+            min_observations=min_observations,
+            min_clusters=min_clusters,
+        )
+        rows.append(
+            {
+                "claim_status": "provisional_exploratory",
+                "record_type": "bridge_establishment_timing_regression",
+                "model_id": (
+                    f"adoption_within_{horizon_label}_on_competitive_depth_"
+                    "no_stable_endpoint"
+                ),
+                "outcome": outcome,
+                "regressor": "stable_depth_at_least_0.1x_weth",
+                "sample": "no_stablecoin_endpoint",
+                "coefficient": float(endpoint_fit.beta[1]),
+                "standard_error": float(endpoint_fit.standard_errors[1]),
+                "t_statistic": float(endpoint_fit.t_statistics[1]),
+                "p_value": float(endpoint_fit.p_values[1]),
+                "coefficient_pp": float(100.0 * endpoint_fit.beta[1]),
+                "standard_error_pp": float(
+                    100.0 * endpoint_fit.standard_errors[1]
+                ),
+                "n_observations": int(endpoint_fit.n_observations),
+                "events": int(len(no_stable_endpoint)),
+                "ordered_pair_clusters": int(endpoint_fit.cluster_counts[0]),
+                "date_clusters": int(endpoint_fit.cluster_counts[1]),
+                "fixed_effects": "none",
+                "controls": "none",
+                "covariance": "two_way_ordered_pair_event_date_cr1",
+                "weight": "equal_event",
+                "interpretation": (
+                    "descriptive adoption difference when neither route endpoint "
+                    "is classified as a stablecoin"
+                ),
+            }
+        )
     return pd.DataFrame(rows)
 
 

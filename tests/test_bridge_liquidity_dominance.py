@@ -198,6 +198,13 @@ def test_bridge_establishment_timing_separates_presence_from_depth() -> None:
         )
     ].iloc[0]
     assert math.isfinite(controlled["coefficient"])
+    no_stable_endpoint = result[
+        result["record_type"].eq("bridge_establishment_timing_regression")
+        & result["model_id"].eq(
+            "adoption_within_30_on_competitive_depth_no_stable_endpoint"
+        )
+    ].iloc[0]
+    assert math.isfinite(no_stable_endpoint["coefficient"])
 
 
 def test_bridge_establishment_continuous_depth_tracks_route_allocation() -> None:
@@ -1225,6 +1232,16 @@ def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
         ("adoption_within_120_on_competitive_depth", 0.362, 0.046),
         ("adoption_within_30_on_competitive_depth_controls", 0.242, 0.057),
         ("adoption_within_120_on_competitive_depth_controls", 0.205, 0.053),
+        (
+            "adoption_within_30_on_competitive_depth_no_stable_endpoint",
+            0.376,
+            0.124,
+        ),
+        (
+            "adoption_within_120_on_competitive_depth_no_stable_endpoint",
+            0.388,
+            0.120,
+        ),
     ]:
         event_rows.append(
             {
@@ -1331,6 +1348,7 @@ def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
     assert "\\BridgeTimingMonthShare" in rendered
     assert "\\newcommand{\\BridgeTimingComparableEvents}{853}" in rendered
     assert "\\BridgeTimingControlledDiff" in rendered
+    assert "\\BridgeTimingNoStableEndpointDiff" in rendered
     assert "\\BridgeDepthDoseFirstCoef" in rendered
     assert "\\BridgeDepthEqualFirstShare" in rendered
     assert "\\newcommand{\\BridgeDepthDoseFirstRows}{11{,}327}" in rendered

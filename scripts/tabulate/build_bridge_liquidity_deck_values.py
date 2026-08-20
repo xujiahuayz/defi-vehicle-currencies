@@ -270,6 +270,11 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         record_type="bridge_establishment_timing_regression",
         model_id="adoption_within_30_on_competitive_depth_controls",
     )
+    timing_month_no_stable_endpoint = _single(
+        estimates,
+        record_type="bridge_establishment_timing_regression",
+        model_id="adoption_within_30_on_competitive_depth_no_stable_endpoint",
+    )
     depth_slope_first = _single(
         estimates,
         record_type="bridge_establishment_depth_regression",
@@ -371,6 +376,8 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         and float(timing_month_difference["p_value"]) < 0.01
         and float(timing_month_controlled["coefficient"]) > 0
         and float(timing_month_controlled["p_value"]) < 0.01
+        and float(timing_month_no_stable_endpoint["coefficient"]) > 0
+        and float(timing_month_no_stable_endpoint["p_value"]) < 0.01
         and float(depth_slope_first["coefficient"]) > 0
         and float(depth_slope_first["p_value"]) < 0.01
         and float(depth_slope_later["coefficient"]) > 0
@@ -450,6 +457,8 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         f"\\newcommand{{\\BridgeTimingCompetitiveSE}}{{{_unsigned_pp(float(timing_month_difference['standard_error']), decimals=1)}}}",
         f"\\newcommand{{\\BridgeTimingControlledDiff}}{{{_signed_pp(float(timing_month_controlled['coefficient']), decimals=1)}}}",
         f"\\newcommand{{\\BridgeTimingControlledSE}}{{{_unsigned_pp(float(timing_month_controlled['standard_error']), decimals=1)}}}",
+        f"\\newcommand{{\\BridgeTimingNoStableEndpointDiff}}{{{_signed_pp(float(timing_month_no_stable_endpoint['coefficient']), decimals=1)}}}",
+        f"\\newcommand{{\\BridgeTimingNoStableEndpointSE}}{{{_unsigned_pp(float(timing_month_no_stable_endpoint['standard_error']), decimals=1)}}}",
         f"\\newcommand{{\\BridgeDepthDoseFirstCoef}}{{{_signed_pp(0.01 * float(depth_slope_first['coefficient']))}}}",
         f"\\newcommand{{\\BridgeDepthDoseFirstSE}}{{{_unsigned_pp(0.01 * float(depth_slope_first['standard_error']))}}}",
         f"\\newcommand{{\\BridgeDepthDoseFirstRows}}{{{_integer(float(depth_slope_first['n_observations']))}}}",
@@ -622,6 +631,16 @@ def render_bridge_establishment_table(estimates: pd.DataFrame) -> str:
         record_type="bridge_establishment_timing_regression",
         model_id="adoption_within_120_on_competitive_depth_controls",
     )
+    timing_no_stable_endpoint_first = _single(
+        estimates,
+        record_type="bridge_establishment_timing_regression",
+        model_id="adoption_within_30_on_competitive_depth_no_stable_endpoint",
+    )
+    timing_no_stable_endpoint_later = _single(
+        estimates,
+        record_type="bridge_establishment_timing_regression",
+        model_id="adoption_within_120_on_competitive_depth_no_stable_endpoint",
+    )
     depth_rows = [
         "Relative-depth slope [pp per +1 pp] & "
         f"{_estimate_cell(slope_first)} & "
@@ -650,6 +669,9 @@ def render_bridge_establishment_table(estimates: pd.DataFrame) -> str:
         "Difference with controls [pp] & "
         f"{_estimate_cell(timing_controlled_first, scale=100.0)} & "
         f"{_estimate_cell(timing_controlled_later, scale=100.0)} \\\\",
+        "Difference, no stablecoin endpoint [pp] & "
+        f"{_estimate_cell(timing_no_stable_endpoint_first, scale=100.0)} & "
+        f"{_estimate_cell(timing_no_stable_endpoint_later, scale=100.0)} \\\\",
     ]
     return "\n".join(
         [
