@@ -30,6 +30,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered
 from ddvc.tables import write_exhibit
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -352,6 +353,141 @@ def weth_pairing_fact(pr: pd.DataFrame, out: list[str]) -> None:
     out.append(md(nb))
 
 
+def v1_pair_persistence_regressions(
+    post: pd.DataFrame,
+    xw: pd.DataFrame,
+    out: list[str],
+) -> pd.DataFrame:
+    """Compare persistent ETH routing for pre-V2 V1 pairs on active-direct weeks."""
+
+    v1_tokens = set(xw.loc[xw.v1_era, "token"])
+    active = post[post.alive].copy()
+    active["pair"] = active.t0 + "|" + active.t1
+    active["calendar_week"] = active.date.dt.to_period("W").astype(str)
+    active["calendar_month"] = active.date.dt.to_period("M").astype(str)
+    active["cohort_year"] = active.t_direct.dt.year.astype(str)
+    active["age_bucket"] = pd.cut(
+        active.wk,
+        [-1, 3, 12, 25, 51, 10**6],
+        labels=["wk_0_3", "wk_4_12", "wk_13_25", "wk_26_51", "wk_52_plus"],
+    ).astype(str)
+    active["v1_pair"] = active.t0.isin(v1_tokens) & active.t1.isin(v1_tokens)
+    weekly = active.groupby(
+        [
+            "pair",
+            "t0",
+            "t1",
+            "calendar_week",
+            "calendar_month",
+            "cohort_year",
+            "age_bucket",
+            "v1_pair",
+        ],
+        as_index=False,
+        observed=True,
+    ).agg(
+        n_direct=("n_direct", "sum"),
+        n_eth=("n_eth_routed", "sum"),
+    )
+    weekly["routes"] = weekly.n_direct + weekly.n_eth
+    weekly = weekly[weekly.routes > 0].reset_index(drop=True)
+    weekly["eth_share"] = weekly.n_eth / weekly.routes
+    weekly["log_routes"] = np.log1p(weekly.routes)
+
+    age = pd.get_dummies(weekly.age_bucket, prefix="age", dtype=float)
+    if "age_wk_0_3" in age:
+        age = age.drop(columns="age_wk_0_3")
+    base = pd.concat(
+        [weekly[["v1_pair", "log_routes"]].astype(float), age], axis=1
+    )
+    rows: list[dict[str, object]] = []
+    for weighting in ("equal_pair_week", "route_count"):
+        weights = None if weighting == "equal_pair_week" else weekly.routes.astype(float)
+        yx = pd.concat([weekly[["eth_share"]], base], axis=1)
+        residual = absorb_fixed_effects(
+            yx,
+            weekly.calendar_week,
+            weekly.cohort_year,
+            weights=weights,
+        )
+        fit = ols_clustered(
+            residual.eth_share,
+            residual[base.columns],
+            weekly.pair,
+            add_constant=False,
+            absorbed_groups=(weekly.calendar_week, weekly.cohort_year),
+            additional_clusters=(weekly.calendar_week,),
+            weights=weights,
+            min_observations=100,
+            min_clusters=30,
+        )
+        rows.append(
+            {
+                "model": "calendar_week_and_cohort_fe",
+                "weighting": weighting,
+                "coefficient_pp": 100 * float(fit.beta[0]),
+                "standard_error_pp": 100 * float(fit.standard_errors[0]),
+                "p_value": float(fit.p_values[0]),
+                "observations": fit.n_observations,
+                "pairs": int(weekly.pair.nunique()),
+                "v1_pairs": int(weekly.loc[weekly.v1_pair, "pair"].nunique()),
+                "fixed_effects": "calendar week; direct-pool cohort year",
+                "controls": "route count; weeks since direct pool first traded",
+                "clustering": "pair and calendar week",
+            }
+        )
+
+    month = pd.get_dummies(weekly.calendar_month, prefix="month", dtype=float)
+    cohort = pd.get_dummies(weekly.cohort_year, prefix="cohort", dtype=float)
+    endpoint_design = pd.concat([base, month.iloc[:, 1:], cohort.iloc[:, 1:]], axis=1)
+    for weighting in ("equal_pair_week", "route_count"):
+        weights = None if weighting == "equal_pair_week" else weekly.routes.astype(float)
+        yx = pd.concat([weekly[["eth_share"]], endpoint_design], axis=1)
+        residual = absorb_fixed_effects(
+            yx,
+            weekly.t0,
+            weekly.t1,
+            weights=weights,
+        )
+        fit = ols_clustered(
+            residual.eth_share,
+            residual[endpoint_design.columns],
+            weekly.pair,
+            add_constant=False,
+            absorbed_groups=(weekly.t0, weekly.t1),
+            additional_clusters=(weekly.calendar_week,),
+            weights=weights,
+            min_observations=100,
+            min_clusters=30,
+        )
+        rows.append(
+            {
+                "model": "endpoint_fe",
+                "weighting": weighting,
+                "coefficient_pp": 100 * float(fit.beta[0]),
+                "standard_error_pp": 100 * float(fit.standard_errors[0]),
+                "p_value": float(fit.p_values[0]),
+                "observations": fit.n_observations,
+                "pairs": int(weekly.pair.nunique()),
+                "v1_pairs": int(weekly.loc[weekly.v1_pair, "pair"].nunique()),
+                "fixed_effects": "both endpoint tokens",
+                "controls": "calendar month; direct-pool cohort year; route count; weeks since direct pool first traded",
+                "clustering": "pair and calendar week",
+            }
+        )
+    result = pd.DataFrame(rows)
+    write_exhibit(result, EX / "v1_pair_persistence_regressions.jsonl")
+    out.append("\n### Pre-V2 V1 tokens and later ETH-route persistence\n")
+    out.append(
+        "The outcome is the ETH-routed share of pair-week trades, conditional on a "
+        "direct V2 pool trading within the trailing 28 days. The reported coefficient "
+        "is the difference for pairs whose two endpoint tokens both traded on V1 "
+        "before V2 launched.\n"
+    )
+    out.append(md(result))
+    return result
+
+
 def test2_persistence(pr: pd.DataFrame, xw: pd.DataFrame, out: list[str]) -> None:
     dec = pd.read_parquet(PROC / "v2_token_decimals.parquet")
     known = set(dec.token)
@@ -403,6 +539,7 @@ def test2_persistence(pr: pd.DataFrame, xw: pd.DataFrame, out: list[str]) -> Non
     w["last_direct"] = w.groupby(["t0", "t1"], sort=False).last_direct.ffill()
     w["alive"] = (w.date - w.last_direct).dt.days <= 28
     post = w[w.wk >= 0].copy()
+    v1_pair_persistence_regressions(post, xw, out)
 
     def profile(x: pd.DataFrame, label: str) -> pd.DataFrame:
         b = x.assign(bucket=pd.cut(
