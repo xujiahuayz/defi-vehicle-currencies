@@ -62,6 +62,8 @@ START = "20200615"
 END = "20260615"
 TICK_START = "20210504"
 MIN_ECONOMIC_INPUT_USD = 100.0
+MIN_ECONOMIC_GAIN_BPS = 1.0
+MAX_STANDARD_QUOTE_GAIN_BPS = 10_000.0
 EXACT_VENUES = (*V2_VENUES, "uniswap_v3")
 VEHICLES = tuple(
     canonical_token(address)
@@ -412,15 +414,6 @@ def _holm(p_values: list[float]) -> list[float]:
     return adjusted.tolist()
 
 
-def _top_share(values: pd.Series, fraction: float = 0.01) -> float:
-    clean = pd.to_numeric(values, errors="coerce")
-    clean = clean[np.isfinite(clean) & clean.gt(0)].sort_values(ascending=False)
-    if clean.empty:
-        return float("nan")
-    count = max(1, int(np.ceil(fraction * len(clean))))
-    return float(clean.iloc[:count].sum() / clean.sum())
-
-
 def summarize(panel: pd.DataFrame) -> pd.DataFrame:
     """Return compact economic summaries, transitions, and paired inference."""
 
@@ -429,7 +422,18 @@ def summarize(panel: pd.DataFrame) -> pd.DataFrame:
     def add_summary(scope: str, label: str, frame: pd.DataFrame) -> None:
         gain = pd.to_numeric(frame["public_path_regret_bps"], errors="coerce")
         direct = pd.to_numeric(frame["direct_improvement_bps"], errors="coerce")
-        positive = gain[gain.gt(1)]
+        within = pd.to_numeric(
+            frame["within_reach_regret_bps"], errors="coerce"
+        )
+        reach = pd.to_numeric(frame["reach_increment_bps"], errors="coerce")
+        same_vehicle_public = within + reach
+        effective_public = frame["public_vehicle_type"].where(
+            gain.gt(MIN_ECONOMIC_GAIN_BPS), frame["chosen_vehicle_type"]
+        )
+        positive = gain[
+            gain.gt(MIN_ECONOMIC_GAIN_BPS)
+            & gain.le(MAX_STANDARD_QUOTE_GAIN_BPS)
+        ]
         rows.append(
             {
                 "record_type": "frontier_summary",
@@ -438,24 +442,33 @@ def summarize(panel: pd.DataFrame) -> pd.DataFrame:
                 "routes": len(frame),
                 "dates": frame["day"].nunique(),
                 "input_usd": frame["input_usd"].sum(),
+                "minimum_input_usd": MIN_ECONOMIC_INPUT_USD,
+                "gain_threshold_bps": MIN_ECONOMIC_GAIN_BPS,
+                "max_price_impact": MAX_PRICE_IMPACT,
                 "chosen_stable_share": frame["chosen_vehicle_type"].eq("stable").mean(),
-                "public_stable_share": frame["public_vehicle_type"].eq("stable").mean(),
-                "public_direct_share": frame["public_vehicle_type"].eq("direct").mean(),
-                "gain_over_1bp_share": gain.gt(1).mean(),
-                "direct_improvement_over_1bp_share": direct.gt(1).mean(),
-                "within_reach_regret_over_1bp_share": pd.to_numeric(
-                    frame["within_reach_regret_bps"], errors="coerce"
-                ).gt(1).mean(),
+                "public_stable_share": effective_public.eq("stable").mean(),
+                "public_direct_share": effective_public.eq("direct").mean(),
+                "gain_over_1bp_share": gain.gt(MIN_ECONOMIC_GAIN_BPS).mean(),
+                "direct_improvement_over_1bp_share": direct.gt(
+                    MIN_ECONOMIC_GAIN_BPS
+                ).mean(),
+                "within_reach_regret_over_1bp_share": within.gt(
+                    MIN_ECONOMIC_GAIN_BPS
+                ).mean(),
+                "same_vehicle_public_regret_over_1bp_share": same_vehicle_public.gt(
+                    MIN_ECONOMIC_GAIN_BPS
+                ).mean(),
                 "reach_increment_over_1bp_share": pd.to_numeric(
                     frame["reach_increment_bps"], errors="coerce"
-                ).gt(1).mean(),
+                ).gt(MIN_ECONOMIC_GAIN_BPS).mean(),
                 "vehicle_choice_increment_over_1bp_share": pd.to_numeric(
                     frame["vehicle_choice_increment_bps"], errors="coerce"
-                ).gt(1).mean(),
+                ).gt(MIN_ECONOMIC_GAIN_BPS).mean(),
                 "median_gain_bps_if_over_1bp": positive.median(),
                 "p90_gain_bps": gain.quantile(0.9),
-                "aggregate_gain_usd": frame["public_gain_usd"].sum(),
-                "top_1pct_gain_share": _top_share(frame["public_gain_usd"]),
+                "gain_over_100pct_routes": gain.gt(
+                    MAX_STANDARD_QUOTE_GAIN_BPS
+                ).sum(),
             }
         )
 
@@ -466,18 +479,36 @@ def summarize(panel: pd.DataFrame) -> pd.DataFrame:
         panel[panel["input_usd"].ge(MIN_ECONOMIC_INPUT_USD)],
     )
     add_summary("pooled", "within_20pct", panel[panel["within_20pct"]])
-    main = panel[
+    coherent = panel[
         panel["within_20pct"]
         & panel["input_usd"].ge(MIN_ECONOMIC_INPUT_USD)
     ]
-    add_summary("pooled", "within_20pct_at_least_100usd", main)
+    add_summary("pooled", "within_20pct_at_least_100usd", coherent)
+    main = coherent[
+        pd.to_numeric(
+            coherent["chosen_max_price_impact"], errors="coerce"
+        ).le(MAX_PRICE_IMPACT)
+    ]
+    add_summary("pooled", "common_support", main)
+    standard_quote = main[
+        pd.to_numeric(main["public_path_regret_bps"], errors="coerce").le(
+            MAX_STANDARD_QUOTE_GAIN_BPS
+        )
+    ]
+    add_summary("pooled", "common_support_standard_quote", standard_quote)
+    high_notional = main[main["input_usd"].ge(10_000.0)]
+    add_summary("pooled", "common_support_at_least_10000usd", high_notional)
     for kind, group in panel.groupby("chosen_vehicle_type", sort=True):
         add_summary("chosen_vehicle_type", str(kind), group)
     for year, group in panel.groupby("year", sort=True):
         add_summary("year", str(year), group)
+    for year, group in main.groupby("year", sort=True):
+        add_summary("year_common_support", str(year), group)
 
     for sample, frame in (("all", panel), ("main", main)):
-        switched = frame[frame["public_path_regret_bps"].gt(1)]
+        switched = frame[
+            frame["public_path_regret_bps"].gt(MIN_ECONOMIC_GAIN_BPS)
+        ]
         for (chosen, public), group in switched.groupby(
             ["chosen_vehicle_type", "public_vehicle_type"], sort=True
         ):
@@ -489,20 +520,25 @@ def summarize(panel: pd.DataFrame) -> pd.DataFrame:
                     "routes": len(group),
                     "dates": group["day"].nunique(),
                     "route_share": len(group) / len(frame),
-                    "gain_share": (
-                        group["public_gain_usd"].sum()
-                        / frame["public_gain_usd"].sum()
-                        if frame["public_gain_usd"].sum() > 0
-                        else float("nan")
-                    ),
                     "median_gain_bps": group["public_path_regret_bps"].median(),
                 }
             )
 
     inference: list[dict[str, object]] = []
-    for sample, frame in (("all", panel), ("main", main)):
+    inference_samples = (
+        ("all", panel),
+        ("coherent_100usd", coherent),
+        ("common_support", main),
+        ("common_support_standard_quote", standard_quote),
+        ("common_support_at_least_10000usd", high_notional),
+    )
+    for sample, frame in inference_samples:
+        gain = pd.to_numeric(frame["public_path_regret_bps"], errors="coerce")
+        effective_public = frame["public_vehicle_type"].where(
+            gain.gt(MIN_ECONOMIC_GAIN_BPS), frame["chosen_vehicle_type"]
+        )
         difference = (
-            frame["public_vehicle_type"].eq("stable").astype(float)
+            effective_public.eq("stable").astype(float)
             - frame["chosen_vehicle_type"].eq("stable").astype(float)
         )
         for weighting, weights in (
@@ -612,7 +648,30 @@ def main() -> int:
         "--pilot-day",
         help="score one date and print only; canonical outputs are unchanged",
     )
+    parser.add_argument(
+        "--summarize-only",
+        action="store_true",
+        help="rebuild summaries from the existing canonical panel and support rows",
+    )
     args = parser.parse_args()
+    if args.summarize_only:
+        if not PANEL.is_file() or not SUPPORT.is_file():
+            parser.error("--summarize-only requires the canonical panel and support rows")
+        panel = pd.read_parquet(PANEL)
+        support = pd.read_json(SUPPORT, lines=True)
+        summary = pd.concat(
+            [summarize(panel), summarize_support(support)],
+            ignore_index=True,
+            sort=False,
+        )
+        print(summary.to_string(index=False), flush=True)
+        write_exhibit(
+            summary,
+            SUMMARY,
+            code_sources=CODE_SOURCES,
+            inputs=[PANEL, SUPPORT],
+        )
+        return 0
     selected = (
         [args.pilot_day.replace("-", "")]
         if args.pilot_day
@@ -636,8 +695,13 @@ def main() -> int:
         PANEL,
         code_sources=CODE_SOURCES,
     )
-    write_exhibit(summary, SUMMARY, code_sources=CODE_SOURCES, inputs=[PANEL])
     write_exhibit(support, SUPPORT, code_sources=CODE_SOURCES, inputs=[PANEL])
+    write_exhibit(
+        summary,
+        SUMMARY,
+        code_sources=CODE_SOURCES,
+        inputs=[PANEL, SUPPORT],
+    )
     return 0
 
 

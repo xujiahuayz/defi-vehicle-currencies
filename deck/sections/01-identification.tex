@@ -97,28 +97,7 @@
 \decknote{The listed deployments form the principal Ethereum route panel. Uniswap v1 enters the separate protocol-architecture analysis because its retained records do not recover endpoint-pair identities.}
 \end{frame}
 
-% EVIDENCE-STATUS: authentic transaction and route-component trace; exact same-state alternative remains outside this exhibit
-% EVIDENCE-SOURCES: output/exhibits/route_replay.json; data/unified/20260110.parquet; https://eth.blockscout.com/tx/0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9?tab=token_transfers (retrieved 2026-08-14)
-% EVIDENCE-CASE: transaction 0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9, component 0.
-% LITERATURE-PRECEDENT: Lehar and Parlour (2025), Appendix B, pairs one named explorer transaction with decoded logs before handing off to the population reconstruction.
-% VISUAL-FUNCTION: source-versus-pool-route handoff | authentic explorer screenshot plus settlement trace | separate the user's PYUSD instruction from the USDC-funded pool component
 \input{../output/exhibits/route_replay_deck_values.tex}
-\begin{frame}{Pool data may start after the user instruction}
-\evidencekicker{User instruction recorded by the explorer}
-\vspace{0.02cm}
-\centering
-\fcolorbox{rule}{white}{\includegraphics[width=0.88\textwidth,height=1.25cm,keepaspectratio,trim=270 820 430 170,clip]{assets/observed_route_blockscout.png}}
-\par\vspace{0.15cm}
-\evidencekicker{The decisive settlement transfers}
-\vspace{0.02cm}
-\fcolorbox{rule}{white}{\includegraphics[width=0.94\textwidth,height=0.94cm,keepaspectratio,trim=280 415 324 615,clip]{assets/observed_route_blockscout.png}}
-\par\vspace{0.08cm}
-\fcolorbox{rule}{white}{\includegraphics[width=0.94\textwidth,height=0.94cm,keepaspectratio,trim=280 320 324 700,clip]{assets/observed_route_blockscout.png}}
-\par\vspace{0.14cm}
-{\normalsize\raggedright The maker supplies the USDC used by the Fluid leg. The instruction is PYUSD $\rightarrow$ USDe.\par}
-\decknote{Transaction \ethtx{0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9}{0xbda1d07f\ldots 9bf67ad9}, 10 January 2026. The data do not reveal whether PYUSD--USDC is another vehicle leg or executor inventory. Disconnected groups comprise \DisconnectedShareEnd{} of reconstructed components in 2026. Treating each internally valid component as a separate route raises stablecoin count dominance from \StableCountEnd{} to \ComponentRouteCountEnd{}.}
-\end{frame}
-
 % EVIDENCE-STATUS: authentic connected pool-swap component from the same transaction; exact same-state alternative remains outside this exhibit
 % EVIDENCE-SOURCES: output/exhibits/route_replay.json; data/unified/20260110.parquet
 % EVIDENCE-CASE: transaction 0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9, component 0.

@@ -175,6 +175,35 @@ bounds, and venue-coverage bounds discipline alternative explanations. Public
 release dates are descriptive windows because executor identity does not reveal
 who authored a route and market composition changes at the same time.
 
+## Exact pre-transaction vehicle frontier
+
+The monthly exact-price comparison asks whether the realised intermediary
+survives a broader public opportunity set. The calendar is the fifteenth day of
+each month from June 2020 through June 2026. The unit is a coherent two-leg route
+executed on Uniswap V2, SushiSwap V2, or Uniswap V3. Source, destination, input
+amount, and pre-transaction state remain fixed, and the chosen path must
+reproduce realised output within one basis point.
+
+The comparison widens the price set in three nested stages: the same vehicle in
+the venue families used by the realised route, the same vehicle across all three
+exact venues, and any of WETH, USDC, USDT, DAI, WBTC, the realised noncandidate
+vehicle, or a direct path across those venues. The main sample requires leg
+values to agree within 20 percent, at least $100 of input, and no more than 5
+percent own-price impact on every realised or hypothetical leg. A vehicle change
+requires more than one basis point of additional gross output.
+
+Among 777,651 common-support routes, 6.6 percent find a better same-vehicle path
+inside the used venue families, 44.4 percent do so after all three exact venues
+open, and 46.4 percent improve after the vehicle set and direct path also open.
+The full set lowers stablecoin vehicle share by 1.16 percentage points
+route-weighted and 2.09 percentage points input-value weighted. The distinction
+is descriptive: venue choice responds much more than vehicle identity to the
+expanded price set. The comparison is gross of gas, omits private order flow and
+other venue families, and does not identify why an available pool was omitted.
+Ninety-eight standard-invariant quotes imply more than twice realised output;
+they are excluded from magnitude summaries, and removing them leaves the
+reported shares unchanged at one decimal place.
+
 ## Boundaries
 
 - Architecture availability, adoption, leg-level venue formation,
@@ -188,6 +217,6 @@ who authored a route and market composition changes at the same time.
   outcome is a future-minus-origin share or rank. Those rows diagnose
   convergence and do not identify provider reallocation without separate origin
   share controls or a residualised-gap design.
-- Withheld direct-cost, rent-incidence, joint V2/V3 flow, and hysteresis branches
+- Withheld all-in direct-cost, rent-incidence, joint V2/V3 flow, and hysteresis branches
   are outside the current paper unless they receive a new specification and a
   complete producer-to-deliverable path.

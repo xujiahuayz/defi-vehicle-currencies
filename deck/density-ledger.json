@@ -14,13 +14,13 @@
       "note_words": 35
     },
     {
-      "page": 22,
+      "page": 21,
       "title": "Most first-use capital sits in pools already active",
       "words": 57,
       "note_words": 58
     },
     {
-      "page": 23,
+      "page": 22,
       "title": "V4 internal routing forecasts later entry in volatile markets",
       "words": 64,
       "note_words": 67
@@ -38,73 +38,73 @@
       "note_words": 0
     },
     {
-      "page": 27,
+      "page": 28,
       "title": "How we reconstruct a route from one transaction",
       "words": 57,
       "note_words": 0
     },
     {
-      "page": 29,
+      "page": 30,
       "title": "A3. One route universe supports two measurements",
       "words": 67,
       "note_words": 0
     },
     {
-      "page": 30,
+      "page": 31,
       "title": "A4. State is reconstructed immediately before execution",
       "words": 60,
       "note_words": 0
     },
     {
-      "page": 31,
+      "page": 32,
       "title": "A5. Each AMM family has a different state vector",
       "words": 59,
       "note_words": 0
     },
     {
-      "page": 33,
+      "page": 34,
       "title": "A5.2. Executable depth comes from active liquidity",
       "words": 62,
       "note_words": 0
     },
     {
-      "page": 34,
+      "page": 35,
       "title": "A5.3. Shared accounting moves route settlement",
       "words": 61,
       "note_words": 0
     },
     {
-      "page": 36,
+      "page": 37,
       "title": "A7. Daily and weekly frequencies answer different questions",
       "words": 62,
       "note_words": 0
     },
     {
-      "page": 39,
+      "page": 40,
       "title": "Vehicle dominance aggregates realised intermediary choices",
       "words": 69,
       "note_words": 0
     },
     {
-      "page": 40,
+      "page": 41,
       "title": "A9. Intermediary and route-endpoint use are separate",
       "words": 71,
       "note_words": 0
     },
     {
-      "page": 41,
+      "page": 42,
       "title": "A10. Capital, inventory, and depth differ",
       "words": 71,
       "note_words": 0
     },
     {
-      "page": 43,
+      "page": 44,
       "title": "A11b. Venue scope and vehicle type differ in 2026",
       "words": 56,
       "note_words": 16
     },
     {
-      "page": 45,
+      "page": 46,
       "title": "A13. References: decentralised exchange design",
       "words": 59,
       "note_words": 0

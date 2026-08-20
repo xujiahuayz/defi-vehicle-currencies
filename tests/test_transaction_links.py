@@ -13,7 +13,10 @@ def test_paper_and_deck_define_the_same_etherscan_link_macro() -> None:
 
 def test_visible_example_transaction_uses_full_hash_as_link_target() -> None:
     paper = (ROOT / "paper/sections/02-setting.tex").read_text(encoding="utf-8")
-    deck = (ROOT / "deck/sections/01-identification.tex").read_text(encoding="utf-8")
+    deck = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in sorted((ROOT / "deck/sections").glob("*.tex"))
+    )
     target = rf"\ethtx{{{TX}}}{{"
     assert paper.count(target) == 1
     assert deck.count(target) == 2

@@ -30,6 +30,7 @@ Captions, labels, placement, and interpretation stay in the paper/deck source.
 | `render_v3_v4_lp_flow_protocol_contrast.py` | `v3_v4_lp_flow_protocol_contrast.tex/.pdf` | `tab:v3-v4-lp-flow-protocol` |
 | `render_v3_v4_tvl_protocol_contrast.py` | `v3_v4_tvl_protocol_contrast.tex/.pdf` | `tab:v3-v4-tvl-protocol` |
 | `render_v3_v4_lp_summary.py` | `v3_v4_lp_summary.tex/.pdf` | `tab:v3-v4-lp-summary` |
+| `render_exact_vehicle_frontier.py` | `exact_vehicle_frontier.tex/.pdf` and generated values | `tab:exact-vehicle-frontier` |
 | `build_endpoint_direction_deck_values.py` | `endpoint_direction_deck_values.tex` | endpoint-direction paper/deck values |
 | `build_stable_stable_vehicle_values.py` | `stable_stable_vehicle_values.tex` | stable-to-stable intermediary-identity values |
 | `render_venue_coverage.py` | `venue_coverage.tex/.pdf` | `tab:app:venues` |
@@ -63,6 +64,7 @@ analysis exhibit that supplies each value.
 | `build_vehicle_formation_deck_values.py` | exploratory market-formation macros |
 | `build_vehicle_market_size_deck_values.py` | exploratory market-size vehicle-use macros |
 | `build_v1_architecture_deck_values.py` | V1 mandate and V2 routing facts |
+| `render_exact_vehicle_frontier.py` | exact pre-transaction vehicle and venue frontier macros |
 
 Each generated file has one owner. Inline empirical tables should be moved to a
 renderer when next edited.

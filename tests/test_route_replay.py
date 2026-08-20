@@ -87,8 +87,9 @@ def test_deck_labels_are_generated_from_the_route_manifest() -> None:
     assert r"\RouteReplayOutputAmount}{100,040}" in values
     assert r"\RouteReplayValue}{100,000}" in values
 
-    source = (ROOT / "deck" / "sections" / "01-identification.tex").read_text(
-        encoding="utf-8"
+    source = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in sorted((ROOT / "deck" / "sections").glob("*.tex"))
     )
     assert source.count("assets/observed_route_blockscout.png") == 3
     assert "maker supplies the USDC used by the Fluid leg" in source

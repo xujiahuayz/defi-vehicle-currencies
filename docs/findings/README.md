@@ -111,12 +111,16 @@ depth-conditioned route reallocation, and adoption timing after persistent suppo
 stable-specific dynamic local bridge-depth feedback and the split between newly active and
 continuing pools before first use. The deck
 also reports an exact endpoint-direction decomposition and the concentration of
-the stable-to-stable routed-value channel in USDT. The deck
+the stable-to-stable routed-value channel in USDT. A monthly exact-state frontier
+now separates venue choice from vehicle identity: opening all exact V2/V3 venues
+produces a better same-vehicle quote on 44.4 percent of common-support routes,
+while opening other named vehicles and the direct path raises that incidence to
+46.4 percent and lowers stablecoin vehicle share by 1.16 percentage points. The deck
 also carries the traditional-FX route analogy as motivation. These layers
 strengthen the
 mechanism story but do not change the registered confirmatory claim set.
 
-Routing maturation, full same-state direct-cost dominance, the joint V2/V3
+Routing maturation beyond the exact three-venue frontier, all-in direct-cost dominance, the joint V2/V3
 capital-flow family, side-specific LP inventory, and full V4
 settlement-state claims are blocked, withheld, supporting, or outside the
 executable perimeter until they receive a complete

@@ -31,6 +31,9 @@
 \IfFileExists{../output/exhibits/v4_lp_volatility_state_deck_values.tex}{%
 \input{../output/exhibits/v4_lp_volatility_state_deck_values.tex}%
 }{\PackageError{dvc-deck}{Missing generated V4 volatility-state values}{Run scripts/tabulate/build_v4_lp_volatility_state_deck_values.py.}}
+\IfFileExists{../output/exhibits/exact_vehicle_frontier_values.tex}{%
+\input{../output/exhibits/exact_vehicle_frontier_values.tex}%
+}{\PackageError{dvc-deck}{Missing generated exact-frontier values}{Run scripts/tabulate/render_exact_vehicle_frontier.py.}}
 
 % EVIDENCE-STATUS: current descriptive route result
 % EVIDENCE-SOURCES: output/figures/experiments/annual_vehicle_composition_bands.pdf; output/exhibits/intermediation_by_type.jsonl; output/exhibits/vehicle_transition_pair_fixed_effects.jsonl
@@ -345,6 +348,51 @@ Currency fixed effects & No & No & No & Yes \\
 \vspace{0.50cm}
 {\large Incumbents act within a month; first-active origins follow, especially when volatility stays high.\par}
 \decknote{\VFourVolStateRows{} V4 vehicle-days and \VFourVolStateClusters{} date clusters; zero-liquidity updates excluded; 180 prior days required. Volatility is the lagged 30-day mean of realised WETH volatility. Vehicle and date effects; origin-day controls; vehicle and control volatility slopes; date-clustered standard errors. The interaction uses Holm adjustment across two outcomes. A same-vehicle-date V3 comparison does not distinguish the mature-calendar level or volatility slope. Origins proxy for account participation, not LP-position ownership. Predictive associations.}
+\end{frame}
+
+% EVIDENCE-STATUS: supporting exact pre-transaction price comparison
+% EVIDENCE-SOURCES: output/exhibits/exact_vehicle_frontier_monthly.jsonl; output/exhibits/exact_vehicle_frontier_monthly_support.jsonl; output/exhibits/exact_vehicle_frontier_values.tex
+% VISUAL-FUNCTION: nested exact-price frontier | three widening opportunity sets | separate venue choice from vehicle identity
+\begin{frame}{Vehicle identity survives broader price competition}
+\evidencekicker{Same input and pre-transaction state}
+\vspace{0.02cm}
+{\small Share of routes with more than \ExactFrontierGainThreshold{} higher gross output\par}
+\vspace{0.10cm}
+\begin{columns}[T,totalwidth=0.94\textwidth]
+\begin{column}{0.29\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.28cm,wd=\textwidth]{block body}
+{\color{muted}\scriptsize SAME VEHICLE, USED VENUES\par}\vspace{0.10cm}
+{\fontsize{25}{27}\selectfont\bfseries\color{ucldark}\ExactFrontierWithinShare\par}\vspace{0.08cm}
+\end{beamercolorbox}
+\end{column}
+\hfill
+\begin{column}{0.29\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.28cm,wd=\textwidth]{block body}
+{\color{muted}\scriptsize SAME VEHICLE, ALL EXACT VENUES\par}\vspace{0.10cm}
+{\fontsize{25}{27}\selectfont\bfseries\color{stable}\ExactFrontierSameVehicleShare\par}\vspace{0.08cm}
+\end{beamercolorbox}
+\end{column}
+\hfill
+\begin{column}{0.29\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.28cm,wd=\textwidth]{block body}
+{\color{muted}\scriptsize ANY NAMED VEHICLE OR DIRECT\par}\vspace{0.10cm}
+{\fontsize{25}{27}\selectfont\bfseries\color{stable}\ExactFrontierAllPathShare\par}\vspace{0.08cm}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\vspace{0.30cm}
+\begin{columns}[T,totalwidth=0.92\textwidth]
+\begin{column}{0.44\textwidth}
+{\fontsize{22}{24}\selectfont\bfseries\color{ucldark}\ExactFrontierVehicleAddition\par}
+{\small additional incidence after opening the vehicle set and direct path\par}
+\end{column}
+\hfill
+\begin{column}{0.44\textwidth}
+{\fontsize{22}{24}\selectfont\bfseries\color{stable}\ExactFrontierStableChange\par}
+{\small change in stablecoin vehicle share, s.e. \ExactFrontierStableChangeSE\par}
+\end{column}
+\end{columns}
+\decknote{\ExactFrontierRoutes{} common-support routes on \ExactFrontierDates{} monthly dates. Exact Uniswap V2, SushiSwap V2, and Uniswap V3 states; coherent values; at least \ExactFrontierMinimumInput{} input; \ExactFrontierImpactLimit{} own-price-impact limit. Improvements are gross of gas. The median gain among improved routes is \ExactFrontierMedianGain{}. Late-sample venue coverage declines as other exchanges expand.}
 \end{frame}
 
 % RETIRED CORE CAPITAL-PREDICTION FRAME. The pre-specified 30-day estimate has

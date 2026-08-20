@@ -60,6 +60,7 @@ def test_summary_reports_vehicle_reallocation_separately_from_route_gain() -> No
                 "reach_increment_bps": 4.0,
                 "vehicle_choice_increment_bps": 6.0,
                 "public_gain_usd": 0.1,
+                "chosen_max_price_impact": 0.01,
             },
             {
                 "day": "20210215",
@@ -74,6 +75,22 @@ def test_summary_reports_vehicle_reallocation_separately_from_route_gain() -> No
                 "reach_increment_bps": 0.0,
                 "vehicle_choice_increment_bps": 0.0,
                 "public_gain_usd": 0.0,
+                "chosen_max_price_impact": 0.01,
+            },
+            {
+                "day": "20210315",
+                "year": 2021,
+                "input_usd": 100.0,
+                "within_20pct": True,
+                "chosen_vehicle_type": "native",
+                "public_vehicle_type": "stable",
+                "public_path_regret_bps": 0.5,
+                "direct_improvement_bps": 0.0,
+                "within_reach_regret_bps": 0.0,
+                "reach_increment_bps": 0.0,
+                "vehicle_choice_increment_bps": 0.5,
+                "public_gain_usd": 0.005,
+                "chosen_max_price_impact": 0.01,
             },
         ]
     )
@@ -83,9 +100,17 @@ def test_summary_reports_vehicle_reallocation_separately_from_route_gain() -> No
         & result["scope"].eq("pooled")
         & result["label"].eq("all")
     ].iloc[0]
-    assert pooled["gain_over_1bp_share"] == 0.5
-    assert pooled["reach_increment_over_1bp_share"] == 0.5
-    assert pooled["vehicle_choice_increment_over_1bp_share"] == 0.5
+    assert pooled["gain_over_1bp_share"] == 1 / 3
+    assert pooled["public_stable_share"] == 2 / 3
+    assert pooled["reach_increment_over_1bp_share"] == 1 / 3
+    assert pooled["vehicle_choice_increment_over_1bp_share"] == 1 / 3
+    common = result[
+        result["record_type"].eq("frontier_summary")
+        & result["scope"].eq("pooled")
+        & result["label"].eq("common_support")
+    ].iloc[0]
+    assert common["routes"] == 3
+    assert "aggregate_gain_usd" not in result.columns
     route = result[
         result["record_type"].eq("stable_share_inference")
         & result["scope"].eq("all")
@@ -96,8 +121,8 @@ def test_summary_reports_vehicle_reallocation_separately_from_route_gain() -> No
         & result["scope"].eq("all")
         & result["label"].eq("input_value")
     ].iloc[0]
-    assert route["change_pp"] == 50.0
-    assert value["change_pp"] == 25.0
+    assert math.isclose(route["change_pp"], 100 / 3)
+    assert value["change_pp"] == 20.0
 
 
 def test_support_summary_keeps_market_reach_and_reproduction_distinct() -> None:
