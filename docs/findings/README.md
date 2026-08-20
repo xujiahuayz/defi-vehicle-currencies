@@ -107,7 +107,7 @@ fee/rent-incidence and TVL-normalized fee-yield screens, V3 mint/burn action-cou
 stable-shortfall x V4 flash-accounting LP repositioning, and local
 bridge-liquidity dominance, entry-date local bridge-depth choice screens, plus
 first stable-bridge establishment, continuous stable-versus-WETH bottleneck depth,
-and depth-conditioned route reallocation, plus
+depth-conditioned route reallocation, and adoption timing after persistent support, plus
 stable-specific dynamic local bridge-depth feedback. The deck
 also reports an exact endpoint-direction decomposition and the concentration of
 the stable-to-stable routed-value channel in USDT. The deck

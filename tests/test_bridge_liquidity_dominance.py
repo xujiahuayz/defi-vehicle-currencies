@@ -7,6 +7,7 @@ from pathlib import Path
 import pandas as pd
 
 from scripts.analyze.run_bridge_liquidity_dominance import (
+    bridge_establishment_adoption_timing_from_events,
     bridge_establishment_depth_regressions,
     bridge_establishment_depth_summaries,
     bridge_establishment_period_summaries,
@@ -108,6 +109,7 @@ def test_bridge_establishment_separates_support_from_route_adoption() -> None:
         )
     assert event["event_date"].nunique() == 1
     assert event["event_date"].iloc[0] == pd.Timestamp("2024-02-01")
+    assert event["first_stable_route_date"].iloc[0] == pd.Timestamp("2024-02-10")
     assert event["event_stablecoins"].iloc[0] == "USDC"
     assert event["support_days_30"].iloc[0] == 24
     event_day = event[event["origin_date"].eq(pd.Timestamp("2024-02-01"))].iloc[0]
@@ -122,6 +124,62 @@ def test_bridge_establishment_separates_support_from_route_adoption() -> None:
     post = summary[summary["period"].eq("post_0_29")].iloc[0]
     assert pre["stable_route_share"] == 0
     assert post["stable_route_share"] > 0
+
+
+def test_bridge_establishment_timing_separates_presence_from_depth() -> None:
+    rows = []
+    for index in range(40):
+        competitive = index >= 20
+        within_30 = (index % 20) < (16 if competitive else 8)
+        within_120 = (index % 20) < (18 if competitive else 10)
+        if within_30:
+            lag = 0 if index % 5 == 0 else 12
+        elif within_120:
+            lag = 75
+        else:
+            lag = None
+        event_date = pd.Timestamp("2024-01-01") + pd.Timedelta(days=index)
+        rows.append(
+            {
+                "event_id": f"event-{index}",
+                "ordered_pair": f"src-{index}|tgt-{index}",
+                "event_date": event_date,
+                "first_stable_route_date": (
+                    event_date + pd.Timedelta(days=lag) if lag is not None else pd.NaT
+                ),
+                "stable_bridge_min_capital_usd": 20.0 if competitive else 5.0,
+                "native_bridge_min_capital_usd": 100.0,
+            }
+        )
+    result = bridge_establishment_adoption_timing_from_events(
+        pd.DataFrame(rows),
+        min_observations=20,
+        min_clusters=5,
+    )
+    month = result[
+        result["record_type"].eq("bridge_establishment_timing_summary")
+        & result["model_id"].eq("within_30_days")
+    ].iloc[0]
+    assert month["adoption_events"] == 24
+    assert month["adoption_share"] == 0.6
+    shallow = result[
+        result["record_type"].eq("bridge_establishment_timing_depth_summary")
+        & result["model_id"].eq("within_30_days")
+        & result["depth_group"].eq("below_0.1x")
+    ].iloc[0]
+    competitive = result[
+        result["record_type"].eq("bridge_establishment_timing_depth_summary")
+        & result["model_id"].eq("within_30_days")
+        & result["depth_group"].eq("at_least_0.1x")
+    ].iloc[0]
+    assert shallow["adoption_share"] == 0.4
+    assert competitive["adoption_share"] == 0.8
+    regression = result[
+        result["record_type"].eq("bridge_establishment_timing_regression")
+        & result["model_id"].eq("adoption_within_30_on_competitive_depth")
+    ].iloc[0]
+    assert math.isclose(regression["coefficient"], 0.4)
+    assert regression["standard_error"] > 0
 
 
 def test_bridge_establishment_continuous_depth_tracks_route_allocation() -> None:
@@ -1111,6 +1169,54 @@ def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
                     "events": 865 if regressor == "post_0_29" else 818,
                 }
             )
+    for model_id, adoption_share, adoption_events in [
+        ("same_day", 0.091, 79),
+        ("within_30_days", 0.543, 470),
+        ("within_120_days", 0.634, 548),
+    ]:
+        event_rows.append(
+            {
+                "claim_status": "provisional_exploratory",
+                "record_type": "bridge_establishment_timing_summary",
+                "model_id": model_id,
+                "events": 865,
+                "adoption_events": adoption_events,
+                "adoption_share": adoption_share,
+            }
+        )
+    for model_id, shallow_share, competitive_share in [
+        ("within_30_days", 0.442, 0.851),
+        ("within_120_days", 0.545, 0.907),
+    ]:
+        for depth_group, events, adoption_share in [
+            ("below_0.1x", 638, shallow_share),
+            ("at_least_0.1x", 215, competitive_share),
+        ]:
+            event_rows.append(
+                {
+                    "claim_status": "provisional_exploratory",
+                    "record_type": "bridge_establishment_timing_depth_summary",
+                    "model_id": model_id,
+                    "depth_group": depth_group,
+                    "events": events,
+                    "adoption_share": adoption_share,
+                }
+            )
+    for model_id, coefficient, standard_error in [
+        ("adoption_within_30_on_competitive_depth", 0.409, 0.048),
+        ("adoption_within_120_on_competitive_depth", 0.362, 0.046),
+    ]:
+        event_rows.append(
+            {
+                "claim_status": "provisional_exploratory",
+                "record_type": "bridge_establishment_timing_regression",
+                "model_id": model_id,
+                "coefficient": coefficient,
+                "standard_error": standard_error,
+                "p_value": 0.001,
+                "n_observations": 853,
+            }
+        )
     for period, stable_share, active_pair_days in [
         ("post_0_29", 0.024, 7752),
         ("post_30_119", 0.024, 11153),
@@ -1202,6 +1308,8 @@ def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
     assert "\\BridgeLiquidityLeaveOneMinCoef" in rendered
     assert "\\BridgeLiquidityStableIssuerUsdtTwentySixCoef" in rendered
     assert "\\BridgeEstablishmentCountCoef" in rendered
+    assert "\\BridgeTimingMonthShare" in rendered
+    assert "\\newcommand{\\BridgeTimingComparableEvents}{853}" in rendered
     assert "\\BridgeDepthDoseFirstCoef" in rendered
     assert "\\BridgeDepthEqualFirstShare" in rendered
     assert "\\newcommand{\\BridgeDepthDoseFirstRows}{11{,}327}" in rendered
@@ -1209,3 +1317,4 @@ def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
     assert "Stable route share [pp]" in table
     assert "Bridge events" in table
     assert "Stable-bridge competitiveness relative to WETH" in table
+    assert "Stable-route adoption after persistent support" in table

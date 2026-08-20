@@ -35,8 +35,10 @@ rendered PDFs remain tracked review artifacts.
 The prior tightening and liquidity-section reviews are complete. The four
 endpoint directions are now collected in one exact decomposition, with a
 separate issuer split showing that USDT accounts for the stable-to-stable value
-channel. Open revision classes are to quantify the disconnected-component
-boundary and evaluate issuance-to-pool-to-vehicle timing. Each major revision follows the decision rule in
+channel. Persistent stable-bridge support is now dated against first route use,
+and event-day depth separates shallow availability from subsequent adoption.
+Issuance remains outside the local data perimeter. The open revision class is
+to quantify the disconnected-component boundary. Each major revision follows the decision rule in
 [`writing-and-rhetoric.md`](writing-and-rhetoric.md) before implementation.
 
 ## Economic motivation and contribution
@@ -119,9 +121,10 @@ boundary and evaluate issuance-to-pool-to-vehicle timing. Each major revision fo
 
 ## Scientific extensions
 
-- Test whether stablecoin issuance and the creation of stablecoin leg liquidity
-  precede stable-vehicle entry, with explicit timing and no causal language
-  unless an exogenous design is found.
+- The pool-to-route timing test is complete: persistent two-leg support commonly
+  precedes stable-vehicle use, and event-day depth predicts whether adoption
+  follows. Stablecoin issuance timing remains unmeasured because no verified
+  issuance series is in the local data perimeter.
 - Compare liquidity-provider capital, flows, range concentration, and position
   updates around V4 flash-accounting intensity with comparable V3 measures.
 - The stable-to-stable, stable-to-native, native-to-stable, and

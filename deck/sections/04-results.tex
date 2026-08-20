@@ -249,9 +249,9 @@ Currency fixed effects & No & No & No & Yes \\
 \draw[-{Stealth[length=7pt]},line width=1.6pt,draw=stable] (equal)--(double);
 \end{tikzpicture}
 \end{center}
-\vspace{0.28cm}
-{\large\bfseries Availability defines the route set; relative depth predicts penetration.\par}
-\decknote{\BridgeDepthDoseFirstRows{} endpoint-pair days across \BridgeDepthDoseFirstEvents{} bridge events. Depth is prior-day deposited capital on the shallower atomic leg.}
+\vspace{0.25cm}
+{\large\bfseries First-month adoption: \BridgeTimingShallowMonthShare{} below $0.1\times$ WETH depth, \BridgeTimingCompetitiveMonthShare{} at or above it.\par}
+\decknote{The route-share cards use \BridgeDepthDoseFirstRows{} endpoint-pair days across \BridgeDepthDoseFirstEvents{} events. The adoption comparison gives equal weight to \BridgeTimingComparableEvents{} events with positive event-day stable and WETH bottleneck depth. Deposited capital and route demand are jointly determined.}
 \end{frame}
 
 % EVIDENCE-STATUS: exploratory predictive V4 mechanism result

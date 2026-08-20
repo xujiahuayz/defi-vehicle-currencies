@@ -233,6 +233,38 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         model_id="native_routes_after_bridge_establishment",
         regressor="post_0_29",
     )
+    timing_same_day = _single(
+        estimates,
+        record_type="bridge_establishment_timing_summary",
+        model_id="same_day",
+    )
+    timing_month = _single(
+        estimates,
+        record_type="bridge_establishment_timing_summary",
+        model_id="within_30_days",
+    )
+    timing_long = _single(
+        estimates,
+        record_type="bridge_establishment_timing_summary",
+        model_id="within_120_days",
+    )
+    timing_shallow_month = _single(
+        estimates,
+        record_type="bridge_establishment_timing_depth_summary",
+        model_id="within_30_days",
+        depth_group="below_0.1x",
+    )
+    timing_competitive_month = _single(
+        estimates,
+        record_type="bridge_establishment_timing_depth_summary",
+        model_id="within_30_days",
+        depth_group="at_least_0.1x",
+    )
+    timing_month_difference = _single(
+        estimates,
+        record_type="bridge_establishment_timing_regression",
+        model_id="adoption_within_30_on_competitive_depth",
+    )
     depth_slope_first = _single(
         estimates,
         record_type="bridge_establishment_depth_regression",
@@ -325,6 +357,13 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         and float(establishment_value["p_value"]) < 0.05
         and float(establishment_native["coefficient"]) < 0
         and float(establishment_native["p_value"]) < 0.01
+        and float(timing_same_day["adoption_share"])
+        < float(timing_month["adoption_share"])
+        <= float(timing_long["adoption_share"])
+        and float(timing_competitive_month["adoption_share"])
+        > float(timing_shallow_month["adoption_share"])
+        and float(timing_month_difference["coefficient"]) > 0
+        and float(timing_month_difference["p_value"]) < 0.01
         and float(depth_slope_first["coefficient"]) > 0
         and float(depth_slope_first["p_value"]) < 0.01
         and float(depth_slope_later["coefficient"]) > 0
@@ -393,6 +432,15 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         f"\\newcommand{{\\BridgeEstablishmentValueSE}}{{{_unsigned_pp(float(establishment_value['standard_error']))}}}",
         f"\\newcommand{{\\BridgeEstablishmentNativeLogCoef}}{{${float(establishment_native['coefficient']):+.2f}$}}",
         f"\\newcommand{{\\BridgeEstablishmentNativeLogSE}}{{${abs(float(establishment_native['standard_error'])):.2f}$}}",
+        f"\\newcommand{{\\BridgeTimingEvents}}{{{_integer(float(timing_month['events']))}}}",
+        f"\\newcommand{{\\BridgeTimingComparableEvents}}{{{_integer(float(timing_month_difference['n_observations']))}}}",
+        f"\\newcommand{{\\BridgeTimingSameDayShare}}{{{_pct(float(timing_same_day['adoption_share']))}}}",
+        f"\\newcommand{{\\BridgeTimingMonthShare}}{{{_pct(float(timing_month['adoption_share']))}}}",
+        f"\\newcommand{{\\BridgeTimingLongShare}}{{{_pct(float(timing_long['adoption_share']))}}}",
+        f"\\newcommand{{\\BridgeTimingShallowMonthShare}}{{{_pct(float(timing_shallow_month['adoption_share']))}}}",
+        f"\\newcommand{{\\BridgeTimingCompetitiveMonthShare}}{{{_pct(float(timing_competitive_month['adoption_share']))}}}",
+        f"\\newcommand{{\\BridgeTimingCompetitiveDiff}}{{{_signed_pp(float(timing_month_difference['coefficient']), decimals=1)}}}",
+        f"\\newcommand{{\\BridgeTimingCompetitiveSE}}{{{_unsigned_pp(float(timing_month_difference['standard_error']), decimals=1)}}}",
         f"\\newcommand{{\\BridgeDepthDoseFirstCoef}}{{{_signed_pp(0.01 * float(depth_slope_first['coefficient']))}}}",
         f"\\newcommand{{\\BridgeDepthDoseFirstSE}}{{{_unsigned_pp(0.01 * float(depth_slope_first['standard_error']))}}}",
         f"\\newcommand{{\\BridgeDepthDoseFirstRows}}{{{_integer(float(depth_slope_first['n_observations']))}}}",
@@ -521,6 +569,40 @@ def render_bridge_establishment_table(estimates: pd.DataFrame) -> str:
         period="post_30_119",
         depth_bin="below_0.1x",
     )
+    timing_shallow_first = _single(
+        estimates,
+        record_type="bridge_establishment_timing_depth_summary",
+        model_id="within_30_days",
+        depth_group="below_0.1x",
+    )
+    timing_shallow_later = _single(
+        estimates,
+        record_type="bridge_establishment_timing_depth_summary",
+        model_id="within_120_days",
+        depth_group="below_0.1x",
+    )
+    timing_competitive_first = _single(
+        estimates,
+        record_type="bridge_establishment_timing_depth_summary",
+        model_id="within_30_days",
+        depth_group="at_least_0.1x",
+    )
+    timing_competitive_later = _single(
+        estimates,
+        record_type="bridge_establishment_timing_depth_summary",
+        model_id="within_120_days",
+        depth_group="at_least_0.1x",
+    )
+    timing_difference_first = _single(
+        estimates,
+        record_type="bridge_establishment_timing_regression",
+        model_id="adoption_within_30_on_competitive_depth",
+    )
+    timing_difference_later = _single(
+        estimates,
+        record_type="bridge_establishment_timing_regression",
+        model_id="adoption_within_120_on_competitive_depth",
+    )
     depth_rows = [
         "Relative-depth slope [pp per +1 pp] & "
         f"{_estimate_cell(slope_first)} & "
@@ -535,6 +617,17 @@ def render_bridge_establishment_table(estimates: pd.DataFrame) -> str:
         "Active ordered-ultimate-pair days & "
         f"{_integer(float(slope_first['n_observations']))} & "
         f"{_integer(float(slope_later['n_observations']))} \\\\",
+    ]
+    timing_rows = [
+        "Stable route observed, depth $<0.1\\times$ WETH [\\%] & "
+        f"{100.0 * float(timing_shallow_first['adoption_share']):.1f} & "
+        f"{100.0 * float(timing_shallow_later['adoption_share']):.1f} \\\\",
+        "Stable route observed, depth $\\geq0.1\\times$ WETH [\\%] & "
+        f"{100.0 * float(timing_competitive_first['adoption_share']):.1f} & "
+        f"{100.0 * float(timing_competitive_later['adoption_share']):.1f} \\\\",
+        "Difference [pp] & "
+        f"{_estimate_cell(timing_difference_first, scale=100.0)} & "
+        f"{_estimate_cell(timing_difference_later, scale=100.0)} \\\\",
     ]
     return "\n".join(
         [
@@ -551,6 +644,10 @@ def render_bridge_establishment_table(estimates: pd.DataFrame) -> str:
             "\\addlinespace[0.35em]",
             "\\multicolumn{3}{@{}l}{\\textit{Panel B. Stable-bridge competitiveness relative to WETH}} \\\\",
             *depth_rows,
+            "\\addlinespace[0.35em]",
+            "\\multicolumn{3}{@{}l}{\\textit{Panel C. Stable-route adoption after persistent support}} \\\\",
+            "Outcome & First 30 days & First 120 days \\\\",
+            *timing_rows,
             "\\bottomrule",
             "\\end{tabularx}",
             "",

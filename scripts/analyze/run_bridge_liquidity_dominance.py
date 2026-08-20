@@ -376,6 +376,7 @@ eligible_events AS (
 SELECT
     c.origin_date,
     e.event_date,
+    e.first_stable_route_date,
     date_diff('day', e.event_date, c.origin_date)::INTEGER AS event_time,
     e.src,
     e.tgt,
@@ -818,6 +819,9 @@ def load_bridge_establishment_event_panel(
         raise ValueError("bridge establishment event panel is empty")
     for column in ("origin_date", "event_date"):
         frame[column] = pd.to_datetime(frame[column], errors="raise").dt.normalize()
+    frame["first_stable_route_date"] = pd.to_datetime(
+        frame["first_stable_route_date"], errors="coerce"
+    ).dt.normalize()
     for column in ("src", "tgt"):
         frame[column] = frame[column].astype(str).str.lower()
     frame["event_id"] = (
@@ -927,6 +931,201 @@ def bridge_establishment_period_summaries(panel: pd.DataFrame) -> pd.DataFrame:
             }
         )
     return pd.DataFrame(rows)
+
+
+def bridge_establishment_adoption_timing_from_events(
+    events: pd.DataFrame,
+    *,
+    min_observations: int = 100,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Measure how quickly stable routing follows persistent bridge support.
+
+    Each row is one bridge-establishment event with exact event-day stable and
+    WETH bottleneck capital.  The timing outcomes use calendar days, including
+    days without an observed route.  The depth comparison is descriptive and
+    gives each event equal weight.
+    """
+
+    required = {
+        "event_id",
+        "ordered_pair",
+        "event_date",
+        "first_stable_route_date",
+        "stable_bridge_min_capital_usd",
+        "native_bridge_min_capital_usd",
+    }
+    missing = sorted(required - set(events.columns))
+    if missing:
+        raise ValueError(f"bridge timing events lack columns: {missing}")
+    data = events.copy()
+    if data["event_id"].duplicated().any():
+        raise ValueError("bridge timing requires one row per event")
+    data["event_date"] = pd.to_datetime(
+        data["event_date"], errors="raise"
+    ).dt.normalize()
+    data["first_stable_route_date"] = pd.to_datetime(
+        data["first_stable_route_date"], errors="coerce"
+    ).dt.normalize()
+    data["adoption_lag_days"] = (
+        data["first_stable_route_date"] - data["event_date"]
+    ).dt.days
+    if data["adoption_lag_days"].dropna().lt(0).any():
+        raise ValueError("stable route predates bridge establishment")
+
+    eventual = data["adoption_lag_days"].notna()
+    eventual_lags = data.loc[eventual, "adoption_lag_days"].astype(float)
+    rows: list[dict[str, object]] = []
+    for model_id, label, horizon_days in (
+        ("same_day", "same calendar day", 0),
+        ("within_30_days", "first 30 calendar days", 29),
+        ("within_120_days", "first 120 calendar days", 119),
+    ):
+        adopted = data["adoption_lag_days"].between(0, horizon_days)
+        rows.append(
+            {
+                "claim_status": "provisional_exploratory",
+                "record_type": "bridge_establishment_timing_summary",
+                "model_id": model_id,
+                "adoption_window": label,
+                "horizon_days": horizon_days,
+                "events": int(len(data)),
+                "adoption_events": int(adopted.sum()),
+                "adoption_share": float(adopted.mean()),
+                "eventual_adoption_events": int(eventual.sum()),
+                "median_lag_days_eventual": (
+                    float(eventual_lags.median()) if not eventual_lags.empty else None
+                ),
+                "timing_definition": (
+                    "calendar days from first persistent two-leg stable support "
+                    "to first observed stable route"
+                ),
+            }
+        )
+
+    comparable = data[
+        data["stable_bridge_min_capital_usd"].gt(0)
+        & data["native_bridge_min_capital_usd"].gt(0)
+    ].copy()
+    if comparable.empty:
+        raise ValueError("bridge timing has no positive-depth comparisons")
+    comparable["stable_to_native_depth_ratio"] = (
+        comparable["stable_bridge_min_capital_usd"]
+        / comparable["native_bridge_min_capital_usd"]
+    )
+    comparable["competitive_depth"] = comparable[
+        "stable_to_native_depth_ratio"
+    ].ge(0.1).astype(float)
+    for depth_group, competitive_depth in (
+        ("below_0.1x", 0.0),
+        ("at_least_0.1x", 1.0),
+    ):
+        group = comparable[comparable["competitive_depth"].eq(competitive_depth)]
+        if group.empty:
+            continue
+        for model_id, label, horizon_days in (
+            ("within_30_days", "first 30 calendar days", 29),
+            ("within_120_days", "first 120 calendar days", 119),
+        ):
+            adopted = group["adoption_lag_days"].between(0, horizon_days)
+            rows.append(
+                {
+                    "claim_status": "provisional_exploratory",
+                    "record_type": "bridge_establishment_timing_depth_summary",
+                    "model_id": model_id,
+                    "adoption_window": label,
+                    "horizon_days": horizon_days,
+                    "depth_group": depth_group,
+                    "events": int(len(group)),
+                    "adoption_events": int(adopted.sum()),
+                    "adoption_share": float(adopted.mean()),
+                    "depth_definition": (
+                        "event-day best stablecoin two-leg bottleneck divided by "
+                        "the WETH two-leg bottleneck"
+                    ),
+                }
+            )
+
+    for horizon_label, horizon_days in (("30", 29), ("120", 119)):
+        outcome = f"adopted_within_{horizon_label}_days"
+        comparable[outcome] = comparable["adoption_lag_days"].between(
+            0, horizon_days
+        ).astype(float)
+        fit = ols_clustered(
+            comparable[outcome],
+            comparable[["competitive_depth"]],
+            comparable["ordered_pair"],
+            additional_clusters=(comparable["event_date"],),
+            min_observations=min_observations,
+            min_clusters=min_clusters,
+        )
+        rows.append(
+            {
+                "claim_status": "provisional_exploratory",
+                "record_type": "bridge_establishment_timing_regression",
+                "model_id": (
+                    f"adoption_within_{horizon_label}_on_competitive_depth"
+                ),
+                "outcome": outcome,
+                "regressor": "stable_depth_at_least_0.1x_weth",
+                "coefficient": float(fit.beta[1]),
+                "standard_error": float(fit.standard_errors[1]),
+                "t_statistic": float(fit.t_statistics[1]),
+                "p_value": float(fit.p_values[1]),
+                "coefficient_pp": float(100.0 * fit.beta[1]),
+                "standard_error_pp": float(100.0 * fit.standard_errors[1]),
+                "n_observations": int(fit.n_observations),
+                "events": int(len(comparable)),
+                "ordered_pair_clusters": int(fit.cluster_counts[0]),
+                "date_clusters": int(fit.cluster_counts[1]),
+                "fixed_effects": "none",
+                "covariance": "two_way_ordered_pair_event_date_cr1",
+                "weight": "equal_event",
+                "interpretation": (
+                    "descriptive adoption difference by event-day relative "
+                    "deposited-capital depth; not causal provider supply"
+                ),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def bridge_establishment_adoption_timing(
+    panel: pd.DataFrame,
+    *,
+    pool_capital_path: Path = POOL_CAPITAL_INPUT,
+    capital_status: str = CAPITAL_STATUS,
+    min_observations: int = 100,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Attach event-day depth and summarize route-adoption timing."""
+
+    event_columns = [
+        "event_id",
+        "ordered_pair",
+        "event_date",
+        "first_stable_route_date",
+        "src",
+        "tgt",
+        "integration_scope",
+    ]
+    missing = sorted(set(event_columns) - set(panel.columns))
+    if missing:
+        raise ValueError(f"bridge event panel lacks timing columns: {missing}")
+    events = panel.loc[:, event_columns].drop_duplicates().copy()
+    if events["event_id"].duplicated().any():
+        raise ValueError("bridge event timing fields vary within an event")
+    events["origin_date"] = events["event_date"]
+    events = _attach_bridge_establishment_depth(
+        events,
+        pool_capital_path=pool_capital_path,
+        capital_status=capital_status,
+    )
+    return bridge_establishment_adoption_timing_from_events(
+        events,
+        min_observations=min_observations,
+        min_clusters=min_clusters,
+    )
 
 
 def bridge_establishment_event_regressions(
@@ -2357,6 +2556,10 @@ def run(
             bridge_liquidity_leave_one_candidate_regressions(panel),
             bridge_liquidity_stable_issuer_regressions(panel),
             bridge_establishment_period_summaries(establishment_panel),
+            bridge_establishment_adoption_timing(
+                establishment_panel,
+                pool_capital_path=pool_capital_path,
+            ),
             bridge_establishment_event_regressions(establishment_panel),
             bridge_establishment_depth_summaries(establishment_panel),
             bridge_establishment_depth_regressions(establishment_panel),
