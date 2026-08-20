@@ -506,3 +506,52 @@ Across the quantile rows of Table~\ref{tab:app:roundtrip}, the Share by value co
 \exhibitnote{Each mark is one sampled date. \emph{Share by value} weights round-trip routes by their notional; \emph{share by count} gives each route equal weight. Both shares use multi-leg routes as the denominator. Dashed and dotted lines mark the respective medians, and the highest point is labelled. Dates with fewer than 200 multi-leg routes are omitted. The sample contains 79 dates from 1 June 2020 through 27 April 2026 and 2,488,399 multi-leg routes.}
 \end{figure}
 % output/exhibits/round_trip_share_by_day.jsonl, share_by_count and share_by_value on 79 sampled days from 2020-06-01 to 2026-04-27
+
+\section{Additional liquidity-provider estimates}
+\label{app:lp-detail}
+
+Table~\ref{tab:v4-flash-gap-flow} reports the vehicle-token flow outcomes that accompany the V4 stock, action, and range estimates in Table~\ref{tab:v4-flash-gap}. Tables~\ref{tab:v3-v4-lp-protocol}, \ref{tab:v3-v4-lp-flow-protocol}, and \ref{tab:v3-v4-tvl-protocol} report every horizon and outcome underlying the main-text protocol comparison. These estimates retain the same vehicle-date comparison and observational interpretation as Equation~\eqref{eq:v3-v4-protocol-contrast}.
+
+\begin{table}[tbp]
+\centering
+\caption{Stablecoin shortfalls, V4 flash accounting, and LP-flow sides}
+\label{tab:v4-flash-gap-flow}
+{\tiny
+\renewcommand{\arraystretch}{0.88}
+\input{../output/tables/v4_flash_gap_flow_interactions.tex}
+}
+\exhibitnote{Each cell reports the interaction of a 10 pp larger stablecoin route-minus-capital gap with a 10 pp larger V4 accounting proxy. Outcomes are future log admissible vehicle-token-side modify-liquidity flow over 120 days. The unit, fixed effects, controls, covariance, and stablecoin sample match Table~\ref{tab:v4-flash-gap}. Add and remove flows value the vehicle-token sides assigned through V4 modify-liquidity records. These predictive specifications measure vehicle-token flows; whole-pool inventory and causal LP supply remain outside their scope. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
+\end{table}
+
+\begin{table}[tbp]
+\centering
+\caption{Stablecoin shortfalls and the V4-minus-V3 LP-action response}
+\label{tab:v3-v4-lp-protocol}
+{\scriptsize
+\renewcommand{\arraystretch}{0.90}
+\input{../output/tables/v3_v4_lp_protocol_contrast.tex}
+}
+\exhibitnote{Each cell reports the V4-minus-V3 difference in the association between a 10 pp larger stablecoin route-minus-capital gap and the future LP-action outcome, with standard errors in parentheses. Outcomes are log points. The stacked unit is a protocol--vehicle--date row restricted to dates with observed V4 singleton swap activity. All columns absorb vehicle-date and protocol fixed effects, include same-protocol current LP-action and active-origin controls, and cluster by date. V3 outcomes are mint and burn event counts and active origins; V4 outcomes are modify-liquidity event counts and active origins. The estimates are conditional protocol differences and do not identify the effect of V4 adoption. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
+\end{table}
+
+\begin{table}[tbp]
+\centering
+\caption{Stablecoin shortfalls and the V4-minus-V3 LP-flow response}
+\label{tab:v3-v4-lp-flow-protocol}
+{\scriptsize
+\renewcommand{\arraystretch}{0.90}
+\input{../output/tables/v3_v4_lp_flow_protocol_contrast.tex}
+}
+\exhibitnote{Each cell reports the V4-minus-V3 difference in the association between a 10 pp larger stablecoin route-minus-capital gap and future vehicle-token-side LP flow, with standard errors in parentheses. Flow-amount outcomes are log points; range-composition outcomes are pp. The stacked unit is a protocol--vehicle--date row restricted to dates with observed V4 singleton swap activity. All columns absorb vehicle-date and protocol fixed effects, include same-protocol current gross, add, remove, and sender-day flow controls, and cluster by date. V3 outcomes value mint and burn token sides; V4 outcomes value modify-liquidity token sides. The estimates are conditional protocol differences and do not identify the effect of V4 adoption. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
+\end{table}
+
+\begin{table}[tbp]
+\centering
+\caption{Stablecoin shortfalls and the V4-minus-V3 reported-liquidity footprint}
+\label{tab:v3-v4-tvl-protocol}
+{\scriptsize
+\renewcommand{\arraystretch}{0.90}
+\input{../output/tables/v3_v4_tvl_protocol_contrast.tex}
+}
+\exhibitnote{Each cell reports the V4-minus-V3 difference in the association between a 10 pp larger stablecoin route-minus-capital gap and future growth in vehicle-linked reported full-pool TVL or pool count, with standard errors in parentheses. Outcomes are changes in log one plus the reported quantity. The stacked unit is a protocol--vehicle--date row restricted to V4-active dates with strict origin and target support in both protocols. All columns absorb vehicle-date and protocol fixed effects, include same-protocol origin TVL and pool-count controls, and cluster by date. A pool contributes its full reported TVL when it contains the vehicle; vehicle--vehicle pools can enter both vehicle series. The quantity is a reported stock-and-footprint proxy; reconstructed deposited capital, side-specific LP inventory, and causal protocol effects remain outside its scope. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
+\end{table}
