@@ -116,21 +116,23 @@ where $N_{p,t}$ is origin-date route count, $A_{p,t}$ is pair age, and $\mu_d$ a
 Table~\ref{tab:vehicle-mechanism-regressions} shows that one log point of origin-date route count predicts \MechanismHazardLogMarketCoef{} higher probability of stablecoin arrival within 30 days, and pair age predicts another \MechanismHazardPairAgeCoef{}. Once native and stable vehicles coexist in the same observed set, network reach predicts allocation: one log point of same-day reach is associated with \MechanismRiskSetCentralityCoef{} more route share, while prior-30-day reach predicts \MechanismRiskSetLagReachCoef{}. The formation evidence therefore links stablecoin entry to repeated pair demand and subsequent vehicle choice to the vehicle's wider trading network.
 % output/exhibits/vehicle_dominance_mechanism_sweep.jsonl; output/exhibits/vehicle_dominance_mechanism_support.jsonl
 
+\FloatBarrier
 \subsection{Issuer-level intermediation}
 \label{sec:dominance:excess}
 
-USDC and USDT together account for \JointStableContribution{} of the increase in stablecoin route-count share, but USDT supplies the clearer increase in role specialisation. Table~\ref{tab:usdt-transition} compares each token's share of intermediary use with its share of observed route endpoints. A ratio of zero means no intermediary use, one means proportional use in the two roles, and a value above one means the token is overrepresented as an intermediary.
+USDC and USDT together account for \JointStableContribution{} of the increase in stablecoin route-count share. The direct endpoint decomposition identifies the issuer inside the high-value stable-to-stable channel: USDT contributes \StableStableUsdtValueContribution{}, while USDC, DAI, and the remaining stablecoin intermediaries together contribute \StableStableOtherValueContribution{}. Table~\ref{tab:usdt-transition} asks the narrower question of whether USDT becomes more specialised in intermediation conditional on its observed endpoint demand. A ratio of zero means no intermediary use, one means proportional use in the two roles, and a value above one means the token is overrepresented as an intermediary. This ratio measures role specialisation, not aggregate importance: a currency unused in both roles has a ratio of zero, and a heavily traded endpoint can have a ratio below one despite substantial intermediary use.
 
 \begin{table}[tbp]
 \centering
-\caption{USDT intermediation relative to endpoint demand}
+\caption{USDT role specialisation relative to observed endpoint demand}
 \label{tab:usdt-transition}
 \small
 \input{../output/tables/usdt_transition.tex}
 \exhibitnote{Intermediary and endpoint shares are formed across native, staked-native, stable, and imported currencies on complete routes that do not return to their starting asset. Direct routes enter the endpoint denominator. Intermediation intensity is intermediary share divided by endpoint share; the gap is their difference. Ratios use full-year 2024 and January--June 2026, while the share gap uses matched January--June dates. Dollar-weighted measures apply the 20\% value-agreement rule.}
 \end{table}
 
-On matched dates, USDT's intermediary share minus its endpoint share rises from \USDTEndpointGapBase{} to \USDTEndpointGapEnd{}. Its intermediation-intensity ratio rises from \USDTCountExcessBase{} to \USDTCountExcessEnd{} by count and from \USDTValueExcessBase{} to \USDTValueExcessEnd{} by value. USDC changes little in the corresponding transition figure. The stablecoin rotation is therefore concentrated in one issuer's vehicle role, not a uniform consequence of stablecoin issuance.
+\FloatBarrier
+On matched dates, USDT's intermediary share minus its endpoint share rises from \USDTEndpointGapBase{} to \USDTEndpointGapEnd{}. Its intermediation-intensity ratio rises from \USDTCountExcessBase{} to \USDTCountExcessEnd{} by count and from \USDTValueExcessBase{} to \USDTValueExcessEnd{} by value. Endpoint shares are measured from observed route components, so an instruction leg supplied through executor inventory or outside the exchange perimeter can affect the role comparison. We therefore use the ratio as supplementary evidence on specialisation. The direct additive decomposition provides the issuer-level result: USDT carries the increase in stablecoin intermediation between stablecoin endpoints.
 % output/exhibits/vehicle_excess_use_transition.jsonl; output/tables/usdt_transition.tex
 
 \subsection{Endpoint demand within a day}

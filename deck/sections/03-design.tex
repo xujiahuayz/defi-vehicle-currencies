@@ -2,22 +2,21 @@
 % Mechanisms and estimands. Sources: docs/specifications/confirmatory.json and README.md.
 % APPENDIX-NAVIGATION: V4: shared accounting, one PoolManager, and the conclusion that the singleton changes the settlement boundary are retained in the appendix frame "Protocol design changes markets, depth, and settlement."
 
-% VISUAL-FUNCTION: rival mechanisms | converging mechanism map | organize liquidity, coordination, integration, and holding cost
-\begin{frame}{Four economic forces shape vehicle dominance}
+% VISUAL-FUNCTION: rival mechanisms | converging mechanism map | organize formation, liquidity provision, and market integration
+\begin{frame}{Three margins can make a vehicle dominant}
 \begin{center}
-\begin{tikzpicture}[scale=0.90,transform shape]
+\begin{tikzpicture}[scale=0.86,transform shape]
 \node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=46pt,font=\normalsize\bfseries,align=center] (d) at (0,0) {vehicle\\dominance};
-\node[softbox,minimum width=3.15cm,align=center] (liq) at (-4.15,2.15) {\textbf{Liquidity provision}\\capital follows order flow};
-\node[softbox,minimum width=3.15cm,align=center] (def) at (4.15,2.15) {\textbf{Coordination}\\pairings and routing conventions persist};
-\node[softbox,minimum width=3.15cm,align=center] (int) at (-4.15,-2.15) {\textbf{Market integration}\\additional venues expand feasible routing};
-\node[softbox,minimum width=3.15cm,align=center] (hold) at (4.15,-2.15) {\textbf{Holding cost}\\volatility and backing differ};
+\node[softbox,minimum width=3.55cm,align=center] (def) at (0,2.38) {\textbf{Market formation}\\new trading pairs coordinate on a vehicle};
+\node[softbox,minimum width=3.55cm,align=center] (liq) at (-4.35,-1.95) {\textbf{Liquidity provision}\\local bridge capital supports route choice};
+\node[softbox,minimum width=3.55cm,align=center] (int) at (4.35,-1.95) {\textbf{Market integration}\\additional venues broaden price competition};
 \draw[route,draw=native] (liq)--(d);
 \draw[route,draw=uclbright] (def)--(d);
 \draw[route,draw=stable] (int)--(d);
-\draw[route,draw=imported] (hold)--(d);
 \end{tikzpicture}
 \end{center}
 \vspace{0.2cm}
+\decknote{The evidence separates the formation of new endpoint pairs, the capital available on both legs of a vehicle route, and the price opportunity set across exchanges. Volatility enters the V4 provider analysis as a market state, not as a fourth symmetric mechanism.}
 \end{frame}
 
 \IfFileExists{../output/exhibits/v1_architecture_deck_values.tex}{%
