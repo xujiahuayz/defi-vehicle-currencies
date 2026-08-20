@@ -31,13 +31,10 @@
 \begin{frame}{Vehicle leadership turns over through time}
 \centering
 \vspace{-0.10cm}
-\movie[poster,showcontrols,width=0.88\textwidth,height=0.68\textheight]%
-{\includegraphics[width=0.88\textwidth,height=0.68\textheight,keepaspectratio]{../output/figures/vehicle_dominance_timelapse_poster.pdf}}%
-{../output/figures/vehicle_dominance_timelapse.mp4}
+\href{https://raw.githubusercontent.com/xujiahuayz/defi-vehicle-currencies/main/output/figures/vehicle_dominance_timelapse.mp4}{%
+\includegraphics[width=0.88\textwidth,height=0.68\textheight,keepaspectratio]{../output/figures/vehicle_dominance_timelapse_poster.pdf}}
 \par\vspace{-0.06cm}
 \href{https://raw.githubusercontent.com/xujiahuayz/defi-vehicle-currencies/main/output/figures/vehicle_dominance_timelapse.mp4}{\beamergotobutton{Play 18-second film}}
-\hspace{0.30cm}
-\href{run:../output/figures/vehicle_dominance_timelapse.mp4}{\beamerbutton{Open local MP4}}
 \decknote{The film follows WETH, USDC, USDT, and DAI in route participation, supported value, and ultimate-pair breadth. Each frame retains six months of history, so no single frame contains the full transition. The poster is the PDF fallback.}
 \end{frame}
 
@@ -50,16 +47,18 @@
 \begin{center}
 \begin{tikzpicture}[x=1cm,y=1cm]
 \node[softbox,text width=3.05cm,minimum height=1.45cm,align=center] at (-4.35,1.55)
-{\small Same continuing ultimate pair\\[0.14cm]{\fontsize{24}{26}\selectfont\bfseries\color{accent}\PairPooledWithin}};
+{\small Same continuing ultimate pair\\[0.14cm]{\fontsize{21}{23}\selectfont\bfseries\color{accent}\mbox{\PairPooledWithin}}};
 \node[softbox,text width=3.05cm,minimum height=1.45cm,align=center] at (0,1.55)
-{\small Trading reallocation\\[0.14cm]{\fontsize{24}{26}\selectfont\bfseries\color{ucldark}\PairPooledReweight}};
+{\small Trading reallocation\\[0.14cm]{\fontsize{21}{23}\selectfont\bfseries\color{ucldark}\mbox{\PairPooledReweight}}};
 \node[softbox,text width=3.05cm,minimum height=1.45cm,align=center,fill=stable!9] at (4.35,1.55)
-{\small Ultimate pairs in one period\\[0.14cm]{\fontsize{24}{26}\selectfont\bfseries\color{stable}\PairPooledExclusive}};
+{\small Ultimate pairs in one period\\[0.14cm]{\fontsize{21}{23}\selectfont\bfseries\color{stable}\mbox{\PairPooledExclusive}}};
 \draw[rule,line width=1pt] (-5.95,-0.05)--(5.95,-0.05);
-\node[font=\large\bfseries,text=ink] at (-2.10,-0.72) {Stablecoin share};
-\node[font=\fontsize{24}{26}\selectfont\bfseries,text=ucldark] at (0.50,-0.72) {\PairPooledBase};
-\draw[-{Stealth[length=7pt]},draw=stable,line width=1.7pt] (1.45,-0.72)--(2.45,-0.72);
-\node[font=\fontsize{24}{26}\selectfont\bfseries,text=stable] at (3.40,-0.72) {\PairPooledEnd};
+\node[font=\normalsize\bfseries,text=ink,align=left] at (-4.30,-0.72) {Stablecoin\\share};
+\node[font=\scriptsize\bfseries,text=muted] at (-1.45,-0.42) {2024 H1};
+\node[font=\fontsize{22}{24}\selectfont\bfseries,text=ucldark] at (-1.45,-0.88) {\PairPooledBase};
+\draw[-{Stealth[length=7pt]},draw=stable,line width=1.7pt] (0.05,-0.78)--(1.35,-0.78);
+\node[font=\scriptsize\bfseries,text=muted] at (2.85,-0.42) {2026 H1};
+\node[font=\fontsize{22}{24}\selectfont\bfseries,text=stable] at (2.85,-0.88) {\PairPooledEnd};
 \end{tikzpicture}
 \end{center}
 \vspace{0.02cm}

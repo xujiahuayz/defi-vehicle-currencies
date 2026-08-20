@@ -375,7 +375,7 @@ def test_deck_mechanism_sequence_separates_route_settlement_and_capital() -> Non
     assert "vehicle_dominance_timelapse_poster.pdf" in results
     assert "raw.githubusercontent.com/xujiahuayz/defi-vehicle-currencies" in results
     assert "Play 18-second film" in results
-    assert "run:../output/figures/vehicle_dominance_timelapse.mp4" in results
+    assert "\\movie" not in results
 
 
 def test_deck_separates_weth_eligibility_from_value_composition() -> None:
