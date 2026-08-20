@@ -7,16 +7,12 @@ currencies form and change in decentralized exchange.
 The economic question is whether an intermediary asset remains dominant only
 because market design requires it, or because liquidity and trading activity
 make its role self-reinforcing after the requirement disappears. For a routed
-trade `A → B → C`, this project calls `A → C` the **ultimate trade** or
-**ultimate pair** and calls `A → B` and `B → C` the **atomic trades** or
-**atomic pairs**. Code, tables, figures, paper, and slides should use those terms
-whenever the distinction matters.
-The ordered ultimate pair records the direction-specific endpoints; the
-**route** records the ordered sequence of atomic trades. A pool is a trading
-venue for an atomic pair. Do not append “market” to an ultimate pair unless the
-text explicitly defines a broader market that aggregates substitutable direct
-and indirect routes. Reserve “corridor” for an explicitly bilateral
-real-economy trade or payment relationship.
+trade `A → B → C`, `(A,C)` is the ordered **endpoint pair**, `A → B` and
+`B → C` are the two **legs**, and the full connected sequence is the **route**.
+A pool is the venue in which a leg executes. Code may retain legacy field names
+for compatibility, but generated labels, the paper, and the deck use endpoint
+pair, leg, and route. Reserve “corridor” for a bilateral real-economy trade or
+payment relationship.
 
 ## Iterative workflow graph and current position
 
@@ -31,8 +27,8 @@ question and literature                    done
   → cleaned and analysis-ready data        ready for the two active claim families
   → registered baseline analysis           done; findings check green
   → repository cleanup and host sync        done; one checkout per host
-  → presentable paper/deck trunk            69/45 pages; blocking checks green
-        status labels                      provisional / registered / confirmed
+  → presentable paper/deck trunk            current PDFs tracked; blocking checks green
+        source status metadata             provisional / registered / confirmed
         review snapshots                   versioned and shareable while work continues
 
         ╔════════════════ parallel research loops ════════════════╗
@@ -40,7 +36,7 @@ question and literature                    done
         ║ I2 input build: make eligible panels/releases           ║
         ║ I3 experiments: run exploratory and robustness variants ║
         ║ I4 triage: magnitude, rivals, literature, framing       ║
-        ║ I5 draft integration: add provisional results visibly   ║
+        ║ I5 draft integration: show results; keep status in source║
         ║ I6 review loop: send snapshot, collect comments, revise ║
         ║ weak result/comment unresolved ────────────────↺ I1/I2  ║
         ║ strong result/comment resolved ─→ upgrade claim status  ║
@@ -58,7 +54,7 @@ parallel: keep the paper and slides presentable, integrate provisional results
 with explicit status labels, and continue the scoped mechanism and review loops.
 Current provisional layers cover vehicle birth, active-day birth-state
 hysteresis, controlled entry-state path dependence, value-supported entry path dependence, non-WETH entry drivers, route-architecture entry interactions,
-large-entrant routing, low-activity ultimate-pair turn-on with a direct-route by thinness
+large-entrant routing, low-activity endpoint-pair turn-on with a direct-route by thinness
 interaction, rolling native-only-to-stable turn-on hazards, same-day and
 prior-30-day candidate-network reach inside observed mixed-risk-set rival checks,
 endpoint claim-class formation splits, endpoint price-history formation screens,
@@ -137,8 +133,8 @@ slide titles, or result framing.
 - Route-flow coherence and quote-notional proximity are separate support axes.
 - Deposited capital, liquidity-supply flows, inventory, local depth, executable
   depth, and provider returns are distinct quantities.
-- Architecture availability, adoption, atomic-pair venue formation,
-  ultimate-pair entry, substitution, exit, reversal, and hysteresis are
+- Architecture availability, adoption, leg-level venue formation,
+  endpoint-pair entry, substitution, exit, reversal, and hysteresis are
   distinct events. Calendar time is not a substitute for architecture.
 - Descriptive comparisons remain descriptive. Predictive capital associations
   are not causal feedback, and a global protocol launch alone is not a treatment

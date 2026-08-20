@@ -307,7 +307,7 @@ def test_deck_states_units_scopes_and_primary_protocol_sources() -> None:
     assert "native-WETH-versus-stablecoin routes" in results
     assert "common month-days" in results
     assert "Matched markets" not in decomposition
-    assert "Within-ultimate-pair change" in decomposition
+    assert "Within-endpoint-pair change" in decomposition
 
     visible_identification = strip_latex_comments(identification)
     assert "\\RoutePanelRawSwaps" in visible_identification
@@ -381,12 +381,12 @@ def test_deck_separates_weth_eligibility_from_value_composition() -> None:
         ROOT / "deck" / "assets" / "non-weth-value-composition.tex"
     ).read_text(encoding="utf-8")
 
-    title = "WETH-linked ultimate pairs carry the count rotation"
+    title = "WETH-linked endpoint pairs carry the count rotation"
     assert title in results
     assert "output/exhibits/route_methodology_heterogeneity.jsonl" in results
     assert "grouped-binomial" not in results
     assert "Challenger cost advantage predicts subsequent vehicle share" not in results
-    assert "Trading shifts toward stablecoin-heavy ultimate pairs" in results
+    assert "Trading shifts toward stablecoin-heavy endpoint pairs" in results
     assert "stablecoin-heavy corridors" not in results
 
     frame_start = results.index(rf"\begin{{frame}}{{{title}}}")
@@ -395,8 +395,8 @@ def test_deck_separates_weth_eligibility_from_value_composition() -> None:
     assert "provisional" not in rendered_frame.lower()
 
     assert r"Eligible intermediaries:\\stablecoins" in asset
-    assert "All matched ultimate-pair groups" in asset
-    assert "Ultimate-pair groups excluding WETH endpoints" in asset
+    assert "All matched endpoint pairs" in asset
+    assert r"Endpoint pairs without\\WETH endpoints" in asset
     assert "cells" not in asset.lower()
     assert r"\WethCountFullChange" in asset
     assert r"\WethCountNoEndpointChange" in asset
@@ -410,7 +410,7 @@ def test_weth_frame_evidence_boundary_does_not_drift() -> None:
     results = (ROOT / "deck" / "sections" / "04-results.tex").read_text(
         encoding="utf-8"
     )
-    title = "WETH-linked ultimate pairs carry the count rotation"
+    title = "WETH-linked endpoint pairs carry the count rotation"
     frame_start = results.index(rf"\begin{{frame}}{{{title}}}")
     metadata = results[results.rfind("% EVIDENCE-STATUS:", 0, frame_start):frame_start]
 

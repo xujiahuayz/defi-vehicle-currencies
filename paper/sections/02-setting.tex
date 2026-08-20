@@ -41,7 +41,7 @@ This route setting makes the classical volume--cost mechanism observable at tran
 \subsection{Measuring vehicle dominance}
 \label{sec:setting:definitions}
 
-An exact two-leg route consists of two atomic trades, one on either side of a unique intermediary. This gives the primary measure a simple unit: each endpoint exchange contributes one intermediary observation. A supplementary multiple-intermediary measure includes routes of any length and counts each intermediary use separately. For route $r$, let $\mathcal{M}(r)$ denote the set of assets between the ultimate source and destination. We record the intermediary status of asset $k$ as
+An exact two-leg route consists of one pool trade on either side of a unique intermediary. This gives the primary measure a simple unit: each endpoint exchange contributes one intermediary observation. A supplementary multiple-intermediary measure includes routes of any length and counts each intermediary use separately. For route $r$, let $\mathcal{M}(r)$ denote the set of assets between its source and destination. We record the intermediary status of asset $k$ as
 \begin{equation*}
 Z_{r,k} \;=\; \mathbf{1}\{k \in \mathcal{M}(r)\}.
 \end{equation*}
@@ -115,7 +115,7 @@ Missing source-days & 0 \\
 % output/exhibits/unified_route_quality.jsonl
 Raw swap rows & 472,254,909 \\
 % output/exhibits/unified_route_quality.jsonl
-Usable directed atomic trades (legs) & 471,616,269 \\
+Usable directed route legs & 471,616,269 \\
 % output/exhibits/unified_route_quality.jsonl
 Routes per day, median of 79 sampled days & 161,152 \\
 % output/exhibits/round_trip_share_by_day.jsonl, 79 sampled days

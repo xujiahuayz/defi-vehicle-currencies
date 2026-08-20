@@ -201,13 +201,24 @@ class PaperProseTests(unittest.TestCase):
             self.assertNotIn(
                 "corridor",
                 body,
-                f"{path.name} uses corridor for a DEX ultimate pair",
+                f"{path.name} uses corridor for a DEX endpoint pair",
             )
             self.assertNotIn(
-                "ultimate-pair market",
+                "endpoint-pair market",
                 body,
-                f"{path.name} conflates an ultimate pair with an atomic-pair market",
+                f"{path.name} conflates an endpoint pair with a pool-pair market",
             )
+
+    def test_reader_facing_route_vocabulary_is_current(self) -> None:
+        obsolete = re.compile(r"\bultimate[- ]pair\b|\batomic[- ](?:pair|trade)s?\b", re.IGNORECASE)
+        for path in source_files(ROOT / "paper") + source_files(DECK_DIR):
+            body = strip_latex_comments(path.read_text(encoding="utf-8"))
+            match = obsolete.search(body)
+            if match:
+                self.fail(
+                    f"{path.relative_to(ROOT)}:{body.count(chr(10), 0, match.start()) + 1} "
+                    f"uses obsolete audience term {match.group(0)!r}"
+                )
 
     def test_percentage_point_abbreviation_is_defined_before_compact_use(self) -> None:
         preamble = (PAPER_DIR.parent / "main.tex").read_text(encoding="utf-8")

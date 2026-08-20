@@ -42,9 +42,9 @@ E1 confirmatory specification lock      DONE
   |
 F registered confirmatory rebuilds      DONE; FINDINGS GATE GREEN
   |
-G baseline JFE paper                    DONE; CLEAN 54-PAGE PDF
+G baseline JFE paper                    DONE; CURRENT PDF TRACKED
   |
-H baseline presentation deck           DONE; CLEAN 46-PAGE PDF
+H baseline presentation deck           DONE; CURRENT PDF TRACKED
   |
 I parallel result-search loops          ACTIVE
   |                                     dominance drivers, LP behavior, framing
@@ -52,7 +52,7 @@ I parallel result-search loops          ACTIVE
   |-- I2 find/build eligible inputs
   |-- I3 run exploratory experiments
   |-- I4 triage against JFE bar
-  |-- I5 integrate provisional result into paper/deck with status labels
+  |-- I5 integrate provisional result; status stays in source metadata
   |-- I6 send review snapshot while I1-I5 continue
   |       weak or measurement-only  ---- back to I1/I2
   |       strong and defensible     ---- upgrade claim status and rebuild
@@ -83,7 +83,9 @@ V3/V4 routing or netting behavior where inputs support it). A candidate result
 can become headline evidence only after it states the unit, conditioning set,
 economic magnitude, strongest rival explanation, literature contribution, and
 complete producer-to-deliverable path. Provisional results may enter the paper
-and deck only when explicitly labelled and reproducible enough for review.
+and deck only when reproducible enough for review. Their status remains in
+source comments and research records; the audience sees the empirical design
+and its scientific limitation.
 
 The active provisional result stack now includes vehicle formation at market
 birth, large-entrant stable routing, 30-day and 120-day birth-state persistence,
@@ -167,11 +169,9 @@ and the lock.
 
 ## Deliverable state
 
-The current branch compiles a 67-page paper and a 45-page deck after the
-provisional mechanism reruns and publication-regression repair. The paper and
-deck compile with zero undefined references. The repository passes 779 pytest
-tests plus 122 subtests, the findings gate, and every
-blocking conformance check. There is one manuscript under `paper/` and one
+The current branch tracks the rendered paper and deck. Page counts, test counts,
+and warnings are build outputs reported by the conformance command rather than
+copied into this state file. There is one manuscript under `paper/` and one
 presentation under `deck/`; Git history is the archive.
 
 These are rolling deliverables, not final submission deliverables. The paper and

@@ -11,6 +11,6 @@ scientific contracts.
   for paper prose, slide language, finding-selling, visual rhetoric, and the
   paper/deck conformance checks.
 
-Definitions that affect all stages—including ultimate versus atomic pairs,
+Definitions that affect all stages, including endpoint pairs, route legs,
 vehicle dominance, topology, support, and liquidity quantities—remain in the
 [root README](../../README.md) so scripts, paper, and deck share one vocabulary.

@@ -2,7 +2,7 @@
 % output/exhibits/route_methodology_heterogeneity_deck_values.tex.
 % WETH is the native intermediary in this comparison. If WETH is an endpoint,
 % it cannot also be the intermediary; the eligible intermediary set contains stablecoins.
-% Within-ultimate-pair change is reported in the authored frame text below the graphic.
+% Within-endpoint-pair change is reported in the authored frame text below the graphic.
 \begin{tikzpicture}[x=1cm,y=1cm]
 \tikzset{panel/.style={draw=rule,fill=white,rounded corners=3pt,line width=0.8pt}}
 
@@ -10,7 +10,7 @@
 \node[draw=stable,line width=1.1pt,circle,minimum size=1.10cm,
   font=\fontsize{8.6}{9.2}\selectfont\bfseries,text=ucldark] (weth) at (1.45,3.40) {WETH};
 \node[font=\fontsize{7.8}{8.6}\selectfont\bfseries,text=ucldark,align=center,text width=2.9cm]
-  at (1.45,2.48) {endpoint of the\\ultimate pair};
+  at (1.45,2.48) {WETH is an\\endpoint};
 \draw[-{Stealth[length=5pt]},line width=1.2pt,draw=stable] (1.45,2.03)--(1.45,1.55);
 \node[draw=rule,fill=panel,rounded corners=2pt,font=\fontsize{7.6}{8.4}\selectfont,text=ink,align=center,text width=2.75cm,minimum height=0.88cm] at (1.45,0.94) {Eligible intermediaries:\\stablecoins};
 
@@ -19,16 +19,16 @@
 \draw[panel,fill=stable!7] (3.35,2.42) rectangle (13.00,4.35);
 \node[anchor=west,font=\fontsize{21}{22}\selectfont\bfseries,text=stable]
   at (3.72,3.43) {\WethCountFullChange};
-\node[anchor=west,font=\fontsize{9.0}{9.8}\selectfont\bfseries,text=ucldark]
-  at (6.55,3.77) {All matched ultimate-pair groups};
+\node[anchor=west,font=\fontsize{8.3}{9.1}\selectfont\bfseries,text=ucldark,align=left,text width=5.8cm]
+  at (6.55,3.77) {All matched endpoint pairs};
 \node[anchor=west,font=\fontsize{7.2}{8.0}\selectfont,text=ink]
   at (6.55,3.18) {WETH-linked route-count mass: \WethCountMassBase{} $\rightarrow$ \WethCountMassEnd};
 
 \draw[panel] (3.35,0.25) rectangle (13.00,2.18);
 \node[anchor=west,font=\fontsize{21}{22}\selectfont\bfseries,text=accent]
   at (3.72,1.26) {\WethCountNoEndpointChange};
-\node[anchor=west,font=\fontsize{9.0}{9.8}\selectfont\bfseries,text=ucldark]
-  at (6.55,1.60) {Ultimate-pair groups excluding WETH endpoints};
+\node[anchor=west,font=\fontsize{8.3}{9.1}\selectfont\bfseries,text=ucldark,align=left,text width=5.8cm]
+  at (6.55,1.60) {Endpoint pairs without\\WETH endpoints};
 \node[anchor=west,font=\fontsize{7.2}{8.0}\selectfont,text=ink]
   at (6.55,1.01) {\WethCountNoEndpointGroups{} matched groups};
 \end{tikzpicture}

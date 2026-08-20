@@ -27,6 +27,28 @@ testable, add it to the verification surface. Do not replace an older rule by
 accident. If two standing rules conflict, leave the edit open until Java resolves
 the conflict.
 
+## Revision decision rule
+
+Before a major cut, addition, reframing, or new empirical specification, write
+down what it is expected to improve: the economic question, identification
+against a serious rival, the magnitude or generality of a finding, or the
+reader's ability to understand the mechanism. Also identify what the change
+would remove or obscure. Make the change only when the expected gain exceeds
+that cost. Concision is not an independent objective: institutional intuition,
+economic transitions, and mechanism explanations stay when they carry the
+argument.
+
+An exploratory regression earns computation only when it has a named economic
+hypothesis or rival, a defensible unit and timing convention, an eligible input,
+and a stated decision use. A specification grid records the family and controls
+multiplicity. Statistical significance alone never promotes a result.
+
+Before a version is called ready, reread the rendered paper and complete core
+deck against the primary JFE benchmark and the wider venue corpus. Check the
+economic spine, nearby limitations, exhibit order, terminology, prose register,
+and every slide boundary visually. Automated checks are alarms; they are not a
+substitute for this full-document review.
+
 ## Shared claim language
 
 - Put the economic object first. The reader should see the actor, market,
@@ -40,18 +62,17 @@ the conflict.
 - Keep distinct objects distinct: binary vehicle status, continuous vehicle
   dominance, realised route choice, counterfactual execution cost, deposited
   capital, liquidity-supply flow, inventory, executable depth, provider return,
-  atomic-pair venue formation, ultimate-pair entry, substitution, exit,
+  leg-level venue formation, endpoint-pair entry, substitution, exit,
   reversal, and persistence.
 - Keep the route vocabulary equally explicit. For \(A\rightarrow B\rightarrow C\),
-  \(A\rightarrow C\) is the ultimate trade and \((A,C)\) the ultimate pair;
-  \(A\rightarrow B\) and \(B\rightarrow C\) are atomic trades and their token
-  pairs are atomic pairs. Qualify “trade” and “pair” in audience-facing text
-  whenever both levels are possible; leave either word unqualified only when its
-  local referent is unambiguous.
-- The ordered ultimate pair records endpoints and direction, not the intervening
+  \((A,C)\) is the ordered endpoint pair, \(A\rightarrow B\) and
+  \(B\rightarrow C\) are legs, and the complete connected sequence is the
+  route. A pool is the venue in which a leg executes. Shorten endpoint pair to
+  pair only after local context rules out a pool pair.
+- The ordered endpoint pair records endpoints and direction, not the intervening
   execution sequence. Call \(A\rightarrow B\rightarrow C\) the realised route
-  (or path when discussing the graph); call each pool a venue for an atomic pair.
-  Do not append “market” to an ultimate pair unless the text explicitly defines
+  (or path when discussing the graph). Do not append “market” to an endpoint
+  pair unless the text explicitly defines
   a broader market aggregating substitutable direct and indirect routes.
   Reserve corridor for an explicitly bilateral real-economy trade or payment
   relationship, where that term is conventional. These labels keep an endpoint
@@ -65,6 +86,10 @@ the conflict.
   workflow documents. In reader-facing text, name the economic object, comparison,
   and specification directly. This is a sentence-level translation rule, not a
   synonym list: rewrite the thought when its subject is still the research process.
+- Reader-facing prose does not use internal project nouns such as workflow,
+  pipeline, node, gate, freeze, claim family, evidence status, producer, generated
+  data release, artifact, registry, ledger, or support contract. Replace the underlying thought
+  with the market object, sample restriction, estimate, or economic comparison.
 - Provisional, blocked, withheld, unsupported, or retired results may remain in
   source comments and review documents. A result enters reader-facing prose only
   in scientific language that states its design and limitation; workflow status is
@@ -89,7 +114,7 @@ the conflict.
   absolute activity, and **vehicle status** for the binary extensive margin.
   The compact description of the decomposition is that aggregate stablecoin
   dominance changes through net vehicle substitution within continuing
-  ultimate pairs and through reallocation of routed activity across ultimate
+  endpoint pairs and through reallocation of routed activity across endpoint
   pairs. Do not make “dominance,” “share,” and “volume” interchangeable merely
   to vary the prose.
 - Keep one result spine in the abstract and the introduction: state the

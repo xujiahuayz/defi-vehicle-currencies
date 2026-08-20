@@ -24,6 +24,21 @@ to make the paper answer three connected questions:
 3. What do these results imply for the liquidity providers and payment systems
    that must make cross-currency exchange possible?
 
+## Current disposition
+
+Completed in the rolling manuscript and deck: the economic FX-provider opening,
+the DeFi subtitle, the sub-100-word abstract, endpoint-pair and leg terminology,
+the compact pair decomposition, conventional regression equations and table
+notes, the matched-window labels, and a core V4 liquidity-provider result. The
+rendered PDFs remain tracked review artifacts.
+
+Open revision classes: test whether the prior tightening removed useful economic
+intuition; compress or reorganize the long liquidity section without deleting
+its mechanism; collect the four endpoint-transition quadrants; quantify the
+disconnected-component boundary; and evaluate issuance-to-pool-to-vehicle timing.
+Each major revision follows the decision rule in
+[`writing-and-rhetoric.md`](writing-and-rhetoric.md) before implementation.
+
 ## Economic motivation and contribution
 
 - Open with the foreign-exchange problem faced by a payment provider that does

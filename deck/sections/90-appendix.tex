@@ -125,7 +125,7 @@
 \centering
 \resizebox{0.92\textwidth}{!}{\input{assets/sample-measurement-funnel.tex}}\par
 \vspace{0.05cm}
-{\fontsize{8.0}{8.8}\selectfont Atomic pairs inside multi-asset pools can supply route legs. V1/V2 architecture evidence is separate; dollar support changes value weighting.\par}
+{\fontsize{8.0}{8.8}\selectfont Token pairs inside multi-asset pools can supply route legs. V1/V2 architecture evidence is separate; dollar support changes value weighting.\par}
 \end{frame}
 
 % VISUAL-FUNCTION: causal event ordering | numbered replay sequence | explain same-state counterfactual timing
@@ -205,7 +205,7 @@ V4 singleton
 % docs/research/design.md.
 % SCIENTIFIC-BOUNDARY: protocol rules change pair availability, pair-specific active liquidity, or the accounting boundary. The slide reports no adoption, liquidity, routing, or causal estimate.
 % VISUAL-FUNCTION: architecture-to-economic-object map | three protocol-mechanism panels | show how V1--V4 alter the opportunity set without treating calendar version as an estimated effect
-\begin{frame}{A5.1. Atomic-pair creation determines available paths}
+\begin{frame}{A5.1. Pool formation determines available paths}
 \vspace{-0.08cm}
 \begin{columns}[T,totalwidth=\textwidth]
 
@@ -230,7 +230,7 @@ V4 singleton
 \end{tikzpicture}
 \par\vspace{0.10cm}
 \raggedright
-{\small V1 admits only ETH--token atomic pairs. V2 permits any ERC-20 atomic pair, so market creation determines whether direct and vehicle paths coexist.\par}
+{\small V1 admits only ETH--token pools. V2 permits any ERC-20 pool, so market creation determines whether direct and vehicle paths coexist.\par}
 \vfill
 \colorbox{panel}{\parbox[c][0.72cm][c]{0.87\linewidth}{\centering\small\bfseries Which paths exist?}}
 \end{column}
@@ -295,7 +295,7 @@ V4 singleton
 \end{tikzpicture}
 \par\vspace{0.11cm}
 \raggedright
-{\small One PoolManager holds all pools. During a lock, the two atomic trades update balance deltas; the caller settles its obligations before the lock ends.\par}
+{\small One PoolManager holds all pools. During a lock, the two route legs update balance deltas; the caller settles its obligations before the lock ends.\par}
 \vfill
 \colorbox{panel}{\parbox[c][0.72cm][c]{0.87\linewidth}{\centering\small\bfseries Where is the route settled?}}
 \end{column}

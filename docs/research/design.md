@@ -20,7 +20,7 @@ Priority experiments:
 
 1. Making of vehicle dominance: estimate which asset, market, and route features
    predict vehicle adoption, dominance intensity, leader switches, entry, exit,
-   reversals, and persistence. Preferred designs condition on the same ultimate
+   reversals, and persistence. Preferred designs condition on the same endpoint
    pair and date when feasible, so the comparison is among candidate vehicles in
    the same trading opportunity.
 2. Liquidity-provision behavior: separate capital stocks from liquidity-supply
@@ -53,13 +53,13 @@ role that conventional pair-level turnover data usually leave latent.
 
 The main contribution is a distinction between two margins:
 
-1. substitution within an ultimate pair, where traders change the intermediary;
-2. composition across ultimate pairs, where activity reallocates toward markets
+1. substitution within an endpoint pair, where traders change the intermediary;
+2. composition across endpoint pairs, where activity reallocates toward pairs
    that already use one intermediary more heavily.
 
-For `A → B → C`, `A → C` is the **ultimate trade** or **ultimate pair** and
-`A → B` plus `B → C` are the **atomic trades** or **atomic pairs**. A route is
-one reconstructed input-to-output component, not one atomic swap record.
+For `A → B → C`, `(A,C)` is the ordered **endpoint pair**, `A → B` and
+`B → C` are the two **legs**, and the full connected sequence is the **route**.
+One pool swap supplies one leg; it is not the routed exchange by itself.
 
 ## Measurement
 
@@ -78,7 +78,7 @@ The economic unit is a contract-identified token claim grouped by vehicle role,
 not a consolidated unit of account. ETH and WETH are combined only after route
 reconstruction because wrapping represents the same settlement asset one for
 one. Dollar-pegged tokens remain distinct claims because issuer, redemption,
-risk, and atomic-pair liquidity differ; stable-group results therefore measure a
+risk, and leg-level pool liquidity differ; stable-group results therefore measure a
 family of stable-token vehicles, while token-level results retain issuer
 competition.
 
@@ -87,11 +87,11 @@ competition.
 The first family compares the stablecoin share of native-plus-stable
 intermediaries in 2024 and 2026 on common January-to-June dates.
 
-- Unit: ordered ultimate pair × date × observed integration scope.
-- Main coefficient: the 2026 indicator with ultimate-pair × month-day × scope
+- Unit: ordered endpoint pair × date × observed integration scope.
+- Main coefficient: the 2026 indicator with endpoint-pair × month-day × scope
   fixed effects.
 - Weights: the applicable native-plus-stable route mass.
-- Inference: two-way clustering by ultimate pair and date, with Holm adjustment
+- Inference: two-way clustering by endpoint pair and date, with Holm adjustment
   across the three registered count/value measures.
 - Interpretation: descriptive within-market substitution. Calendar time is not a treatment,
   and realised cross-venue routing is not assigned integration.
@@ -133,8 +133,8 @@ quote quality, liquidity-provider profit, or rent.
 ## Supporting routing analyses and architecture context
 
 The Uniswap V1-to-V2 architecture change supplies institutional evidence. V1
-mechanically forced token-to-token ultimate trades through ETH; V2 allowed direct
-ERC20 pairs. V1 therefore demonstrates forced vehicle status, while continued
+mechanically forced token-to-token routed exchanges through ETH; V2 allowed direct
+ERC20 pool pairs. V1 therefore demonstrates forced vehicle status, while continued
 WETH pairing after V2 is descriptive evidence about persistence after the mandate
 was withdrawn. It does not identify the later stablecoin transition.
 
@@ -145,8 +145,8 @@ who authored a route and market composition changes at the same time.
 
 ## Boundaries
 
-- Architecture availability, adoption, atomic-pair venue formation,
-  ultimate-pair entry, substitution, and reversal are different objects.
+- Architecture availability, adoption, leg-level venue formation,
+  endpoint-pair entry, substitution, and reversal are different objects.
 - Counts and values answer different questions and are never silently pooled.
 - Unsupported values stay visible through coverage rather than being imputed.
 - Symbols label assets; contract addresses establish identity.

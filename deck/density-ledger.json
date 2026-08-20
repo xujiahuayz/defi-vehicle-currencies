@@ -16,13 +16,13 @@
     {
       "page": 20,
       "title": "V4 internal routing is followed by LP repositioning",
-      "words": 56,
+      "words": 60,
       "note_words": 45
     },
     {
       "page": 21,
       "title": "Entry, depth, and provider response form dominance",
-      "words": 70,
+      "words": 68,
       "note_words": 0
     },
     {
@@ -53,12 +53,6 @@
       "page": 28,
       "title": "A5. Each AMM family has a different state vector",
       "words": 59,
-      "note_words": 0
-    },
-    {
-      "page": 29,
-      "title": "A5.1. Atomic-pair creation determines available paths",
-      "words": 57,
       "note_words": 0
     },
     {

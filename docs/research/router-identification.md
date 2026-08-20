@@ -34,7 +34,7 @@ The route reconstruction distinguishes:
 - sequential intermediation through one or more assets;
 - routes that combine intermediation with a split or join.
 
-Counts use topology-valid, non-round-trip ultimate routes. Values are reported
+Counts use topology-valid, non-round-trip routes. Values are reported
 raw and at the two declared route-flow coherence bands. Cross-venue incidence,
 leg count, venue count, and intermediary composition are descriptive routing
 objects; none is a welfare or efficiency measure by itself.
@@ -56,7 +56,7 @@ three separately reported quantities:
 2. that reach-constrained optimum versus the public-pool optimum;
 3. intermediary choice versus a direct route and alternative intermediaries.
 
-Those comparisons must hold fixed the ultimate endpoints, input amount, block
+Those comparisons must hold fixed the endpoints, input amount, block
 state, reachable venues, and route complexity. Integration events require dated
 venue additions and unaffected comparison markets. Until that design is complete,
 the present paper makes no aggregator-causality or market-efficiency claim.
@@ -64,9 +64,9 @@ the present paper makes no aggregator-causality or market-efficiency claim.
 ## Reporting rules
 
 - Say **executor**, not route author, unless authorship is separately established.
-- Say **ordered ultimate pair** for the direction-specific input-to-output
+- Say **ordered endpoint pair** for the direction-specific input-to-output
   endpoints, **route** for the realised execution sequence (or **path** when
-  discussing the graph), and **atomic trade/pair** for each pool leg.
+  discussing the graph), and **leg** for each pool execution.
 - Keep route complexity, market integration, search performance, and
   vehicle-currency economics separate.
 - Count-weighted routing is primary; value-weighted routing always reports its

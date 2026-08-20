@@ -12,12 +12,13 @@ def test_current_design_names_the_two_paper_claim_families() -> None:
     assert "Supporting routing analyses" in text
 
 
-def test_design_uses_ultimate_and_atomic_trade_vocabulary() -> None:
+def test_design_uses_endpoint_pair_leg_and_route_vocabulary() -> None:
     text = DESIGN.read_text(encoding="utf-8")
-    assert "ultimate trade" in text
-    assert "ultimate pair" in text
-    assert "atomic trades" in text
-    assert "atomic pairs" in text
+    assert "endpoint pair" in text
+    assert "legs" in text
+    assert "route" in text
+    assert "ultimate pair" not in text
+    assert "atomic pair" not in text
 
 
 def test_design_preserves_identification_boundaries() -> None:
