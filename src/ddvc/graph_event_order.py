@@ -10,6 +10,7 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass
 import gzip
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -284,6 +285,63 @@ def timestamp_evidence_path(root: Path, venue: str, day: str) -> Path:
 
 def receipt_evidence_path(root: Path, venue: str, day: str) -> Path:
     return correction_directory(root, venue) / f"{day}.transaction_receipts.jsonl.gz"
+
+
+CORRECTION_POINTER_SCHEMA_VERSION = 1
+
+
+def file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def correction_pointer_path(root: Path, venue: str, day: str) -> Path:
+    return root / venue / f"{day}.current.json"
+
+
+def correction_generation_paths(
+    root: Path,
+    venue: str,
+    day: str,
+) -> tuple[Path, Path, Path, Path] | None:
+    """Resolve one content-addressed correction generation from its pointer."""
+
+    pointer_path = correction_pointer_path(root, venue, day)
+    if not pointer_path.exists():
+        return None
+    try:
+        pointer = json.loads(pointer_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise ValueError(
+            f"invalid event-order generation pointer for {venue}/{day}"
+        ) from error
+    generation_id = str(pointer.get("generation_id") or "")
+    metadata_sha256 = str(pointer.get("metadata_sha256") or "")
+    if (
+        pointer.get("schema_version") != CORRECTION_POINTER_SCHEMA_VERSION
+        or pointer.get("venue") != venue
+        or pointer.get("day") != day
+        or len(generation_id) != 64
+        or any(character not in "0123456789abcdef" for character in generation_id)
+        or len(metadata_sha256) != 64
+        or any(character not in "0123456789abcdef" for character in metadata_sha256)
+    ):
+        raise ValueError(f"invalid event-order generation pointer for {venue}/{day}")
+    directory = root / venue / f"{day}.generations" / generation_id
+    paths = (
+        directory / "actions.jsonl.gz",
+        directory / "metadata.json",
+        directory / "block_timestamps.jsonl.gz",
+        directory / "transaction_receipts.jsonl.gz",
+    )
+    if any(not path.is_file() for path in paths):
+        raise RuntimeError(f"partial event-order generation for {venue}/{day}")
+    if file_sha256(paths[1]) != metadata_sha256:
+        raise ValueError(f"stale event-order generation pointer for {venue}/{day}")
+    return paths
 
 
 def normalize_pool_perimeter(values: Iterable[str]) -> set[str]:
@@ -1725,6 +1783,24 @@ def load_event_order_metadata(
     day: str,
 ) -> tuple[Path, Path, dict[str, object]] | None:
     root = correction_root_for_graph(raw_root)
+    generation = correction_generation_paths(root, venue, day)
+    if generation is not None:
+        data_path, meta_path, _timestamp_path, _receipts_path = generation
+        metadata = json.loads(meta_path.read_text(encoding="utf-8"))
+        pointer = json.loads(
+            correction_pointer_path(root, venue, day).read_text(encoding="utf-8")
+        )
+        if (
+            metadata.get("status") != "complete"
+            or metadata.get("schema_version") != SCHEMA_VERSION
+            or metadata.get("venue") != venue
+            or metadata.get("day") != day
+            or metadata.get("generation_id") != pointer.get("generation_id")
+            or int(metadata.get("unmatched_graph_events", -1)) != 0
+            or int(metadata.get("unmatched_exact_events", -1)) != 0
+        ):
+            raise ValueError(f"invalid event-order generation metadata for {venue}/{day}")
+        return data_path, meta_path, metadata
     data_path, meta_path = correction_paths(root, venue, day)
     timestamp_path = timestamp_evidence_path(root, venue, day)
     receipts_path = receipt_evidence_path(root, venue, day)
@@ -1757,31 +1833,114 @@ def _load_event_order_corrections_unlocked(
     if package is None:
         return None, []
     data_path, meta_path, metadata = package
-    timestamp_path = timestamp_evidence_path(root, venue, day)
-    receipts_path = receipt_evidence_path(root, venue, day)
+    generation_paths = correction_generation_paths(root, venue, day)
+    if generation_paths is None:
+        timestamp_path = timestamp_evidence_path(root, venue, day)
+        receipts_path = receipt_evidence_path(root, venue, day)
+    else:
+        _generation_data, _generation_meta, timestamp_path, receipts_path = (
+            generation_paths
+        )
 
     if venue in V2_EVENT_VENUES and metadata.get("scope") != V2_RECONCILIATION_SCOPE:
         raise ValueError(f"V2 event-order correction is not full-day: {venue}/{day}")
     if metadata.get("scope") == V2_RECONCILIATION_SCOPE:
+        decimals_count = metadata.get(
+            "audited_token_decimals_count"
+            if generation_paths is not None
+            else "validated_token_decimals_count",
+            0,
+        )
         if (
             venue not in V2_EVENT_VENUES
             or int(metadata.get("reconciliation_pool_perimeter_count", 0)) < 1
-            or int(metadata.get("validated_token_decimals_count", 0)) < 1
+            or int(decimals_count) < 1
         ):
             raise ValueError(f"invalid full-day event-order perimeter for {venue}/{day}")
 
-    provider_paths = [raw_root / value for value in metadata.get("provider_inputs", [])]
-    exact_paths = [
-        resolve_portable_evidence_path(value, root)
-        for value in metadata.get("exact_log_inputs", [])
-    ]
-    authority_paths = [REPO_ROOT / value for value in metadata.get("authority_inputs", [])]
-    declared_inputs = [*provider_paths, *exact_paths, *authority_paths]
-    if any(not path.is_file() for path in declared_inputs):
-        raise ValueError(f"event-order correction has a missing declared input: {venue}/{day}")
-    newest_input = max((path.stat().st_mtime_ns for path in declared_inputs), default=0)
-    if newest_input > meta_path.stat().st_mtime_ns:
-        raise ValueError(f"event-order correction is older than a declared input: {venue}/{day}")
+    if generation_paths is None:
+        provider_paths = [
+            raw_root / value for value in metadata.get("provider_inputs", [])
+        ]
+        exact_paths = [
+            resolve_portable_evidence_path(value, root)
+            for value in metadata.get("exact_log_inputs", [])
+        ]
+        authority_paths = [
+            REPO_ROOT / value for value in metadata.get("authority_inputs", [])
+        ]
+        declared_inputs = [*provider_paths, *exact_paths, *authority_paths]
+        if any(not path.is_file() for path in declared_inputs):
+            raise ValueError(
+                f"event-order correction has a missing declared input: {venue}/{day}"
+            )
+        newest_input = max(
+            (path.stat().st_mtime_ns for path in declared_inputs), default=0
+        )
+        if newest_input > meta_path.stat().st_mtime_ns:
+            raise ValueError(
+                f"event-order correction is older than a declared input: {venue}/{day}"
+            )
+    else:
+        provider_paths = provider_order_input_paths(raw_root, venue, day)
+        expected_provider = metadata.get("provider_inputs_sha256")
+        observed_provider = {
+            path.name: file_sha256(path) for path in provider_paths if path.is_file()
+        }
+        if observed_provider != expected_provider:
+            raise ValueError(
+                f"stale event-order generation against Graph inputs: {venue}/{day}"
+            )
+        expected_exact = metadata.get("exact_log_inputs_sha256") or {}
+        if not isinstance(expected_exact, dict):
+            raise ValueError(f"invalid exact event-order inputs for {venue}/{day}")
+        exact_paths = [
+            resolve_portable_evidence_path(value, root) for value in expected_exact
+        ]
+        observed_exact = {
+            portable_evidence_path(path, root): file_sha256(path)
+            for path in exact_paths
+            if path.is_file()
+        }
+        if observed_exact != expected_exact:
+            raise ValueError(
+                f"missing or stale exact event-order evidence: {venue}/{day}"
+            )
+        expected_authorities = metadata.get("authority_inputs_sha256") or {}
+        if not isinstance(expected_authorities, dict):
+            raise ValueError(
+                f"invalid event-order registry authorities: {venue}/{day}"
+            )
+        authority_paths = []
+        for relative, expected_digest in expected_authorities.items():
+            path = REPO_ROOT / relative
+            if not path.is_file():
+                if str(relative).endswith(".prov.json"):
+                    continue
+                raise ValueError(
+                    f"missing event-order registry authority: {venue}/{day}/{relative}"
+                )
+            if file_sha256(path) != expected_digest:
+                raise ValueError(
+                    f"stale event-order registry authority: {venue}/{day}/{relative}"
+                )
+            authority_paths.append(path)
+        if metadata.get("reconciliation_sha256") != file_sha256(data_path):
+            raise ValueError(
+                f"corrupted event-order reconciliation data: {venue}/{day}"
+            )
+        if metadata.get("block_timestamp_evidence_sha256") != file_sha256(
+            timestamp_path
+        ):
+            raise ValueError(
+                f"missing or stale block-timestamp evidence: {venue}/{day}"
+            )
+        if metadata.get("transaction_receipt_evidence_sha256") != file_sha256(
+            receipts_path
+        ):
+            raise ValueError(
+                f"missing or stale transaction-receipt evidence: {venue}/{day}"
+            )
 
     rows: list[dict[str, object]] = []
     with gzip.open(data_path, "rt") as handle:
@@ -1878,7 +2037,13 @@ def _load_event_order_corrections_unlocked(
             f"event-order reconciliation action counts differ for {venue}/{day}: "
             f"{mismatched_actions}"
         )
+    pointer_inputs = (
+        [correction_pointer_path(root, venue, day)]
+        if generation_paths is not None
+        else []
+    )
     return EventOrderCorrections(rows), [
+        *pointer_inputs,
         data_path,
         meta_path,
         timestamp_path,
@@ -1895,6 +2060,8 @@ def load_event_order_corrections(
 ) -> tuple[EventOrderCorrections | None, list[Path]]:
     """Load one direct correction ledger under a metadata-file lease."""
 
-    metadata = correction_metadata_path(correction_root_for_graph(raw_root), venue, day)
-    with serialized_read_installs((metadata,), allow_missing=True):
+    root = correction_root_for_graph(raw_root)
+    pointer = correction_pointer_path(root, venue, day)
+    lease = pointer if pointer.exists() else correction_metadata_path(root, venue, day)
+    with serialized_read_installs((lease,), allow_missing=True):
         return _load_event_order_corrections_unlocked(raw_root, venue, day)

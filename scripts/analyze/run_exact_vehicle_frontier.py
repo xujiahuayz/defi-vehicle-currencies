@@ -61,6 +61,7 @@ SUPPORT = OUTPUT_DIR / "exhibits" / "exact_vehicle_frontier_monthly_support.json
 START = "20200615"
 END = "20260615"
 TICK_START = "20210504"
+MIN_ECONOMIC_INPUT_USD = 100.0
 EXACT_VENUES = (*V2_VENUES, "uniswap_v3")
 VEHICLES = tuple(
     canonical_token(address)
@@ -442,6 +443,9 @@ def summarize(panel: pd.DataFrame) -> pd.DataFrame:
                 "public_direct_share": frame["public_vehicle_type"].eq("direct").mean(),
                 "gain_over_1bp_share": gain.gt(1).mean(),
                 "direct_improvement_over_1bp_share": direct.gt(1).mean(),
+                "within_reach_regret_over_1bp_share": pd.to_numeric(
+                    frame["within_reach_regret_bps"], errors="coerce"
+                ).gt(1).mean(),
                 "reach_increment_over_1bp_share": pd.to_numeric(
                     frame["reach_increment_bps"], errors="coerce"
                 ).gt(1).mean(),
@@ -456,57 +460,70 @@ def summarize(panel: pd.DataFrame) -> pd.DataFrame:
         )
 
     add_summary("pooled", "all", panel)
+    add_summary(
+        "pooled",
+        "at_least_100usd",
+        panel[panel["input_usd"].ge(MIN_ECONOMIC_INPUT_USD)],
+    )
     add_summary("pooled", "within_20pct", panel[panel["within_20pct"]])
+    main = panel[
+        panel["within_20pct"]
+        & panel["input_usd"].ge(MIN_ECONOMIC_INPUT_USD)
+    ]
+    add_summary("pooled", "within_20pct_at_least_100usd", main)
     for kind, group in panel.groupby("chosen_vehicle_type", sort=True):
         add_summary("chosen_vehicle_type", str(kind), group)
     for year, group in panel.groupby("year", sort=True):
         add_summary("year", str(year), group)
 
-    switched = panel[panel["public_path_regret_bps"].gt(1)]
-    for (chosen, public), group in switched.groupby(
-        ["chosen_vehicle_type", "public_vehicle_type"], sort=True
-    ):
-        rows.append(
-            {
-                "record_type": "vehicle_transition",
-                "scope": "gain_over_1bp",
-                "label": f"{chosen}_to_{public}",
-                "routes": len(group),
-                "dates": group["day"].nunique(),
-                "route_share": len(group) / len(panel),
-                "gain_share": (
-                    group["public_gain_usd"].sum() / panel["public_gain_usd"].sum()
-                    if panel["public_gain_usd"].sum() > 0
-                    else float("nan")
-                ),
-                "median_gain_bps": group["public_path_regret_bps"].median(),
-            }
-        )
+    for sample, frame in (("all", panel), ("main", main)):
+        switched = frame[frame["public_path_regret_bps"].gt(1)]
+        for (chosen, public), group in switched.groupby(
+            ["chosen_vehicle_type", "public_vehicle_type"], sort=True
+        ):
+            rows.append(
+                {
+                    "record_type": "vehicle_transition",
+                    "scope": sample,
+                    "label": f"{chosen}_to_{public}",
+                    "routes": len(group),
+                    "dates": group["day"].nunique(),
+                    "route_share": len(group) / len(frame),
+                    "gain_share": (
+                        group["public_gain_usd"].sum()
+                        / frame["public_gain_usd"].sum()
+                        if frame["public_gain_usd"].sum() > 0
+                        else float("nan")
+                    ),
+                    "median_gain_bps": group["public_path_regret_bps"].median(),
+                }
+            )
 
     inference: list[dict[str, object]] = []
-    difference = (
-        panel["public_vehicle_type"].eq("stable").astype(float)
-        - panel["chosen_vehicle_type"].eq("stable").astype(float)
-    )
-    for weighting, weights in (
-        ("route", None),
-        ("input_value", panel["input_usd"]),
-    ):
-        coefficient, standard_error, p_value = _clustered_mean(
-            difference, panel["day"], weights=weights
+    for sample, frame in (("all", panel), ("main", main)):
+        difference = (
+            frame["public_vehicle_type"].eq("stable").astype(float)
+            - frame["chosen_vehicle_type"].eq("stable").astype(float)
         )
-        inference.append(
-            {
-                "record_type": "stable_share_inference",
-                "scope": "pooled",
-                "label": weighting,
-                "routes": len(panel),
-                "dates": panel["day"].nunique(),
-                "change_pp": 100 * coefficient,
-                "standard_error_pp": 100 * standard_error,
-                "p_value": p_value,
-            }
-        )
+        for weighting, weights in (
+            ("route", None),
+            ("input_value", frame["input_usd"]),
+        ):
+            coefficient, standard_error, p_value = _clustered_mean(
+                difference, frame["day"], weights=weights
+            )
+            inference.append(
+                {
+                    "record_type": "stable_share_inference",
+                    "scope": sample,
+                    "label": weighting,
+                    "routes": len(frame),
+                    "dates": frame["day"].nunique(),
+                    "change_pp": 100 * coefficient,
+                    "standard_error_pp": 100 * standard_error,
+                    "p_value": p_value,
+                }
+            )
     adjusted = _holm([row["p_value"] for row in inference])
     for row, p_holm in zip(inference, adjusted, strict=True):
         row["p_value_holm"] = float(p_holm)
@@ -533,6 +550,11 @@ def run(selected: list[str]) -> tuple[pd.DataFrame, pd.DataFrame]:
                 rows, support = score_day(day, replay)
                 all_rows.extend(rows)
                 support_rows.append(support)
+                print(
+                    f"{day}: mapped={support.get('mapped_routes', 0):,} "
+                    f"scored={support.get('scored_routes', 0):,}",
+                    flush=True,
+                )
             continue
         if day in target_set:
             rows, support = score_day(day, replay)

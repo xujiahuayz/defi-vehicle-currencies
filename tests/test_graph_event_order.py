@@ -17,7 +17,10 @@ from ddvc.graph_event_order import (
     SCHEMA_VERSION,
     V3_STATE_EVENT_TOPICS,
     apply_event_override,
+    correction_pointer_path,
     correction_root_for_graph,
+    file_sha256,
+    load_event_order_corrections,
     load_graph_events,
     match_event_orders,
     portable_evidence_path,
@@ -37,6 +40,77 @@ from scripts.process import reconcile_graph_event_order as reconcile
 
 
 TEST_DAY_TIMESTAMP = "1735689700"
+
+
+def test_pointer_selected_generation_is_loaded_and_hash_checked(
+    tmp_path: Path,
+) -> None:
+    raw_root = tmp_path / "raw" / "thegraph"
+    root = correction_root_for_graph(raw_root)
+    venue, day, generation_id = "uniswap_v3", "20250101", "a" * 64
+    generation = root / venue / f"{day}.generations" / generation_id
+    generation.mkdir(parents=True)
+    actions = generation / "actions.jsonl.gz"
+    timestamps = generation / "block_timestamps.jsonl.gz"
+    receipts = generation / "transaction_receipts.jsonl.gz"
+    for path in (actions, timestamps, receipts):
+        with gzip.open(path, "wt"):
+            pass
+    metadata = {
+        "status": "complete",
+        "schema_version": SCHEMA_VERSION,
+        "venue": venue,
+        "day": day,
+        "generation_id": generation_id,
+        "scope": "complete_graph_observed_block_span",
+        "unmatched_graph_events": 0,
+        "unmatched_exact_events": 0,
+        "provider_inputs_sha256": {},
+        "exact_log_inputs_sha256": {},
+        "authority_inputs_sha256": {
+            "data/manifests/retired.prov.json": "0" * 64,
+        },
+        "reconciliation_sha256": file_sha256(actions),
+        "block_timestamp_evidence_sha256": file_sha256(timestamps),
+        "transaction_receipt_evidence_sha256": file_sha256(receipts),
+        "transaction_receipt_evidence_rows": 0,
+        "correction_rows": 0,
+        "exclusion_rows": 0,
+        "supplement_rows": 0,
+        "log_index_repairs": 0,
+        "payload_mismatches": 0,
+        "incomplete_liquidity_status_repairs": 0,
+        "reverted_transaction_exclusions": 0,
+        "successful_transaction_absence_exclusions": 0,
+        "incomplete_liquidity_absence_exclusions": 0,
+        "provider_duplicate_exclusions": 0,
+    }
+    metadata_path = generation / "metadata.json"
+    metadata_path.write_text(json.dumps(metadata, sort_keys=True), encoding="utf-8")
+    pointer = correction_pointer_path(root, venue, day)
+    pointer.parent.mkdir(parents=True, exist_ok=True)
+    pointer.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "venue": venue,
+                "day": day,
+                "generation_id": generation_id,
+                "metadata_sha256": file_sha256(metadata_path),
+            },
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+
+    corrections, inputs = load_event_order_corrections(raw_root, venue, day)
+    assert corrections is not None
+    assert not corrections._actions
+    assert pointer in inputs
+
+    metadata_path.write_text("{}", encoding="utf-8")
+    with pytest.raises(ValueError, match="stale event-order generation pointer"):
+        load_event_order_corrections(raw_root, venue, day)
 
 
 def receipt_evidence(

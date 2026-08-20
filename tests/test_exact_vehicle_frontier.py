@@ -55,6 +55,7 @@ def test_summary_reports_vehicle_reallocation_separately_from_route_gain() -> No
                 "public_vehicle_type": "stable",
                 "public_path_regret_bps": 10.0,
                 "direct_improvement_bps": 0.0,
+                "within_reach_regret_bps": 2.0,
                 "reach_increment_bps": 4.0,
                 "vehicle_choice_increment_bps": 6.0,
                 "public_gain_usd": 0.1,
@@ -68,6 +69,7 @@ def test_summary_reports_vehicle_reallocation_separately_from_route_gain() -> No
                 "public_vehicle_type": "stable",
                 "public_path_regret_bps": 0.0,
                 "direct_improvement_bps": 0.0,
+                "within_reach_regret_bps": 0.0,
                 "reach_increment_bps": 0.0,
                 "vehicle_choice_increment_bps": 0.0,
                 "public_gain_usd": 0.0,
@@ -85,10 +87,12 @@ def test_summary_reports_vehicle_reallocation_separately_from_route_gain() -> No
     assert pooled["vehicle_choice_increment_over_1bp_share"] == 0.5
     route = result[
         result["record_type"].eq("stable_share_inference")
+        & result["scope"].eq("all")
         & result["label"].eq("route")
     ].iloc[0]
     value = result[
         result["record_type"].eq("stable_share_inference")
+        & result["scope"].eq("all")
         & result["label"].eq("input_value")
     ].iloc[0]
     assert route["change_pp"] == 50.0
