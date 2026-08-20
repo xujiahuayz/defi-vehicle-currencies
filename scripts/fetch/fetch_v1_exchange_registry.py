@@ -74,9 +74,13 @@ def main() -> int:
 
     source = get_source(VENUE)
     client = GraphClient(source.subgraph_id, graph_keys(), graph_path=source.graph_path)
-    block = head_block(client)
-    if block is None or block < (source.genesis_block or 0):
-        raise RuntimeError(f"provider did not expose a valid V1 head block: {block}")
+    # This legacy subgraph answers entity queries but its surviving indexers reject
+    # `_meta`.  The registry is immutable after each exchange is created, so a current
+    # complete snapshot is the relevant object and does not need a historical block.
+    try:
+        block = head_block(client)
+    except RuntimeError:
+        block = None
 
     def progress(n: int, _last_id: str) -> None:
         print(f"  V1 exchanges fetched: {n:,}", flush=True)
@@ -99,6 +103,7 @@ def main() -> int:
             "entity": "exchanges",
             "fields": FIELDS.split(),
             "head_block_at_fetch": block,
+            "snapshot": "current immutable exchange registry",
             "fetched_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
             **summary,
         },
