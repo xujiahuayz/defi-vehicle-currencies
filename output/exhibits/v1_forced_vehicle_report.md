@@ -52,23 +52,8 @@ Monthly, V2 launched 2020-05-05:
 
 Excess near 1.0 means the fall in token-to-token relative to ETH-paired trade is what the shrinking exchange network predicts on its own, with nothing left for the removal of the mandate to explain.
 
-V1 exchanges ever seen: 1,744. With a positive price inside the crosswalk window 2020-05-05 to 2022-12-31: 1,175.
-Candidate V2 tokens: 7,805 of 101,494 priced in the window, after requiring at least 20 priced days. Decimals known for 93.6% of candidates; a candidate with unknown decimals is left in rather than dropped, since dropping it would silently delete the true match.
-
-### V1 exchange to token crosswalk, and why it fails
-| step | exchanges |
-|---|---|
-| V1 exchanges priced in the window | 1,175 |
-| match attempted (enough overlapping days) | 305 |
-| of those, traded before the V2 launch | 284 |
-| accepted by the price-and-decimals rule | 106 |
-| same rule on a 180-day-shifted PLACEBO series | 98 |
-
-Acceptance rate on the real series **34.8%**, on the placebo **32.1%**. The placebo cannot carry any true identity, so the procedure's false-positive rate is essentially its hit rate and it has no identifying power. With 7,805 candidate price series spanning many orders of magnitude, some series lies within 5% of any target series on most days by chance.
-
-**Gate applied: the crosswalk is declared unidentified and every match is discarded.** The pre-stated rule is that a placebo acceptance rate above half the real rate voids the procedure. Nothing downstream uses a V1 token identity, so the V1-restricted version of Test 2 cannot be run at all.
-
-Split-half agreement: of 302 attempted exchanges with enough days in both halves, only 12 (4.0%) pick the same token when the match is estimated on odd and on even days separately. The nearest neighbour is not even stable under a random halving of the same series, which is a second and independent reason the crosswalk carries no information. Note that high agreement here would NOT have established correctness either, since both halves come from one series and would reproduce one spurious neighbour; the placebo is the test that discriminates.
+### Exact V1 exchange-to-token map
+The retained V1 exchange registry resolves all 1,744 exchange addresses in the daily panel. It contains 3,086 distinct tokens, including 1,629 whose exchanges traded before V2 launched. Token identities come directly from the V1 subgraph; no price-series matching is used.
 
 (pair-routing panel reused from disk)
 
@@ -98,67 +83,86 @@ Of 477,633 pairs that ever traded on V2, 463,548 (97.1%) include WETH. New pairs
 | filter | pair-days remaining | share kept |
 |---|---|---|
 | pair-days with any V2 trade | 12,713,685 | 1.000 |
-| both tokens in the V2 decimals map | 11,511,497 | 0.905 |
-| median trade notional in $100-$50,000,000 | 8,018,149 | 0.631 |
-| pairs with a direct pool and >= 20 trades and any ETH-routed trade | 2,222 pairs | |
+| both tokens in the V2 decimals map | 12,613,176 | 0.992 |
+| median trade notional in $100-$50,000,000 | 8,520,498 | 0.670 |
+| pairs with a direct pool and >= 20 trades and any ETH-routed trade | 2,265 pairs | |
+
+### Pre-V2 V1 tokens and later ETH-route persistence
+The outcome is the ETH-routed share of pair-week trades, conditional on a direct V2 pool trading within the trailing 28 days. The reported coefficient is the difference for pairs whose two endpoint tokens both traded on V1 before V2 launched.
+| model | weighting | coefficient_pp | standard_error_pp | p_value | observations | pairs | v1_pairs | fixed_effects | controls | clustering |
+|---|---|---|---|---|---|---|---|---|---|---|
+| calendar_week_and_cohort_fe | equal_pair_week | 14.8772 | 3.9791 | 0.0002 | 90,634 | 2,265 | 228 | calendar week; direct-pool cohort year | route count; weeks since direct pool first traded | pair and calendar week |
+| calendar_week_and_cohort_fe | route_count | 12.2705 | 4.2634 | 0.0043 | 90,634 | 2,265 | 228 | calendar week; direct-pool cohort year | route count; weeks since direct pool first traded | pair and calendar week |
+| endpoint_fe | equal_pair_week | -2.0864 | 6.0548 | 0.7306 | 90,634 | 2,265 | 228 | both endpoint tokens | calendar month; direct-pool cohort year; route count; weeks since direct pool first traded | pair and calendar week |
+| endpoint_fe | route_count | -14.5235 | 7.1539 | 0.0432 | 90,634 | 2,265 | 228 | both endpoint tokens | calendar month; direct-pool cohort year; route count; weeks since direct pool first traded | pair and calendar week |
 
 **A. All V2 pairs**, weeks since a direct pool first traded, with no condition on the direct pool still being usable:
 | bucket | pairs | trades | eth_trades | usd_direct | usd_eth | eth_share_count | eth_share_value | eth_share_median_pair | eth_share_mean_pair |
 |---|---|---|---|---|---|---|---|---|---|
-| wk 0 | 1,079 | 352,494 | 174,805 | 3,153,764,751 | 937,688,115 | 0.3315 | 0.2292 | 0.4564 | 0.4485 |
-| wk 1 | 930 | 142,484 | 81,053 | 946,923,962 | 438,751,900 | 0.3626 | 0.3166 | 0.6379 | 0.5533 |
-| wk 2-3 | 940 | 197,770 | 123,501 | 1,520,983,739 | 765,810,040 | 0.3844 | 0.3349 | 0.7463 | 0.5679 |
-| wk 4-7 | 922 | 306,493 | 177,955 | 3,035,386,824 | 1,171,741,536 | 0.3673 | 0.2785 | 0.8000 | 0.5919 |
-| wk 8-12 | 853 | 272,248 | 166,200 | 2,613,275,492 | 1,419,036,913 | 0.3791 | 0.3519 | 0.9091 | 0.6225 |
-| wk 13-25 | 838 | 566,178 | 313,823 | 4,518,289,505 | 2,701,003,011 | 0.3566 | 0.3741 | 0.9333 | 0.6382 |
-| wk 26-51 | 767 | 824,453 | 281,288 | 6,571,633,242 | 3,715,730,604 | 0.2544 | 0.3612 | 0.9783 | 0.6609 |
-| wk 52+ | 685 | 2,300,076 | 287,086 | 17,429,745,914 | 1,344,834,023 | 0.1110 | 0.0716 | 0.9915 | 0.6613 |
+| wk 0 | 2,265 | 355,017 | 175,701 | 3,178,576,508 | 938,333,151 | 0.3311 | 0.2279 | 0.4444 | 0.4442 |
+| wk 1 | 1,897 | 143,042 | 81,141 | 947,695,177 | 438,806,074 | 0.3619 | 0.3165 | 0.6296 | 0.5504 |
+| wk 2-3 | 1,911 | 198,147 | 123,521 | 1,521,921,622 | 765,819,751 | 0.3840 | 0.3347 | 0.7400 | 0.5661 |
+| wk 4-7 | 1,861 | 306,503 | 177,958 | 3,035,392,421 | 1,171,743,355 | 0.3673 | 0.2785 | 0.8000 | 0.5915 |
+| wk 8-12 | 1,746 | 272,257 | 166,206 | 2,613,282,618 | 1,419,041,165 | 0.3791 | 0.3519 | 0.9091 | 0.6224 |
+| wk 13-25 | 1,733 | 566,209 | 313,823 | 4,518,309,615 | 2,701,003,011 | 0.3566 | 0.3741 | 0.9310 | 0.6375 |
+| wk 26-51 | 1,594 | 824,470 | 281,288 | 6,571,667,173 | 3,715,730,604 | 0.2544 | 0.3612 | 0.9782 | 0.6604 |
+| wk 52+ | 1,421 | 2,300,082 | 287,086 | 17,429,755,535 | 1,344,834,023 | 0.1110 | 0.0716 | 0.9910 | 0.6599 |
 
 **B. The same, restricted to pair-days on which the direct pool traded within the trailing 28 days.** This is the specification to read:
 | bucket | pairs | trades | eth_trades | usd_direct | usd_eth | eth_share_count | eth_share_value | eth_share_median_pair | eth_share_mean_pair |
 |---|---|---|---|---|---|---|---|---|---|
-| wk 0 | 1,079 | 352,494 | 174,805 | 3,153,764,751 | 937,688,115 | 0.3315 | 0.2292 | 0.4564 | 0.4485 |
-| wk 1 | 930 | 142,484 | 81,053 | 946,923,962 | 438,751,900 | 0.3626 | 0.3166 | 0.6379 | 0.5533 |
-| wk 2-3 | 940 | 197,770 | 123,501 | 1,520,983,739 | 765,810,040 | 0.3844 | 0.3349 | 0.7463 | 0.5679 |
-| wk 4-7 | 857 | 306,493 | 135,658 | 3,035,386,824 | 955,729,447 | 0.3068 | 0.2395 | 0.6000 | 0.5412 |
-| wk 8-12 | 661 | 272,248 | 110,459 | 2,613,275,492 | 1,143,304,695 | 0.2886 | 0.3043 | 0.3333 | 0.4378 |
-| wk 13-25 | 626 | 566,178 | 204,160 | 4,518,289,505 | 2,062,741,570 | 0.2650 | 0.3134 | 0.3205 | 0.4283 |
-| wk 26-51 | 525 | 824,453 | 172,007 | 6,571,633,242 | 3,002,301,703 | 0.1726 | 0.3136 | 0.2000 | 0.3810 |
-| wk 52+ | 444 | 2,300,076 | 137,287 | 17,429,745,914 | 915,564,111 | 0.0563 | 0.0499 | 0.0784 | 0.2901 |
+| wk 0 | 2,265 | 355,017 | 175,701 | 3,178,576,508 | 938,333,151 | 0.3311 | 0.2279 | 0.4444 | 0.4442 |
+| wk 1 | 1,897 | 143,042 | 81,141 | 947,695,177 | 438,806,074 | 0.3619 | 0.3165 | 0.6296 | 0.5504 |
+| wk 2-3 | 1,911 | 198,147 | 123,521 | 1,521,921,622 | 765,819,751 | 0.3840 | 0.3347 | 0.7400 | 0.5661 |
+| wk 4-7 | 1,664 | 306,503 | 135,658 | 3,035,392,421 | 955,729,447 | 0.3068 | 0.2395 | 0.6000 | 0.5406 |
+| wk 8-12 | 1,190 | 272,257 | 110,459 | 2,613,282,618 | 1,143,304,695 | 0.2886 | 0.3043 | 0.3333 | 0.4374 |
+| wk 13-25 | 1,133 | 566,209 | 204,160 | 4,518,309,615 | 2,062,741,570 | 0.2650 | 0.3134 | 0.3182 | 0.4276 |
+| wk 26-51 | 935 | 824,470 | 172,007 | 6,571,667,173 | 3,002,301,703 | 0.1726 | 0.3136 | 0.2000 | 0.3806 |
+| wk 52+ | 765 | 2,300,082 | 137,287 | 17,429,755,535 | 915,564,111 | 0.0563 | 0.0499 | 0.0772 | 0.2890 |
 
-Of 463,031 pair-days after a direct pool first traded, 324,983 (70.2%) have a live direct pool. Per pair, the median share of days with a live direct pool is 0.88.
+Of 463,327 pair-days after a direct pool first traded, 325,271 (70.2%) have a live direct pool. Per pair, the median share of days with a live direct pool is 0.89.
 
 Median per-pair ETH-routed share of trade count, by the year the direct pool arrived (rows) and weeks since availability (columns):
 | cohort | wk 0 | wk 1-3 | wk 4-12 | wk 13-25 | wk 26-51 | wk 52+ |
 |---|---|---|---|---|---|---|
-| 2020 | 0.5060 | 0.7929 | 0.8012 | 0.6309 | 0.5000 | 0.1885 |
-| 2021 | 0.4764 | 0.6429 | 0.5200 | 0.2255 | 0.0921 | 0.0556 |
-| 2022 | 0.0760 | 0.1111 | 0.0575 | 0.0218 | 0.0194 | 0.0101 |
-| 2023 | 0.0833 | 0.1250 | 0.1378 | 0.0000 | 0.0000 | 0.0282 |
-| 2024 | 0.1667 | 0.4536 | 0.2963 | 0.0486 | 0.0127 | 0.0078 |
-| 2025 | 0.0668 | 0.2036 | 0.1702 | 0.0037 | 0.0662 | 0.0002 |
+| 2020 | 0.5000 | 0.7778 | 0.8003 | 0.6301 | 0.5000 | 0.1667 |
+| 2021 | 0.4762 | 0.6500 | 0.5200 | 0.2255 | 0.0921 | 0.0556 |
+| 2022 | 0.0714 | 0.1043 | 0.0551 | 0.0212 | 0.0194 | 0.0101 |
+| 2023 | 0.0851 | 0.1250 | 0.1378 | 0.0000 | 0.0000 | 0.0282 |
+| 2024 | 0.1429 | 0.4526 | 0.2963 | 0.0486 | 0.0127 | 0.0078 |
+| 2025 | 0.0668 | 0.1765 | 0.1702 | 0.0037 | 0.0662 | 0.0002 |
 | 2026 | 0.5976 | 0.8931 | 0.9885 | 0.4000 |  |  |
 
 Median per-pair ETH-routed share of trade count, by the calendar year of observation (rows) and weeks since availability (columns):
 | cal_year | wk 0 | wk 1-3 | wk 4-12 | wk 13-25 | wk 26-51 | wk 52+ |
 |---|---|---|---|---|---|---|
-| 2020 | 0.5000 | 0.7727 | 0.8333 | 0.8297 | 0.9074 |  |
-| 2021 | 0.4909 | 0.6667 | 0.5333 | 0.4031 | 0.3621 | 0.3030 |
-| 2022 | 0.0714 | 0.0904 | 0.0278 | 0.0050 | 0.0286 | 0.0726 |
-| 2023 | 0.0833 | 0.1000 | 0.1286 | 0.0187 | 0.0101 | 0.0286 |
-| 2024 | 0.1833 | 0.4036 | 0.1667 | 0.0161 | 0.0000 | 0.0253 |
-| 2025 | 0.1141 | 0.2404 | 0.1284 | 0.0229 | 0.0086 | 0.0837 |
+| 2020 | 0.5000 | 0.7647 | 0.8333 | 0.8261 | 0.9074 |  |
+| 2021 | 0.4909 | 0.6667 | 0.5333 | 0.4000 | 0.3594 | 0.2890 |
+| 2022 | 0.0693 | 0.0833 | 0.0278 | 0.0050 | 0.0286 | 0.0711 |
+| 2023 | 0.0851 | 0.1125 | 0.1198 | 0.0121 | 0.0101 | 0.0286 |
+| 2024 | 0.1548 | 0.4000 | 0.1667 | 0.0161 | 0.0000 | 0.0253 |
+| 2025 | 0.1123 | 0.2308 | 0.1284 | 0.0229 | 0.0086 | 0.0837 |
 | 2026 | 0.5976 | 0.8696 | 0.9828 | 0.0667 | 0.0673 | 0.0800 |
 
-Crosswalk-resolved V1 tokens: 0. Pairs in the test with BOTH tokens resolved to a V1 exchange: 0.
+Tokens traded on V1 before V2 launched: 1,629. Pairs in the test with both tokens in that pre-V2 set and an active direct alternative: 228.
 
-Too few V1-token pairs survive to profile; the V1-restricted version of Test 2 is not identified and is not reported.
+**Pre-V2 V1-token pairs with an active direct alternative**, weeks since a direct pool first traded:
+| bucket | pairs | trades | eth_trades | usd_direct | usd_eth | eth_share_count | eth_share_value | eth_share_median_pair | eth_share_mean_pair |
+|---|---|---|---|---|---|---|---|---|---|
+| wk 0 | 228 | 1,683 | 4,668 | 2,073,845 | 14,204,190 | 0.7350 | 0.8726 | 0.6667 | 0.5477 |
+| wk 1 | 190 | 826.0000 | 4,749 | 847,867 | 15,254,235 | 0.8518 | 0.9473 | 1.0000 | 0.7182 |
+| wk 2-3 | 195 | 1,620 | 9,214 | 1,709,925 | 33,081,037 | 0.8505 | 0.9509 | 0.9787 | 0.7240 |
+| wk 4-7 | 171 | 3,202 | 10,558 | 3,529,975 | 43,931,789 | 0.7673 | 0.9256 | 0.9615 | 0.7082 |
+| wk 8-12 | 124 | 4,757 | 15,214 | 9,229,471 | 96,734,627 | 0.7618 | 0.9129 | 0.9274 | 0.6903 |
+| wk 13-25 | 128 | 22,510 | 53,304 | 70,796,265 | 500,638,413 | 0.7031 | 0.8761 | 0.8738 | 0.6804 |
+| wk 26-51 | 109 | 62,729 | 63,343 | 570,615,407 | 1,457,195,123 | 0.5024 | 0.7186 | 0.9091 | 0.6420 |
+| wk 52+ | 79 | 366,659 | 35,440 | 3,518,414,302 | 402,707,698 | 0.0881 | 0.1027 | 0.5714 | 0.4843 |
 
 Per-pair time from the direct pool's first trade to the ETH-routed share falling below a level:
 | threshold | pairs_reaching_it | of_pairs | median_weeks | p75_weeks |
 |---|---|---|---|---|
-| ETH-routed share < 50% | 1,495 | 2,222 | 0.0000 | 0.0000 |
-| ETH-routed share < 25% | 1,348 | 2,222 | 0.0000 | 2.0000 |
-| ETH-routed share < 10% | 1,294 | 2,222 | 0.0000 | 5.0000 |
+| ETH-routed share < 50% | 1,532 | 2,265 | 0.0000 | 0.0000 |
+| ETH-routed share < 25% | 1,382 | 2,265 | 0.0000 | 2.0000 |
+| ETH-routed share < 10% | 1,322 | 2,265 | 0.0000 | 4.0000 |
 
-Before the direct pool existed, these pairs traded 444,651 times through ETH and 0 times directly (the latter must be zero by construction and is a check on the window logic).
+Before the direct pool existed, these pairs traded 444,690 times through ETH and 0 times directly (the latter must be zero by construction and is a check on the window logic).

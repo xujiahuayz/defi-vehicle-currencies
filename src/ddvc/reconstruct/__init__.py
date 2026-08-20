@@ -42,12 +42,14 @@ import json
 from collections import defaultdict
 from concurrent.futures import as_completed
 from datetime import datetime, timezone
+from functools import cache
+import gzip
 from pathlib import Path
 
 import pandas as pd
 import pyarrow.parquet as pq
 
-from ddvc.calendar import RESEARCH_SAMPLE_END, RESEARCH_SAMPLE_START, calendar_days
+from ddvc.calendar import RESEARCH_SAMPLE_END, V1_GENESIS_START, calendar_days
 from ddvc.fetch.raw import (
     RawFetchInvariantError,
     installed_source_day_paths,
@@ -77,7 +79,8 @@ RECONSTRUCT_CODE_SOURCES = [
     "src/ddvc/reconstruct/__init__.py",
     *ROUTE_SEMANTIC_SOURCES,
 ]
-RECONSTRUCTION_ENGINE = "direct-v2"
+RECONSTRUCTION_ENGINE = "direct-v3"
+ROUTE_SAMPLE_START = V1_GENESIS_START
 UNIFIED_QUALITY_COLUMNS = [
     "schema_version",
     "engine",
@@ -153,6 +156,7 @@ INTERMEDIATE_TOL = 0.01  # |net token USD| below this share of component gross =
 
 WETH_ADDR = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
 WBTC_ADDR = "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"
+NATIVE_ETH_ADDR = "0x0000000000000000000000000000000000000000"
 STABLE_ADDRS: set[str] = {
     "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",  # USDC
     "0xdac17f958d2ee523a2206206994597c13d831ec7",  # USDT
@@ -305,6 +309,67 @@ def _norm_fluid(rec: dict) -> dict | None:
     }
 
 
+def _v1_event_log(event: dict) -> int:
+    """The V1 event id is `<log index>-tp` or `<log index>-ep`."""
+
+    return _i(str(event.get("id") or "").split("-", 1)[0])
+
+
+def _norm_uniswap_v1(
+    rec: dict,
+    registry: dict[str, tuple[str, str]],
+) -> list[dict]:
+    """Uniswap V1 exchange events as directed token/ETH legs."""
+
+    exchange = str(rec.get("exchangeAddress") or "").lower()
+    identity = registry.get(exchange)
+    row_id = str(rec.get("id") or "")
+    tx = row_id.split("-", 1)[0]
+    if identity is None or not tx:
+        return []
+    token, symbol = identity
+    common = {
+        "tx": tx,
+        "block": block_value(rec) or 0,
+        "ts": timestamp_value(rec) or 0,
+        "usd": 0.0,
+        "pool": exchange,
+        "trusted": False,
+    }
+    legs: list[dict] = []
+    for event in rec.get("ethPurchaseEvents") or []:
+        legs.append(
+            {
+                **common,
+                "log": _v1_event_log(event),
+                "tin": symbol,
+                "tin_id": token,
+                "tout": "ETH",
+                "tout_id": NATIVE_ETH_ADDR,
+                "in_amt": _f(event.get("tokenAmount")),
+                "out_amt": _f(event.get("ethAmount")),
+                "v1_direction": "token_to_eth",
+                "v1_eth_amount": _f(event.get("ethAmount")),
+            }
+        )
+    for event in rec.get("tokenPurchaseEvents") or []:
+        legs.append(
+            {
+                **common,
+                "log": _v1_event_log(event),
+                "tin": "ETH",
+                "tin_id": NATIVE_ETH_ADDR,
+                "tout": symbol,
+                "tout_id": token,
+                "in_amt": _f(event.get("ethAmount")),
+                "out_amt": _f(event.get("tokenAmount")),
+                "v1_direction": "eth_to_token",
+                "v1_eth_amount": _f(event.get("ethAmount")),
+            }
+        )
+    return legs
+
+
 NORMALISERS = {
     "uni_signed": _norm_uni_signed,
     "uni_v2": _norm_uni_v2,
@@ -327,6 +392,34 @@ def _raw_file_path(dex: str, stamp: str, *, data_root: Path | None = None) -> Pa
     return data / "raw" / "thegraph" / dex / f"{dex}_{stream}_{stamp}.jsonl.gz"
 
 
+def v1_registry_paths(*, data_root: Path | None = None) -> tuple[Path, Path]:
+    root = (data_root or DATA_DIR) / "raw" / "thegraph" / "uniswap_v1"
+    return (
+        root / "uniswap_v1_exchange_registry.jsonl.gz",
+        root / "uniswap_v1_exchange_registry_meta.json",
+    )
+
+
+@cache
+def _v1_registry(path_text: str) -> dict[str, tuple[str, str]]:
+    path = Path(path_text)
+    registry: dict[str, tuple[str, str]] = {}
+    with gzip.open(path, "rt", encoding="utf-8") as handle:
+        for line in handle:
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            exchange = str(row.get("id") or "").lower()
+            token = str(row.get("tokenAddress") or "").lower()
+            symbol = str(row.get("tokenSymbol") or token[:10])
+            if not exchange or not token or exchange in registry:
+                raise ValueError("invalid or duplicate V1 exchange registry row")
+            registry[exchange] = (token, symbol)
+    if not registry:
+        raise ValueError("V1 exchange registry is empty")
+    return registry
+
+
 def load_legs(
     dex: str,
     day: str,
@@ -335,7 +428,11 @@ def load_legs(
     counters: dict[str, int] | None = None,
 ) -> list[dict]:
     """Normalised legs for one DEX source-day."""
-    fn = NORMALISERS[DEX_FAMILY[dex]]
+    family = DEX_FAMILY[dex]
+    fn = NORMALISERS.get(family)
+    registry = None
+    if family == "uniswap_v1":
+        registry = _v1_registry(str(v1_registry_paths(data_root=data_root)[0].resolve()))
     legs: list[dict] = []
     with verified_source_day_rows(
         dex,
@@ -346,31 +443,43 @@ def load_legs(
         for rec in rows:
             if counters is not None:
                 counters["raw_rows"] += 1
-            leg = fn(rec)
-            if not (
-                leg
-                and leg["tx"]
-                and leg["tin"]
-                and leg["tout"]
-                and leg["tin_id"]
-                and leg["tout_id"]
-                and leg["pool"]
-            ):
+            if family == "uniswap_v1":
+                exchange = str(rec.get("exchangeAddress") or "").lower()
+                if exchange not in (registry or {}):
+                    normalised = []
+                    if counters is not None:
+                        counters["missing_identity"] += 1
+                else:
+                    # An empty list here is a V1 liquidity transaction with no swap
+                    # event, not a missing token identity.
+                    normalised = _norm_uniswap_v1(rec, registry or {})
+            else:
+                normalised = [fn(rec) if fn is not None else None]
+            for leg in normalised:
+                if not (
+                    leg
+                    and leg["tx"]
+                    and leg["tin"]
+                    and leg["tout"]
+                    and leg["tin_id"]
+                    and leg["tout_id"]
+                    and leg["pool"]
+                ):
+                    if counters is not None:
+                        counters["missing_identity"] += 1
+                    continue
+                if leg["block"] <= 0 or leg["ts"] <= 0 or leg["log"] < 0:
+                    if counters is not None:
+                        counters["missing_order"] += 1
+                    continue
+                # lowercase join keys so tx grouping + token matching are case-safe
+                leg["tx"] = leg["tx"].lower()
+                leg["tin_id"] = leg["tin_id"].lower()
+                leg["tout_id"] = leg["tout_id"].lower()
+                leg["dex"] = dex
+                legs.append(leg)
                 if counters is not None:
-                    counters["missing_identity"] += 1
-                continue
-            if leg["block"] <= 0 or leg["ts"] <= 0 or leg["log"] < 0:
-                if counters is not None:
-                    counters["missing_order"] += 1
-                continue
-            # lowercase join keys so tx grouping + token matching are case-safe
-            leg["tx"] = leg["tx"].lower()
-            leg["tin_id"] = leg["tin_id"].lower()
-            leg["tout_id"] = leg["tout_id"].lower()
-            leg["dex"] = dex
-            legs.append(leg)
-            if counters is not None:
-                counters["normalised_rows"] += 1
+                    counters["normalised_rows"] += 1
     return legs
 
 
@@ -439,7 +548,7 @@ def _reprice_legs(legs: list[dict]) -> tuple[list[dict], int, float]:
         ti, to = l["tin_id"], l["tout_id"]
         ia, oa = l["in_amt"], l["out_amt"]
         # Prefer the most-trustworthy anchored side: stable > WETH/WBTC > any priced.
-        for tier in (STABLE_ADDRS, {WETH_ADDR, WBTC_ADDR}):
+        for tier in (STABLE_ADDRS, {NATIVE_ETH_ADDR, WETH_ADDR, WBTC_ADDR}):
             if ti in tier and ti in price and ia > 0:
                 return price[ti] * ia
             if to in tier and to in price and oa > 0:
@@ -598,6 +707,10 @@ def preflight_route_input_perimeter(
             ]
             if absent:
                 missing.append(f"{dex}/{calendar_day:%Y%m%d}:{'+'.join(absent)}")
+    if "uniswap_v1" in dexes:
+        for label, path in zip(("registry", "registry-meta"), v1_registry_paths(data_root=root), strict=True):
+            if not path.is_file():
+                missing.append(f"uniswap_v1/static:{label}")
     if missing:
         preview = ", ".join(missing[:8])
         suffix = "" if len(missing) <= 8 else f", plus {len(missing) - 8} more"
@@ -628,6 +741,12 @@ def route_input_state(
             unavailable.append(dex)
             continue
         files.extend((payload, marker))
+    if "uniswap_v1" in active_route_sources(day, dexes):
+        registry, metadata = v1_registry_paths(data_root=root)
+        if not registry.is_file() or not metadata.is_file():
+            unavailable.append("uniswap_v1_registry")
+        else:
+            files.extend((registry, metadata))
     stats = [path.stat() for path in files]
     return (
         sum(stat.st_size for stat in stats),
@@ -703,6 +822,37 @@ def reconstruct_day_with_quality(
 
     rows: list[dict] = []
     for tx, legs in txs.items():
+        v1_legs = [leg for leg in legs if leg["dex"] == "uniswap_v1"]
+        v1_bridge_valid = True
+        sells: list[dict] = []
+        buys: list[dict] = []
+        if len(v1_legs) > 1:
+            sells = [leg for leg in v1_legs if leg.get("v1_direction") == "token_to_eth"]
+            buys = [leg for leg in v1_legs if leg.get("v1_direction") == "eth_to_token"]
+            if len(v1_legs) != 2 or len(sells) != 1 or len(buys) != 1:
+                v1_bridge_valid = False
+            else:
+                sold = float(sells[0].get("v1_eth_amount") or 0)
+                bought = float(buys[0].get("v1_eth_amount") or 0)
+                v1_bridge_valid = (
+                    sold > 0
+                    and bought > 0
+                    and abs(sold - bought) / max(sold, bought) <= 0.01
+                )
+
+        v1_role_override: dict[str, str] = {}
+        if v1_bridge_valid and len(legs) == len(v1_legs) == 2:
+            # V1's nested call emits the destination exchange event before the
+            # source exchange call finishes, reversing EVM log order relative to
+            # economic token flow. Canonical routes are ordered by directed flow.
+            ordered_logs = sorted(int(leg["log"]) for leg in v1_legs)
+            sells[0]["log"], buys[0]["log"] = ordered_logs
+            v1_role_override = {
+                sells[0]["tin_id"]: "source",
+                NATIVE_ETH_ADDR: "intermediate",
+                buys[0]["tout_id"]: "sink",
+            }
+
         legs.sort(key=lambda l: l["log"])
         n_legs = len(legs)
         if n_legs == 1:
@@ -717,8 +867,11 @@ def reconstruct_day_with_quality(
             comps = list(grouped.values())
 
         n_comp = len(comps)
+
         if n_legs == 1:
             route_class = "single"
+        elif not v1_bridge_valid:
+            route_class = "tricky_independent"
         elif n_comp == 1:
             route_class = "coherent"
         else:
@@ -737,6 +890,8 @@ def reconstruct_day_with_quality(
             thresh = INTERMEDIATE_TOL * gross
 
             def role(tok: str, _net=net, _thresh=thresh) -> str:
+                if tok in v1_role_override:
+                    return v1_role_override[tok]
                 v = _net[tok]
                 if v > _thresh:
                     return "sink"
@@ -793,7 +948,7 @@ def reconstruct_day(day: str, dexes: list[str]) -> pd.DataFrame:
 def _available_days(dexes: list[str]) -> list[str]:
     """Independent full calendar; missing observed files stay in the denominator."""
     lower = max(
-        RESEARCH_SAMPLE_START,
+        ROUTE_SAMPLE_START,
         min(get_source(dex).genesis.strftime("%Y%m%d") for dex in dexes),
     )
     return [
@@ -960,7 +1115,7 @@ def run(
 
     full_run = (
         set(dexes) == set(DEX_FAMILY)
-        and days[0].replace("-", "") == RESEARCH_SAMPLE_START
+        and days[0].replace("-", "") == ROUTE_SAMPLE_START
         and days[-1].replace("-", "") == RESEARCH_SAMPLE_END
     )
     quality = pd.DataFrame(quality_rows, columns=UNIFIED_QUALITY_COLUMNS).sort_values("day")

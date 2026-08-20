@@ -55,6 +55,7 @@ DEX_SOURCES: dict[str, DexSource] = {
         genesis_date_utc=dt.date(2018, 11, 2),
         subgraph_id="ESnjgAG9NjfmHypk4Huu4PVvz55fUwpyrRqHF21thoLJ",
         genesis_block=6_628_280,
+        route_normalizer_family="uniswap_v1",
         notes="Uniswap V1 subgraph; raw transactions carry token/ETH purchase events against exchange addresses.",
     ),
     "uniswap_v2": DexSource(

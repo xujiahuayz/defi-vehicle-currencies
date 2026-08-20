@@ -200,9 +200,9 @@ class FetchPlanningTests(unittest.TestCase):
         end = dt.date(2026, 7, 1)
         total = sum(len(iter_days(get_source(venue).genesis, end)) * len(streams) for venue, streams in required.items())
         graph_total = sum(len(iter_days(get_source(venue).genesis, end)) * len(streams) for venue, streams in required.items() if get_source(venue).backend == "thegraph")
-        self.assertEqual(total, 38_829)
-        self.assertEqual(graph_total, 38_219)
-        self.assertNotIn("uniswap_v1", required)
+        self.assertEqual(total, 41_627)
+        self.assertEqual(graph_total, 41_017)
+        self.assertEqual(required["uniswap_v1"], frozenset({"swaps"}))
         self.assertEqual(required["fluid"], frozenset({"swaps"}))
 
     def test_coverage_indexes_required_and_optional_direct_paths(self) -> None:
