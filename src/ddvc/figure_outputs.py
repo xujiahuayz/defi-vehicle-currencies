@@ -86,7 +86,7 @@ def render_bridge_adoption_capital_path(frame: pd.DataFrame, output: Path) -> No
 
     data = bridge_adoption_capital_path(frame)
     colours = {"stablecoin": PALETTE["stable"], "WETH": PALETTE["native"]}
-    labels = {"stablecoin": "Stablecoin bridge", "WETH": "WETH bridge"}
+    labels = {"stablecoin": "Supported stablecoin", "WETH": "WETH bridge"}
     with plt.rc_context(
         {
             "font.family": "DejaVu Sans",

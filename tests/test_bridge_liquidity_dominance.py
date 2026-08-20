@@ -8,6 +8,7 @@ import pandas as pd
 
 from scripts.analyze.run_bridge_liquidity_dominance import (
     BRIDGE_ADOPTION_PATH_DAYS,
+    _attach_bridge_establishment_depth,
     bridge_adoption_capital_path_summaries,
     bridge_establishment_adoption_timing_from_events,
     bridge_establishment_depth_regressions,
@@ -35,6 +36,56 @@ WBTC = "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"
 DAI = "0x6b175474e89094c44da98b954eedeac495271d0f"
 USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
 USDT = "0xdac17f958d2ee523a2206206994597c13d831ec7"
+
+
+def test_restricted_bridge_depth_excludes_unrelated_stablecoin() -> None:
+    event = pd.DataFrame(
+        [
+            {
+                "origin_date": pd.Timestamp("2024-02-10"),
+                "src": "src",
+                "tgt": "tgt",
+                "event_stablecoin_addresses": USDC,
+            }
+        ]
+    )
+    pool_rows = []
+    for token0, token1, pool, capital in [
+        ("src", USDC, "src-usdc", 100.0),
+        (USDC, "tgt", "usdc-tgt", 100.0),
+        ("src", DAI, "src-dai", 1_000.0),
+        (DAI, "tgt", "dai-tgt", 1_000.0),
+        ("src", WETH, "src-weth", 200.0),
+        (WETH, "tgt", "weth-tgt", 200.0),
+    ]:
+        pool_rows.append(
+            {
+                "day": 20240210,
+                "token0_address": token0,
+                "token1_address": token1,
+                "pool": pool,
+                "capital_usd_lagged": capital,
+                "quantity_kind": "deposited_capital",
+                "capital_validation_status": "exact_state_prior_calendar",
+            }
+        )
+    with tempfile.TemporaryDirectory() as tmpdir:
+        pool_path = Path(tmpdir) / "pool.parquet"
+        pd.DataFrame(pool_rows).to_parquet(pool_path, index=False)
+        broad = _attach_bridge_establishment_depth(
+            event,
+            pool_capital_path=pool_path,
+            capital_status="exact_state_prior_calendar",
+        )
+        restricted = _attach_bridge_establishment_depth(
+            event,
+            pool_capital_path=pool_path,
+            capital_status="exact_state_prior_calendar",
+            restrict_stable_to_event_support=True,
+        )
+    assert broad["stable_bridge_min_capital_usd"].item() == 1_000.0
+    assert restricted["stable_bridge_min_capital_usd"].item() == 100.0
+    assert restricted["native_bridge_min_capital_usd"].item() == 200.0
 
 
 def test_bridge_adoption_capital_path_orders_funding_before_route_use() -> None:

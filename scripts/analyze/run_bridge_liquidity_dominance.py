@@ -730,8 +730,14 @@ def _attach_bridge_establishment_depth(
     *,
     pool_capital_path: Path,
     capital_status: str,
+    restrict_stable_to_event_support: bool = False,
 ) -> pd.DataFrame:
-    """Attach candidate bottleneck depth only for observed event-day keys."""
+    """Attach candidate bottleneck depth only for observed event-day keys.
+
+    The broad event panel compares the best DAI, USDC, or USDT bridge with
+    WETH. Adoption timing and adoption-date paths instead restrict stablecoin
+    depth to the addresses whose persistent support defines the event.
+    """
 
     event_rows = frame.reset_index(drop=True).copy()
     event_rows["event_row_id"] = np.arange(len(event_rows), dtype=np.int64)
@@ -739,9 +745,37 @@ def _attach_bridge_establishment_depth(
         BRIDGE_DEPTH_CANDIDATES,
         columns=["candidate_symbol", "candidate_address", "candidate_type"],
     )
-    requests = event_rows[
-        ["event_row_id", "origin_date", "src", "tgt"]
-    ].merge(candidates, how="cross")
+    event_columns = ["event_row_id", "origin_date", "src", "tgt"]
+    if restrict_stable_to_event_support:
+        if "event_stablecoin_addresses" not in event_rows.columns:
+            raise ValueError("event support addresses are required for restricted depth")
+        event_columns.append("event_stablecoin_addresses")
+    requests = event_rows[event_columns].merge(candidates, how="cross")
+    if restrict_stable_to_event_support:
+        support_sets = requests["event_stablecoin_addresses"].fillna("").map(
+            lambda value: {
+                address.strip().lower()
+                for address in str(value).split(",")
+                if address.strip()
+            }
+        )
+        in_support = [
+            str(address).lower() in support
+            for address, support in zip(
+                requests["candidate_address"],
+                support_sets,
+                strict=True,
+            )
+        ]
+        requests = requests[
+            requests["candidate_type"].ne("stable")
+            | pd.Series(in_support, index=requests.index)
+        ].copy()
+        supported = requests.groupby("event_row_id")["candidate_type"].agg(set)
+        if len(supported) != len(event_rows) or not supported.map(
+            lambda kinds: {"native", "stable"}.issubset(kinds)
+        ).all():
+            raise ValueError("restricted bridge depth lacks WETH or supported stablecoin")
     for leg, endpoint in (("leg1", "src"), ("leg2", "tgt")):
         candidate = requests["candidate_address"].astype(str).str.lower()
         other = requests[endpoint].astype(str).str.lower()
@@ -1133,8 +1167,8 @@ def bridge_establishment_adoption_timing_from_events(
                     "adoption_events": int(adopted.sum()),
                     "adoption_share": float(adopted.mean()),
                     "depth_definition": (
-                        "event-day best stablecoin two-leg bottleneck divided by "
-                        "the WETH two-leg bottleneck"
+                        "event-day best two-leg bottleneck among stablecoins in "
+                        "the event support set, divided by the WETH bottleneck"
                     ),
                 }
             )
@@ -1361,6 +1395,7 @@ def bridge_establishment_adoption_timing(
         "tgt",
         "integration_scope",
         "event_stablecoins",
+        "event_stablecoin_addresses",
     ]
     missing = sorted(set(event_columns) - set(panel.columns))
     if missing:
@@ -1387,6 +1422,7 @@ def bridge_establishment_adoption_timing(
         events,
         pool_capital_path=pool_capital_path,
         capital_status=capital_status,
+        restrict_stable_to_event_support=True,
     )
     return bridge_establishment_adoption_timing_from_events(
         events,
@@ -1706,6 +1742,7 @@ def bridge_establishment_adoption_capital_path(
         "src",
         "tgt",
         "integration_scope",
+        "event_stablecoin_addresses",
     ]
     missing = sorted(set(event_columns + ["origin_date"]) - set(panel.columns))
     if missing:
@@ -1741,6 +1778,7 @@ def bridge_establishment_adoption_capital_path(
         grid,
         pool_capital_path=pool_capital_path,
         capital_status=capital_status,
+        restrict_stable_to_event_support=True,
     )
     return bridge_adoption_capital_path_summaries(
         depth,
