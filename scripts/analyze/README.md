@@ -12,6 +12,7 @@ belongs in `../plot/` or `../tabulate/`.
 | `run_liquidity_capital_v2_predictability.py` | V2 predictability results, support, and table; paper/deck |
 | `run_bridge_liquidity_dominance.py` | local two-leg bridge depth plus first stable-bridge establishment, adoption, and displacement; paper/deck |
 | `run_disconnected_component_boundary.py` | connected-component prevalence and component-as-route rotation sensitivity; paper/deck |
+| `run_exact_vehicle_frontier.py` | monthly exact pre-transaction route frontier across V2, Sushi V2, and V3; route-cost evidence |
 | `run_liquidity_provision_behavior_exploration.py` | exploratory V2 capital-allocation and vehicle-use behavior |
 | `run_bridge_liquidity_feedback.py` | exploratory dynamic feedback between local bridge depth and vehicle use |
 | `run_mechanism_expansion_exploration.py` | provisional JFE-expansion mechanism regressions and formation summaries |
