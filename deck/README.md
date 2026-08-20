@@ -17,8 +17,9 @@ supported-value share, and active ultimate-pair breadth from 2020 to 2026. Each
 frame retains only six months of history, so the time path must be watched. Its
 [sparse final-month poster](../output/figures/vehicle_dominance_timelapse_poster.pdf)
 provides PDF-safe context without pretending to encode the full transition. The
-film is embedded in the live deck; the poster remains visible in PDF readers that
-do not play embedded media.
+film is embedded in the live deck. The slide also carries an ordinary web link
+and a relative local-file link because many PDF readers ignore embedded-media
+annotations. The poster remains visible in every reader.
 
 For the 30-minute research talk, the core deck is capped at 24 static frames.
 Core pages may carry at most 70 visible words, including chart and table labels;
