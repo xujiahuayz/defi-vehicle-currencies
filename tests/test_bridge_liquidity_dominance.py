@@ -10,6 +10,8 @@ from scripts.analyze.run_bridge_liquidity_dominance import (
     BRIDGE_ADOPTION_PATH_DAYS,
     _attach_bridge_establishment_depth,
     bridge_adoption_capital_path_summaries,
+    bridge_adoption_pool_margin_panel,
+    bridge_adoption_pool_margin_summaries,
     bridge_establishment_adoption_timing_from_events,
     bridge_establishment_depth_regressions,
     bridge_establishment_depth_summaries,
@@ -26,6 +28,7 @@ from scripts.analyze.run_bridge_liquidity_dominance import (
     load_bridge_liquidity_panel,
 )
 from scripts.tabulate.build_bridge_liquidity_deck_values import (
+    render_bridge_adoption_pool_margin_table,
     render_bridge_establishment_table,
     render_bridge_liquidity_deck_values,
 )
@@ -146,6 +149,145 @@ def test_bridge_adoption_capital_path_orders_funding_before_route_use() -> None:
     assert math.isclose(matched_contrast["coefficient"], 1.5)
     assert math.isclose(stable_event["coefficient"], 1.0)
     assert stable_event["events"] == 40
+
+
+def test_bridge_adoption_pool_margin_separates_entry_from_scaling() -> None:
+    event_date = pd.Timestamp("2024-01-01")
+    adoption_date = pd.Timestamp("2024-01-10")
+    event_panel = pd.DataFrame(
+        [
+            {
+                "event_id": "event-1",
+                "ordered_pair": "src|tgt",
+                "event_date": event_date,
+                "first_stable_route_date": adoption_date,
+                "src": "src",
+                "tgt": "tgt",
+                "integration_scope": "within_venue",
+                "event_stablecoin_addresses": USDC,
+                "origin_date": origin_date,
+            }
+            for origin_date in pd.date_range(event_date, adoption_date)
+        ]
+    )
+    choices = pd.DataFrame(
+        [
+            {
+                "date": adoption_date,
+                "src": "src",
+                "tgt": "tgt",
+                "integration_scope": "within_venue",
+                "candidate_address": USDC,
+                "candidate_symbol": "USDC",
+                "route_count": 10,
+            }
+        ]
+    )
+    capital_rows = []
+
+    def add_capital(
+        day: int,
+        token0: str,
+        token1: str,
+        pool: str,
+        capital: float,
+    ) -> None:
+        capital_rows.append(
+            {
+                "day": day,
+                "venue": "uniswap_v2",
+                "pool": pool,
+                "token0_address": token0,
+                "token1_address": token1,
+                "capital_usd_lagged": capital,
+                "quantity_kind": "deposited_capital",
+                "capital_validation_status": "exact_state_prior_calendar",
+            }
+        )
+
+    for day, continuing_capital in [(20240103, 100.0), (20240110, 200.0)]:
+        add_capital(day, "src", USDC, "src-usdc-continuing", continuing_capital)
+    add_capital(20240110, "src", USDC, "src-usdc-new", 50.0)
+    for day in (20240103, 20240110):
+        add_capital(day, USDC, "tgt", "usdc-tgt", 1_000.0)
+        add_capital(day, "src", WETH, "src-weth", 500.0)
+        add_capital(day, WETH, "tgt", "weth-tgt", 1_000.0)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        choices_path = Path(tmpdir) / "choices.parquet"
+        capital_path = Path(tmpdir) / "capital.parquet"
+        choices.to_parquet(choices_path, index=False)
+        pd.DataFrame(capital_rows).to_parquet(capital_path, index=False)
+        result = bridge_adoption_pool_margin_panel(
+            event_panel,
+            choices_path=choices_path,
+            pool_capital_path=capital_path,
+        )
+
+    stable = result[result["vehicle_class"].eq("stablecoin")].iloc[0]
+    weth = result[result["vehicle_class"].eq("WETH")].iloc[0]
+    assert stable["leg"] == "source"
+    assert stable["baseline_pool_count"] == 1
+    assert stable["adoption_pool_count"] == 2
+    assert stable["newly_active_pool_count"] == 1
+    assert math.isclose(stable["newly_active_pool_capital_share"], 0.2)
+    assert math.isclose(stable["log_continuing_pool_capital_change"], math.log(2))
+    assert math.isclose(
+        stable["adoption_capital_usd"],
+        stable["continuing_pool_adoption_capital_usd"]
+        + stable["newly_active_pool_capital_usd"],
+    )
+    assert weth["leg"] == "source"
+    assert weth["newly_active_pool_count"] == 0
+    assert weth["newly_active_pool_capital_share"] == 0
+
+
+def test_bridge_adoption_pool_margin_summaries_use_matched_events() -> None:
+    rows = []
+    for event_number in range(40):
+        jitter = (event_number - 19.5) / 1_000
+        common = {
+            "event_id": f"event-{event_number}",
+            "ordered_pair": f"src-{event_number}|tgt-{event_number}",
+            "first_stable_route_date": pd.Timestamp("2024-06-01")
+            + pd.Timedelta(days=event_number),
+        }
+        rows.extend(
+            [
+                {
+                    **common,
+                    "vehicle_class": "stablecoin",
+                    "log_weak_leg_capital_change": 0.8 + jitter,
+                    "log_weak_leg_pool_count_change": 0.06 + jitter,
+                    "any_newly_active_pool": 0.10 + jitter,
+                    "newly_active_pool_capital_share": 0.08 + jitter,
+                    "log_continuing_pool_capital_change": 0.20 + jitter,
+                },
+                {
+                    **common,
+                    "vehicle_class": "WETH",
+                    "log_weak_leg_capital_change": 0.1 - jitter,
+                    "log_weak_leg_pool_count_change": 0.01 - jitter,
+                    "any_newly_active_pool": 0.025 - jitter,
+                    "newly_active_pool_capital_share": 0.01 - jitter,
+                    "log_continuing_pool_capital_change": 0.05 - jitter,
+                },
+            ]
+        )
+    result = bridge_adoption_pool_margin_summaries(
+        pd.DataFrame(rows),
+        min_observations=20,
+        min_clusters=20,
+    )
+    matched = result[result["vehicle_class"].eq("stablecoin_minus_WETH")]
+    estimates = matched.set_index("outcome")["coefficient"]
+    assert math.isclose(estimates["log_weak_leg_capital_change"], 0.7)
+    assert math.isclose(estimates["log_weak_leg_pool_count_change"], 0.05)
+    assert math.isclose(estimates["any_newly_active_pool"], 0.075)
+    assert math.isclose(estimates["newly_active_pool_capital_share"], 0.07)
+    assert math.isclose(estimates["log_continuing_pool_capital_change"], 0.15)
+    mechanism = matched[matched["outcome"].ne("log_weak_leg_capital_change")]
+    assert mechanism["p_value_holm_mechanism"].notna().all()
 
 
 def test_bridge_establishment_separates_support_from_route_adoption() -> None:
@@ -1507,9 +1649,43 @@ def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
                 "top_ten_positive_change_share": 0.45,
             }
         )
+    pool_margin_values = {
+        "log_weak_leg_capital_change": (0.80, 0.10, 0.70),
+        "log_weak_leg_pool_count_change": (0.06, 0.01, 0.05),
+        "any_newly_active_pool": (0.10, 0.025, 0.075),
+        "newly_active_pool_capital_share": (0.08, 0.01, 0.07),
+        "log_continuing_pool_capital_change": (0.20, 0.05, 0.15),
+    }
+    for outcome, coefficients in pool_margin_values.items():
+        for vehicle_class, coefficient in zip(
+            ("stablecoin", "WETH", "stablecoin_minus_WETH"),
+            coefficients,
+            strict=True,
+        ):
+            event_rows.append(
+                {
+                    "claim_status": "provisional_exploratory",
+                    "record_type": "bridge_adoption_pool_margin",
+                    "model_id": f"{vehicle_class}_{outcome}",
+                    "vehicle_class": vehicle_class,
+                    "outcome": outcome,
+                    "coefficient": coefficient,
+                    "standard_error": 0.02,
+                    "p_value": 0.001,
+                    "p_value_holm_mechanism": (
+                        0.002
+                        if vehicle_class == "stablecoin_minus_WETH"
+                        and outcome != "log_weak_leg_capital_change"
+                        else None
+                    ),
+                    "events": 267,
+                    "n_observations": 267,
+                }
+            )
     estimates = pd.concat([estimates, pd.DataFrame(event_rows)], ignore_index=True)
     rendered = render_bridge_liquidity_deck_values(estimates)
     table = render_bridge_establishment_table(estimates)
+    pool_table = render_bridge_adoption_pool_margin_table(estimates)
     assert "\\BridgeLiquidityTopShare" in rendered
     assert "\\BridgeLiquidityStableLogTotalCoef" in rendered
     assert "\\BridgeLiquidityHorseRaceDepthCoef" in rendered
@@ -1526,6 +1702,8 @@ def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
     assert "\\BridgeTimingNoStableEndpointDiff" in rendered
     assert "\\newcommand{\\BridgeAdoptionCapitalEvents}{267}" in rendered
     assert "\\BridgeAdoptionCapitalMatchedDifferenceCoef" in rendered
+    assert "\\newcommand{\\BridgePoolMarginEvents}{267}" in rendered
+    assert "\\BridgePoolMarginContinuingCapitalShare" in rendered
     assert "\\BridgeDepthDoseFirstCoef" in rendered
     assert "\\BridgeDepthEqualFirstShare" in rendered
     assert "\\newcommand{\\BridgeDepthDoseFirstRows}{11{,}327}" in rendered
@@ -1534,3 +1712,5 @@ def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
     assert "Bridge events" in table
     assert "Stable-bridge competitiveness relative to WETH" in table
     assert "Adoption of supported stablecoin after persistent support" in table
+    assert "New-pool share of adoption capital [pp]" in pool_table
+    assert "Stablecoin & WETH & Difference" in pool_table

@@ -15,6 +15,7 @@ from ddvc.runtime import atomic_output
 ESTIMATES = OUTPUT_DIR / "exhibits/bridge_liquidity_dominance.jsonl"
 DECK_VALUES = OUTPUT_DIR / "exhibits/bridge_liquidity_deck_values.tex"
 TABLE_OUTPUT = OUTPUT_DIR / "tables/bridge_establishment_regressions.tex"
+POOL_MARGIN_TABLE_OUTPUT = OUTPUT_DIR / "tables/bridge_adoption_pool_margins.tex"
 
 
 def _single(frame: pd.DataFrame, **conditions: object) -> pd.Series:
@@ -52,11 +53,16 @@ def _stars(p_value: float) -> str:
     return ""
 
 
-def _estimate_cell(row: pd.Series, *, scale: float = 1.0) -> str:
+def _estimate_cell(
+    row: pd.Series,
+    *,
+    scale: float = 1.0,
+    p_value_column: str = "p_value",
+) -> str:
     coefficient = scale * float(row["coefficient"])
     standard_error = scale * float(row["standard_error"])
     return (
-        f"\\shortstack{{${coefficient:+.2f}{_stars(float(row['p_value']))}$"
+        f"\\shortstack{{${coefficient:+.2f}{_stars(float(row[p_value_column]))}$"
         f"\\\\$({standard_error:.2f})$}}"
     )
 
@@ -305,6 +311,54 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         record_type="bridge_adoption_capital_contrast",
         model_id="stablecoin_minus_weth_pre_minus_post_winsorized_5_95",
     )
+    pool_margin_capital = _single(
+        estimates,
+        record_type="bridge_adoption_pool_margin",
+        vehicle_class="stablecoin_minus_WETH",
+        outcome="log_weak_leg_capital_change",
+    )
+    pool_margin_pool_count = _single(
+        estimates,
+        record_type="bridge_adoption_pool_margin",
+        vehicle_class="stablecoin_minus_WETH",
+        outcome="log_weak_leg_pool_count_change",
+    )
+    pool_margin_new_pool_stable = _single(
+        estimates,
+        record_type="bridge_adoption_pool_margin",
+        vehicle_class="stablecoin",
+        outcome="any_newly_active_pool",
+    )
+    pool_margin_new_pool_weth = _single(
+        estimates,
+        record_type="bridge_adoption_pool_margin",
+        vehicle_class="WETH",
+        outcome="any_newly_active_pool",
+    )
+    pool_margin_new_pool_difference = _single(
+        estimates,
+        record_type="bridge_adoption_pool_margin",
+        vehicle_class="stablecoin_minus_WETH",
+        outcome="any_newly_active_pool",
+    )
+    pool_margin_new_capital_stable = _single(
+        estimates,
+        record_type="bridge_adoption_pool_margin",
+        vehicle_class="stablecoin",
+        outcome="newly_active_pool_capital_share",
+    )
+    pool_margin_new_capital_difference = _single(
+        estimates,
+        record_type="bridge_adoption_pool_margin",
+        vehicle_class="stablecoin_minus_WETH",
+        outcome="newly_active_pool_capital_share",
+    )
+    pool_margin_continuing_difference = _single(
+        estimates,
+        record_type="bridge_adoption_pool_margin",
+        vehicle_class="stablecoin_minus_WETH",
+        outcome="log_continuing_pool_capital_change",
+    )
     depth_slope_first = _single(
         estimates,
         record_type="bridge_establishment_depth_regression",
@@ -420,6 +474,19 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         and float(adoption_capital_matched_difference["p_value"]) < 0.01
         and float(adoption_capital_matched_winsor["coefficient"]) > 0
         and float(adoption_capital_matched_winsor["p_value"]) < 0.01
+        and float(pool_margin_capital["coefficient"]) > 0
+        and float(pool_margin_capital["p_value"]) < 0.01
+        and float(pool_margin_pool_count["coefficient"]) > 0
+        and float(pool_margin_pool_count["p_value_holm_mechanism"]) < 0.01
+        and float(pool_margin_new_pool_stable["coefficient"])
+        > float(pool_margin_new_pool_weth["coefficient"])
+        and float(pool_margin_new_pool_difference["p_value_holm_mechanism"]) < 0.01
+        and 0 < float(pool_margin_new_capital_stable["coefficient"]) < 0.15
+        and float(pool_margin_new_capital_difference["p_value_holm_mechanism"])
+        < 0.01
+        and float(pool_margin_continuing_difference["coefficient"]) > 0
+        and float(pool_margin_continuing_difference["p_value_holm_mechanism"])
+        < 0.05
         and float(depth_slope_first["coefficient"]) > 0
         and float(depth_slope_first["p_value"]) < 0.01
         and float(depth_slope_later["coefficient"]) > 0
@@ -518,6 +585,21 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         f"\\newcommand{{\\BridgeAdoptionCapitalMatchedDifferenceSE}}{{${abs(float(adoption_capital_matched_difference['standard_error'])):.2f}$}}",
         f"\\newcommand{{\\BridgeAdoptionCapitalMatchedWinsorCoef}}{{${float(adoption_capital_matched_winsor['coefficient']):+.2f}$}}",
         f"\\newcommand{{\\BridgeAdoptionCapitalMatchedWinsorSE}}{{${abs(float(adoption_capital_matched_winsor['standard_error'])):.2f}$}}",
+        f"\\newcommand{{\\BridgePoolMarginEvents}}{{{_integer(float(pool_margin_capital['events']))}}}",
+        f"\\newcommand{{\\BridgePoolMarginCapitalDifference}}{{${float(pool_margin_capital['coefficient']):+.2f}$}}",
+        f"\\newcommand{{\\BridgePoolMarginCapitalDifferenceSE}}{{${abs(float(pool_margin_capital['standard_error'])):.2f}$}}",
+        f"\\newcommand{{\\BridgePoolMarginPoolCountDifference}}{{${float(pool_margin_pool_count['coefficient']):+.2f}$}}",
+        f"\\newcommand{{\\BridgePoolMarginPoolCountDifferenceSE}}{{${abs(float(pool_margin_pool_count['standard_error'])):.2f}$}}",
+        f"\\newcommand{{\\BridgePoolMarginNewPoolStable}}{{{_pct(float(pool_margin_new_pool_stable['coefficient']))}}}",
+        f"\\newcommand{{\\BridgePoolMarginNewPoolWeth}}{{{_pct(float(pool_margin_new_pool_weth['coefficient']))}}}",
+        f"\\newcommand{{\\BridgePoolMarginNewPoolDifference}}{{{_signed_pp(float(pool_margin_new_pool_difference['coefficient']), decimals=1)}}}",
+        f"\\newcommand{{\\BridgePoolMarginNewPoolDifferenceSE}}{{{_unsigned_pp(float(pool_margin_new_pool_difference['standard_error']), decimals=1)}}}",
+        f"\\newcommand{{\\BridgePoolMarginNewCapitalShare}}{{{_pct(float(pool_margin_new_capital_stable['coefficient']))}}}",
+        f"\\newcommand{{\\BridgePoolMarginContinuingCapitalShare}}{{{_pct(1.0 - float(pool_margin_new_capital_stable['coefficient']))}}}",
+        f"\\newcommand{{\\BridgePoolMarginNewCapitalDifference}}{{{_signed_pp(float(pool_margin_new_capital_difference['coefficient']), decimals=1)}}}",
+        f"\\newcommand{{\\BridgePoolMarginNewCapitalDifferenceSE}}{{{_unsigned_pp(float(pool_margin_new_capital_difference['standard_error']), decimals=1)}}}",
+        f"\\newcommand{{\\BridgePoolMarginContinuingDifference}}{{${float(pool_margin_continuing_difference['coefficient']):+.2f}$}}",
+        f"\\newcommand{{\\BridgePoolMarginContinuingDifferenceSE}}{{${abs(float(pool_margin_continuing_difference['standard_error'])):.2f}$}}",
         f"\\newcommand{{\\BridgeDepthDoseFirstCoef}}{{{_signed_pp(0.01 * float(depth_slope_first['coefficient']))}}}",
         f"\\newcommand{{\\BridgeDepthDoseFirstSE}}{{{_unsigned_pp(0.01 * float(depth_slope_first['standard_error']))}}}",
         f"\\newcommand{{\\BridgeDepthDoseFirstRows}}{{{_integer(float(depth_slope_first['n_observations']))}}}",
@@ -758,11 +840,83 @@ def render_bridge_establishment_table(estimates: pd.DataFrame) -> str:
     )
 
 
+def render_bridge_adoption_pool_margin_table(estimates: pd.DataFrame) -> str:
+    """Render the pool-entry and continuing-pool adoption decomposition."""
+
+    models = (
+        (
+            "Weak-leg deposited capital [log change]",
+            "log_weak_leg_capital_change",
+            1.0,
+            False,
+        ),
+        (
+            "Active pool count [log change]",
+            "log_weak_leg_pool_count_change",
+            1.0,
+            True,
+        ),
+        ("Any newly active pool [pp]", "any_newly_active_pool", 100.0, True),
+        (
+            "New-pool share of adoption capital [pp]",
+            "newly_active_pool_capital_share",
+            100.0,
+            True,
+        ),
+        (
+            "Continuing-pool capital [log change]",
+            "log_continuing_pool_capital_change",
+            1.0,
+            True,
+        ),
+    )
+    rows = []
+    for label, outcome, scale, adjusted in models:
+        stable = _single(
+            estimates,
+            record_type="bridge_adoption_pool_margin",
+            vehicle_class="stablecoin",
+            outcome=outcome,
+        )
+        weth = _single(
+            estimates,
+            record_type="bridge_adoption_pool_margin",
+            vehicle_class="WETH",
+            outcome=outcome,
+        )
+        difference = _single(
+            estimates,
+            record_type="bridge_adoption_pool_margin",
+            vehicle_class="stablecoin_minus_WETH",
+            outcome=outcome,
+        )
+        p_value_column = "p_value_holm_mechanism" if adjusted else "p_value"
+        rows.append(
+            f"{label} & {_estimate_cell(stable, scale=scale)} & "
+            f"{_estimate_cell(weth, scale=scale)} & "
+            f"{_estimate_cell(difference, scale=scale, p_value_column=p_value_column)} \\\\"
+        )
+    return "\n".join(
+        [
+            "% Generated by scripts/tabulate/build_bridge_liquidity_deck_values.py; do not edit.",
+            "\\begin{tabularx}{\\linewidth}{@{}Xccc@{}}",
+            "\\toprule",
+            "Outcome & Stablecoin & WETH & Difference \\\\ ",
+            "\\midrule",
+            *rows,
+            "\\bottomrule",
+            "\\end{tabularx}",
+            "",
+        ]
+    )
+
+
 def run(
     *,
     estimates_path: Path = ESTIMATES,
     output_path: Path = DECK_VALUES,
     table_path: Path = TABLE_OUTPUT,
+    pool_margin_table_path: Path = POOL_MARGIN_TABLE_OUTPUT,
 ) -> int:
     estimates = pd.read_json(estimates_path, lines=True)
     rendered = render_bridge_liquidity_deck_values(estimates)
@@ -771,7 +925,10 @@ def run(
     table = render_bridge_establishment_table(estimates)
     with atomic_output(table_path) as temporary:
         temporary.write_text(table, encoding="utf-8")
-    print(f"wrote {output_path} and {table_path}")
+    pool_margin_table = render_bridge_adoption_pool_margin_table(estimates)
+    with atomic_output(pool_margin_table_path) as temporary:
+        temporary.write_text(pool_margin_table, encoding="utf-8")
+    print(f"wrote {output_path}, {table_path}, and {pool_margin_table_path}")
     return 0
 
 
@@ -780,11 +937,17 @@ def main() -> int:
     parser.add_argument("--estimates", type=Path, default=ESTIMATES)
     parser.add_argument("--output", type=Path, default=DECK_VALUES)
     parser.add_argument("--table", type=Path, default=TABLE_OUTPUT)
+    parser.add_argument(
+        "--pool-margin-table",
+        type=Path,
+        default=POOL_MARGIN_TABLE_OUTPUT,
+    )
     args = parser.parse_args()
     return run(
         estimates_path=args.estimates,
         output_path=args.output,
         table_path=args.table,
+        pool_margin_table_path=args.pool_margin_table,
     )
 
 

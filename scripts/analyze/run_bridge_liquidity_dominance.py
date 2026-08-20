@@ -24,7 +24,12 @@ import numpy as np
 import pandas as pd
 
 from ddvc.asset_types import asset_type
-from ddvc.analysis.regression import absorb_fixed_effects, linear_contrast, ols_clustered
+from ddvc.analysis.regression import (
+    absorb_fixed_effects,
+    holm_adjusted_pvalues,
+    linear_contrast,
+    ols_clustered,
+)
 from ddvc.paths import OUTPUT_DIR, REPO_ROOT
 from ddvc.tables import write_exhibit
 
@@ -1787,6 +1792,469 @@ def bridge_establishment_adoption_capital_path(
     )
 
 
+def bridge_adoption_pool_margin_panel(
+    panel: pd.DataFrame,
+    *,
+    choices_path: Path = CHOICES_INPUT,
+    pool_capital_path: Path = POOL_CAPITAL_INPUT,
+    capital_status: str = CAPITAL_STATUS,
+) -> pd.DataFrame:
+    """Decompose pre-use weak-leg capital into pool entry and scaling.
+
+    The adopted stablecoin is the supported candidate with the most route use
+    on the first-use date. The comparison holds that candidate fixed from day
+    -7 to day 0. A newly active pool has positive prior-calendar capital on day
+    0 and none on day -7; it need not be a newly deployed contract.
+    """
+
+    event_columns = [
+        "event_id",
+        "ordered_pair",
+        "event_date",
+        "first_stable_route_date",
+        "src",
+        "tgt",
+        "integration_scope",
+        "event_stablecoin_addresses",
+    ]
+    missing = sorted(set(event_columns + ["origin_date"]) - set(panel.columns))
+    if missing:
+        raise ValueError(f"bridge event panel lacks pool-margin columns: {missing}")
+    events = panel.loc[:, event_columns].drop_duplicates().copy()
+    if events["event_id"].duplicated().any():
+        raise ValueError("bridge pool-margin fields vary within an event")
+    events["adoption_lag_days"] = (
+        events["first_stable_route_date"] - events["event_date"]
+    ).dt.days
+    events = events[
+        events["adoption_lag_days"].between(
+            BRIDGE_ADOPTION_MIN_LAG_DAYS,
+            BRIDGE_ESTABLISHMENT_POST_DAYS - 1,
+        )
+    ].copy()
+    lower_date = pd.Timestamp(panel["origin_date"].min()).normalize()
+    upper_date = pd.Timestamp(panel["origin_date"].max()).normalize()
+    events = events[
+        events["first_stable_route_date"].sub(pd.Timedelta(days=7)).ge(lower_date)
+        & events["first_stable_route_date"].le(upper_date)
+    ].copy()
+    if events.empty:
+        raise ValueError("bridge adoption pool-margin sample is empty")
+
+    connection = duckdb.connect()
+    try:
+        connection.execute("PRAGMA threads=4")
+        connection.execute("PRAGMA preserve_insertion_order=false")
+        connection.register("bridge_margin_events", events)
+        adopted = connection.execute(
+            """
+            WITH candidate_use AS (
+                SELECT
+                    e.event_id,
+                    lower(c.candidate_address) AS candidate_address,
+                    max(c.candidate_symbol) AS candidate_symbol,
+                    sum(c.route_count)::DOUBLE AS route_count
+                FROM bridge_margin_events e
+                JOIN read_parquet(?) c
+                  ON lower(c.src) = e.src
+                 AND lower(c.tgt) = e.tgt
+                 AND c.integration_scope = e.integration_scope
+                 AND CAST(c.date AS DATE)
+                     = CAST(e.first_stable_route_date AS DATE)
+                 AND list_contains(
+                     string_split(e.event_stablecoin_addresses, ','),
+                     lower(c.candidate_address)
+                 )
+                 AND c.route_count > 0
+                GROUP BY 1, 2
+            ),
+            ranked AS (
+                SELECT
+                    *,
+                    row_number() OVER (
+                        PARTITION BY event_id
+                        ORDER BY route_count DESC, candidate_address
+                    ) AS candidate_rank
+                FROM candidate_use
+            )
+            SELECT
+                event_id,
+                candidate_address,
+                candidate_symbol
+            FROM ranked
+            WHERE candidate_rank = 1
+            """,
+            [str(choices_path)],
+        ).fetchdf()
+    finally:
+        connection.close()
+    if len(adopted) != len(events) or adopted["event_id"].duplicated().any():
+        raise ValueError("adopted supported stablecoin is missing or non-unique")
+    events = events.merge(adopted, on="event_id", how="left", validate="one_to_one")
+
+    stable = events.copy()
+    stable["vehicle_class"] = "stablecoin"
+    native = events.copy()
+    native["vehicle_class"] = "WETH"
+    native["candidate_address"] = next(
+        address
+        for symbol, address, _ in BRIDGE_DEPTH_CANDIDATES
+        if symbol == "WETH"
+    )
+    native["candidate_symbol"] = "WETH"
+    vehicles = pd.concat([stable, native], ignore_index=True, sort=False)
+    requests = vehicles.merge(
+        pd.DataFrame(
+            {
+                "leg": ["source", "target"],
+                "endpoint_column": ["src", "tgt"],
+            }
+        ),
+        how="cross",
+    )
+    requests["endpoint_address"] = np.where(
+        requests["endpoint_column"].eq("src"),
+        requests["src"],
+        requests["tgt"],
+    )
+    candidate = requests["candidate_address"].astype(str).str.lower()
+    endpoint = requests["endpoint_address"].astype(str).str.lower()
+    requests["token_a"] = np.where(candidate.le(endpoint), candidate, endpoint)
+    requests["token_b"] = np.where(candidate.le(endpoint), endpoint, candidate)
+    requests["baseline_date"] = requests["first_stable_route_date"] - pd.Timedelta(
+        days=7
+    )
+    requests = requests[
+        [
+            "event_id",
+            "ordered_pair",
+            "first_stable_route_date",
+            "vehicle_class",
+            "candidate_symbol",
+            "candidate_address",
+            "leg",
+            "baseline_date",
+            "token_a",
+            "token_b",
+        ]
+    ].copy()
+
+    connection = duckdb.connect()
+    try:
+        connection.execute("PRAGMA threads=4")
+        connection.execute("PRAGMA preserve_insertion_order=false")
+        connection.register("bridge_pool_margin_requests", requests)
+        margins = connection.execute(
+            """
+            WITH pool_capital AS (
+                SELECT
+                    strptime(CAST(day AS VARCHAR), '%Y%m%d')::DATE
+                        AS origin_date,
+                    lower(venue) AS venue,
+                    lower(pool) AS pool,
+                    least(lower(token0_address), lower(token1_address))
+                        AS token_a,
+                    greatest(lower(token0_address), lower(token1_address))
+                        AS token_b,
+                    sum(capital_usd_lagged)::DOUBLE AS capital_usd
+                FROM read_parquet(?)
+                WHERE quantity_kind = 'deposited_capital'
+                  AND capital_validation_status = ?
+                  AND capital_usd_lagged > 0
+                GROUP BY 1, 2, 3, 4, 5
+            ),
+            pool_keys AS (
+                SELECT
+                    r.*,
+                    p.venue,
+                    p.pool
+                FROM bridge_pool_margin_requests r
+                LEFT JOIN pool_capital p
+                  ON p.token_a = r.token_a
+                 AND p.token_b = r.token_b
+                 AND p.origin_date IN (
+                     CAST(r.baseline_date AS DATE),
+                     CAST(r.first_stable_route_date AS DATE)
+                 )
+                GROUP BY ALL
+            ),
+            pool_changes AS (
+                SELECT
+                    k.*,
+                    coalesce(b.capital_usd, 0)::DOUBLE AS baseline_capital_usd,
+                    coalesce(a.capital_usd, 0)::DOUBLE AS adoption_capital_usd
+                FROM pool_keys k
+                LEFT JOIN pool_capital b
+                  ON b.origin_date = CAST(k.baseline_date AS DATE)
+                 AND b.token_a = k.token_a
+                 AND b.token_b = k.token_b
+                 AND b.venue IS NOT DISTINCT FROM k.venue
+                 AND b.pool IS NOT DISTINCT FROM k.pool
+                LEFT JOIN pool_capital a
+                  ON a.origin_date = CAST(k.first_stable_route_date AS DATE)
+                 AND a.token_a = k.token_a
+                 AND a.token_b = k.token_b
+                 AND a.venue IS NOT DISTINCT FROM k.venue
+                 AND a.pool IS NOT DISTINCT FROM k.pool
+            ),
+            leg_margin AS (
+                SELECT
+                    event_id,
+                    ordered_pair,
+                    first_stable_route_date,
+                    vehicle_class,
+                    candidate_symbol,
+                    candidate_address,
+                    leg,
+                    sum(baseline_capital_usd)::DOUBLE AS baseline_capital_usd,
+                    sum(adoption_capital_usd)::DOUBLE AS adoption_capital_usd,
+                    count(*) FILTER (
+                        WHERE baseline_capital_usd > 0
+                    )::DOUBLE AS baseline_pool_count,
+                    count(*) FILTER (
+                        WHERE adoption_capital_usd > 0
+                    )::DOUBLE AS adoption_pool_count,
+                    count(*) FILTER (
+                        WHERE baseline_capital_usd = 0
+                          AND adoption_capital_usd > 0
+                    )::DOUBLE AS newly_active_pool_count,
+                    count(*) FILTER (
+                        WHERE baseline_capital_usd > 0
+                          AND adoption_capital_usd = 0
+                    )::DOUBLE AS exited_pool_count,
+                    coalesce(sum(adoption_capital_usd) FILTER (
+                        WHERE baseline_capital_usd = 0
+                          AND adoption_capital_usd > 0
+                    ), 0)::DOUBLE AS newly_active_pool_capital_usd,
+                    coalesce(sum(baseline_capital_usd) FILTER (
+                        WHERE baseline_capital_usd > 0
+                          AND adoption_capital_usd > 0
+                    ), 0)::DOUBLE AS continuing_pool_baseline_capital_usd,
+                    coalesce(sum(adoption_capital_usd) FILTER (
+                        WHERE baseline_capital_usd > 0
+                          AND adoption_capital_usd > 0
+                    ), 0)::DOUBLE AS continuing_pool_adoption_capital_usd
+                FROM pool_changes
+                GROUP BY 1, 2, 3, 4, 5, 6, 7
+            ),
+            weak_leg AS (
+                SELECT
+                    *,
+                    row_number() OVER (
+                        PARTITION BY event_id, vehicle_class
+                        ORDER BY adoption_capital_usd, leg
+                    ) AS weak_leg_rank
+                FROM leg_margin
+            )
+            SELECT *
+            FROM weak_leg
+            WHERE weak_leg_rank = 1
+            ORDER BY event_id, vehicle_class
+            """,
+            [str(pool_capital_path), capital_status],
+        ).fetchdf()
+    finally:
+        connection.close()
+    expected_rows = 2 * len(events)
+    if len(margins) != expected_rows or margins.duplicated(
+        ["event_id", "vehicle_class"]
+    ).any():
+        raise ValueError("bridge pool-margin weak-leg rows are incomplete")
+    margins["first_stable_route_date"] = pd.to_datetime(
+        margins["first_stable_route_date"], errors="raise"
+    ).dt.normalize()
+    margins["log_weak_leg_capital_change"] = np.log1p(
+        margins["adoption_capital_usd"].clip(lower=0)
+    ) - np.log1p(margins["baseline_capital_usd"].clip(lower=0))
+    margins["log_weak_leg_pool_count_change"] = np.log1p(
+        margins["adoption_pool_count"].clip(lower=0)
+    ) - np.log1p(margins["baseline_pool_count"].clip(lower=0))
+    margins["any_newly_active_pool"] = margins["newly_active_pool_count"].gt(0).astype(
+        float
+    )
+    margins["newly_active_pool_capital_share"] = np.divide(
+        margins["newly_active_pool_capital_usd"],
+        margins["adoption_capital_usd"],
+        out=np.full(len(margins), np.nan, dtype=float),
+        where=margins["adoption_capital_usd"].gt(0),
+    )
+    continuing = (
+        margins["continuing_pool_baseline_capital_usd"].gt(0)
+        & margins["continuing_pool_adoption_capital_usd"].gt(0)
+    )
+    margins["log_continuing_pool_capital_change"] = np.nan
+    margins.loc[continuing, "log_continuing_pool_capital_change"] = (
+        np.log(
+            margins.loc[continuing, "continuing_pool_adoption_capital_usd"]
+        )
+        - np.log(
+            margins.loc[continuing, "continuing_pool_baseline_capital_usd"]
+        )
+    )
+    return margins.reset_index(drop=True)
+
+
+def bridge_adoption_pool_margin_summaries(
+    margin_panel: pd.DataFrame,
+    *,
+    min_observations: int = 100,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Compare pool entry and continuing-pool scaling before first route use."""
+
+    required = {
+        "event_id",
+        "ordered_pair",
+        "first_stable_route_date",
+        "vehicle_class",
+        "log_weak_leg_capital_change",
+        "log_weak_leg_pool_count_change",
+        "any_newly_active_pool",
+        "newly_active_pool_capital_share",
+        "log_continuing_pool_capital_change",
+    }
+    missing = sorted(required - set(margin_panel.columns))
+    if missing:
+        raise ValueError(f"bridge pool-margin panel lacks columns: {missing}")
+    outcomes = {
+        "log_weak_leg_capital_change": "log points",
+        "log_weak_leg_pool_count_change": "log points",
+        "any_newly_active_pool": "share",
+        "newly_active_pool_capital_share": "share",
+        "log_continuing_pool_capital_change": "log points",
+    }
+
+    def estimate_mean(data: pd.DataFrame, outcome: str):
+        fit = ols_clustered(
+            data[outcome],
+            np.empty((len(data), 0), dtype=float),
+            data["ordered_pair"],
+            additional_clusters=(data["first_stable_route_date"],),
+            min_observations=min_observations,
+            min_clusters=min_clusters,
+        )
+        return (
+            float(fit.beta[0]),
+            float(fit.standard_errors[0]),
+            float(fit.t_statistics[0]),
+            float(fit.p_values[0]),
+            int(fit.n_observations),
+            fit.cluster_counts,
+        )
+
+    rows: list[dict[str, object]] = []
+    for outcome, unit in outcomes.items():
+        for vehicle_class in ("stablecoin", "WETH"):
+            data = (
+                margin_panel[margin_panel["vehicle_class"].eq(vehicle_class)]
+                .replace([np.inf, -np.inf], np.nan)
+                .dropna(
+                    subset=[
+                        outcome,
+                        "ordered_pair",
+                        "first_stable_route_date",
+                    ]
+                )
+                .copy()
+            )
+            estimate, se, t_stat, p_value, n_obs, clusters = estimate_mean(
+                data, outcome
+            )
+            rows.append(
+                {
+                    "claim_status": "provisional_exploratory",
+                    "record_type": "bridge_adoption_pool_margin",
+                    "model_id": f"{vehicle_class.lower()}_{outcome}",
+                    "vehicle_class": vehicle_class,
+                    "outcome": outcome,
+                    "unit": unit,
+                    "coefficient": estimate,
+                    "standard_error": se,
+                    "t_statistic": t_stat,
+                    "p_value": p_value,
+                    "coefficient_pp": 100.0 * estimate if unit == "share" else None,
+                    "standard_error_pp": 100.0 * se if unit == "share" else None,
+                    "n_observations": n_obs,
+                    "events": int(data["event_id"].nunique()),
+                    "ordered_pair_clusters": int(clusters[0]),
+                    "date_clusters": int(clusters[1]),
+                    "weight": "equal_event",
+                    "covariance": "two_way_ordered_pair_adoption_date_cr1",
+                    "interpretation": (
+                        "weak-leg pool entry or continuing-pool scaling during "
+                        "the seven days before first supported-stablecoin use"
+                    ),
+                }
+            )
+
+        wide = (
+            margin_panel[
+                [
+                    "event_id",
+                    "ordered_pair",
+                    "first_stable_route_date",
+                    "vehicle_class",
+                    outcome,
+                ]
+            ]
+            .pivot(
+                index=["event_id", "ordered_pair", "first_stable_route_date"],
+                columns="vehicle_class",
+                values=outcome,
+            )
+            .reset_index()
+            .replace([np.inf, -np.inf], np.nan)
+            .dropna(subset=["stablecoin", "WETH"])
+        )
+        wide["stablecoin_minus_weth"] = (
+            wide["stablecoin"].astype(float) - wide["WETH"].astype(float)
+        )
+        estimate, se, t_stat, p_value, n_obs, clusters = estimate_mean(
+            wide, "stablecoin_minus_weth"
+        )
+        rows.append(
+            {
+                "claim_status": "provisional_exploratory",
+                "record_type": "bridge_adoption_pool_margin",
+                "model_id": f"stablecoin_minus_weth_{outcome}",
+                "vehicle_class": "stablecoin_minus_WETH",
+                "outcome": outcome,
+                "unit": unit,
+                "coefficient": estimate,
+                "standard_error": se,
+                "t_statistic": t_stat,
+                "p_value": p_value,
+                "coefficient_pp": 100.0 * estimate if unit == "share" else None,
+                "standard_error_pp": 100.0 * se if unit == "share" else None,
+                "n_observations": n_obs,
+                "events": int(wide["event_id"].nunique()),
+                "ordered_pair_clusters": int(clusters[0]),
+                "date_clusters": int(clusters[1]),
+                "weight": "equal_event",
+                "covariance": "two_way_ordered_pair_adoption_date_cr1",
+                "interpretation": (
+                    "matched supported-stablecoin minus WETH weak-leg pool margin "
+                    "during the seven days before first route use"
+                ),
+            }
+        )
+    result = pd.DataFrame(rows)
+    mechanism_outcomes = {
+        "log_weak_leg_pool_count_change",
+        "any_newly_active_pool",
+        "newly_active_pool_capital_share",
+        "log_continuing_pool_capital_change",
+    }
+    family = result["vehicle_class"].eq("stablecoin_minus_WETH") & result[
+        "outcome"
+    ].isin(mechanism_outcomes)
+    result["p_value_holm_mechanism"] = np.nan
+    result.loc[family, "p_value_holm_mechanism"] = holm_adjusted_pvalues(
+        result.loc[family, "p_value"]
+    )
+    return result
+
+
 def bridge_establishment_event_regressions(
     panel: pd.DataFrame,
     *,
@@ -3193,6 +3661,11 @@ def run(
         choices_path=choices_path,
         pool_capital_path=pool_capital_path,
     )
+    pool_margin_panel = bridge_adoption_pool_margin_panel(
+        establishment_panel,
+        choices_path=choices_path,
+        pool_capital_path=pool_capital_path,
+    )
     panel = load_bridge_liquidity_panel(
         choices_path=choices_path,
         pool_capital_path=pool_capital_path,
@@ -3223,6 +3696,7 @@ def run(
                 establishment_panel,
                 pool_capital_path=pool_capital_path,
             ),
+            bridge_adoption_pool_margin_summaries(pool_margin_panel),
             bridge_establishment_event_regressions(establishment_panel),
             bridge_establishment_depth_summaries(establishment_panel),
             bridge_establishment_depth_regressions(establishment_panel),

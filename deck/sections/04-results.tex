@@ -281,6 +281,33 @@ Currency fixed effects & No & No & No & Yes \\
 \decknote{Equal-event path for \BridgeAdoptionCapitalEvents{} events whose supported stablecoin is first used 7 to 119 days after persistent support. Capital is prior-calendar V2-family deposited capital on the weaker leg; shading gives 95\% confidence intervals clustered by ordered endpoint pair and adoption date. The sample conditions on eventual use and does not identify provider intent.}
 \end{frame}
 
+% EVIDENCE-STATUS: exploratory descriptive pool-margin decomposition
+% EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl; output/tables/bridge_adoption_pool_margins.tex; output/exhibits/bridge_liquidity_deck_values.tex
+% VISUAL-FUNCTION: pre-use pool margins | three economic magnitudes | separate pool activation from scaling inside continuing pools
+\begin{frame}{Most first-use capital sits in pools already active}
+\evidencekicker{Supported stablecoin, day -7 to first use; matched WETH benchmark}
+\vspace{0.22cm}
+\begin{columns}[T,totalwidth=0.94\textwidth]
+\begin{column}{0.29\textwidth}
+{\fontsize{25}{27}\selectfont\bfseries\color{stable}\BridgePoolMarginContinuingCapitalShare}\par\vspace{0.14cm}
+{\small of first-use-day capital lies in pools active one week earlier\par}
+\end{column}
+\hfill
+\begin{column}{0.29\textwidth}
+{\fontsize{25}{27}\selectfont\bfseries\color{ucldark}\BridgePoolMarginContinuingDifference}\par\vspace{0.14cm}
+{\small continuing-pool capital growth relative to WETH [log points]\par}
+\end{column}
+\hfill
+\begin{column}{0.29\textwidth}
+{\fontsize{25}{27}\selectfont\bfseries\color{stable}\BridgePoolMarginNewPoolDifference}\par\vspace{0.14cm}
+{\small higher chance of a newly active pool relative to WETH\par}
+\end{column}
+\end{columns}
+\vspace{0.78cm}
+{\large Continuing pools hold most capital; pool activation also rises before adoption.\par}
+\decknote{Equal-event estimates for \BridgePoolMarginEvents{} first-use events. A newly active pool has positive prior-calendar deposited capital on day zero and none on day -7; continuing pools are positive on both dates. Difference-column inference is two-way clustered by ordered endpoint pair and adoption date, with Holm adjustment across four pool-composition outcomes. Deposited-capital stocks do not identify provider cash flow or intent.}
+\end{frame}
+
 % EVIDENCE-STATUS: exploratory predictive V4 mechanism result
 % EVIDENCE-SOURCES: output/exhibits/v4_flash_lp_mechanism_exploration.jsonl; output/exhibits/v4_flash_lp_deck_values.tex; output/tables/v4_flash_lp_mechanism.tex
 % VISUAL-FUNCTION: V4 flash accounting and provider behavior | estimating equation plus three economic margins | connect internal settlement to subsequent LP positioning
