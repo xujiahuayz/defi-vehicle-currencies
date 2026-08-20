@@ -16,7 +16,8 @@ Reads   data/processed/v1_trade_classes_daily.parquet
         data/processed/v1_exchange_token_crosswalk.parquet
         data/unified/YYYYMMDD.parquet
 Writes  data/processed/v2_pair_routing_daily.parquet
-        output/exhibits/v1_forced_vehicle_*.jsonl
+        output/exhibits/v1_pair_persistence_regressions.jsonl
+        output/exhibits/v1_forced_vehicle_report.md
 
 Run     ./scripts/run scripts/analyze/run_v1_forced_vehicle_tests.py [--workers N]
 """
@@ -137,8 +138,6 @@ def test1_differential(out: list[str]) -> pd.DataFrame:
              "t2t_share_strict"]
         ])
     )
-    write_exhibit(m, EX / "v1_forced_vehicle_monthly.jsonl")
-    write_exhibit(tab, EX / "v1_forced_vehicle_windows.jsonl")
     test1_thinning_check(d, out)
     return tab
 
