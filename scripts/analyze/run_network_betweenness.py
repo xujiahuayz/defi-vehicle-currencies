@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Compare realised intermediary use with position in the atomic-pair graph.
+"""Compare realised intermediary use with position in the leg graph.
 
 The graph is built from coherent pool trades observed on the fifteenth day of
 each month. Nodes are canonical token addresses and an undirected edge means
-that the atomic pair traded on at least one sampled date in the year. The
+that the leg traded on at least one sampled date in the year. The
 network measure is approximate unweighted betweenness with a fixed source
-sample. It measures shortest-path position in the observed atomic-pair graph;
+sample. It measures shortest-path position in the observed leg graph;
 it does not measure deposited depth, executable cost, or trader choice.
 
 Reads   data/unified/YYYYMM15.parquet
@@ -194,7 +194,7 @@ def main() -> int:
         )
     frame = pd.DataFrame(rows)
     if frame.empty:
-        print("sampled dates contain no eligible atomic-pair graph")
+        print("sampled dates contain no eligible leg graph")
         return 0
     if args.limit:
         leaders = frame.sort_values(
@@ -212,7 +212,7 @@ def main() -> int:
         code_sources=["scripts/analyze/run_network_betweenness.py"],
         inputs=paths,
         notes=(
-            "unweighted approximate betweenness in the observed atomic-pair graph "
+            "unweighted approximate betweenness in the observed leg graph "
             "on fifteenth-of-month route dates; realised use retains all route lengths"
         ),
     )

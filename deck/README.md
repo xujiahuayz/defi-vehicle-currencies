@@ -17,7 +17,7 @@ rendered pages visually and check the log for overflow before committing
 For the live transition into the vehicle-rotation evidence, the generated
 [18-second vehicle-currency film](../output/figures/vehicle_dominance_timelapse.mp4)
 shows WETH, USDC, USDT, and DAI moving jointly in route-count share,
-supported-value share, and active ultimate-pair breadth from 2020 to 2026. Each
+supported-value share, and active pair breadth from 2020 to 2026. Each
 frame retains only six months of history, so the time path must be watched. Its
 [sparse final-month poster](../output/figures/vehicle_dominance_timelapse_poster.pdf)
 provides PDF-safe context without pretending to encode the full transition. The
