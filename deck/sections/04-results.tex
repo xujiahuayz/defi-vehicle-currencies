@@ -28,6 +28,9 @@
 \IfFileExists{../output/exhibits/v4_lp_origin_timing_deck_values.tex}{%
 \input{../output/exhibits/v4_lp_origin_timing_deck_values.tex}%
 }{\PackageError{dvc-deck}{Missing generated V4 transaction-origin timing values}{Run scripts/tabulate/build_v4_lp_origin_timing_deck_values.py.}}
+\IfFileExists{../output/exhibits/v4_lp_volatility_state_deck_values.tex}{%
+\input{../output/exhibits/v4_lp_volatility_state_deck_values.tex}%
+}{\PackageError{dvc-deck}{Missing generated V4 volatility-state values}{Run scripts/tabulate/build_v4_lp_volatility_state_deck_values.py.}}
 
 % EVIDENCE-STATUS: current descriptive route result
 % EVIDENCE-SOURCES: output/figures/experiments/annual_vehicle_composition_bands.pdf; output/exhibits/intermediation_by_type.jsonl; output/exhibits/vehicle_transition_pair_fixed_effects.jsonl
@@ -312,9 +315,9 @@ Currency fixed effects & No & No & No & Yes \\
 \end{frame}
 
 % EVIDENCE-STATUS: exploratory predictive V4 mechanism result
-% EVIDENCE-SOURCES: output/exhibits/v4_lp_origin_timing.jsonl; output/exhibits/v4_lp_origin_timing_deck_values.tex; output/tables/v4_lp_origin_timing.tex
-% VISUAL-FUNCTION: V4 flash accounting and participation timing | three timed response margins | distinguish incumbent activity from later first-active origins
-\begin{frame}{V4 internal routing forecasts incumbent action and later entry}
+% EVIDENCE-SOURCES: output/exhibits/v4_lp_origin_timing.jsonl; output/exhibits/v4_lp_origin_timing_deck_values.tex; output/exhibits/v4_lp_volatility_state.jsonl; output/exhibits/v4_lp_volatility_state_deck_values.tex
+% VISUAL-FUNCTION: V4 flash accounting and participation timing | timed response plus persistent-volatility interaction | distinguish incumbent activity from later first-active origins
+\begin{frame}{V4 internal routing forecasts later entry in volatile markets}
 \evidencekicker{10 pp more internal same-asset routing}
 \vspace{0.22cm}
 \begin{columns}[T,totalwidth=0.94\textwidth]
@@ -333,15 +336,15 @@ Currency fixed effects & No & No & No & Yes \\
 \end{column}
 \hfill
 \begin{column}{0.29\textwidth}
-{\color{muted}\scriptsize DAYS 31 TO 120\par}\vspace{0.08cm}
-{\fontsize{23}{25}\selectfont\bfseries\color{stable}\VFourOriginLateIncumbentCoef}\par\vspace{0.12cm}
-{\small actions by 180-day incumbent origins [log points]\par}
-{\scriptsize s.e. \VFourOriginLateIncumbentSE}
+{\color{muted}\scriptsize PERSISTENT VOLATILITY\par}\vspace{0.08cm}
+{\fontsize{23}{25}\selectfont\bfseries\color{stable}\VFourVolStateLateInteractionCoef}\par\vspace{0.12cm}
+{\small additional first-active-origin response per 1 SD of 30-day WETH volatility [log points]\par}
+{\scriptsize s.e. \VFourVolStateLateInteractionSE}
 \end{column}
 \end{columns}
 \vspace{0.50cm}
-{\large Incumbents act within a month; previously inactive origins appear over the following quarter.\par}
-\decknote{\VFourOriginTimingRows{} V4 vehicle-days and \VFourOriginTimingClusters{} date clusters. The sample excludes zero-liquidity updates and requires 180 prior days. Vehicle and origin-date effects; origin-day swap activity, current vehicle-token-side LP flow, vehicle-linked TVL, LP actions, and range composition. Standard errors cluster by origin date. Asterisks use Holm-adjusted p-values across twelve estimates. Transaction origins proxy for account participation, not beneficial ownership of LP positions. Predictive associations.}
+{\large Incumbents act within a month; first-active origins follow, especially when volatility stays high.\par}
+\decknote{\VFourVolStateRows{} V4 vehicle-days and \VFourVolStateClusters{} date clusters; zero-liquidity updates excluded; 180 prior days required. Volatility is the lagged 30-day mean of realised WETH volatility. Vehicle and date effects; origin-day controls; vehicle and control volatility slopes; date-clustered standard errors. The interaction uses Holm adjustment across two outcomes. Origins proxy for account participation, not LP-position ownership. Predictive associations.}
 \end{frame}
 
 % RETIRED CORE CAPITAL-PREDICTION FRAME. The pre-specified 30-day estimate has

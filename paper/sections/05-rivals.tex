@@ -278,6 +278,33 @@ Internal same-asset routing and multi-leg transaction share forecast more LP flo
 The action count alone cannot separate repeated position updates from participation by additional accounts. We therefore classify each transaction origin by whether it was active for the same vehicle during the preceding 180 days and exclude updates with zero liquidity change. Conditional on the controls in Equation~\eqref{eq:v4-flash-lp}, 10 pp more internal same-asset routing predicts \VFourOriginNearIncumbentCoef{} log points more actions by previously active origins over the next 30 days. During days 31 to 120, it predicts \VFourOriginLateEntryCoef{} log points more origins first active after the measurement date and \VFourOriginLateIncumbentCoef{} log points more actions by incumbent origins. All three estimates survive Holm adjustment across the three accounting proxies and four timing outcomes. The sequence is consistent with incumbent accounts adjusting first and participation broadening later. A transaction origin is not a verified LP-position owner: one origin may act for several beneficiaries, and one beneficiary may use several origins. Timing also leaves common inventory and risk-bearing shocks as a rival explanation for trading and LP activity moving together \citep{ComertonFordeEtAl2010Inventories,Nagel2012EvaporatingLiquidity}. Table~\ref{tab:app:v4-origin-timing} reports the full comparison.
 % output/exhibits/v4_lp_origin_timing.jsonl; output/tables/v4_lp_origin_timing.tex; producer scripts/analyze/run_v4_lp_origin_timing.py and scripts/tabulate/render_v4_lp_origin_timing.py.
 
+\FloatBarrier
+
+To examine that rival, let \(V_t\) be lagged 30-day mean realised WETH volatility, standardised over the estimation dates. We estimate
+\begin{equation}
+\begin{aligned}
+Y_{c,t+h}
+&=\beta M_{c,t}+\theta M_{c,t}V_t+X_{c,t}'\Gamma\\
+&\quad +(X_{c,t}V_t)'\Pi+\lambda_c V_t+\alpha_c+\delta_t+\varepsilon_{c,t+h}.
+\end{aligned}
+\label{eq:v4-volatility-state}
+\end{equation}
+Equation~\eqref{eq:v4-volatility-state} absorbs the common volatility level with date effects. Vehicle-specific volatility slopes and interactions between volatility and every origin-day control allow risk conditions to affect each vehicle and observed activity differently. Table~\ref{tab:v4-lp-volatility-state} reports the internal-routing coefficient at mean volatility and the change associated with one standard deviation more persistent volatility.
+
+\begin{table}[tbp]
+\centering
+\caption{V4 participation under persistent volatility}
+\label{tab:v4-lp-volatility-state}
+{\scriptsize
+\renewcommand{\arraystretch}{0.92}
+\input{../output/tables/v4_lp_volatility_state.tex}
+}
+\exhibitnote{Each cell is in log points for a 10 pp increase in internal same-asset routing. The first row evaluates the association at mean lagged 30-day WETH volatility. The interaction row reports the additional association for one standard deviation more volatility. Daily realised volatility is constructed from valid one-minute external WETH prices, averaged over the preceding 30 days, and lagged one day. The unit is a V4 vehicle-day. The sample excludes modify-liquidity updates with zero liquidity change and requires 180 prior days to classify incumbent origins. All specifications absorb vehicle and origin-date effects; include origin-day swap activity, vehicle-token-side LP flow, vehicle-linked reported liquidity, LP actions, and range composition; allow each vehicle and control its own volatility slope; and cluster by origin date. Interaction p-values use Holm adjustment across the two outcomes; first-row p-values are unadjusted. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively. Transaction origins proxy for account participation, not beneficial ownership of LP positions.}
+\end{table}
+
+At mean volatility, 10 pp more internal routing predicts \VFourVolStateLateMainCoef{} log points more first-active origins during days 31 to 120. One standard deviation more persistent volatility adds \VFourVolStateLateInteractionCoef{} log points, moving the association from \VFourVolStateLateLowCoef{} at one standard deviation below the mean to \VFourVolStateLateHighCoef{} at one standard deviation above it. The interaction remains positive after excluding each vehicle in turn; the smallest leave-one-vehicle estimate is \VFourVolStateLeaveOneMinCoef{}. At the same time, the near-term incumbent-action interaction is \VFourVolStateNearInteractionCoef{}. Persistent volatility therefore shifts the internal-routing association toward later participation by origins that were previously inactive. The state is observed before the vehicle-day, but it is not an exogenous provider constraint. Trading demand, expected fees, arbitrage opportunities, and risk-bearing conditions can all change with volatility.
+% output/exhibits/v4_lp_volatility_state.jsonl; output/tables/v4_lp_volatility_state.tex; producer scripts/analyze/run_v4_lp_volatility_state.py and scripts/tabulate/render_v4_lp_volatility_state.py.
+
 Table~\ref{tab:v4-flash-gap} asks whether these margins are stronger when stablecoin route demand is high relative to deposited capital. The first two rows associate larger shortfalls with more reported liquidity and LP actions, together with a shift in position updates toward wider ranges. Gross-to-net reduction reverses those signs. The accounting proxies therefore carry different economic content even though each is enabled by singleton settlement. The corresponding flow interactions in Appendix~\ref{app:lp-detail} show less gross and add-side flow when internal or multi-leg routing is high, and more removal turnover when net settlement compression is high.
 % output/exhibits/v4_flash_gap_interaction_exploration.jsonl; output/tables/v4_flash_gap_interactions.tex; producer scripts/analyze/run_v4_flash_gap_interaction_exploration.py and scripts/tabulate/render_v4_flash_gap_interactions.py.
 
