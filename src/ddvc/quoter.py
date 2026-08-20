@@ -172,11 +172,19 @@ def validate_rpc_attempts(
     """Validate one successful transport history against its winning endpoint."""
 
     def valid_endpoint(value: object) -> bool:
+        if (
+            not isinstance(value, dict)
+            or not isinstance(value.get("host"), str)
+            or not value["host"]
+        ):
+            return False
+        if set(value) == {"host"}:
+            return True
+        digest = str(value.get("endpoint_sha256") or "")
         return bool(
-            isinstance(value, dict)
-            and set(value) == {"host"}
-            and isinstance(value.get("host"), str)
-            and value["host"]
+            set(value) == {"host", "endpoint_sha256"}
+            and len(digest) == 64
+            and all(character in "0123456789abcdef" for character in digest)
         )
 
     if not valid_endpoint(endpoint):

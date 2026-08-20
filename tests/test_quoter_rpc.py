@@ -166,6 +166,18 @@ class RpcPostTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "successful endpoint"):
             quoter.validate_rpc_attempts(attempts, endpoint)
 
+    def test_attempt_validator_accepts_certified_legacy_endpoint_digest(self) -> None:
+        endpoint = {"host": "example.test", "endpoint_sha256": "a" * 64}
+        attempts = ({
+            "endpoint": endpoint,
+            "attempt": 1,
+            "classification": "success",
+            "http_status": 200,
+            "rpc_code": None,
+            "message": "success",
+        },)
+        quoter.validate_rpc_attempts(attempts, endpoint)
+
     def test_evidence_redacts_credentials_echoed_by_provider_errors(self) -> None:
         rejected = Response(
             {"jsonrpc": "2.0", "id": 1, "error": {"code": -32000, "message": "api key secret-token is invalid"}}

@@ -531,6 +531,36 @@ def summarize(panel: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def summarize_support(support: pd.DataFrame) -> pd.DataFrame:
+    """Aggregate exact-venue reach and chosen-path reproduction by period."""
+
+    frame = support.copy()
+    frame["year"] = frame["day"].astype(str).str[:4]
+    rows: list[dict[str, object]] = []
+    groups = [("pooled", frame), *frame.groupby("year", sort=True)]
+    for label, group in groups:
+        linear = int(group["linear_routes"].sum())
+        exact = int(group["exact_venue_routes"].sum())
+        mapped = int(group["mapped_routes"].sum())
+        scored = int(group["scored_routes"].sum())
+        rows.append(
+            {
+                "record_type": "frontier_support",
+                "scope": "period",
+                "label": str(label),
+                "dates": group["day"].nunique(),
+                "linear_routes": linear,
+                "exact_venue_routes": exact,
+                "mapped_routes": mapped,
+                "scored_routes": scored,
+                "exact_venue_share": exact / linear if linear else float("nan"),
+                "mapping_share": mapped / exact if exact else float("nan"),
+                "chosen_reproduction_share": scored / mapped if mapped else float("nan"),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
 def run(selected: list[str]) -> tuple[pd.DataFrame, pd.DataFrame]:
     replay = TickReplayState()
     target_set = set(selected)
@@ -592,7 +622,11 @@ def main() -> int:
     if panel.empty:
         print("no routes cleared exact chosen-path reproduction", flush=True)
         return 1
-    summary = summarize(panel)
+    summary = pd.concat(
+        [summarize(panel), summarize_support(support)],
+        ignore_index=True,
+        sort=False,
+    )
     print(summary.to_string(index=False), flush=True)
     print(support.to_string(index=False), flush=True)
     if args.pilot_day:

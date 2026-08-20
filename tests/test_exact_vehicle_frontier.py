@@ -9,6 +9,7 @@ from scripts.analyze.run_exact_vehicle_frontier import (
     _holm,
     monthly_days,
     summarize,
+    summarize_support,
     vehicle_class,
 )
 
@@ -97,3 +98,28 @@ def test_summary_reports_vehicle_reallocation_separately_from_route_gain() -> No
     ].iloc[0]
     assert route["change_pp"] == 50.0
     assert value["change_pp"] == 25.0
+
+
+def test_support_summary_keeps_market_reach_and_reproduction_distinct() -> None:
+    support = pd.DataFrame(
+        [
+            {
+                "day": "20210115",
+                "linear_routes": 100,
+                "exact_venue_routes": 80,
+                "mapped_routes": 75,
+                "scored_routes": 70,
+            },
+            {
+                "day": "20220115",
+                "linear_routes": 200,
+                "exact_venue_routes": 100,
+                "mapped_routes": 90,
+                "scored_routes": 81,
+            },
+        ]
+    )
+    pooled = summarize_support(support).query("label == 'pooled'").iloc[0]
+    assert pooled["exact_venue_share"] == 0.6
+    assert pooled["mapping_share"] == 165 / 180
+    assert pooled["chosen_reproduction_share"] == 151 / 165
