@@ -1,8 +1,9 @@
 # Revision plan from the annotated manuscript
 
-Status: active revision map for the paper and deck. This document records the
-classes of changes implied by the full annotated review. It is not a
-comment-by-comment response letter.
+Status: active revision map for the paper and deck. This document records both
+the document-wide changes implied by the review and the source-annotation
+closure rule. It is not a response letter, but no review can be called complete
+without accounting for every annotation in the source PDF.
 
 ## Benchmark and objective
 
@@ -50,6 +51,23 @@ sensitivity that slightly strengthens the aggregate rotation. Each major revisio
 The comments in Java's annotated `main 3.pdf` have been consolidated here so
 the Studio revision does not depend on access to the local PDF. They imply the
 following document-wide changes, not isolated word replacements:
+
+### Source-annotation closure rule
+
+The original annotated PDF, rather than this summary, is the review authority.
+At the start of a pass, extract its annotations in page order and record the
+source count. Each annotation then receives one disposition: implemented,
+declined with a reason, or superseded by a document-wide change that names the
+affected sources. “Partly addressed” remains open. After rebuilding, inspect
+every affected page in the new PDF and compare the number of dispositions with
+the source count. A prose summary, a successful compile, and spot checks cannot
+close the pass on their own.
+
+The 21 August source contains 33 annotations. The earlier pass failed this rule:
+it revised from a condensed handoff and checked selected pages, so partial work
+on market representativeness, the decomposition bridge, plot notes, notation,
+and table labels was mistakenly described as complete. This is the recurrence
+the rule prevents.
 
 - Explain the decomposition in ordinary language before the identity: net
   vehicle switching within continuing pairs, reweighting among continuing
@@ -121,6 +139,47 @@ function; issuer-level results preserve the conventional currency analogy and
 reveal competition among distinct dollar claims.
 Multi-leg routes broaden the network evidence but cannot be assigned a single
 native-versus-stable vehicle when both families appear in the same route.
+
+### `main 3.pdf` source ledger
+
+The rebuilt 21 August manuscript closes all 33 source annotations as follows.
+“Qualified” records a deliberate boundary rather than an omitted edit.
+
+| No. | Source request | Disposition |
+|---:|---|---|
+| 1 | Clarify “reallocation” in the abstract | Implemented: the abstract now says activity shifts across continuing pairs. |
+| 2 | Avoid implying two-leg liquidity is sufficient | Implemented: depth on both legs is one market condition alongside prices, availability, and formation. |
+| 3 | Remove the large blank after the route introduction | Implemented: the route equation and numerical example occupy the page. |
+| 4 | Inspect blank space throughout | Qualified: the rebuilt manuscript has no empty page; ordinary float breaks remain where a table must stay intact. |
+| 5 | Give a numerical route-value example | Implemented with the hypothetical AAVE--WETH--USDC--UNI route and explicit token and dollar units. |
+| 6 | Justify the exact two-leg sample and retain longer routes | Implemented: two legs identify one mutually exclusive vehicle; all route lengths remain in position and participation measures. |
+| 7 | Justify and quantify the native-versus-stable focus | Implemented: the two families jointly carry at least 83.8\% of intermediary positions and 76.7\% of supported value in every year from 2020. |
+| 8 | Use excess-use notation downstream | Implemented in equations, table notes, and regression discussion; the ratio is explicitly separated from dominance. |
+| 9 | Replace the 79-day route summary | Implemented with all 2,449 eligible days. |
+| 10 | Remove unnecessary V1 construction detail from the data section | Qualified: retained two concise sentences because V1 belongs to the nine-deployment panel and has a different observable record. |
+| 11 | Put V1 only in the architecture section | Declined for the same reason; the economic comparison is in Section 4.2, while the data boundary remains in Section 2.3. |
+| 12 | Remove “re-fetch” and related project language | Implemented. |
+| 13 | Establish market representativeness, including in the deck | Implemented with a reproducible DeFiLlama comparison: 87.5\% of total Ethereum DEX volume over 2020--2026 H1. |
+| 14 | Replace “harmonising” | Implemented with identifying pool events and standardising token units. |
+| 15 | Clarify “event identity” | Implemented as pool events. |
+| 16 | Distinguish raw swaps, directed legs, transactions, and routes | Implemented in prose and Table 1; no transaction count is inferred from a leg count. |
+| 17 | Use all days for route medians | Implemented with all 2,449 eligible days. |
+| 18 | State the consequence of incomplete router attribution | Implemented: results are attributed to executed routes, not a named routing service. |
+| 19 | Remove or justify the two isolated router snapshots | Implemented by removing them. |
+| 20 | Treat stablecoins as distinct issuers and discuss issuance, divergence loss, and the Bahamian-dollar analogy | Implemented in the separate discussion section and issuer-level evidence. |
+| 21 | Move the 20\% rule out of the plot | Implemented: the plot text is gone and the rule appears in the figure note. |
+| 22 | Plot half-years throughout | Implemented. |
+| 23 | Make 2024 H1 and 2026 H1 readable from the plot | Implemented as labelled half-year points. |
+| 24 | Explain the pair decomposition step by step | Implemented from the total-share identity through the four terms, including an explicit statement that nothing is deducted from a continuing pair. |
+| 25 | Put the indicator condition in a subscript | Implemented. |
+| 26 | Remove “sharpens” | Implemented throughout the audience-facing sources. |
+| 27 | Remove the announcement defining “stickiness” | Implemented; the paper now states predictive persistence directly. |
+| 28 | Remove slash-separated regression headings and cells | Implemented in Table 4 with parentheses for standard errors and clusters. |
+| 29 | Use an indicator in Table 4 interactions | Implemented as \(\mathbf 1_{\{y=2026\}}\). |
+| 30 | Remove “make visible/feasible/exact” prose | Implemented in audience-facing paper and deck text. |
+| 31 | Add discussion and policy implications before the conclusion | Implemented as Section 6. |
+| 32 | Put the round-trip condition in the indicator subscript | Implemented. |
+| 33 | Organise and interpret appendix results | Implemented with economic subsections, short lead-ins, and main-text cross-references. Weak secondary estimates are not expanded into parallel mini-results sections. |
 
 ### Studio resume point
 

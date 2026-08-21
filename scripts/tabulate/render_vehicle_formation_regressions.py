@@ -107,7 +107,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     TableRow(
         screen="Secure-volume endpoint",
         outcome="Entry stable share ($S^{\\mathrm{entry}}_{p,t}$)",
-        regressor="Stable endpoint $\\times$ 2026",
+        regressor="Stable endpoint $\\times\\,\\mathbf{1}_{\\{y=2026\\}}$",
         selector={
             "record_type": "entry_driver_regression",
             "outcome": "stable_share",
@@ -118,7 +118,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     TableRow(
         screen="Route architecture",
         outcome="Entry stable share ($S^{\\mathrm{entry}}_{p,t}$)",
-        regressor="Direct-route share ($D_{p,t}$) $\\times$ 2026",
+        regressor="Direct-route share ($D_{p,t}$) $\\times\\,\\mathbf{1}_{\\{y=2026\\}}$",
         selector={
             "record_type": "entry_route_architecture_regression",
             "outcome": "stable_share",
@@ -129,7 +129,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
     TableRow(
         screen="Route architecture",
         outcome="Entry stable share ($S^{\\mathrm{entry}}_{p,t}$)",
-        regressor="Complex-route share ($C_{p,t}$) $\\times$ 2026",
+        regressor="Complex-route share ($C_{p,t}$) $\\times\\,\\mathbf{1}_{\\{y=2026\\}}$",
         selector={
             "record_type": "entry_route_architecture_regression",
             "outcome": "stable_share",
@@ -197,7 +197,7 @@ def _effect_cell(result: pd.Series, scale: str) -> str:
 def _obs_cell(result: pd.Series) -> str:
     observations = int(round(float(result["observations"])))
     clusters = int(round(float(result["entry_date_clusters"])))
-    return f"{observations:,} / {clusters:,}"
+    return f"{observations:,} ({clusters:,})"
 
 
 def render_vehicle_formation_regressions(results: pd.DataFrame) -> str:
@@ -227,7 +227,7 @@ def render_vehicle_formation_regressions(results: pd.DataFrame) -> str:
     )
     rows.append(r"\toprule")
     rows.append(
-        r"Model & Outcome & Regressor & Estimate (s.e.) & Obs. / clusters \\"
+        r"Model & Outcome & Regressor & Estimate (s.e.) & Observations (clusters) \\"
     )
     rows.append(r"\midrule")
     for row in TABLE_ROWS:

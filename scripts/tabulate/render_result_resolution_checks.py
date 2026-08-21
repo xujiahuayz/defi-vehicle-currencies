@@ -76,7 +76,7 @@ def render_adjacent_year_rotation(results: pd.DataFrame) -> str:
     lines = [
         r"\begin{tabularx}{\linewidth}{@{}l*{5}{>{\centering\arraybackslash}X}@{}}",
         r"\toprule",
-        r"H1 comparison & Total & Within pair & Trading reallocation & Support shift & Pair entry/exit \\",
+        r"H1 comparison & Total & Within pair & Across-pair shift & Support shift & Pair entry/exit \\",
         r"\midrule",
     ]
     for row in data.itertuples(index=False):
@@ -100,7 +100,7 @@ def render_nonvehicle_endpoint_rotation(results: pd.DataFrame) -> str:
     lines = [
         r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}X*{7}{>{\centering\arraybackslash}X}@{}}",
         r"\toprule",
-        r" & 2024 H1 & 2026 H1 & Total & Within pair & Trading reallocation & Support shift & Pair entry/exit \\",
+        r" & 2024 H1 & 2026 H1 & Total & Within pair & Across-pair shift & Support shift & Pair entry/exit \\",
         r"\midrule",
     ]
     for label, row in rows:

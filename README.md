@@ -42,7 +42,8 @@ question and literature                    done
         ║    directly testable ─→ fetch/reconstruct/test ─→ rerun ║
         ║    unidentified or disproportionate ─→ state boundary   ║
         ║ I5 draft integration: show results; keep status in source║
-        ║ I6 review loop: send snapshot, collect comments, revise ║
+        ║ I6 review loop: source PDF → annotation ledger → revise ║
+        ║    rebuild → inspect every affected page → close ledger ║
         ║ weak result/comment unresolved ────────────────↺ I1/I2  ║
         ║ strong result/comment resolved ─→ upgrade result status ║
         ╚══════════════════════════════════════════════════════════╝
@@ -213,6 +214,12 @@ Run commands through the stable wrapper so they use this checkout's package:
 ```
 
 Inspect changed PDF pages and the corresponding LaTeX logs before committing.
+For an annotated PDF, extract every annotation from the original file and give
+each one exactly one disposition: implemented and verified in the rebuilt PDF,
+declined with an economic or presentation reason, or superseded by a broader
+revision. A condensed handoff note can guide the work but cannot close the
+review. The source count and the disposition count must agree before the review
+is described as complete.
 The working sample ends on 2026-06-30 UTC, represented by the half-open boundary
 `date < 2026-07-01`.
 

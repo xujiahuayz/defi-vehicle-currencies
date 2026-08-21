@@ -455,15 +455,7 @@ def render_annual_composition_bands(
                     loc="lower center",
                     bbox_to_anchor=(0.5, 0.02),
                 )
-                figure.text(
-                    0.995,
-                    0.012,
-                    "For value-weighted shares, source, intermediary, and destination dollar amounts must agree within 20%.",
-                    ha="right",
-                    fontsize=8,
-                    color="#4B5563",
-                )
-                figure.tight_layout(rect=(0, 0.14, 1, 0.99))
+                figure.tight_layout(rect=(0, 0.10, 1, 0.99))
             _save(figure, output)
         finally:
             plt.close(figure)

@@ -16,6 +16,8 @@ from ddvc.venue_tables import routing_window_values
 
 EXHIBITS = OUTPUT_DIR / "exhibits"
 ROTATION = EXHIBITS / "intermediation_complexity_rival.jsonl"
+INTERMEDIARY_TYPES = EXHIBITS / "intermediation_by_type.jsonl"
+MARKET_COVERAGE = EXHIBITS / "ethereum_dex_market_coverage.jsonl"
 INTEGRATION = EXHIBITS / "intermediation_integration_interaction.jsonl"
 TOKEN_INTEGRATION = EXHIBITS / "intermediation_token_integration_interaction.jsonl"
 INTEGRATION_WITHIN_DAY = EXHIBITS / "integration_date_fe_ladder.jsonl"
@@ -29,6 +31,8 @@ ROUTE_QUALITY = EXHIBITS / "unified_route_quality.jsonl"
 OUTPUT = EXHIBITS / "presentation_values.tex"
 INPUTS = (
     ROTATION,
+    INTERMEDIARY_TYPES,
+    MARKET_COVERAGE,
     INTEGRATION,
     TOKEN_INTEGRATION,
     INTEGRATION_WITHIN_DAY,
@@ -249,6 +253,8 @@ def _pvalue(value: float) -> str:
 
 def render_presentation_values(
     rotation: pd.DataFrame,
+    intermediary_types: pd.DataFrame,
+    market_coverage: pd.DataFrame,
     integration: pd.DataFrame,
     token_integration: pd.DataFrame,
     integration_within_day: pd.DataFrame,
@@ -307,6 +313,34 @@ def render_presentation_values(
             "hac_standard_error",
             "p_value_holm",
         )
+
+    broad_types = intermediary_types.loc[
+        intermediary_types["integration_scope"].eq("all")
+        & intermediary_types["year"].between(2020, 2026)
+        & intermediary_types["asset_type"].isin(["native", "stable"])
+    ]
+    if len(broad_types) != 14:
+        raise ValueError("intermediary-type exhibit lacks native and stable rows for 2020--2026")
+    broad_annual = broad_types.groupby("year", observed=True)[
+        ["episode_share", "usd_share_within_20pct"]
+    ].sum()
+    if set(broad_annual.index) != set(range(2020, 2027)):
+        raise ValueError("intermediary-type exhibit lacks a complete 2020--2026 span")
+    native_stable_episode_min = float(broad_annual["episode_share"].min())
+    native_stable_value_min = float(broad_annual["usd_share_within_20pct"].min())
+    if not (0 < native_stable_episode_min <= 1 and 0 < native_stable_value_min <= 1):
+        raise ValueError("native-plus-stable coverage is outside the unit interval")
+
+    market_rows = market_coverage.set_index("year")
+    if set(market_rows.index) != set(range(2020, 2027)):
+        raise ValueError("market-coverage exhibit lacks a complete 2020--2026 span")
+    market_base = float(market_rows.loc[2020, "coverage_share"])
+    market_end = float(market_rows.loc[2026, "coverage_share"])
+    market_pooled = float(market_rows["selected_usd"].sum()) / float(
+        market_rows["ethereum_dex_usd"].sum()
+    )
+    if not all(0 < value <= 1 for value in (market_base, market_end, market_pooled)):
+        raise ValueError("market coverage is outside the unit interval")
 
     # Within-day integration gap. Each cell is selected by its full scientific
     # identity rather than by row order, so a count magnitude can never be printed
@@ -575,6 +609,11 @@ def render_presentation_values(
         f"\\newcommand{{\\RoutePanelCalendarDates}}{{{calendar_days:,}}}",
         f"\\newcommand{{\\RoutePanelDeploymentCount}}{{{route_deployments}}}",
         f"\\newcommand{{\\RoutePanelSpan}}{{{route_start.strftime('%B %Y')}--{route_end.strftime('%B %Y')}}}",
+        f"\\newcommand{{\\NativeStableEpisodeShareMin}}{{{_share(native_stable_episode_min)}}}",
+        f"\\newcommand{{\\NativeStableValueShareMin}}{{{_share(native_stable_value_min)}}}",
+        f"\\newcommand{{\\EthereumMarketCoverageBase}}{{{_share(market_base)}}}",
+        f"\\newcommand{{\\EthereumMarketCoverageEnd}}{{{_share(market_end)}}}",
+        f"\\newcommand{{\\EthereumMarketCoveragePooled}}{{{_share(market_pooled)}}}",
         f"\\newcommand{{\\StableCountBase}}{{{_share(float(count['baseline_daily_mean']))}}}",
         f"\\newcommand{{\\StableCountEnd}}{{{_share(float(count['comparison_daily_mean']))}}}",
         f"\\newcommand{{\\StableCountChange}}{{{_pp(float(count['change']), 1)}}}",

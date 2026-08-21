@@ -6,21 +6,35 @@ from pathlib import Path
 
 import pytest
 
-from ddvc.venue_tables import VENUE_HEADERS, VENUE_ORDER, render_venue_coverage, venue_coverage_values
+from ddvc.venue_tables import (
+    VENUE_HEADERS,
+    VENUE_ORDER,
+    market_coverage_values,
+    render_market_coverage,
+    render_venue_coverage,
+    venue_coverage_values,
+)
 import scripts.analyze.run_venue_coverage_bounds as venue_bounds
 
 
 ROOT = Path(__file__).resolve().parents[1]
 INPUT = ROOT / "output" / "exhibits" / "venue_volume_by_year.jsonl"
 TABLE = ROOT / "output" / "tables" / "venue_coverage.tex"
+MARKET_INPUT = ROOT / "output" / "exhibits" / "ethereum_dex_market_coverage.jsonl"
 
 
 def _rows() -> list[dict[str, object]]:
     return [json.loads(line) for line in INPUT.read_text(encoding="utf-8").splitlines()]
 
 
+def _market_rows() -> list[dict[str, object]]:
+    return [json.loads(line) for line in MARKET_INPUT.read_text(encoding="utf-8").splitlines()]
+
+
 def test_venue_coverage_fragment_equals_named_renderer() -> None:
-    assert TABLE.read_text(encoding="utf-8") == render_venue_coverage(_rows())
+    assert TABLE.read_text(encoding="utf-8") == (
+        render_venue_coverage(_rows()) + render_market_coverage(_market_rows())
+    )
 
 
 def test_venue_coverage_order_and_sums() -> None:
@@ -38,6 +52,10 @@ def test_venue_coverage_order_and_sums() -> None:
     assert "2025 & 0.01 & 4.21 & 53.10 & 19.53 & 0.28 & 0.01 & 9.68 & 1.49 & 11.70" in text
     assert "2026 & 0.01 & 2.27 & 46.02 & 31.94 & 0.11 & 0.16 & 12.61 & 0.15 & 6.73" in text
     assert "Pooled & 0.05 & 14.58 & 54.54 & 5.30 & 5.73 & 0.02 & 13.37 & 3.82 & 2.61" in text
+    market = market_coverage_values(_market_rows())
+    assert market[-1][0] == "Pooled"
+    assert 70 < market[-1][1] < 100
+    assert "selected exchange families as a share of total Ethereum DEX volume" in text
 
 
 def test_fluid_reader_uses_volume_without_inventing_tvl(

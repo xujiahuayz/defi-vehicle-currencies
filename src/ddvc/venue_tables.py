@@ -94,6 +94,8 @@ def render_venue_coverage(rows: Iterable[Mapping[str, object]]) -> str:
     lines = [
         r"\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrrrrrrr@{}}",
         r"\toprule",
+        r"\multicolumn{10}{@{}l}{\emph{Panel A: shares within the nine retained source series}} \\",
+        r"\midrule",
         "Year & " + " & ".join(VENUE_HEADERS) + r" \\",
         r"\midrule",
     ]
@@ -104,6 +106,58 @@ def render_venue_coverage(rows: Iterable[Mapping[str, object]]) -> str:
         lines.append(year + " & " + " & ".join(f"{value:.2f}" for value in shares) + r" \\")
     lines.extend([r"\bottomrule", r"\end{tabular*}"])
     return "\n".join(lines) + "\n"
+
+
+def market_coverage_values(
+    rows: Iterable[Mapping[str, object]],
+) -> list[tuple[str, float]]:
+    """Validate and order the external Ethereum DEX-volume coverage series."""
+
+    selected: dict[int, Mapping[str, object]] = {}
+    for row in rows:
+        year = row.get("year")
+        if year not in range(2020, 2027):
+            continue
+        if int(year) in selected:
+            raise ValueError(f"duplicate market-coverage row: {year}")
+        selected[int(year)] = row
+    missing = sorted(set(range(2020, 2027)) - set(selected))
+    if missing:
+        raise ValueError(f"market-coverage table is missing {missing[0]}")
+    values: list[tuple[str, float]] = []
+    for year in range(2020, 2027):
+        row = selected[year]
+        share = _number(row, "coverage_share")
+        if share > 1:
+            raise ValueError(f"market coverage exceeds one in {year}")
+        expected_period = "H1" if year == 2026 else "full_year"
+        if row.get("period") != expected_period:
+            raise ValueError(f"market coverage has the wrong period label in {year}")
+        values.append(("2026 H1" if year == 2026 else str(year), 100 * share))
+    total_selected = sum(_number(row, "selected_usd") for row in selected.values())
+    total_market = sum(_number(row, "ethereum_dex_usd") for row in selected.values())
+    if total_market <= 0:
+        raise ValueError("pooled market coverage lacks positive volume")
+    values.append(("Pooled", 100 * total_selected / total_market))
+    return values
+
+
+def render_market_coverage(rows: Iterable[Mapping[str, object]]) -> str:
+    """Render the compact external-volume panel placed below source shares."""
+
+    values = market_coverage_values(rows)
+    return "\n".join(
+        [
+            r"\vspace{0.16cm}",
+            r"\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrrrrrr@{}}",
+            r"\multicolumn{9}{@{}l}{\emph{Panel B: selected exchange families as a share of total Ethereum DEX volume}} \\",
+            r"\midrule",
+            "Period & " + " & ".join(label for label, _value in values) + r" \\",
+            r"Share (\%) & " + " & ".join(f"{value:.1f}" for _label, value in values) + r" \\",
+            r"\bottomrule",
+            r"\end{tabular*}",
+        ]
+    ) + "\n"
 
 
 # The pricing-family rival compares scopes in which every leg of a route component

@@ -33,13 +33,14 @@ def test_vehicle_formation_regression_table_scales_and_labels_rows() -> None:
     assert r"p{" not in rendered
     assert "Entry persistence" in rendered
     assert "Named-stable identity" in rendered
-    assert "Stable endpoint $\\times$ 2026" in rendered
-    assert "Complex-route share ($C_{p,t}$) $\\times$ 2026" in rendered
+    assert "Stable endpoint $\\times\\,\\mathbf{1}_{\\{y=2026\\}}$" in rendered
+    assert "Complex-route share ($C_{p,t}$) $\\times\\,\\mathbf{1}_{\\{y=2026\\}}$" in rendered
     assert "[+10 pp]" not in rendered
     assert "Scaled regressor" not in rendered
     assert "$+0.86^{***}$" in rendered
     assert "$(0.06)$" in rendered
-    assert "12,345 / 120" in rendered
+    assert "12,345 (120)" in rendered
+    assert "Observations (clusters)" in rendered
     assert "$+0.50^{**}$" in rendered
 
 

@@ -54,7 +54,7 @@ Within a transaction, the shared hash and matching ETH amount link the token-to-
 
 What exactly do we observe? The connected sequence of pool trades. That sequence can begin after the user's broader instruction begins.
 
-How representative is this? We selected the exchange families for their historical Ethereum volume. The nine deployments span the main AMM designs: constant product, concentrated liquidity, stable swap, weighted pools, the v4 singleton, and Fluid's integrated liquidity. Other Ethereum venues remain outside the panel. The appendix compares these sources with total Ethereum DEX volume.
+How representative is this? We selected the exchange families for their historical Ethereum volume. In DeFiLlama they account for 87.5% of total Ethereum DEX volume from 2020 through the first half of 2026. The nine deployments span the main AMM designs: constant product, concentrated liquidity, stable swap, weighted pools, the v4 singleton, and Fluid's integrated liquidity. Other Ethereum venues remain outside the panel.
 
 ## Slide 4. Inside the pools, USDT links USDC to USDe
 
@@ -150,7 +150,7 @@ Pooling route activity over these matched dates, stablecoin share rises from 16.
 
 Inside continuing pairs, positive and negative switches almost exactly offset: minus 0.1 point net.
 
-Trading reallocation across continuing pairs adds 8.4 points.
+Activity shifting across continuing pairs adds 8.4 points.
 
 Pairs present in only one period add 17.8 points. The largest component. That number is net of both entry and exit: new pairs bring their 2026 vehicle into the comparison, while disappearing pairs remove their 2024 vehicle.
 
@@ -251,13 +251,13 @@ So the first vehicle is sticky in the reduced-form sense. It predicts later use.
 
 That brings the pieces together. New relationships inherit a vehicle. Two-leg depth makes the alternative usable. And current prices determine whether the first vehicle keeps the route.
 
-## Slide 18. New relationships reshape currency dominance
+## Slide 18. New pairs reshape currency dominance
 
 Let me leave you with the bigger point.
 
 Three findings.
 
-First, pair formation and trading reallocation carry most of the aggregate rotation. Net switching inside continuing pairs is tiny.
+First, pair formation and activity shifting across continuing pairs carry most of the aggregate rotation. Net switching inside continuing pairs is tiny.
 
 Second, the first vehicle predicts later use while its path remains competitive. Current prices discipline persistence.
 

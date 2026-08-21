@@ -9,6 +9,7 @@ literature source payloads. They do not clean panels or estimate results.
 | `supervise_raw_fetch.py` | resume gap-only market-data fetches and narrow failed batches |
 | `fetch_pool_identity_registry.py` | fetch the V3 pool-identity snapshot needed by current processors |
 | `fetch_v1_exchange_registry.py` | fetch the immutable V1 exchange-to-token registry omitted from the original daily pull |
+| `fetch_defillama_ethereum_dex_volume.py` | fetch the external daily Ethereum DEX-volume breakdown used to assess market representativeness |
 | `discover_pdf_sources.py` | discover bibliography-linked publisher PDF locations |
 | `fetch_literature.py` | fetch PDFs from the maintained source map |
 | `export_literature_auth.py` / `fetch_literature_browser.py` | authenticated literature acquisition |
