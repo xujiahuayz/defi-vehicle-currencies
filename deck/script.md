@@ -80,6 +80,8 @@ Second, the exact two-leg route. One route, one intermediary, one vehicle choice
 
 Why stablecoins and the native asset? They are the two broad vehicle families present throughout the sample. The all-route figure still shows the other categories.
 
+One small distinction matters here. A one-for-one peg can align prices without erasing currency identity. The Bahamian dollar is pegged to the U.S. dollar and remains a separate currency. In the same way, USDC, USDT, and DAI target the dollar but keep separate issuers, redemption arrangements, risks, and pools. We group their vehicle role here and keep the token identities in the issuer results.
+
 With the measures clear, we can ask where aggregate dominance comes from.
 
 ## Slide 6. Aggregate dominance can change in three ways
@@ -295,7 +297,7 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 - Exact two-leg routes isolate one vehicle choice.
 - Both come from the same reconstructed routes; the denominator changes with the question.
 
-## Peg parity keeps currency identity separate
+## A2.1. Peg parity preserves currency identity
 
 - The Bahamian dollar trades at one-for-one parity with the U.S. dollar and remains a separately issued currency.
 - Likewise, USDC, USDT, and DAI share a unit of account while retaining issuer, redemption, and liquidity differences.

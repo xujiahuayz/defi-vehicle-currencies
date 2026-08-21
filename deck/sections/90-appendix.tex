@@ -9,7 +9,7 @@
 \textbf{Definitions and data}
 \par\vspace{0.10cm}
 A1 Route units and vehicle status\par
-A2 Asset types and backing regimes\par
+A2 Asset types, pegs, and backing\par
 A3 Sample construction and exclusions\par
 \vspace{0.24cm}
 \textbf{Reconstruction and validation}
@@ -142,6 +142,40 @@ A20 V4 participation\par
 \centering
 \resizebox{0.90\textwidth}{!}{\input{assets/backing-regime-heatmap.tex}}\par
 \decknote{Bars begin at public launch or the sample start for older tokens. DAI's dated regimes follow the Maker Governance actions that \href{https://vote.makerdao.com/executive/add-usdc-as-a-collateral-type-2020-03-17}{added USDC-A} and \href{https://vote.makerdao.com/executive/template-executive-vote-activate-rwa001-a-add-psm-usdc-a-momc-changes-april-16-2021}{activated RWA001-A}. FRAX's dashed arrow follows \href{https://gov.frax.finance/t/fip-188-increase-cr-to-100/2147}{FIP-188} and denotes a target, not observed collateral.}
+\end{frame}
+
+% VISUAL-FUNCTION: peg and instrument identity | parallel traditional-currency and stablecoin comparison | discipline family aggregation and LP interpretation
+\begin{frame}{Peg parity preserves currency identity}
+\begin{columns}[T,totalwidth=0.96\textwidth]
+\begin{column}{0.46\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.22cm]{block body}
+\centering
+{\large\bfseries Bahamian dollar $\longleftrightarrow$ U.S. dollar\par}
+\vspace{0.16cm}
+{\small one-for-one peg\par}
+\vspace{0.22cm}
+{\small Separate currency, monetary arrangements, and exchange controls\par}
+\end{beamercolorbox}
+\end{column}
+\begin{column}{0.46\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.22cm]{block body}
+\centering
+{\large\bfseries USDC $\longleftrightarrow$ USDT $\longleftrightarrow$ DAI\par}
+\vspace{0.16cm}
+{\small common dollar target\par}
+\vspace{0.22cm}
+{\small Separate issuers, redemption, peg risk, and pool liquidity\par}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\vspace{0.44cm}
+\begin{center}
+\begin{minipage}{0.90\textwidth}
+\centering
+{\small While pegs hold, smaller stable--stable relative-price movements may lower liquidity providers' divergence loss and encourage these links. Peg stress reverses the comparison.\par}
+\end{minipage}
+\end{center}
+\decknote{The Bahamian-dollar example follows the IMF's 2025 Article IV description of the conventional one-for-one U.S.-dollar peg. The liquidity-provider sentence is an economic interpretation. Measuring provider returns would additionally require entry prices, fees, hedges, and expectations.}
 \end{frame}
 
 % VISUAL-FUNCTION: primary measurement funnel | staged route-object and two-support split | separate topology support from dollar-value support
