@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -15,15 +18,19 @@ from scripts.analyze.run_stablecoin_supply_lp import (
 )
 from scripts.fetch.fetch_defillama_stablecoin_supply import candidate_detail_ids
 from scripts.process.build_stablecoin_supply import (
+    load_detail_payloads,
     parse_detail_supply,
     select_canonical_details,
     source_ethereum_address,
+    source_ethereum_addresses,
 )
 
 
 USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
 USDT = "0xdac17f958d2ee523a2206206994597c13d831ec7"
 ENDPOINT = "0x0000000000000000000000000000000000000001"
+NEVER_ENDPOINT = "0x0000000000000000000000000000000000000002"
+DAI = "0x6b175474e89094c44da98b954eedeac495271d0f"
 
 
 def _timestamp(day: str) -> int:
@@ -52,7 +59,7 @@ def _detail(
     }
 
 
-def test_fetch_and_process_match_chain_prefixed_address_not_symbol_alone() -> None:
+def test_fetch_and_process_require_an_ethereum_specific_address() -> None:
     catalog = {
         "peggedAssets": [
             {"id": "2", "symbol": "USDC"},
@@ -62,28 +69,82 @@ def test_fetch_and_process_match_chain_prefixed_address_not_symbol_alone() -> No
     }
     assert candidate_detail_ids(catalog, symbols={"USDC"}) == ("2", "999")
     assert source_ethereum_address(f"ethereum:{USDC.upper()}") == USDC
+    assert source_ethereum_address(f"bsc:{USDC}") is None
 
-    right = _detail("2", "USDC", f"ethereum:{USDC}", [("2025-01-31", 10.0)])
+    right = _detail("2", "USDC", f"bsc:{USDC}", [("2025-01-31", 10.0)])
+    right["chainConfig"] = {"chains": {"ethereum": {"issued": [USDC.upper()]}}}
+    assert source_ethereum_addresses(right) == frozenset({USDC})
     wrong = _detail(
         "999",
         "USDC",
-        "solana:11111111111111111111111111111111111111111111",
+        f"bsc:{USDC}",
         [("2025-01-31", 10.0)],
     )
     usdt = _detail("1", "USDT", USDT, [("2025-01-31", 10.0)])
     dai = _detail(
         "5",
         "DAI",
-        "0x6b175474e89094c44da98b954eedeac495271d0f",
+        DAI,
         [("2025-01-31", 10.0)],
     )
     selected, support = select_canonical_details([right, wrong, usdt, dai])
     assert selected[USDC]["id"] == "2"
     mapping = pd.DataFrame(support)
     assert mapping.loc[mapping["token_symbol"].eq("USDC"), "source_id"].iloc[0] == "2"
+    assert (
+        mapping.loc[mapping["token_symbol"].eq("USDC"), "mapping_method"].iloc[0]
+        == "ethereum_chain_config"
+    )
 
 
-def test_parse_detail_supply_aligns_worldwide_and_ethereum_dates() -> None:
+def test_manifest_excludes_stale_detail_files(tmp_path: Path) -> None:
+    detail_dir = tmp_path / "details"
+    detail_dir.mkdir()
+    catalog_path = tmp_path / "catalog.json"
+    manifest_path = tmp_path / "manifest.json"
+    catalog_path.write_text(
+        json.dumps(
+            {"peggedAssets": [{"id": "2", "symbol": "USDC"}, {"id": "9", "symbol": "USDC"}]}
+        ),
+        encoding="utf-8",
+    )
+    manifest_path.write_text(json.dumps({"detail_ids": ["2"]}), encoding="utf-8")
+    (detail_dir / "2.json").write_text(
+        json.dumps(_detail("2", "USDC", USDC, [("2025-01-31", 10.0)])),
+        encoding="utf-8",
+    )
+    (detail_dir / "9.json").write_text(
+        json.dumps(_detail("9", "USDC", USDC, [("2025-01-31", 20.0)])),
+        encoding="utf-8",
+    )
+    details, paths = load_detail_payloads(
+        detail_dir,
+        catalog_path=catalog_path,
+        manifest_path=manifest_path,
+    )
+    assert [detail["id"] for detail in details] == ["2"]
+    assert [path.name for path in paths] == ["2.json"]
+
+
+def test_manifest_requires_every_declared_detail(tmp_path: Path) -> None:
+    detail_dir = tmp_path / "details"
+    detail_dir.mkdir()
+    catalog_path = tmp_path / "catalog.json"
+    manifest_path = tmp_path / "manifest.json"
+    catalog_path.write_text(
+        json.dumps({"peggedAssets": [{"id": "2", "symbol": "USDC"}]}),
+        encoding="utf-8",
+    )
+    manifest_path.write_text(json.dumps({"detail_ids": ["2"]}), encoding="utf-8")
+    with pytest.raises(FileNotFoundError):
+        load_detail_payloads(
+            detail_dir,
+            catalog_path=catalog_path,
+            manifest_path=manifest_path,
+        )
+
+
+def test_parse_detail_supply_aligns_asset_wide_and_ethereum_dates() -> None:
     detail = _detail(
         "2",
         "USDC",
@@ -105,7 +166,7 @@ def test_parse_detail_supply_aligns_worldwide_and_ethereum_dates() -> None:
         }
     }
     panel = parse_detail_supply(detail, token_address=USDC, token_symbol="USDC")
-    assert panel["global_circulating"].tolist() == [100.0, 110.0]
+    assert panel["asset_wide_circulating"].tolist() == [100.0, 110.0]
     assert panel["ethereum_circulating"].tolist() == [60.0, 65.0]
 
 
@@ -142,6 +203,52 @@ def test_stable_roles_duplicate_core_for_each_stablecoin_side() -> None:
     }
     core = roles[roles["scope"].eq("stable_core")]
     assert set(core["stablecoin_address"]) == {USDC, USDT}
+    relationships = aggregate_relationship_capital(roles)
+    core_links = relationships[relationships["scope"].eq("stable_core")]
+    assert core_links["pair_id"].nunique() == 2
+    assert core_links["undirected_link_id"].nunique() == 1
+
+
+def test_month_end_uses_last_nonmissing_value_for_each_measure() -> None:
+    daily = pd.DataFrame(
+        [
+            {
+                "date": pd.Timestamp("2025-01-31"),
+                "token_address": USDC,
+                "token_symbol": "USDC",
+                "asset_wide_circulating": 100_000_000.0,
+                "ethereum_circulating": 60_000_000.0,
+            },
+            {
+                "date": pd.Timestamp("2025-02-20"),
+                "token_address": USDC,
+                "token_symbol": "USDC",
+                "asset_wide_circulating": 110_000_000.0,
+                "ethereum_circulating": 66_000_000.0,
+            },
+            {
+                "date": pd.Timestamp("2025-02-28"),
+                "token_address": USDC,
+                "token_symbol": "USDC",
+                "asset_wide_circulating": 120_000_000.0,
+                "ethereum_circulating": np.nan,
+            },
+        ]
+    )
+    monthly = monthly_supply_panel(daily)
+    february = monthly.loc[
+        monthly["origin_month"].eq(pd.Timestamp("2025-02-01"))
+    ].iloc[0]
+    assert february["asset_wide_circulating"] == 120_000_000.0
+    assert february["ethereum_circulating"] == 66_000_000.0
+    assert february["asset_wide_circulating_observation_date"] == pd.Timestamp(
+        "2025-02-28"
+    )
+    assert february["ethereum_circulating_observation_date"] == pd.Timestamp(
+        "2025-02-20"
+    )
+    assert february["asset_wide_circulating_growth"] == pytest.approx(np.log(1.2))
+    assert february["ethereum_circulating_growth"] == pytest.approx(np.log(1.1))
 
 
 def test_supply_growth_precedes_capital_growth_and_formation() -> None:
@@ -160,7 +267,7 @@ def test_supply_growth_precedes_capital_growth_and_formation() -> None:
                     "date": day,
                     "token_address": address,
                     "token_symbol": symbol,
-                    "global_circulating": value * 1_000_000.0,
+                    "asset_wide_circulating": value * 1_000_000.0,
                     "ethereum_circulating": value * 500_000.0,
                 }
             )
@@ -211,15 +318,38 @@ def test_supply_growth_precedes_capital_growth_and_formation() -> None:
         growth["stablecoin_address"].eq(USDC)
         & growth["origin_month"].eq(pd.Timestamp("2025-02-01"))
     ].iloc[0]
-    assert usdc_february["global_circulating_growth"] == pytest.approx(np.log(1.1))
+    assert usdc_february["asset_wide_circulating_growth"] == pytest.approx(
+        np.log(1.1)
+    )
     assert usdc_february["next_capital_usd"] == pytest.approx(90_000.0)
+    assert usdc_february["next_pure_log_capital_change"] == pytest.approx(
+        np.log(90_000.0 / 60_000.0)
+    )
+    assert np.isfinite(usdc_february["next_asinh_capital_change"])
 
-    formation = prepare_formation_panel(relationships, supply)
+    endpoint_eligibility = pd.DataFrame(
+        {
+            "endpoint_address": [ENDPOINT, NEVER_ENDPOINT],
+            "endpoint_first_eligible_month": [
+                pd.Timestamp("2025-02-01"),
+                pd.Timestamp("2025-02-01"),
+            ],
+        }
+    )
+    formation = prepare_formation_panel(
+        relationships,
+        supply,
+        endpoint_eligibility,
+    )
     usdt_march = formation[
         formation["stablecoin_address"].eq(USDT)
         & formation["origin_month"].eq(pd.Timestamp("2025-03-01"))
     ].iloc[0]
     assert usdt_march["forms_next_month"] == 1.0
+    never = formation[formation["endpoint_address"].eq(NEVER_ENDPOINT)]
+    assert not never.empty
+    assert never["first_material_month"].isna().all()
+    assert never["forms_next_month"].eq(0.0).all()
 
     stablecoin_scope = prepare_stablecoin_scope_panel(relationships, supply)
     usdt_march_scope = stablecoin_scope[
@@ -230,13 +360,13 @@ def test_supply_growth_precedes_capital_growth_and_formation() -> None:
     assert usdt_march_scope["next_new_material_links"] == 1.0
 
 
-def test_declared_global_core_spoke_family_uses_holm_adjustment() -> None:
+def test_declared_asset_wide_core_spoke_family_uses_holm_adjustment() -> None:
     models = pd.DataFrame(
         [
             {
                 "model_family": family,
                 "scope": scope,
-                "supply_measure": "global",
+                "supply_measure": "asset_wide",
                 "predictor": "supply_growth_per_10pct",
                 "p_value": p_value,
             }

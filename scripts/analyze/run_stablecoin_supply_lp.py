@@ -3,15 +3,16 @@
 
 The unit for capital growth is a stablecoin-token--endpoint pair month.  The unit
 for first material formation is an at-risk stablecoin-token--endpoint pair month.
-Worldwide circulating-supply growth is the primary predictor because Ethereum
-circulation mechanically includes tokens deposited in Ethereum pools; the
-Ethereum series is reported as a local-market sensitivity.
+Asset-wide circulating-amount growth is the primary predictor because the
+Ethereum-chain amount mechanically includes tokens deposited in Ethereum pools;
+the Ethereum series is reported as a local-market sensitivity.
 
 Capital-growth models absorb stablecoin-token--endpoint-pair and endpoint-by-month
 fixed effects.  Formation models absorb stablecoin-token and endpoint-by-month
 fixed effects.  Supply growth is measured through month t and outcomes occur
 in t+1.  The estimates are descriptive correlations: issuance and liquidity
-can both respond to anticipated stablecoin demand.
+can both respond to anticipated stablecoin demand.  LP capital covers Uniswap
+v2, SushiSwap v2, and Uniswap v3 only.
 
 Writes
   data/processed/stablecoin_supply_lp_monthly.parquet
@@ -51,6 +52,7 @@ MAX_STALENESS_DAYS = 45
 MATERIAL_CAPITAL_USD = 50_000.0
 MIN_STABLECOIN_SUPPLY = 1_000_000.0
 CAPITAL_SCALE_USD = 1_000_000.0
+VENUE_SCOPE = "uniswap_v2+sushiswap_v2+uniswap_v3"
 
 USD_STABLES = {
     address.casefold(): symbol
@@ -97,6 +99,7 @@ def load_observed_pool_months(
             max(strptime(CAST(day AS VARCHAR), '%Y%m%d'))::DATE AS observed_date
         FROM read_parquet('{_sql_path(v2_path)}')
         WHERE capital_valid
+          AND lower(venue) IN ('uniswap_v2', 'sushiswap_v2')
           AND capital_usd BETWEEN 0 AND {float(MAX_POOL_CAPITAL_USD)}
           AND (
                 lower(token0_address) IN ({stable_values})
@@ -150,6 +153,97 @@ def load_observed_pool_months(
     frame = frame.loc[valid].reset_index(drop=True)
     if frame.duplicated(["venue", "pool", "origin_month"]).any():
         raise ValueError("observed capital has duplicate venue-pool-months")
+    return frame
+
+
+def load_endpoint_eligibility(
+    *,
+    v2_path: Path = V2_CAPITAL_INPUT,
+    v3_path: Path = V3_CAPITAL_INPUT,
+    material_capital_usd: float = MATERIAL_CAPITAL_USD,
+) -> pd.DataFrame:
+    """Find when each endpoint first has material capital in any covered pool.
+
+    Eligibility uses only the endpoint's capital state through month t.  It is
+    independent of whether the endpoint ever forms a stablecoin link, so the
+    formation risk set retains never-formers.
+    """
+
+    for path in (v2_path, v3_path):
+        if not path.is_file():
+            raise FileNotFoundError(path)
+    query = f"""
+    WITH v2_month AS (
+        SELECT
+            date_trunc('month', strptime(CAST(day AS VARCHAR), '%Y%m%d'))::DATE
+                AS origin_month,
+            lower(venue) AS venue,
+            lower(pool) AS pool,
+            arg_max(lower(token0_address), day) AS token0_address,
+            arg_max(lower(token1_address), day) AS token1_address,
+            arg_max(capital_usd::DOUBLE, day) AS capital_usd
+        FROM read_parquet('{_sql_path(v2_path)}')
+        WHERE capital_valid
+          AND lower(venue) IN ('uniswap_v2', 'sushiswap_v2')
+          AND capital_usd BETWEEN 0 AND {float(MAX_POOL_CAPITAL_USD)}
+        GROUP BY 1,2,3
+    ),
+    v3_month AS (
+        SELECT
+            date_trunc('month', CAST(origin_date AS DATE))::DATE AS origin_month,
+            'uniswap_v3' AS venue,
+            lower(pool) AS pool,
+            arg_max(lower(token0_address), CAST(origin_date AS DATE))
+                AS token0_address,
+            arg_max(lower(token1_address), CAST(origin_date AS DATE))
+                AS token1_address,
+            arg_max(tvl_usd::DOUBLE, CAST(origin_date AS DATE)) AS capital_usd
+        FROM read_parquet('{_sql_path(v3_path)}')
+        WHERE tvl_usd BETWEEN 0 AND {float(MAX_POOL_CAPITAL_USD)}
+        GROUP BY 1,2,3
+    ),
+    pool_month AS (
+        SELECT * FROM v2_month
+        UNION ALL
+        SELECT * FROM v3_month
+    ),
+    material_endpoint_month AS (
+        SELECT token0_address AS endpoint_address, origin_month
+        FROM pool_month
+        WHERE capital_usd >= {float(material_capital_usd)}
+        UNION ALL
+        SELECT token1_address AS endpoint_address, origin_month
+        FROM pool_month
+        WHERE capital_usd >= {float(material_capital_usd)}
+    )
+    SELECT
+        endpoint_address,
+        min(origin_month)::DATE AS endpoint_first_eligible_month
+    FROM material_endpoint_month
+    WHERE endpoint_address IS NOT NULL
+    GROUP BY 1
+    """
+    connection = duckdb.connect()
+    try:
+        connection.execute("PRAGMA threads=8")
+        connection.execute("PRAGMA memory_limit='32GB'")
+        connection.execute("PRAGMA preserve_insertion_order=false")
+        frame = connection.execute(query).fetchdf()
+    finally:
+        connection.close()
+    if frame.empty:
+        raise ValueError("covered pools have no contemporaneously material endpoints")
+    frame["endpoint_address"] = (
+        frame["endpoint_address"].astype(str).str.casefold()
+    )
+    frame["endpoint_first_eligible_month"] = pd.to_datetime(
+        frame["endpoint_first_eligible_month"]
+    ).dt.normalize()
+    frame = frame[
+        frame["endpoint_first_eligible_month"].between(SAMPLE_START, SAMPLE_END)
+    ].reset_index(drop=True)
+    if frame.duplicated("endpoint_address").any():
+        raise ValueError("endpoint eligibility has duplicate addresses")
     return frame
 
 
@@ -262,6 +356,11 @@ def aggregate_relationship_capital(roles: pd.DataFrame) -> pd.DataFrame:
         + "|"
         + relationships["endpoint_address"]
     )
+    relationships["undirected_link_id"] = np.where(
+        relationships["stablecoin_address"].le(relationships["endpoint_address"]),
+        relationships["stablecoin_address"] + "|" + relationships["endpoint_address"],
+        relationships["endpoint_address"] + "|" + relationships["stablecoin_address"],
+    )
     return relationships
 
 
@@ -276,7 +375,7 @@ def monthly_supply_panel(
         "date",
         "token_address",
         "token_symbol",
-        "global_circulating",
+        "asset_wide_circulating",
         "ethereum_circulating",
     }
     missing = sorted(required - set(daily.columns))
@@ -285,35 +384,63 @@ def monthly_supply_panel(
     frame = daily.copy()
     frame["date"] = pd.to_datetime(frame["date"]).dt.normalize()
     frame["origin_month"] = frame["date"].dt.to_period("M").dt.to_timestamp()
-    frame = (
-        frame.sort_values("date")
-        .groupby(["token_address", "token_symbol", "origin_month"], as_index=False)
-        .tail(1)
-        .sort_values(["token_address", "origin_month"])
-        .reset_index(drop=True)
+    keys = ["token_address", "token_symbol", "origin_month"]
+    identity = frame[keys].drop_duplicates().reset_index(drop=True)
+    for measure in ("asset_wide_circulating", "ethereum_circulating"):
+        observed = (
+            frame.dropna(subset=[measure])
+            .sort_values("date")
+            .groupby(keys, as_index=False)
+            .tail(1)[keys + ["date", measure]]
+            .rename(columns={"date": f"{measure}_observation_date"})
+        )
+        identity = identity.merge(observed, on=keys, how="left", validate="one_to_one")
+    frame = identity.sort_values(["token_address", "origin_month"]).reset_index(
+        drop=True
     )
-    grouped = frame.groupby("token_address", sort=False)
-    frame["previous_month"] = grouped["origin_month"].shift(1)
-    for measure in ("global_circulating", "ethereum_circulating"):
-        frame[f"previous_{measure}"] = grouped[measure].shift(1)
-        frame[f"log_{measure}"] = np.log(frame[measure].where(frame[measure] > 0))
-        frame[f"{measure}_growth"] = (
-            frame[f"log_{measure}"]
+    for measure in ("asset_wide_circulating", "ethereum_circulating"):
+        measure_prefix = measure.removesuffix("_circulating")
+        observed = frame[frame[measure].notna()].copy()
+        grouped = observed.groupby("token_address", sort=False)
+        observed[f"previous_{measure}_month"] = grouped["origin_month"].shift(1)
+        observed[f"previous_{measure}"] = grouped[measure].shift(1)
+        observed[f"log_{measure}"] = np.log(observed[measure].where(observed[measure] > 0))
+        observed[f"{measure}_growth"] = (
+            observed[f"log_{measure}"]
             - grouped[f"log_{measure}"].shift(1)
         )
-    frame["consecutive_supply_month"] = frame["previous_month"].eq(
-        frame["origin_month"] - pd.offsets.MonthBegin(1)
-    )
+        observed[f"{measure_prefix}_valid_growth"] = (
+            observed[f"previous_{measure}_month"].eq(
+                observed["origin_month"] - pd.offsets.MonthBegin(1)
+            )
+            & observed[measure].ge(min_supply)
+            & observed[f"previous_{measure}"].ge(min_supply)
+        )
+        derived = [
+            "token_address",
+            "origin_month",
+            f"previous_{measure}_month",
+            f"previous_{measure}",
+            f"log_{measure}",
+            f"{measure}_growth",
+            f"{measure_prefix}_valid_growth",
+        ]
+        frame = frame.merge(
+            observed[derived],
+            on=["token_address", "origin_month"],
+            how="left",
+            validate="one_to_one",
+        )
+        frame[f"{measure_prefix}_valid_growth"] = frame[
+            f"{measure_prefix}_valid_growth"
+        ].fillna(False)
     frame["stablecoin_month_id"] = (
         frame["token_address"].astype(str)
         + "|"
         + frame["origin_month"].dt.strftime("%Y%m")
     )
-    valid = (
-        frame["origin_month"].between(SAMPLE_START, SAMPLE_END)
-        & frame["consecutive_supply_month"]
-        & frame["global_circulating"].ge(min_supply)
-        & frame["previous_global_circulating"].ge(min_supply)
+    valid = frame["origin_month"].between(SAMPLE_START, SAMPLE_END) & (
+        frame["asset_wide_valid_growth"] | frame["ethereum_valid_growth"]
     )
     return frame.loc[valid].reset_index(drop=True)
 
@@ -336,12 +463,14 @@ def prepare_capital_growth_panel(
     supply_columns = [
         "origin_month",
         "token_address",
-        "global_circulating",
+        "asset_wide_circulating",
         "ethereum_circulating",
-        "log_global_circulating",
+        "log_asset_wide_circulating",
         "log_ethereum_circulating",
-        "global_circulating_growth",
+        "asset_wide_circulating_growth",
         "ethereum_circulating_growth",
+        "asset_wide_valid_growth",
+        "ethereum_valid_growth",
         "stablecoin_month_id",
     ]
     panel = panel.merge(
@@ -359,6 +488,12 @@ def prepare_capital_growth_panel(
     panel["next_log_capital_change"] = np.log1p(
         panel["next_capital_usd"] / CAPITAL_SCALE_USD
     ) - np.log1p(panel["capital_usd"] / CAPITAL_SCALE_USD)
+    panel["next_pure_log_capital_change"] = np.log(
+        panel["next_capital_usd"].where(panel["next_capital_usd"] > 0)
+    ) - np.log(panel["capital_usd"].where(panel["capital_usd"] > 0))
+    panel["next_asinh_capital_change"] = np.arcsinh(
+        panel["next_capital_usd"] / CAPITAL_SCALE_USD
+    ) - np.arcsinh(panel["capital_usd"] / CAPITAL_SCALE_USD)
     panel["current_log_capital"] = np.log1p(
         panel["capital_usd"] / CAPITAL_SCALE_USD
     )
@@ -374,6 +509,7 @@ def prepare_capital_growth_panel(
 def prepare_formation_panel(
     relationships: pd.DataFrame,
     supply: pd.DataFrame,
+    endpoint_eligibility: pd.DataFrame,
     *,
     material_capital_usd: float = MATERIAL_CAPITAL_USD,
 ) -> pd.DataFrame:
@@ -386,26 +522,36 @@ def prepare_formation_panel(
         .min()
         .rename(columns={"origin_month": "first_material_month"})
     )
-    material_endpoints = set(material["endpoint_address"])
-    eligible_endpoints = (
-        relationships[relationships["endpoint_address"].isin(material_endpoints)]
-        .groupby("endpoint_address", as_index=False)["origin_month"]
-        .min()
-        .rename(columns={"origin_month": "endpoint_first_observed_month"})
+    required_eligibility = {"endpoint_address", "endpoint_first_eligible_month"}
+    missing = sorted(required_eligibility - set(endpoint_eligibility.columns))
+    if missing:
+        raise ValueError(f"endpoint eligibility lacks columns: {missing}")
+    eligible_endpoints = endpoint_eligibility[
+        ["endpoint_address", "endpoint_first_eligible_month"]
+    ].copy()
+    eligible_endpoints["endpoint_address"] = (
+        eligible_endpoints["endpoint_address"].astype(str).str.casefold()
     )
+    eligible_endpoints["endpoint_first_eligible_month"] = pd.to_datetime(
+        eligible_endpoints["endpoint_first_eligible_month"]
+    ).dt.normalize()
+    if eligible_endpoints.duplicated("endpoint_address").any():
+        raise ValueError("endpoint eligibility has duplicate addresses")
     if eligible_endpoints.empty:
-        raise ValueError("no material stable-linked endpoints for formation risk set")
+        raise ValueError("no contemporaneously material endpoints for formation risk set")
     supply_grid = supply[
         [
             "origin_month",
             "token_address",
             "token_symbol",
-            "global_circulating",
+            "asset_wide_circulating",
             "ethereum_circulating",
-            "log_global_circulating",
+            "log_asset_wide_circulating",
             "log_ethereum_circulating",
-            "global_circulating_growth",
+            "asset_wide_circulating_growth",
             "ethereum_circulating_growth",
+            "asset_wide_valid_growth",
+            "ethereum_valid_growth",
             "stablecoin_month_id",
         ]
     ].rename(
@@ -414,7 +560,7 @@ def prepare_formation_panel(
     grid = supply_grid.merge(eligible_endpoints, how="cross")
     grid = grid[
         grid["stablecoin_address"].ne(grid["endpoint_address"])
-        & grid["origin_month"].ge(grid["endpoint_first_observed_month"])
+        & grid["origin_month"].ge(grid["endpoint_first_eligible_month"])
         & grid["origin_month"].lt(SAMPLE_END)
     ].copy()
     current = relationships[
@@ -448,6 +594,11 @@ def prepare_formation_panel(
         grid["capital_usd"] / CAPITAL_SCALE_USD
     )
     grid["pair_id"] = grid["stablecoin_address"] + "|" + grid["endpoint_address"]
+    grid["undirected_link_id"] = np.where(
+        grid["stablecoin_address"].le(grid["endpoint_address"]),
+        grid["stablecoin_address"] + "|" + grid["endpoint_address"],
+        grid["endpoint_address"] + "|" + grid["stablecoin_address"],
+    )
     grid["endpoint_month_id"] = (
         grid["endpoint_address"]
         + "|"
@@ -497,12 +648,14 @@ def prepare_stablecoin_scope_panel(
         "origin_month",
         "token_address",
         "token_symbol",
-        "global_circulating",
+        "asset_wide_circulating",
         "ethereum_circulating",
-        "log_global_circulating",
+        "log_asset_wide_circulating",
         "log_ethereum_circulating",
-        "global_circulating_growth",
+        "asset_wide_circulating_growth",
         "ethereum_circulating_growth",
+        "asset_wide_valid_growth",
+        "ethereum_valid_growth",
         "stablecoin_month_id",
     ]
     grid = supply[supply_columns].rename(
@@ -563,26 +716,32 @@ def _fit_one_model(
     model_family: str,
     scope: str,
     supply_measure: str,
+    include_initial_level: bool = True,
 ) -> list[dict[str, object]]:
     data = panel if scope == "all" else panel[panel["scope"].eq(scope)]
     growth = f"{supply_measure}_circulating_growth"
     level = f"log_{supply_measure}_circulating"
+    valid_growth = f"{supply_measure}_valid_growth"
     columns = [
         outcome,
         growth,
         level,
-        "current_log_capital",
+        valid_growth,
         "core_indicator",
         "stablecoin_address",
         "endpoint_address",
         "pair_id",
+        "undirected_link_id",
         "endpoint_month_id",
         "stablecoin_month_id",
         "origin_month",
     ]
-    data = data[columns].dropna().reset_index(drop=True)
+    if include_initial_level:
+        columns.append("current_log_capital")
+    data = data.loc[data[valid_growth], columns].dropna().reset_index(drop=True)
     data[growth] = _winsorize(data[growth])
-    if model_family == "capital_growth":
+    is_capital_model = model_family.startswith("capital_growth")
+    if is_capital_model:
         data[outcome] = _winsorize(data[outcome])
     data["supply_growth_per_10pct"] = data[growth] / 0.10
     data["growth_x_core"] = (
@@ -591,8 +750,9 @@ def _fit_one_model(
     predictors = [
         "supply_growth_per_10pct",
         level,
-        "current_log_capital",
     ]
+    if include_initial_level:
+        predictors.append("current_log_capital")
     if scope == "all":
         predictors.insert(1, "growth_x_core")
 
@@ -600,20 +760,20 @@ def _fit_one_model(
     # without within-endpoint stablecoin variation add no identifying information.
     cell_support = data.groupby("endpoint_month_id")["stablecoin_address"].nunique()
     data = data[data["endpoint_month_id"].isin(cell_support[cell_support >= 2].index)]
-    if model_family == "capital_growth":
+    if is_capital_model:
         pair_support = data.groupby("pair_id")["origin_month"].nunique()
         data = data[data["pair_id"].isin(pair_support[pair_support >= 2].index)]
         fixed_effects = (data["pair_id"], data["endpoint_month_id"])
-        primary_cluster = data["pair_id"]
+        primary_cluster = data["undirected_link_id"]
         additional_cluster = data["stablecoin_month_id"]
         fixed_effect_label = "stablecoin_endpoint_pair+endpoint_x_month"
-        covariance_label = "stablecoin_endpoint_pair_and_stablecoin_month_cluster_cr1"
+        covariance_label = "undirected_link_and_stablecoin_month_cluster_cr1"
     else:
         fixed_effects = (data["stablecoin_address"], data["endpoint_month_id"])
-        primary_cluster = data["endpoint_address"]
+        primary_cluster = data["undirected_link_id"]
         additional_cluster = data["stablecoin_month_id"]
         fixed_effect_label = "stablecoin+endpoint_x_month"
-        covariance_label = "endpoint_and_stablecoin_month_cluster_cr1"
+        covariance_label = "undirected_link_and_stablecoin_month_cluster_cr1"
     if len(data) < 100:
         return []
     outcome_residual = absorb_fixed_effects(data[outcome], *fixed_effects)
@@ -674,6 +834,12 @@ def _fit_one_model(
                 "outcome_timing": "lp_capital_or_first_material_link_in_t_plus_1",
                 "winsorization": "supply_growth_and_continuous_capital_growth_1st_99th_percentiles",
                 "interpretation": "predictive_association_not_exogenous_issuance_shift",
+                "initial_capital_control": bool(include_initial_level),
+                "venue_scope": VENUE_SCOPE,
+                "estimand_limit": (
+                    "three_covered_venues_only;does_not_measure_issuer_sponsorship_"
+                    "liquidity_incentives_or_uncovered_venues"
+                ),
             }
         )
     return rows
@@ -688,10 +854,12 @@ def _fit_stablecoin_scope_model(
 ) -> list[dict[str, object]]:
     growth = f"{supply_measure}_circulating_growth"
     level = f"log_{supply_measure}_circulating"
+    valid_growth = f"{supply_measure}_valid_growth"
     columns = [
         outcome,
         growth,
         level,
+        valid_growth,
         "current_log_capital",
         "core_indicator",
         "stablecoin_address",
@@ -699,7 +867,7 @@ def _fit_stablecoin_scope_model(
         "month_id",
         "origin_month",
     ]
-    data = panel[columns].dropna().reset_index(drop=True)
+    data = panel.loc[panel[valid_growth], columns].dropna().reset_index(drop=True)
     if model_family == "stablecoin_scope_capital_growth":
         data = data[data["current_log_capital"].gt(np.log1p(MATERIAL_CAPITAL_USD / CAPITAL_SCALE_USD))]
         data[outcome] = _winsorize(data[outcome])
@@ -765,6 +933,11 @@ def _fit_stablecoin_scope_model(
                 "outcome_timing": "aggregate_lp_capital_or_new_material_links_in_t_plus_1",
                 "winsorization": "supply_growth_and_continuous_capital_growth_1st_99th_percentiles",
                 "interpretation": "predictive_association_not_exogenous_issuance_shift",
+                "venue_scope": VENUE_SCOPE,
+                "estimand_limit": (
+                    "three_covered_venues_only;does_not_measure_issuer_sponsorship_"
+                    "liquidity_incentives_or_uncovered_venues"
+                ),
             }
         )
     return rows
@@ -776,7 +949,7 @@ def fit_models(
     stablecoin_scope: pd.DataFrame,
 ) -> pd.DataFrame:
     rows: list[dict[str, object]] = []
-    for supply_measure in ("global", "ethereum"):
+    for supply_measure in ("asset_wide", "ethereum"):
         for scope in ("all", "stable_core", "stable_spoke"):
             rows.extend(
                 _fit_one_model(
@@ -812,6 +985,39 @@ def fit_models(
                 supply_measure=supply_measure,
             )
         )
+
+    # These three asset-wide specifications bound how much the primary capital
+    # result depends on log1p scaling and the initial-capital control.  They are
+    # sensitivities, not additional members of the declared four-test family.
+    for scope in ("all", "stable_core", "stable_spoke"):
+        rows.extend(
+            _fit_one_model(
+                capital_growth,
+                outcome="next_pure_log_capital_change",
+                model_family="capital_growth_pure_log",
+                scope=scope,
+                supply_measure="asset_wide",
+            )
+        )
+        rows.extend(
+            _fit_one_model(
+                capital_growth,
+                outcome="next_asinh_capital_change",
+                model_family="capital_growth_asinh",
+                scope=scope,
+                supply_measure="asset_wide",
+            )
+        )
+        rows.extend(
+            _fit_one_model(
+                capital_growth,
+                outcome="next_log_capital_change",
+                model_family="capital_growth_no_initial_level",
+                scope=scope,
+                supply_measure="asset_wide",
+                include_initial_level=False,
+            )
+        )
     result = add_declared_family_adjustment(pd.DataFrame(rows))
     if result.empty:
         raise ValueError("stablecoin-supply LP models have no estimable samples")
@@ -834,7 +1040,7 @@ def _holm_adjust(p_values: pd.Series) -> pd.Series:
 
 
 def add_declared_family_adjustment(models: pd.DataFrame) -> pd.DataFrame:
-    """Adjust the four primary worldwide-supply core/spoke tests."""
+    """Adjust the four primary asset-wide-supply core/spoke tests."""
 
     result = models.copy()
     result["multiplicity_family"] = None
@@ -843,12 +1049,12 @@ def add_declared_family_adjustment(models: pd.DataFrame) -> pd.DataFrame:
     primary = (
         result["model_family"].isin({"capital_growth", "formation"})
         & result["scope"].isin({"stable_core", "stable_spoke"})
-        & result["supply_measure"].eq("global")
+        & result["supply_measure"].eq("asset_wide")
         & result["predictor"].eq("supply_growth_per_10pct")
     )
     if int(primary.sum()) != 4:
         raise ValueError("declared stablecoin-supply family must contain four tests")
-    family = "global_supply_growth_x_core_spoke_x_capital_formation"
+    family = "asset_wide_supply_growth_x_core_spoke_x_capital_formation"
     result.loc[primary, "multiplicity_family"] = family
     result.loc[primary, "family_hypotheses"] = 4
     result.loc[primary, "p_value_holm"] = _holm_adjust(
@@ -899,6 +1105,15 @@ def support_records(
             "first_month": formation["origin_month"].min().strftime("%Y-%m-%d"),
             "last_month": formation["origin_month"].max().strftime("%Y-%m-%d"),
             "first_material_links": int(formation["forms_next_month"].sum()),
+            "never_forming_pairs": int(
+                formation.loc[
+                    formation["first_material_month"].isna(), "pair_id"
+                ].nunique()
+            ),
+            "risk_set_definition": (
+                "endpoint_enters_after_reaching_50000_usd_in_any_covered_pool;"
+                "stablecoin_link_may_never_form"
+            ),
         },
         {
             "record_type": "stablecoin_supply_lp_support",
@@ -954,7 +1169,13 @@ def support_records(
                 "endpoints": int(group["endpoint_address"].nunique()),
             }
         )
-    return pd.DataFrame(rows)
+    result = pd.DataFrame(rows)
+    result["venue_scope"] = VENUE_SCOPE
+    result["asset_wide_measure"] = (
+        "defillama_token_amount_summed_across_reported_chains"
+    )
+    result["ethereum_measure"] = "defillama_ethereum_chain_token_amount"
+    return result
 
 
 def run(
@@ -969,12 +1190,20 @@ def run(
     if not supply_path.is_file():
         raise FileNotFoundError(supply_path)
     observed = load_observed_pool_months(v2_path=v2_path, v3_path=v3_path)
+    endpoint_eligibility = load_endpoint_eligibility(
+        v2_path=v2_path,
+        v3_path=v3_path,
+    )
     pool_months = carry_pool_capital_monthly(observed)
     roles = assign_stable_roles(pool_months)
     relationships = aggregate_relationship_capital(roles)
     supply = monthly_supply_panel(pd.read_parquet(supply_path))
     capital_growth = prepare_capital_growth_panel(relationships, supply)
-    formation = prepare_formation_panel(relationships, supply)
+    formation = prepare_formation_panel(
+        relationships,
+        supply,
+        endpoint_eligibility,
+    )
     stablecoin_scope = prepare_stablecoin_scope_panel(relationships, supply)
     models = fit_models(capital_growth, formation, stablecoin_scope)
     support = support_records(
@@ -985,7 +1214,11 @@ def run(
         panel_output,
         code_sources=CODE_SOURCES,
         inputs=INPUTS,
-        notes="Stablecoin-token--endpoint monthly capital growth with lagged worldwide and Ethereum stablecoin circulation.",
+        notes=(
+            "Stablecoin-token--endpoint monthly capital growth in Uniswap v2, "
+            "SushiSwap v2, and Uniswap v3 with lagged asset-wide and "
+            "Ethereum-chain stablecoin circulation."
+        ),
     )
     write_exhibit(models, model_output, code_sources=CODE_SOURCES, inputs=INPUTS)
     write_exhibit(support, support_output, code_sources=CODE_SOURCES, inputs=INPUTS)

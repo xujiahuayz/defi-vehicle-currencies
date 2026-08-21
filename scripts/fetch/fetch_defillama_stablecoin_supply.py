@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Retain DeFiLlama's issuer-level stablecoin supply histories.
+"""Retain DeFiLlama's token-level stablecoin circulation histories.
 
 Writes
   data/raw/external/defillama/stablecoins/catalog.json
+  data/raw/external/defillama/stablecoins/manifest.json
   data/raw/external/defillama/stablecoins/details/<id>.json
 
 The catalog identifies plausible records by symbol.  Detail payloads are then
@@ -30,6 +31,7 @@ BASE_URL = "https://stablecoins.llama.fi"
 CATALOG_URL = f"{BASE_URL}/stablecoins?includePrices=true"
 RAW_DIR = DATA_DIR / "raw" / "external" / "defillama" / "stablecoins"
 CATALOG_OUTPUT = RAW_DIR / "catalog.json"
+MANIFEST_OUTPUT = RAW_DIR / "manifest.json"
 DETAIL_DIR = RAW_DIR / "details"
 USER_AGENT = "ddvc-research/1.0"
 
@@ -100,6 +102,17 @@ def main() -> int:
     write_json(catalog, CATALOG_OUTPUT)
     for identifier, payload in details:
         write_json(payload, DETAIL_DIR / f"{identifier}.json")
+    # Write the manifest last.  The processor reads only these IDs, so detail
+    # files retained from an earlier catalog cannot enter a later build.
+    write_json(
+        {
+            "schema_version": 1,
+            "catalog_url": CATALOG_URL,
+            "detail_ids": list(identifiers),
+            "canonical_symbols": sorted(canonical_usd_symbols()),
+        },
+        MANIFEST_OUTPUT,
+    )
     print(
         f"retained DeFiLlama stablecoin catalog and {len(details):,} "
         f"same-symbol detail records under {RAW_DIR}"
