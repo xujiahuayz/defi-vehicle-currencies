@@ -18,12 +18,13 @@ belongs in `../plot/` or `../tabulate/`.
 | `run_contestable_vehicle_choice.py` | exact stable-versus-native route choice with prior incumbent identity and lagged V2 bridge depth |
 | `run_price_rank_crossing.py` | event-time incumbent response when the median exact-output ranking reverses, with event-eve weak-leg capital and reverse-crossing checks |
 | `run_entry_day_vehicle_choice.py` | exact stable-versus-WETH selection on materially active endpoint-pair entry days, with prior-day weak-leg capital |
-| `run_first_contestable_vehicle_choice.py` | first sampled exact two-family opportunity after material pair entry; reports entry-to-contestability lags, entry-family survival, and price/depth choice estimates |
+| `run_first_contestable_vehicle_choice.py` | first sampled exact two-family opportunity after material pair entry; the retained monthly mode reads the fifteenth-of-month frontier, while `--four-per-month` replays the fixed 1/8/15/22 grid into separate `*_four_per_month` panel, result, and support files |
 | `run_entry_vehicle_price_alignment.py` | incumbent vehicle use conditional on the exact pretrade price leader at the observed notional; appendix persistence evidence |
 | `run_entry_vehicle_persistence.py` | disjoint days 1--30 and 31--120 post-entry vehicle persistence, retrading-incidence models, and equal-pair/activity-weighted persistence columns |
 | `run_liquidity_provision_behavior_exploration.py` | exploratory V2 capital-allocation and vehicle-use behavior |
 | `run_bridge_liquidity_feedback.py` | conditional future levels and time-reversed benchmarks for continuing positive-depth bridges |
 | `run_bridge_lp_divergence_risk.py` | prior endpoint--vehicle relative-price risk and exact V2/Sushi V2 bridge depth; appendix evidence on LP risk |
+| `run_uni_liquidity_mining_expiry.py` | exploratory matched liquidity response around the fixed 2020 UNI reward start and expiry, plus a narrowly preselected WBTC-endpoint route response; no paper or deck consumer unless the stated support and timing checks pass |
 | `run_mechanism_expansion_exploration.py` | provisional JFE-expansion mechanism regressions and formation summaries |
 | `run_route_gas_economics.py` | exploratory receipt-gas hurdle for direct and extra-hop vehicle routes |
 | `run_gas_adjusted_vehicle_consequences.py` | gross and receipt-gas-adjusted output comparison for exact stablecoin-versus-WETH paths |
