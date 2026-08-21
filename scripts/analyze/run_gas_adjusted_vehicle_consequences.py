@@ -319,13 +319,34 @@ def summary_row(
 
 def consequence_rows(data: pd.DataFrame) -> pd.DataFrame:
     rows: list[dict[str, object]] = []
+    panels = {
+        scenario: consequence_panel(data, scenario)
+        for scenario in (
+            "gross",
+            "central",
+            "chosen_favorable_bound",
+            "chosen_unfavorable_bound",
+        )
+    }
+    central = panels["central"]
+    common_gross_net_sample = (
+        central["positive_net_outputs"]
+        & central["net_shortfall_bps"].notna()
+        & np.isfinite(central["net_shortfall_bps"])
+    )
     for scenario in (
         "gross",
         "central",
         "chosen_favorable_bound",
         "chosen_unfavorable_bound",
     ):
-        panel = consequence_panel(data, scenario)
+        panel = panels[scenario]
+        if scenario in {"gross", "central"}:
+            # Gross and net-of-gas columns must describe identical routes.  The
+            # comparison sample therefore requires both central net outputs to
+            # remain positive, while the appendix bounds retain their own
+            # scenario-specific positivity check.
+            panel = panel.loc[common_gross_net_sample].copy()
         rows.append(summary_row(panel, scenario=scenario, size_group="all"))
         for label, lower, upper in SIZE_BINS:
             cell = panel[
@@ -368,6 +389,9 @@ def run(
     receipts = pd.read_parquet(receipts_path)
     panel, validation = attach_gas_predictions(frontier, route_gas, receipts)
     results = consequence_rows(panel)
+    central_all = results[
+        results["gas_scenario"].eq("central") & results["size_group"].eq("all")
+    ].iloc[0]
     support_rows = pd.concat(
         [
             validation,
@@ -378,6 +402,9 @@ def run(
                         **selection,
                         "common_support_rows_with_output_price": int(len(frontier)),
                         "rows_with_receipt_and_gas_prediction": int(len(panel)),
+                        "gross_net_common_positive_output_routes": int(
+                            central_all["routes"]
+                        ),
                         "receipt_match_share": float(len(panel) / len(frontier)),
                         "gas_training_transactions": int(len(route_gas)),
                         "gas_training_routers": int(route_gas["tx_to"].nunique()),
@@ -386,6 +413,21 @@ def run(
                         "gas_measure": "total successful transaction receipt gas",
                         "gas_price_measure": "executed_transaction_effective_gas_price",
                         "native_price_measure": "same_day_weth_usd",
+                        "output_token_price_measure": (
+                            "realised_route_output_usd_divided_by_realised_output_amount; "
+                            "common endpoint price applied to both exact paths"
+                        ),
+                        "counterfactual_router_assumption": (
+                            "observed_transaction_callee_class_held_fixed"
+                        ),
+                        "gas_prediction_features": (
+                            "year+transaction_callee_class+ordered_venue_sequence+"
+                            "route_legs+cross_venue_indicator"
+                        ),
+                        "interquartile_bound_definition": (
+                            "chosen-favorable uses chosen-path p25 and rival-path p75; "
+                            "chosen-unfavorable reverses those path-specific quantiles"
+                        ),
                         "boundary": (
                             "total transaction gas includes router transfers and bookkeeping; "
                             "predicted rival-path gas is descriptive and is not an execution trace"
