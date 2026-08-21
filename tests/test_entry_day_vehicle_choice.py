@@ -10,6 +10,7 @@ from scripts.analyze.run_entry_day_vehicle_choice import (
     load_material_entries,
     regression_results,
 )
+from ddvc.pricing.tick_replay import initialization_root
 
 
 def _support_row(
@@ -95,6 +96,14 @@ def test_material_entries_use_first_primary_day_and_exclude_vehicle_endpoints(
     assert row["ordered_pair"] == "src-a>tgt-a"
     assert row["entry_stable_share"] == 0.0
     assert row["entry_coherent_value_usd"] == pytest.approx(120_000.0)
+
+
+def test_tick_initializations_follow_the_selected_raw_root(tmp_path) -> None:
+    raw_root = tmp_path / "raw" / "thegraph"
+
+    assert initialization_root(raw_root) == (
+        tmp_path / "raw" / "ethereum" / "tick_initializations" / "daily"
+    )
 
 
 def _synthetic_panel() -> pd.DataFrame:

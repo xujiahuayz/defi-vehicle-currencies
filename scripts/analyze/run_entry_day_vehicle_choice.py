@@ -45,7 +45,7 @@ import numpy as np
 import pandas as pd
 
 from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered
-from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT, SHARED_RUNTIME_DIR
+from ddvc.paths import OUTPUT_DIR, PRIMARY_REPO_ROOT, REPO_ROOT, SHARED_RUNTIME_DIR
 from ddvc.pricing.tick_replay import TickReplayEvent, TickReplayState, load_tick_day_events
 from ddvc.pricing.v2_replay import V2ReplayDay, load_v2_replay_day
 from ddvc.realised import LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
@@ -65,7 +65,6 @@ from scripts.analyze.run_contestable_vehicle_choice import (
 from scripts.analyze.run_exact_vehicle_frontier import (
     EXACT_VENUES,
     TICK_START,
-    UNIFIED,
     RouteTarget,
     _resolved_leg,
     _tick_identity,
@@ -73,9 +72,12 @@ from scripts.analyze.run_exact_vehicle_frontier import (
 )
 
 
-PAIR_SUPPORT = DATA_DIR / "processed/endpoint_candidate_pair_support.parquet"
-POOL_CAPITAL = DATA_DIR / "processed/pool_capital_daily.parquet"
-PANEL = DATA_DIR / "processed/entry_day_vehicle_choice_exact.parquet"
+PRIMARY_DATA_DIR = PRIMARY_REPO_ROOT / "data"
+PRIMARY_RAW_ROOT = PRIMARY_DATA_DIR / "raw" / "thegraph"
+PRIMARY_UNIFIED_ROOT = PRIMARY_DATA_DIR / "unified"
+PAIR_SUPPORT = PRIMARY_DATA_DIR / "processed/endpoint_candidate_pair_support.parquet"
+POOL_CAPITAL = PRIMARY_DATA_DIR / "processed/pool_capital_daily.parquet"
+PANEL = REPO_ROOT / "data/processed/entry_day_vehicle_choice_exact.parquet"
 OUTPUT = OUTPUT_DIR / "exhibits/entry_day_vehicle_choice.jsonl"
 SUPPORT = OUTPUT_DIR / "exhibits/entry_day_vehicle_choice_support.jsonl"
 LOCK = SHARED_RUNTIME_DIR / "entry-day-vehicle-choice.lock"
@@ -189,7 +191,7 @@ def entry_route_targets(
 ) -> tuple[list[RouteTarget], Counter]:
     """Resolve exact-venue routes only for the selected entry pairs."""
 
-    path = UNIFIED / f"{day}.parquet"
+    path = PRIMARY_UNIFIED_ROOT / f"{day}.parquet"
     reasons: Counter = Counter()
     if not path.is_file():
         reasons["missing_unified_day"] += 1
@@ -299,11 +301,16 @@ def score_entry_day(
     """Score material entry-day routes and advance replay through day close."""
 
     tick_events = (
-        load_tick_day_events(None, day, venues=("uniswap_v3",))
+        load_tick_day_events(
+            None,
+            day,
+            venues=("uniswap_v3",),
+            raw_root=PRIMARY_RAW_ROOT,
+        )
         if day >= TICK_START
         else []
     )
-    v2_replay = load_v2_replay_day(None, day)
+    v2_replay = load_v2_replay_day(None, day, raw_root=PRIMARY_RAW_ROOT)
     pairs = frozenset(
         zip(entries["token_in"].astype(str), entries["token_out"].astype(str), strict=True)
     )
@@ -414,7 +421,12 @@ def run_exact_entry_days(entries: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFr
             )
         else:
             replay.apply_all(
-                load_tick_day_events(None, day, venues=("uniswap_v3",))
+                load_tick_day_events(
+                    None,
+                    day,
+                    venues=("uniswap_v3",),
+                    raw_root=PRIMARY_RAW_ROOT,
+                )
             )
         if index % 180 == 0:
             elapsed = perf_counter() - started
