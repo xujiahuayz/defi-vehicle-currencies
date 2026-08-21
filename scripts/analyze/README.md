@@ -35,6 +35,7 @@ belongs in `../plot/` or `../tabulate/`.
 | `run_network_betweenness.py` | all-route intermediary participation and approximate betweenness in annual atomic-pair graphs; paper/deck |
 | `run_v3_v4_internal_routing_participation.py` | same-candidate-day V3/V4 internal-routing, origin-participation, and persistent-volatility contrasts |
 | `run_v4_lp_net_settlement.py` | lagged within-origin-pool relation between observed V4 net settlement and subsequent LP add/remove flow, persistence, repositioning, and range width; exploratory only |
+| `run_balancer_stable_core_lp_flows.py` | corroborating Balancer stable-core versus stable-spoke joins, exits, net flow, pool concentration, and leave-largest-pool sensitivity; optional reported-state correlations remain descriptive |
 | `run_stable_stress_event.py` | exploratory USDC/SVB stable-vehicle identity stress screen |
 | `run_route_heterogeneity.py` | WETH-eligibility and route-scope results plus deck values |
 | `run_usdt_integration_decomposition_e0.py` | USDT transition decomposition; pair-decomposition values |

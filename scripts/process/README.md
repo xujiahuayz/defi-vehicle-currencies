@@ -22,6 +22,7 @@ data and analysis-ready panels. Each current panel has one owner.
 | `build_v3_internal_routing_candidate_daily.py` | V3 candidate-day internal same-asset routing measured like the V4 routing proxy |
 | `build_v3_v4_lp_origin_candidate_daily.py` | comparable nonzero V3/V4 LP actions by vehicle, day, and transaction origin |
 | `build_v4_lp_net_settlement_weekly.py` | V4 vehicle-linked provider-pool transactions and weeks, retaining LP actions, settlement-count compression, amount netting, value coverage, repositioning, and range width |
+| `build_balancer_stable_core_lp_flow_weekly.py` | exact Balancer USD-stable cores and two-token stable spokes, with observed join/exit flows and counts plus prior-week reported TVL/volume only on consecutive Sunday state |
 | `build_endpoint_candidate_composition.py` | choice, audit, exclusion, and pair-support panels |
 | `build_intermediation_by_type.py` | daily intermediary-type panel and its descriptive exhibits |
 | `build_intermediation_halfyear.py` | half-year composition from the admitted daily intermediary panel |
