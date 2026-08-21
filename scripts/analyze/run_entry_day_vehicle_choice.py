@@ -505,6 +505,8 @@ def _fit_entry_model(
     sample: str,
     outcome: str = "chosen_stable",
     choice_timing: str = "original_pair_entry_day",
+    record_type: str = "entry_day_vehicle_choice_regression",
+    entry_value_threshold_usd: float | None = None,
 ) -> pd.DataFrame:
     """Fit one entry-choice column with four absorbed controls."""
 
@@ -553,7 +555,7 @@ def _fit_entry_model(
     ):
         rows.append(
             {
-                "record_type": "entry_day_vehicle_choice_regression",
+                "record_type": record_type,
                 "model_id": model_id,
                 "sample": sample,
                 "outcome": outcome,
@@ -581,6 +583,11 @@ def _fit_entry_model(
                 "dependent_mean": float(data[outcome].mean()),
                 "minimum_entry_value_usd": float(
                     frame["entry_coherent_value_usd"].min()
+                ),
+                "entry_value_threshold_usd": (
+                    float(entry_value_threshold_usd)
+                    if entry_value_threshold_usd is not None
+                    else float(frame["entry_coherent_value_usd"].min())
                 ),
                 "minimum_route_input_usd": MIN_ROUTE_INPUT_USD,
                 "maximum_leg_price_impact": QUOTED_LEG_MAX_PRICE_IMPACT,

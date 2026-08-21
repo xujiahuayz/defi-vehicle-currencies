@@ -34,7 +34,6 @@ from scripts.analyze.run_contestable_vehicle_choice import (
     WETH,
 )
 from scripts.analyze.run_entry_day_vehicle_choice import (
-    DEFAULT_MIN_ENTRY_VALUE_USD,
     END,
     MIN_ROUTE_INPUT_USD,
     POOL_CAPITAL,
@@ -45,6 +44,7 @@ from scripts.analyze.run_entry_day_vehicle_choice import (
 )
 
 
+DEFAULT_FIRST_CONTESTABLE_ENTRY_VALUE_USD = 5_000.0
 PRIMARY_DATA_DIR = PRIMARY_REPO_ROOT / "data"
 FRONTIER = PRIMARY_DATA_DIR / "processed/exact_vehicle_frontier_monthly.parquet"
 PANEL = REPO_ROOT / "data/processed/first_contestable_vehicle_choice.parquet"
@@ -224,7 +224,11 @@ def attach_oriented_variables(panel: pd.DataFrame, capital_path: Path) -> pd.Dat
     return data
 
 
-def choice_results(panel: pd.DataFrame) -> pd.DataFrame:
+def choice_results(
+    panel: pd.DataFrame,
+    *,
+    entry_value_threshold_usd: float = DEFAULT_FIRST_CONTESTABLE_ENTRY_VALUE_USD,
+) -> pd.DataFrame:
     """Estimate stable selection and entry-family retention on common samples."""
 
     complete = panel[panel["both_v2_bridge_capitals_positive"]].copy()
@@ -236,6 +240,8 @@ def choice_results(panel: pd.DataFrame) -> pd.DataFrame:
             predictors=("stable_output_advantage_100bp",),
             sample="all_first_sampled_exact_contestable_routes",
             choice_timing="first_sampled_exact_contestable_date_after_entry",
+            record_type="first_contestable_vehicle_choice_regression",
+            entry_value_threshold_usd=entry_value_threshold_usd,
         ),
         _fit_entry_model(
             complete,
@@ -243,6 +249,8 @@ def choice_results(panel: pd.DataFrame) -> pd.DataFrame:
             predictors=("stable_output_advantage_100bp",),
             sample="first_contestable_positive_both_family_prior_v2_capital",
             choice_timing="first_sampled_exact_contestable_date_after_entry",
+            record_type="first_contestable_vehicle_choice_regression",
+            entry_value_threshold_usd=entry_value_threshold_usd,
         ),
         _fit_entry_model(
             complete,
@@ -250,6 +258,8 @@ def choice_results(panel: pd.DataFrame) -> pd.DataFrame:
             predictors=("stable_v2_capital_share_10pp",),
             sample="first_contestable_positive_both_family_prior_v2_capital",
             choice_timing="first_sampled_exact_contestable_date_after_entry",
+            record_type="first_contestable_vehicle_choice_regression",
+            entry_value_threshold_usd=entry_value_threshold_usd,
         ),
         _fit_entry_model(
             complete,
@@ -260,6 +270,8 @@ def choice_results(panel: pd.DataFrame) -> pd.DataFrame:
             ),
             sample="first_contestable_positive_both_family_prior_v2_capital",
             choice_timing="first_sampled_exact_contestable_date_after_entry",
+            record_type="first_contestable_vehicle_choice_regression",
+            entry_value_threshold_usd=entry_value_threshold_usd,
         ),
         _fit_entry_model(
             clear_entry,
@@ -268,6 +280,8 @@ def choice_results(panel: pd.DataFrame) -> pd.DataFrame:
             sample="clear_entry_family_first_contestable_positive_capital",
             outcome="entry_vehicle_retained",
             choice_timing="first_sampled_exact_contestable_date_after_entry",
+            record_type="first_contestable_vehicle_choice_regression",
+            entry_value_threshold_usd=entry_value_threshold_usd,
         ),
         _fit_entry_model(
             clear_entry,
@@ -276,6 +290,8 @@ def choice_results(panel: pd.DataFrame) -> pd.DataFrame:
             sample="clear_entry_family_first_contestable_positive_capital",
             outcome="entry_vehicle_retained",
             choice_timing="first_sampled_exact_contestable_date_after_entry",
+            record_type="first_contestable_vehicle_choice_regression",
+            entry_value_threshold_usd=entry_value_threshold_usd,
         ),
         _fit_entry_model(
             clear_entry,
@@ -287,12 +303,19 @@ def choice_results(panel: pd.DataFrame) -> pd.DataFrame:
             sample="clear_entry_family_first_contestable_positive_capital",
             outcome="entry_vehicle_retained",
             choice_timing="first_sampled_exact_contestable_date_after_entry",
+            record_type="first_contestable_vehicle_choice_regression",
+            entry_value_threshold_usd=entry_value_threshold_usd,
         ),
     ]
     return pd.concat(rows, ignore_index=True, sort=False)
 
 
-def support_results(entries: pd.DataFrame, panel: pd.DataFrame) -> pd.DataFrame:
+def support_results(
+    entries: pd.DataFrame,
+    panel: pd.DataFrame,
+    *,
+    entry_value_threshold_usd: float = DEFAULT_FIRST_CONTESTABLE_ENTRY_VALUE_USD,
+) -> pd.DataFrame:
     """Report contestability coverage, lags, and entry-family survival."""
 
     pair = (
@@ -329,6 +352,7 @@ def support_results(entries: pd.DataFrame, panel: pd.DataFrame) -> pd.DataFrame:
                 "minimum_entry_value_usd": float(
                     entries["entry_coherent_value_usd"].min()
                 ),
+                "entry_value_threshold_usd": float(entry_value_threshold_usd),
             },
             {
                 "record_type": "first_contestable_vehicle_choice_support",
@@ -383,7 +407,7 @@ def run(
     panel_path: Path = PANEL,
     output_path: Path = OUTPUT,
     support_path: Path = SUPPORT,
-    minimum_entry_value_usd: float = DEFAULT_MIN_ENTRY_VALUE_USD,
+    minimum_entry_value_usd: float = DEFAULT_FIRST_CONTESTABLE_ENTRY_VALUE_USD,
     start: str = START,
     end: str = END,
     support_only: bool = False,
@@ -396,13 +420,20 @@ def run(
     )
     exact = first_contestable_routes(frontier_path, entries)
     panel = attach_oriented_variables(exact, capital_path)
-    support = support_results(entries, panel)
+    support = support_results(
+        entries,
+        panel,
+        entry_value_threshold_usd=minimum_entry_value_usd,
+    )
     write_panel(panel, panel_path, code_sources=CODE_SOURCES)
     write_exhibit(support, support_path, code_sources=CODE_SOURCES, inputs=INPUTS)
     print(support.to_string(index=False), flush=True)
     if support_only:
         return 0
-    results = choice_results(panel)
+    results = choice_results(
+        panel,
+        entry_value_threshold_usd=minimum_entry_value_usd,
+    )
     write_exhibit(results, output_path, code_sources=CODE_SOURCES, inputs=INPUTS)
     print(results.to_string(index=False), flush=True)
     return 0
@@ -418,7 +449,7 @@ def main() -> int:
     parser.add_argument(
         "--minimum-entry-value-usd",
         type=float,
-        default=DEFAULT_MIN_ENTRY_VALUE_USD,
+        default=DEFAULT_FIRST_CONTESTABLE_ENTRY_VALUE_USD,
     )
     parser.add_argument("--start", default=START)
     parser.add_argument("--end", default=END)

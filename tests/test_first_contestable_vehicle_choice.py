@@ -150,12 +150,17 @@ def test_support_distinguishes_entry_from_first_contestability() -> None:
         ]
     )
 
-    support = support_results(entries, panel).set_index("sample")
+    support = support_results(
+        entries,
+        panel,
+        entry_value_threshold_usd=5_000.0,
+    ).set_index("sample")
 
     cohort = support.loc["material_entry_cohort"]
     assert cohort["entry_pairs"] == 3
     assert cohort["pairs_reaching_sampled_contestability"] == 2
     assert cohort["contestability_coverage_share"] == pytest.approx(2 / 3)
+    assert cohort["entry_value_threshold_usd"] == 5_000.0
     survival = support.loc["entry_vehicle_survival"]
     assert survival["route_weighted_retention_share"] == pytest.approx(2 / 3)
     assert survival["equal_pair_retention_share"] == pytest.approx(0.5)
