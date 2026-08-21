@@ -83,6 +83,57 @@ def test_load_daily_lp_panel_joins_flow_volume_capital_and_returns(
     assert row["endpoint_log_return"] == pytest.approx(np.log(1.1))
 
 
+def test_load_daily_lp_panel_prefers_embedded_prior_calendar_capital(
+    tmp_path: Path,
+) -> None:
+    endpoint = "0x0000000000000000000000000000000000000001"
+    flow_path = tmp_path / "flow.parquet"
+    price_path = tmp_path / "prices.parquet"
+    missing_external_capital = tmp_path / "not-needed.parquet"
+    pd.DataFrame(
+        [
+            {
+                "origin_date": pd.Timestamp("2025-01-02"),
+                "venue": "uniswap_v2",
+                "pool": "0xpool",
+                "token0_address": endpoint,
+                "token1_address": USDC,
+                "v2_lagged_capital_usd": 90_000.0,
+                "v2_lagged_sqrt_k": 18.0,
+                "v2_exact_lag_valid": True,
+                "v2_add_lp_flow_usd": 20.0,
+                "v2_remove_lp_flow_usd": 5.0,
+                "v2_gross_lp_flow_usd": 25.0,
+                "v2_net_add_lp_flow_usd": 15.0,
+                "v2_add_liquidity": 4.0,
+                "v2_remove_liquidity": 1.0,
+                "v2_gross_liquidity": 5.0,
+                "v2_net_add_liquidity": 3.0,
+                "v2_volume_usd": 1_000.0,
+                "v2_fee_opportunity_usd": 3.0,
+            }
+        ]
+    ).to_parquet(flow_path, index=False)
+    pd.DataFrame(
+        [
+            {"day": "20250101", "token": endpoint, "price_usd": 1.0},
+            {"day": "20250102", "token": endpoint, "price_usd": 1.1},
+            {"day": "20250101", "token": USDC, "price_usd": 1.0},
+            {"day": "20250102", "token": USDC, "price_usd": 1.0},
+        ]
+    ).to_parquet(price_path, index=False)
+
+    row = load_daily_lp_panel(
+        flow_path=flow_path,
+        capital_path=missing_external_capital,
+        price_path=price_path,
+    ).iloc[0]
+
+    assert row["capital_usd"] == pytest.approx(90_000.0)
+    assert row["sqrt_k"] == pytest.approx(18.0)
+    assert row["v2_net_add_lp_flow_usd"] == pytest.approx(15.0)
+
+
 def _daily_rows() -> pd.DataFrame:
     rows: list[dict[str, object]] = []
     for index, day in enumerate(pd.date_range("2025-01-06", periods=42, freq="D")):

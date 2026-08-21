@@ -145,10 +145,20 @@ def load_daily_lp_panel(
 ) -> pd.DataFrame:
     """Join decoded LP flows to the complete capital and price calendar."""
 
-    for path in (flow_path, capital_path, price_path):
+    for path in (flow_path, price_path):
         if not path.is_file():
             raise FileNotFoundError(path)
     columns = _parquet_columns(flow_path)
+    embedded_capital_columns = {
+        "token0_address",
+        "token1_address",
+        "v2_lagged_capital_usd",
+        "v2_lagged_sqrt_k",
+        "v2_exact_lag_valid",
+    }
+    use_embedded_capital = embedded_capital_columns.issubset(columns)
+    if not use_embedded_capital and not capital_path.is_file():
+        raise FileNotFoundError(capital_path)
     price_columns = _parquet_columns(price_path)
     required = {
         "origin_date",
@@ -181,19 +191,57 @@ def load_daily_lp_panel(
         f"WHEN candidate_address = '{address}' THEN '{symbol}'"
         for address, symbol in CANDIDATES.items()
     )
-    capital = _sql_path(capital_path)
     flow = _sql_path(flow_path)
     prices = _sql_path(price_path)
-    query = f"""
-    WITH capital_base AS (
+    if use_embedded_capital:
+        # The processed flow panel carries the exact prior-calendar reserve
+        # state on every raw pool-day for which that state is available.  Use
+        # it as the weekly calendar.  Rejoining the sparse current-state
+        # capital release discards quiet days and can leave no consecutive
+        # four-week histories.
+        capital_source = f"""
+        SELECT
+            CAST(f.origin_date AS DATE) AS origin_date,
+            lower(f.venue) AS venue,
+            lower(f.pool) AS pool,
+            lower(f.token0_address) AS token0_address,
+            lower(f.token1_address) AS token1_address,
+            f.v2_lagged_capital_usd::DOUBLE AS capital_usd,
+            f.v2_lagged_sqrt_k::DOUBLE AS sqrt_k
+        FROM read_parquet('{flow}') f
+        WHERE f.v2_exact_lag_valid
+          AND f.v2_lagged_capital_usd > 0
+          AND lower(f.venue) = 'uniswap_v2'
+        """
+    else:
+        capital = _sql_path(capital_path)
+        capital_source = f"""
         SELECT
             strptime(CAST(c.day AS VARCHAR), '%Y%m%d')::DATE AS origin_date,
-            c.venue,
+            lower(c.venue) AS venue,
             lower(c.pool) AS pool,
             lower(c.token0_address) AS token0_address,
             lower(c.token1_address) AS token1_address,
             c.capital_usd::DOUBLE AS capital_usd,
-            sqrt(c.reserve0 * c.reserve1)::DOUBLE AS sqrt_k,
+            sqrt(c.reserve0 * c.reserve1)::DOUBLE AS sqrt_k
+        FROM read_parquet('{capital}') c
+        JOIN (
+            SELECT DISTINCT lower(venue) AS venue, lower(pool) AS pool
+            FROM read_parquet('{flow}')
+        ) r
+          ON r.venue = lower(c.venue)
+         AND r.pool = lower(c.pool)
+        WHERE c.capital_validation_status = 'exact_state_current'
+          AND c.capital_usd > 0
+          AND lower(c.venue) = 'uniswap_v2'
+        """
+    query = f"""
+    WITH capital_source AS (
+        {capital_source}
+    ),
+    capital_base AS (
+        SELECT
+            c.*,
             CASE
                 WHEN lower(c.token0_address) IN ({candidate_values})
                     THEN lower(c.token0_address)
@@ -204,17 +252,8 @@ def load_daily_lp_panel(
                     THEN lower(c.token1_address)
                 ELSE lower(c.token0_address)
             END AS endpoint_address
-        FROM read_parquet('{capital}') c
-        JOIN (
-            SELECT DISTINCT lower(venue) AS venue, lower(pool) AS pool
-            FROM read_parquet('{flow}')
-        ) r
-          ON r.venue = c.venue
-         AND r.pool = lower(c.pool)
-        WHERE c.capital_validation_status = 'exact_state_current'
-          AND c.capital_usd > 0
-          AND c.venue = 'uniswap_v2'
-          AND (
+        FROM capital_source c
+        WHERE (
                 (lower(c.token0_address) IN ({candidate_values}))::INTEGER
               + (lower(c.token1_address) IN ({candidate_values}))::INTEGER
           ) = 1
