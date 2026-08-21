@@ -6,17 +6,19 @@
 \input{../output/exhibits/disconnected_component_boundary_values.tex}
 \input{../output/exhibits/route_replay_deck_values.tex}
 
-% EVIDENCE-STATUS: conceptual motivation from official cross-border payment designs; no empirical estimate is displayed.
-% SOURCE: BIS Project Nexus FX provision, https://docs.bis.org/nexus/fx-provision/key-points; BIS Project Rialto, https://www.bis.org/about/bisih/topics/cbdc/rialto.htm.
-% VISUAL-FUNCTION: cross-border liquidity problem | payment-provider route schematic | motivate the intermediary and its liquidity
+% EVIDENCE-STATUS: conceptual motivation from official cross-border payment designs and the published dollar-involvement share; no empirical estimate of ours is displayed.
+% SOURCE: BIS Project Nexus FX provision, https://docs.bis.org/nexus/fx-provision/key-points; BIS Project Rialto, https://www.bis.org/about/bisih/topics/cbdc/rialto.htm; Somogyi (2026), dollar involvement in more than 85% of FX transactions (paper/sections/01-introduction.tex citation).
+% VISUAL-FUNCTION: cross-border liquidity problem | payment-provider route schematic with dollar-dominance anchor | motivate the intermediary and its liquidity
 \begin{frame}{A cross-border payment needs someone to make the FX market}
 \begin{columns}[T,totalwidth=\textwidth]
 \begin{column}{0.48\textwidth}
 \evidencekicker{The liquidity-provider problem}
 \vspace{0.10cm}
 {\large A payment provider receives one currency but must deliver another it does not hold.\par}
-\vspace{0.22cm}
-{\small Project Nexus requires an FX provider. Project Rialto uses a vehicle when direct exchange is unavailable.\par}
+\vspace{0.16cm}
+{\fontsize{21}{23}\selectfont\bfseries\color{ucldark}more than 85\%\par}
+\vspace{0.03cm}
+{\small of FX transactions involve the U.S. dollar\par}
 \end{column}
 \begin{column}{0.48\textwidth}
 \centering
@@ -34,7 +36,7 @@
 \end{columns}
 \vspace{0.14cm}
 {\large\bfseries\color{ucldark}\centering Winning the middle concentrates trading and liquidity in the vehicle.\par}
-\decknote{Project Nexus states that every cross-border, cross-currency payment needs an actor willing and able to exchange the currencies. Project Rialto experimentally uses a vehicle currency when direct exchange is unavailable. We study the intermediary asset observed inside DEX pool routes.}
+\decknote{The dollar share follows Somogyi (2026). Project Nexus states that every cross-border, cross-currency payment needs an actor willing and able to exchange the currencies; Project Rialto experimentally uses a vehicle currency when direct exchange is unavailable. We study the intermediary asset observed inside DEX pool routes.}
 \end{frame}
 
 % EVIDENCE-STATUS: conceptual motivation from vehicle-currency theory and conventional FX reporting limits.

@@ -45,66 +45,56 @@
 
 % EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_lifecycle.jsonl.
 % EVIDENCE-STATUS: central exact decomposition.
-% VISUAL-FUNCTION: sources of aggregate rotation | three contribution blocks and share arrow | separate pair formation from net switching
+% VISUAL-FUNCTION: sources of aggregate rotation | exact accounting identity with estimated terms | separate pair formation from net switching
 \begin{frame}{Pair formation supplies most of the rotation}
 \evidencekicker{Exact decomposition in percentage points (pp): 2024 H1 to 2026 H1}
-\vspace{0.06cm}
+\vspace{0.22cm}
 \begin{center}
-\begin{tikzpicture}[x=1cm,y=1cm]
-\node[softbox,text width=3.05cm,minimum height=1.45cm,align=center] at (-4.35,1.55)
-{\small\mbox{Same continuing}\\pair\\[0.14cm]{\fontsize{21}{23}\selectfont\bfseries\color{accent}\mbox{\PairPooledWithin}}};
-\node[softbox,text width=3.05cm,minimum height=1.45cm,align=center] at (0,1.55)
-{\small Activity shifts across pairs\\[0.14cm]{\fontsize{21}{23}\selectfont\bfseries\color{ucldark}\mbox{\PairPooledReweight}}};
-\node[softbox,text width=3.25cm,minimum height=1.45cm,align=center,fill=stable!9] at (4.35,1.55)
-{\small First-observed pair entry\\[0.14cm]{\fontsize{21}{23}\selectfont\bfseries\color{stable}\mbox{\PairLifecycleCountEntry}}};
-\node[font=\fontsize{7.0}{7.5}\selectfont,text=muted,align=center,text width=5.40cm] at (4.35,0.28)
-{Other lifecycle terms: \PairLifecycleCountOffset;\quad net: \PairLifecycleCountNet};
-\draw[rule,line width=1pt] (-5.95,-0.05)--(5.95,-0.05);
-\node[font=\normalsize\bfseries,text=ink,align=left] at (-4.30,-0.72) {Stablecoin\\share};
-\node[font=\scriptsize\bfseries,text=muted] at (-1.45,-0.42) {2024 H1};
-\node[font=\fontsize{22}{24}\selectfont\bfseries,text=ucldark] at (-1.45,-0.88) {\PairPooledBase};
-\draw[-{Stealth[length=7pt]},draw=stable,line width=1.7pt] (0.05,-0.78)--(1.35,-0.78);
-\node[font=\scriptsize\bfseries,text=muted] at (2.85,-0.42) {2026 H1};
-\node[font=\fontsize{22}{24}\selectfont\bfseries,text=stable] at (2.85,-0.88) {\PairPooledEnd};
-\end{tikzpicture}
+{\large
+$\displaystyle
+\Delta S=
+\underbrace{\bar W\!\sum_p\bar\omega_p\,\Delta s_p}_{\substack{\text{switching}\\[3pt]\mbox{\normalsize\bfseries\color{accent}\PairPooledWithin}}}
+\;+\;\underbrace{\bar W\!\sum_p\bar s_p\,\Delta\omega_p}_{\substack{\text{reallocation}\\[3pt]\mbox{\normalsize\bfseries\color{ucldark}\PairPooledReweight}}}
+\;+\;\underbrace{(\bar S_C{-}\bar S_E)\,\Delta W}_{\substack{\text{continuing weight}\\[3pt]\mbox{\normalsize\bfseries\color{muted}\PairPooledSupportMass}}}
+\;+\;\underbrace{(1{-}\bar W)\,\Delta S_E}_{\substack{\text{period-specific pairs}\\[3pt]\mbox{\normalsize\bfseries\color{stable}\PairLifecycleCountNet}}}
+$\par}
 \end{center}
-\vspace{0.02cm}
-{\large\bfseries\color{ucldark}The aggregate rises \PairPooledTotal; net switching inside continuing pairs is \PairPooledWithin.\par}
-\decknote{Exact two-leg native-or-stable vehicle routes on matched January--June dates. Full pair histories split first-observed entry from the period-specific net; reactivation, vehicle-role turnover, and exit form the offset. Continuing-pair weight contributes \PairPooledSupportMass{}. Unrounded components sum to the aggregate change.}
+\vspace{0.34cm}
+\begin{center}
+{\color{muted}\scriptsize STABLECOIN SHARE\quad}
+{\fontsize{21}{23}\selectfont\bfseries\color{ucldark}\PairPooledBase}
+\quad{\color{stable}\large$\longrightarrow$}\quad
+{\fontsize{21}{23}\selectfont\bfseries\color{stable}\PairPooledEnd}\par
+\end{center}
+\vspace{0.16cm}
+{\large\bfseries\color{ucldark}First-observed pair entry supplies \PairLifecycleCountEntry{} of \PairPooledTotal{}; switching gives \PairPooledWithin{}.\par}
+\decknote{Exact two-leg native-or-stable vehicle routes on matched January--June dates. $S$ is the stablecoin share, $W$ the continuing-pair weight, $\omega_p$ and $s_p$ pair $p$'s weight and stablecoin share; bars are midpoints of 2024 H1 and 2026 H1, and unrounded terms sum to the aggregate change. Within the period-specific term, first-observed entry contributes \PairLifecycleCountEntry{} and reactivation, vehicle-role turnover, and exit contribute \PairLifecycleCountOffset{}.}
 \end{frame}
 
 % EVIDENCE-SOURCES: output/exhibits/entry_vehicle_persistence_models.jsonl; output/exhibits/entry_vehicle_persistence_support.jsonl.
-% EVIDENCE-STATUS: corrected post-entry persistence with the entry day removed and disjoint follow-up windows.
-% VISUAL-FUNCTION: post-entry persistence | two follow-up estimates on a timeline | show strong vehicle continuity among pairs that trade again
+% EVIDENCE-STATUS: corrected post-entry persistence with the entry day removed and disjoint follow-up windows, including entry-activity restrictions.
+% VISUAL-FUNCTION: post-entry persistence | compact estimate table across horizons and entry-activity floors | show strong vehicle continuity among pairs that trade again
 \begin{frame}{A pair carries its first vehicle into later trading}
-\evidencekicker{Effect of 10 pp more stablecoin use on the entry day}
-\vspace{0.08cm}
+\evidencekicker{Stablecoin share after entry, per 10 pp more stablecoin use on the entry day}
+\vspace{0.14cm}
 \begin{center}
-\begin{tikzpicture}[x=1cm,y=1cm]
-\node[softbox,text width=2.70cm,minimum height=1.50cm,align=center,fill=stable!8] (entry) at (-4.25,1.45)
-{\small Entry day\\[0.12cm]{\large\bfseries\color{stable}vehicle mix}};
-\node[softbox,text width=3.10cm,minimum height=1.50cm,align=center] (early) at (0,1.45)
-{\small Days 1--30\\[0.12cm]{\fontsize{23}{25}\selectfont\bfseries\color{ucldark}\EntryPersistenceEarlyPairEffectPerTen}};
-\node[softbox,text width=3.10cm,minimum height=1.50cm,align=center] (late) at (4.40,1.45)
-{\small Days 31--120\\[0.12cm]{\fontsize{23}{25}\selectfont\bfseries\color{ucldark}\EntryPersistenceLatePairEffectPerTen}};
-\draw[-{Stealth[length=7pt]},draw=stable,line width=1.6pt] (entry)--(early);
-\draw[-{Stealth[length=7pt]},draw=stable,line width=1.6pt] (early)--(late);
-\end{tikzpicture}
+\renewcommand{\arraystretch}{1.12}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+ & Days 1--30 & Days 31--120 \\
+\midrule
+All retrading pairs & {\bfseries\color{stable}\EntryPersistenceEarlyPairEffectPerTen} & {\bfseries\color{stable}\EntryPersistenceLatePairEffectPerTen} \\
+ & {\footnotesize(\EntryPersistenceEarlyPairSEPerTen)} & {\footnotesize(\EntryPersistenceLatePairSEPerTen)} \\
+At least 5 entry routes & \EntryPersistenceEarlyMinFiveEffectPerTen & \EntryPersistenceLateMinFiveEffectPerTen \\
+ & {\footnotesize(\EntryPersistenceEarlyMinFiveSEPerTen)} & {\footnotesize(\EntryPersistenceLateMinFiveSEPerTen)} \\
+At least 10 entry routes & \EntryPersistenceEarlyMinTenEffectPerTen & \EntryPersistenceLateMinTenEffectPerTen \\
+ & {\footnotesize(\EntryPersistenceEarlyMinTenSEPerTen)} & {\footnotesize(\EntryPersistenceLateMinTenSEPerTen)} \\
+\bottomrule
+\end{tabular}
 \end{center}
-\vspace{0.22cm}
-\begin{columns}[T,totalwidth=0.86\textwidth]
-\begin{column}{0.41\textwidth}\centering
-{\color{muted}\scriptsize PAIRS TRADING AGAIN, DAYS 1--30\par}
-{\large\bfseries\color{ucldark}\EntryPersistenceEarlyRetradeRate\par}
-\end{column}
-\begin{column}{0.41\textwidth}\centering
-{\color{muted}\scriptsize PAIRS TRADING AGAIN, DAYS 31--120\par}
-{\large\bfseries\color{ucldark}\EntryPersistenceLateRetradeRate\par}
-\end{column}
-\end{columns}
-\vspace{0.22cm}
-{\large\bfseries\color{stable}\centering Vehicle identity persists among pairs that remain active.\par}
-\decknote{The sample contains \EntryPersistenceEntrants{} pairs entering by March 2 in 2024 or 2026. The entry day is excluded; follow-up windows are disjoint. The share regressions condition on trading again and control for cohort year, stablecoin endpoints, entry activity, direct-route share, and route complexity. Standard errors cluster by entry date: \EntryPersistenceEarlyPairSEPerTen{} and \EntryPersistenceLatePairSEPerTen{}, respectively.}
+\vspace{0.20cm}
+{\large\bfseries\color{stable}\centering Near one-for-one persistence, however precisely entry is measured.\par}
+\decknote{The sample contains \EntryPersistenceEntrants{} pairs entering by March 2 in 2024 or 2026; \EntryPersistenceEarlyRetradeRate{} trade again in days 1--30 and \EntryPersistenceLateRetradeRate{} in days 31--120. The entry day is excluded and follow-up windows are disjoint. Regressions condition on trading again and control for cohort year, stablecoin endpoints, entry activity, direct-route share, and route complexity. Parentheses hold entry-date-clustered standard errors; the restricted rows contain \EntryPersistenceEarlyMinFivePairs{} and \EntryPersistenceEarlyMinTenPairs{} early-window pairs.}
 \end{frame}
 
 % EVIDENCE-SOURCES: output/exhibits/bridge_exante.jsonl.
@@ -136,107 +126,110 @@ stablecoins carry \textbf{\BridgeExanteLaterShare} of their routes in that windo
 \decknote{The sample contains \BridgeExanteEvents{} pair events. The event is the first date on which DAI, USDC, or USDT has at least \BridgeExanteThreshold{} of prior-calendar deposited capital on both required legs. Every pair used WETH earlier, and the event precedes its first observed stablecoin route.}
 \end{frame}
 
-% EVIDENCE-SOURCES: output/exhibits/bridge_exante.jsonl.
-% EVIDENCE-STATUS: paired post-event changes and within-event relative-depth estimates.
-% VISUAL-FUNCTION: bridge depth | post-event shift and continuous depth estimates | connect two-leg capacity to route allocation
-\begin{frame}{Relative depth divides trading after the bridge forms}
-\evidencekicker{Stablecoin route share; percentage-point estimates}
-\vspace{0.12cm}
-\begin{columns}[T,totalwidth=0.91\textwidth]
-\begin{column}{0.42\textwidth}
-\begin{beamercolorbox}[rounded=true,sep=0.28cm,wd=\textwidth]{block body}
-{\small\color{muted} CHANGE FROM THE PRIOR 30 DAYS\par}\vspace{0.13cm}
-{\fontsize{27}{29}\selectfont\bfseries\color{stable}\BridgeExanteChangeThirty\par}
-{\small during days 0--29\par}\vspace{0.12cm}
-{\large\bfseries\color{ucldark}\BridgeExanteChangeOneTwenty\par}
-{\small during days 30--119\par}
-\end{beamercolorbox}
+% EVIDENCE-SOURCES: output/figures/experiments/bridge_adoption_capital_path.pdf; output/exhibits/bridge_liquidity_dominance.jsonl.
+% EVIDENCE-STATUS: descriptive event-time capital path among eventual users.
+% VISUAL-FUNCTION: capital before first use | event-time line chart and two estimates | show depth building into observed routing
+\begin{frame}{Capital arrives before the first stablecoin route}
+\evidencekicker{Supported stablecoin first used at day zero}
+\vspace{0.02cm}
+\begin{columns}[T,totalwidth=0.95\textwidth]
+\begin{column}{0.66\textwidth}
+\includegraphics[width=\textwidth,height=0.65\textheight,keepaspectratio]{../output/figures/experiments/bridge_adoption_capital_path.pdf}
 \end{column}
 \hfill
-\begin{column}{0.42\textwidth}
-\begin{beamercolorbox}[rounded=true,sep=0.28cm,wd=\textwidth]{block body}
-{\small\color{muted} +10 PP STABLE SHARE OF WEAK-LEG DEPTH\par}\vspace{0.13cm}
-{\fontsize{27}{29}\selectfont\bfseries\color{stable}\BridgeExanteDepthThirty\par}
-{\small route share, days 0--29\par}\vspace{0.12cm}
+\begin{column}{0.27\textwidth}
+{\color{muted}\scriptsize BEFORE FIRST USE\par}\vspace{0.05cm}
+{\fontsize{23}{25}\selectfont\bfseries\color{stable}\BridgeAdoptionCapitalPreCoef\par}
+{\small stablecoin bridge, day -7 to 0\par}
+\vspace{0.38cm}
+{\color{muted}\scriptsize AFTER FIRST USE\par}\vspace{0.05cm}
+{\fontsize{23}{25}\selectfont\bfseries\color{accent}\BridgeAdoptionCapitalPostCoef\par}
+{\small stablecoin bridge, day 0 to +7\par}
+\end{column}
+\end{columns}
+\vspace{0.02cm}
+{\large Capital builds into first use, then partly unwinds.\par}
+\decknote{\BridgeAdoptionCapitalEvents{} pair events with first use 7 to 119 days after persistent support. Relative to WETH, capital changes \BridgeAdoptionCapitalMatchedPreCoef{} before and \BridgeAdoptionCapitalMatchedPostCoef{} after first use. \BridgePoolMarginContinuingCapitalShare{} of first-use capital lies in pools active one week earlier. Capital is lagged one day; intervals cluster by pair and adoption date. Providers deepening ahead of demand and traders waiting for usable depth are both consistent with this path.}
+\end{frame}
+
+% EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl; output/exhibits/bridge_exante.jsonl.
+% EVIDENCE-STATUS: descriptive depth association after persistent support plus paired within-event relative-depth estimates.
+% VISUAL-FUNCTION: relative depth and route allocation | depth-bin bar exhibit beside continuous estimates | connect two-leg capacity to route allocation
+\begin{frame}{Relative depth divides trading after the bridge forms}
+\evidencekicker{Stablecoin route share in the first 30 days after persistent support}
+\vspace{0.10cm}
+\begin{columns}[T,totalwidth=0.97\textwidth]
+\begin{column}{0.62\textwidth}
+\centering
+\begin{tikzpicture}[x=1cm,y=1cm]
+\draw[rule,line width=1pt] (-0.15,0) -- (7.65,0);
+% Bar heights mirror the three generated shares on a common 0.042 cm-per-pp scale.
+\fill[muted!40] (0.35,0) rectangle (1.95,0.10);
+\fill[stable!55] (2.95,0) rectangle (4.55,2.23);
+\fill[stable] (5.55,0) rectangle (7.15,2.94);
+\node[above,font=\large\bfseries,text=muted] at (1.15,0.12) {\BridgeDepthThinFirstShare};
+\node[above,font=\large\bfseries,text=stable] at (3.75,2.25) {\BridgeDepthEqualFirstShare};
+\node[above,font=\large\bfseries,text=stable] at (6.35,2.96) {\BridgeDepthDoubleFirstShare};
+\node[below,font=\scriptsize,align=center] at (1.15,-0.12) {below $0.1\times$\\WETH depth};
+\node[below,font=\scriptsize,align=center] at (3.75,-0.12) {at least\\WETH depth};
+\node[below,font=\scriptsize,align=center] at (6.35,-0.12) {at least $2\times$\\WETH depth};
+\end{tikzpicture}
+\end{column}
+\hfill
+\begin{column}{0.32\textwidth}
+{\color{muted}\scriptsize +10 PP STABLE SHARE OF WEAK-LEG DEPTH\par}\vspace{0.10cm}
+{\fontsize{23}{25}\selectfont\bfseries\color{stable}\BridgeExanteDepthThirty\par}
+{\small route share, days 0--29\par}
+\vspace{0.22cm}
 {\large\bfseries\color{ucldark}\BridgeExanteDepthOneTwenty\par}
 {\small route share, days 30--119\par}
-\end{beamercolorbox}
 \end{column}
 \end{columns}
-\vspace{0.28cm}
-{\large\bfseries\color{ucldark}\centering Opening two legs permits entry; deeper relative capacity wins more flow.\par}
-\decknote{The post-event changes compare each pair with its prior 30 calendar days. Relative-depth estimates include bridge-event effects, calendar-month effects, and seven-day event-age controls. Standard errors cluster by pair and date: \BridgeExanteDepthThirtySE{} and \BridgeExanteDepthOneTwentySE{}. Deposited capital is an equilibrium pool stock.}
+\vspace{0.16cm}
+{\large\bfseries\color{ucldark}\centering Vehicle competition turns on relative depth, leg by leg.\par}
+\decknote{Bars: \BridgeDepthDoseFirstRows{} pair-days across \BridgeDepthDoseFirstEvents{} bridge events; \BridgeDepthThinFirstDays{} of those days sit below one tenth of WETH depth, and bar heights mirror the generated shares. Estimates: within ex-ante bridge events with bridge-event, calendar-month, and event-age controls; standard errors cluster by pair and date (\BridgeExanteDepthThirtySE{} and \BridgeExanteDepthOneTwentySE). Capital and route demand are jointly determined.}
 \end{frame}
 
-% EVIDENCE-SOURCES: output/exhibits/first_contestable_vehicle_choice.jsonl; output/exhibits/first_contestable_vehicle_choice_support.jsonl.
-% EVIDENCE-STATUS: entry-family retention and joint output-capital estimates at the first sampled exact contest.
-% VISUAL-FUNCTION: first vehicle challenge | retention level and two conditioned estimates | distinguish current output from earlier full-range capital
-\begin{frame}{The entry vehicle survives the first feasible contest}
-\evidencekicker{Stablecoin and WETH paths both feasible}
-\vspace{0.02cm}
-\begin{columns}[T,totalwidth=0.91\textwidth]
-\begin{column}{0.35\textwidth}
-\begin{beamercolorbox}[rounded=true,sep=0.21cm,wd=\textwidth]{block body}
-{\small\color{muted} ENTRY FAMILY RETAINED\par}\vspace{0.06cm}
-{\fontsize{29}{31}\selectfont\bfseries\color{stable}\FirstContestRouteRetention\par}
-{\small of routes\par}\vspace{0.06cm}
-{\large\bfseries\color{ucldark}\FirstContestPairRetention\par}
-{\small with equal pair weights}
+% EVIDENCE-SOURCES: output/exhibits/first_contestable_vehicle_choice.jsonl; output/exhibits/first_contestable_vehicle_choice_support.jsonl; output/exhibits/contestable_vehicle_choice.jsonl; output/exhibits/contestable_vehicle_choice_support.jsonl.
+% EVIDENCE-STATUS: entry-family retention at the first sampled exact contest and the exact stablecoin-versus-WETH comparison on common support.
+% VISUAL-FUNCTION: incumbency and price competition | retention level beside conditional retention contrast | show that incumbency holds until current prices flip
+\begin{frame}{Current prices can overturn incumbency}
+\evidencekicker{Stablecoin and WETH paths both feasible: same pair, input, pretrade state}
+\vspace{0.10cm}
+\begin{columns}[T,totalwidth=0.95\textwidth]
+\begin{column}{0.30\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.24cm,wd=\textwidth]{block body}
+{\small\color{muted} ENTRY FAMILY RETAINED\par}\vspace{0.08cm}
+{\fontsize{27}{29}\selectfont\bfseries\color{stable}\FirstContestRouteRetention\par}
+{\small of routes at the first feasible contest\par}
 \end{beamercolorbox}
 \end{column}
 \hfill
-\begin{column}{0.48\textwidth}
-\begin{beamercolorbox}[rounded=true,sep=0.21cm,wd=\textwidth]{block body}
-{\small\color{muted} ENTRY-FAMILY OUTPUT ADVANTAGE (+100 BP)\par}\vspace{0.06cm}
-{\fontsize{27}{29}\selectfont\bfseries\color{ucldark}\FirstContestRetentionOutputOnlyEffect\par}
-{\small exact output only\par}\vspace{0.06cm}
-{\large\bfseries\color{ucldark}\FirstContestRetentionJointOutputEffect\par}
-{\small including prior V2 capital}
+\begin{column}{0.30\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.24cm,wd=\textwidth]{block body}
+{\small\color{muted} INCUMBENT RETURNS MORE OUTPUT\par}\vspace{0.08cm}
+{\fontsize{27}{29}\selectfont\bfseries\color{ucldark}\ContestIncumbentLeaderRetention\par}
+{\small retain the incumbent\par}
+\end{beamercolorbox}
+\end{column}
+\hfill
+\begin{column}{0.30\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.24cm,wd=\textwidth]{block body}
+{\small\color{muted} CHALLENGER RETURNS MORE OUTPUT\par}\vspace{0.08cm}
+{\fontsize{27}{29}\selectfont\bfseries\color{accent}\ContestChallengerLeaderRetention\par}
+{\small retain the incumbent\par}
 \end{beamercolorbox}
 \end{column}
 \end{columns}
-\vspace{0.10cm}
-\begin{beamercolorbox}[rounded=true,sep=0.13cm,wd=0.91\textwidth]{block body}
-\centering
-{\small Prior-day V2 weak-leg capital share (+10 pp):\quad
-{\fontsize{18}{20}\selectfont\bfseries\color{accent}\FirstContestRetentionJointCapitalEffect}
-\quad{\scriptsize (s.e. \FirstContestRetentionJointCapitalSE)}\par}
-\end{beamercolorbox}
-\vspace{0.10cm}
-{\normalsize\bfseries\color{ucldark}\centering Current output predicts first retention; earlier depth predicts later persistence.\par}
-\decknote{Table 5, panel A reports retention. Panel B, columns 2 and 3 use \FirstContestRetentionRegressionN{} routes across \FirstContestRetentionRegressionPairs{} pairs with positive prior-day V2 capital for both families. Monthly exact-state sampling and strict quote rules yield \FirstContestCoverage{} coverage; inference applies to these observed contests.}
-\end{frame}
-
-% EVIDENCE-SOURCES: output/exhibits/contestable_vehicle_choice.jsonl; output/exhibits/contestable_vehicle_choice_support.jsonl.
-% EVIDENCE-STATUS: exact stablecoin-versus-WETH route comparison on common support.
-% VISUAL-FUNCTION: price leadership and incumbency | conditional retention blocks plus fixed-effect estimate | show that current output can overturn the entry vehicle
-\begin{frame}{Current prices can overturn incumbency}
-\evidencekicker{Same pair, input, pretrade state, and venue set}
-\vspace{0.22cm}
-\begin{columns}[T,totalwidth=0.88\textwidth]
-\begin{column}{0.38\textwidth}
-\begin{beamercolorbox}[rounded=true,sep=0.34cm,wd=\textwidth]{block body}
-{\small\color{muted} INCUMBENT RETURNS MORE OUTPUT\par}\vspace{0.10cm}
-{\fontsize{29}{31}\selectfont\bfseries\color{ucldark}\ContestIncumbentLeaderRetention\par}
-{\small retain the incumbent}
-\end{beamercolorbox}
-\end{column}
-\begin{column}{0.10\textwidth}\centering\vspace{0.78cm}{\Large$\longleftrightarrow$}\end{column}
-\begin{column}{0.38\textwidth}
-\begin{beamercolorbox}[rounded=true,sep=0.34cm,wd=\textwidth]{block body}
-{\small\color{muted} CHALLENGER RETURNS MORE OUTPUT\par}\vspace{0.10cm}
-{\fontsize{29}{31}\selectfont\bfseries\color{accent}\ContestChallengerLeaderRetention\par}
-{\small retain the incumbent}
-\end{beamercolorbox}
-\end{column}
-\end{columns}
-\vspace{0.42cm}
-\begin{beamercolorbox}[rounded=true,sep=0.20cm,wd=0.88\textwidth]{block body}
+\vspace{0.14cm}
+\begin{beamercolorbox}[rounded=true,sep=0.16cm,wd=0.95\textwidth]{block body}
 \centering
 {\small Pair and date fixed effects: challenger price leadership changes incumbent retention by\quad
-{\fontsize{22}{24}\selectfont\bfseries\color{accent}\ContestChallengerEffect}.\par}
+{\fontsize{19}{21}\selectfont\bfseries\color{accent}\ContestChallengerEffect}.\par}
 \end{beamercolorbox}
-\decknote{We quote the best feasible stablecoin and WETH routes before each observed trade. Both routes use exact Uniswap v2, SushiSwap v2, or Uniswap v3 state and keep every leg below 5\% own-price impact. Price leadership requires more than 1 bp. The fixed-effect estimate has standard error \ContestChallengerSE{} over \ContestChallengerN{} routes; inference clusters by pair and date.}
+\vspace{0.08cm}
+{\large\bfseries\color{ucldark}\centering Incumbency holds until the price lead moves.\par}
+\decknote{Both routes use exact Uniswap v2, SushiSwap v2, or Uniswap v3 state with every leg below 5\% own-price impact; price leadership requires more than 1 bp. The fixed-effect estimate has standard error \ContestChallengerSE{} over \ContestChallengerN{} routes, clustered by pair and date. Monthly exact-state sampling yields \FirstContestCoverage{} coverage; inference applies to observed contests.}
 \end{frame}
 
 % EVIDENCE-SOURCES: output/exhibits/price_rank_crossing.jsonl; output/exhibits/price_rank_crossing_support.jsonl.

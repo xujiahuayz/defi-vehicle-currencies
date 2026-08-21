@@ -27,3 +27,38 @@
 {\large\bfseries\color{stable}\centering Vehicle liquidity links otherwise unrelated pairs.\par}
 \decknote{Other lifecycle terms reduce entry's \PairLifecycleCountEntry{} to \PairLifecycleCountNet{} net. Among retrading pairs, 10 pp more entry-day stablecoin use predicts \EntryPersistenceEarlyPairEffectPerTen{} in days 1--30.}
 \end{frame}
+
+% EVIDENCE-STATUS: qualitative market-design interpretation of the admitted formation and contest results; no empirical estimate is displayed.
+% EVIDENCE-SOURCES: paper/sections/07-conclusion.tex; https://docs.bis.org/nexus/fx-provision/key-points; https://www.bis.org/about/bisih/topics/cbdc/rialto.htm; https://www.bis.org/about/bisih/topics/fmis/mcbdc_bridge.htm.
+% VISUAL-FUNCTION: policy interpretation | three stakeholder rows | translate the entry-margin evidence into design and oversight choices
+\begin{frame}{Dominance is decided where new markets form}
+\vspace{0.22cm}
+\begin{center}
+\begin{tikzpicture}[x=1cm,y=1cm]
+\node[softbox,text width=10.8cm,minimum height=1.18cm,align=left] at (0,2.90)
+{{\normalsize\bfseries\color{ucldark}Payment rails}\quad{\small Nexus, Rialto, mBridge: access rules pick the currency that new corridors inherit.}};
+\node[softbox,text width=10.8cm,minimum height=1.18cm,align=left] at (0,1.45)
+{{\normalsize\bfseries\color{accent}Stablecoin oversight}\quad{\small Stress in the middle asset reaches every pair routed through it: watch bridge exposure, beyond issuance size.}};
+\node[softbox,text width=10.8cm,minimum height=1.18cm,align=left,fill=stable!7] at (0,0)
+{{\normalsize\bfseries\color{stable}Challenger currencies}\quad{\small Cheaper quotes in existing corridors dethrone nobody; challengers win by being liquid when corridors form.}};
+\end{tikzpicture}
+\end{center}
+\vspace{0.30cm}
+{\large\bfseries\color{ucldark}\centering Liquidity at formation beats price competition later.\par}
+\decknote{Qualitative reading of the admitted results. Project Nexus assigns conversion to an FX provider and Project Rialto uses a vehicle when direct exchange is unavailable; both choose who may make the market inside the rail. The oversight point is a network form of commonality in liquidity; welfare statements would need user surplus, provider returns, and risk incidence.}
+\end{frame}
+
+% EVIDENCE-STATUS: research outlook on active margins; no empirical estimate is displayed.
+% EVIDENCE-SOURCES: docs/findings/README.md; docs/research/design.md.
+% VISUAL-FUNCTION: research outlook | four open-question rows | invite discussion on the margins under active work
+\begin{frame}{What we are asking next}
+\vspace{0.30cm}
+\begin{itemize}
+\item Who supplies the bridge? Provider-level capital responses to fees, risk, and incentives.
+\item Does settlement architecture move liquidity? Uniswap V4 flash accounting against V3.
+\item Who earns the rents of dominance: traders, providers, or issuers?
+\item The same entry-margin account, taken back to conventional FX.
+\end{itemize}
+\vspace{0.34cm}
+{\large\bfseries\color{ucldark}\centering Comments on any of these are very welcome.\par}
+\end{frame}
