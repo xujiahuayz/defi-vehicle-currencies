@@ -122,30 +122,34 @@ def render_entry_price_alignment(results: pd.DataFrame) -> str:
     data = results[
         results["record_type"].eq("entry_price_leader_alignment")
         & results["horizon_days"].eq(120)
-        & results["weighting"].eq("route")
     ]
     if data.empty:
-        raise ValueError("120-day route-weighted entry-price alignment is empty")
+        raise ValueError("120-day entry-price alignment is empty")
     lines = [
-        r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}X*{2}{>{\centering\arraybackslash}X}@{}}",
+        r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}X*{4}{>{\centering\arraybackslash}X}@{}}",
         r"\toprule",
-        r"Vehicle at pair entry & Incumbent is price leader & Challenger is price leader \\",
+        r" & \multicolumn{2}{c}{Route weighted} & \multicolumn{2}{c}{Pair-day weighted} \\",
+        r"\cmidrule(lr){2-3}\cmidrule(l){4-5}",
+        r"Vehicle at pair entry & Incumbent leads & Challenger leads & Incumbent leads & Challenger leads \\",
         r"\midrule",
     ]
     labels = (("All pairs", "pooled"), ("Native", "native"), ("Stablecoin", "stable"))
     for label, entry_type in labels:
-        incumbent = _single(
-            data,
-            entry_vehicle_type=entry_type,
-            price_leader_relation="incumbent",
-        )
-        challenger = _single(
-            data,
-            entry_vehicle_type=entry_type,
-            price_leader_relation="challenger",
-        )
+        cells = []
+        for weighting in ("route", "pair_day"):
+            for relation in ("incumbent", "challenger"):
+                cells.append(
+                    _alignment_cell(
+                        _single(
+                            data,
+                            weighting=weighting,
+                            entry_vehicle_type=entry_type,
+                            price_leader_relation=relation,
+                        )
+                    )
+                )
         lines.append(
-            f"{label} & {_alignment_cell(incumbent)} & {_alignment_cell(challenger)} \\\\"
+            f"{label} & " + " & ".join(cells) + r" \\"
         )
     lines.extend([r"\bottomrule", r"\end{tabularx}", ""])
     return "\n".join(lines)

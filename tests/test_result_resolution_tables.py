@@ -37,19 +37,20 @@ def _decomposition(
 def _price_results() -> pd.DataFrame:
     rows: list[dict[str, object]] = []
     for entry_type in ("pooled", "native", "stable"):
-        for relation, share in (("incumbent", 0.9), ("challenger", 0.4)):
-            rows.append(
-                {
-                    "record_type": "entry_price_leader_alignment",
-                    "horizon_days": 120,
-                    "weighting": "route",
-                    "entry_vehicle_type": entry_type,
-                    "price_leader_relation": relation,
-                    "observations": 1_234,
-                    "pairs": 321,
-                    "incumbent_vehicle_share": share,
-                }
-            )
+        for weighting in ("route", "pair_day"):
+            for relation, share in (("incumbent", 0.9), ("challenger", 0.4)):
+                rows.append(
+                    {
+                        "record_type": "entry_price_leader_alignment",
+                        "horizon_days": 120,
+                        "weighting": weighting,
+                        "entry_vehicle_type": entry_type,
+                        "price_leader_relation": relation,
+                        "observations": 1_234,
+                        "pairs": 321,
+                        "incumbent_vehicle_share": share,
+                    }
+                )
     return pd.DataFrame(rows)
 
 
@@ -79,6 +80,9 @@ def test_result_resolution_tables_render_direct_checks() -> None:
     values = render_values(adjacent, endpoint, price)
     assert "2019--2020 & $-10.0$" in adjacent_tex
     assert "Supported value & 20.0 & 60.0 & $+40.0$" in endpoint_tex
-    assert "All pairs & 90.0 [1{,}234] & 40.0 [1{,}234]" in price_tex
+    assert (
+        "All pairs & 90.0 [1{,}234] & 40.0 [1{,}234] & "
+        "90.0 [1{,}234] & 40.0 [1{,}234]" in price_tex
+    )
     assert r"\newcommand{\AdjacentLargestDeclineYears}{2019--2020}" in values
     assert r"\newcommand{\PriceChallengerIncumbentRetention}{40.0\%}" in values
