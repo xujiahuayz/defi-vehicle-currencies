@@ -688,8 +688,13 @@ def run(
     end: str = END,
     maximum_target_days: int | None = None,
     targets_only: bool = False,
+    score_only: bool = False,
     estimate_only: bool = False,
 ) -> int:
+    if sum((targets_only, score_only, estimate_only)) > 1:
+        raise ValueError(
+            "targets-only, score-only, and estimate-only are mutually exclusive"
+        )
     pair_support_path = _path(pair_support_path, root)
     pool_capital_path = _path(pool_capital_path, root)
     panel_path = _path(panel_path, root)
@@ -726,6 +731,17 @@ def run(
         exact_panel = exact_panel.sort_values(
             ["day", "ordered_pair", "route_id"], kind="stable"
         ).reset_index(drop=True)
+        if score_only:
+            elapsed = perf_counter() - started
+            print(
+                f"score-only result: {len(exact_panel):,} routes, "
+                f"{exact_panel['ordered_pair'].nunique():,} pairs, "
+                f"{exact_panel['day'].nunique():,} dates, "
+                f"{elapsed:.1f} seconds",
+                flush=True,
+            )
+            print(day_support.to_string(index=False), flush=True)
+            return 0
     panel = attach_entry_capital(exact_panel, pool_capital_path)
     results = regression_results(panel)
     elapsed = perf_counter() - started
@@ -765,6 +781,11 @@ def main() -> int:
     parser.add_argument("--end", default=END)
     parser.add_argument("--maximum-target-days", type=int)
     parser.add_argument("--targets-only", action="store_true")
+    parser.add_argument(
+        "--score-only",
+        action="store_true",
+        help="time exact replay without writing canonical panel or estimates",
+    )
     parser.add_argument("--estimate-only", action="store_true")
     args = parser.parse_args()
     return run(
@@ -778,6 +799,7 @@ def main() -> int:
         end=args.end.replace("-", ""),
         maximum_target_days=args.maximum_target_days,
         targets_only=args.targets_only,
+        score_only=args.score_only,
         estimate_only=args.estimate_only,
     )
 
