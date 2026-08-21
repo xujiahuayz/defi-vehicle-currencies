@@ -528,6 +528,17 @@ At the median, round trips account for 12.8\% of multi-leg routes by count and 2
 \exhibitnote{Both panels apply the exact decomposition in Equation~\eqref{eq:pair-decomposition}; endpoint-year shares are percentages, and all changes and components are in pp. Panel A uses equal-weight matched January--June dates in each adjacent pair of years. Panel B compares matched January--June dates in 2024 and 2026 after removing every pair with WETH or a stablecoin at either endpoint. Supported value requires source, intermediary, and destination values to agree within 20\%. Trading reallocation changes weights across continuing pairs, support shift changes the aggregate weight on continuing pairs, and pair entry/exit is net of pairs present in only one endpoint year. Components use unrounded values and sum to the total change.}
 \end{table}
 
+Appendix Table~\ref{tab:app:endpoint-direction} separates endpoint composition from intermediary identity inside stable-to-stable routes.
+
+\begin{table}[tbp]
+\centering
+\caption{Endpoint direction and stablecoin intermediary identity}
+\label{tab:app:endpoint-direction}
+\small
+\input{../output/tables/endpoint_direction.tex}
+\exhibitnote{Each entry is a contribution to the equal-day stablecoin-share change between matched January--June dates in 2024 and 2026. Panel A partitions the full native-or-stable intermediary sample by pair endpoints. Panel B partitions the stablecoin contribution within pairs whose two endpoints are stablecoins; its first two rows sum to the third. Routed value requires source, intermediary, and destination values to agree within 20\%. The trimmed row removes the largest decile of daily contributions in each year. The pooled row weights routes by supported value across the matched dates. Components use unrounded values.}
+\end{table}
+
 The full route panel supports two complementary measures. Intermediary-position share allocates all observed intermediary work across currencies. Route-participation share records the fraction of routes containing a currency and can sum above one across currencies because a longer route may contain several intermediaries. Panel A of Table~\ref{tab:network-position} reports both measures for the native and stablecoin families. Panel B compares realised use with each named currency's position in the trading graph.
 
 \begin{table}[tbp]
