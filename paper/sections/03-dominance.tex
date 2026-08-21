@@ -48,33 +48,4 @@ The period-specific contribution is also a net. Pairs first observed after 2024 
 The pattern extends through time and across endpoint sets. In every adjacent January--June comparison from 2019 through 2026, the within-pair term lies between \AdjacentWithinMin{} and \AdjacentWithinMax{} even as the aggregate moves from \AdjacentLargestDecline{} in \AdjacentLargestDeclineYears{} to \AdjacentLargestIncrease{} in \AdjacentLargestIncreaseYears{} (Appendix Table~\ref{tab:app:rotation-boundaries}, panel A). Removing every pair with WETH or a stablecoin at either endpoint still gives an increase from \NonvehicleEndpointStableBase{} to \NonvehicleEndpointStableEnd{} by count and from \NonvehicleEndpointValueBase{} to \NonvehicleEndpointValueEnd{} by supported value (panel B). Appendix Table~\ref{tab:app:endpoint-direction} then allocates the headline change across endpoint directions and shows that USDT supplies \StableStableUsdtValueContribution{} of the routed-value increase between two stablecoin endpoints. Pair composition therefore explains stablecoin gains and reversals even when endpoint identity leaves both broad vehicle families available.
 % output/exhibits/vehicle_transition_adjacent_year_decomposition.jsonl; output/exhibits/vehicle_transition_nonvehicle_endpoint_decomposition.jsonl; output/exhibits/endpoint_direction_decomposition.jsonl; output/exhibits/stable_stable_vehicle_decomposition.jsonl; output/exhibits/result_resolution_values.tex
 
-The first routes in a new pair predict its subsequent vehicle. For pair $p$, let $E_p$ be the stablecoin share on its entry day. For each of the disjoint windows $h\in\{1\text{--}30,31\text{--}120\}$, let $R_{p,h}$ indicate that the pair carries another native- or stablecoin-intermediated route, and let $S_{p,h}$ be the stablecoin share when $R_{p,h}=1$. We estimate
-\begin{equation}
-\label{eq:entry-persistence}
-\begin{aligned}
-S_{p,h}&=\alpha_h+\beta_h E_p+X_p'\delta_h+\varepsilon_{p,h},
-&& R_{p,h}=1,\\
-R_{p,h}&=a_h+b_h E_p+X_p'c_h+u_{p,h},
-&& \text{all entrant pairs}.
-\end{aligned}
-\end{equation}
-The second line is a linear probability model. The controls $X_p$ contain the cohort year, a stablecoin-endpoint indicator, log entry-day route count, direct-route share, and complex-route share. The sample uses pairs entering by March 2 in 2024 or 2026, giving every pair 120 complete calendar days of follow-up. Pairs with a native asset at either endpoint are excluded.
-
-\FloatBarrier
-\begin{table}[tbp]
-\centering
-\caption{Vehicle persistence after pair entry}
-\label{tab:entry-persistence}
-{\tiny
-\renewcommand{\arraystretch}{0.90}
-\input{../output/tables/entry_vehicle_persistence.tex}
-}
-\exhibitnote{Panel A estimates the first line of Equation~\eqref{eq:entry-persistence} among pairs that carry another native- or stablecoin-intermediated route in the stated window. Panel B estimates the second line on all entrant pairs. The entry day is excluded from both follow-up windows. Controls are the cohort year, a stablecoin-endpoint indicator, log entry-day route count, direct-route share, and complex-route share. Columns 3 and 6 weight pairs by route activity in the respective follow-up window; all other columns give each pair equal weight. Coefficients report the outcome change in percentage points (pp) associated with a 10 pp higher entry-day stablecoin share. Standard errors in parentheses use CR1 clustering by entry date. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
-\end{table}
-
-We separate later vehicle use from pair survival. Of the \EntryPersistenceEntrants{} entrants, \EntryPersistenceEarlyRetradeRate{} trade again during days 1--30 and \EntryPersistenceLateRetradeRate{} do so during days 31--120 (Table~\ref{tab:entry-persistence}, panel B). Among pairs that trade again, a 10 pp higher entry-day stablecoin share predicts \EntryPersistenceEarlyPairEffectPerTen{} higher stablecoin share during days 1--30 and \EntryPersistenceLatePairEffectPerTen{} during days 31--120 (panel A, columns 2 and 5). The route-activity-weighted estimates are \EntryPersistenceEarlyActivityEffectPerTen{} and \EntryPersistenceLateActivityEffectPerTen{}, respectively (columns 3 and 6). Every follow-up outcome begins after the entry day, so these estimates capture continued vehicle use across subsequent routes.
-
-The share estimates describe pairs that remain active in each window. Entry-day stablecoin share also predicts a modestly higher probability of subsequent trading: a 10 pp increase corresponds to \EntryPersistenceEarlyRetradeEffectPerTen{} during days 1--30 and \EntryPersistenceLateRetradeEffectPerTen{} during days 31--120 (Table~\ref{tab:entry-persistence}, panel B). The evidence therefore combines strong persistence in vehicle identity among surviving pairs with a smaller survival margin. We interpret both as descriptive equilibrium relationships: relative prices, depth, and venue access can shape the vehicle at entry and remain relevant for later trading.
-% output/exhibits/entry_vehicle_persistence_models.jsonl; output/exhibits/entry_vehicle_persistence_support.jsonl; output/tables/entry_vehicle_persistence.tex
-
-Appendix~\ref{app:additional-composition} gives the decomposition algebra and reports adjacent-period, endpoint, issuer, and network restrictions.
+Across matched route cells, adjacent periods, and endpoint sets, activity moving among pairs accounts for most of the aggregate change. Appendix~\ref{app:additional-composition} gives the decomposition algebra and reports the adjacent-period, endpoint, issuer, and network results.

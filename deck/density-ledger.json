@@ -4,7 +4,7 @@
   "budget_words": 55,
   "hard_ceiling_words": 70,
   "core_frame_limit": 24,
-  "appendix_first_page": 17,
+  "appendix_first_page": 18,
   "appendix_title": "Appendix map",
   "page_allowances": [
     {
@@ -26,73 +26,73 @@
       "note_words": 41
     },
     {
-      "page": 17,
+      "page": 18,
       "title": "Appendix map",
       "words": 62,
       "note_words": 0
     },
     {
-      "page": 20,
+      "page": 21,
       "title": "How we reconstruct a route from one transaction",
       "words": 56,
       "note_words": 0
     },
     {
-      "page": 24,
+      "page": 25,
       "title": "A4. State is reconstructed immediately before execution",
       "words": 60,
       "note_words": 0
     },
     {
-      "page": 25,
+      "page": 26,
       "title": "A5. Each AMM family has a different state vector",
       "words": 59,
       "note_words": 0
     },
     {
-      "page": 27,
+      "page": 28,
       "title": "A5.2. Executable depth is path-specific",
       "words": 60,
       "note_words": 0
     },
     {
-      "page": 28,
+      "page": 29,
       "title": "A5.3. Shared accounting moves route settlement",
       "words": 62,
       "note_words": 0
     },
     {
-      "page": 30,
+      "page": 31,
       "title": "A7. Daily and weekly frequencies answer different questions",
       "words": 62,
       "note_words": 0
     },
     {
-      "page": 33,
+      "page": 34,
       "title": "Vehicle dominance aggregates realised intermediary choices",
       "words": 69,
       "note_words": 0
     },
     {
-      "page": 34,
+      "page": 35,
       "title": "A9. Intermediary and route-endpoint use are separate",
       "words": 66,
       "note_words": 0
     },
     {
-      "page": 35,
+      "page": 36,
       "title": "A10. Capital, inventory, and depth differ",
       "words": 59,
       "note_words": 0
     },
     {
-      "page": 39,
+      "page": 40,
       "title": "A13. References: exchange design",
       "words": 58,
       "note_words": 0
     },
     {
-      "page": 49,
+      "page": 50,
       "title": "A22. Bridge capital builds before first use",
       "words": 58,
       "note_words": 43

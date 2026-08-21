@@ -26,7 +26,7 @@ Disconnected event groups become more common late in the sample. They comprise \
 \end{table}
 % output/exhibits/disconnected_component_boundary.jsonl; scripts/analyze/run_disconnected_component_boundary.py
 
-For the three exchange families with full-day Ethereum-log reconciliations, we compare every provider swap with logs queried independently from the chain. We use only correction generations bound by the current V2 and V3 event releases. The comparison can add a chain event absent from the provider data, remove a provider event absent from the chain, or replace its payload or log position. We then rerun the same route construction on every release-bound date with a swap correction. Table~\ref{tab:app:route-validation} reports both the event match and its consequences for the economic route. Historical auxiliary corrections remain outside this exercise; the table note reports their coverage and the log-order collision that motivates this boundary. Transactions outside the released dates and the boundary between the observed pool sequence and the user's original instruction remain outside it.
+For three exchange families, full-day Ethereum-log reconciliations cover 206 venue-days across 74 sampled dates. We compare every provider swap with logs queried independently from the chain. The comparison can add a chain event absent from the provider data, remove a provider event absent from the chain, or replace its payload or log position. We then rerun the same route construction on the 50 sampled dates with at least one swap correction. Table~\ref{tab:app:route-validation} reports both the event match and its consequences for the economic route. Available indexed records omit 35 historical auxiliary venue-days; the table note reports their coverage and the log-order collision that sets the comparison's boundary. The measured scope is the sampled dates and the connected pool sequence observed in each transaction.
 % output/exhibits/route_reconstruction_exact_chain_validation.jsonl
 
 \begin{table}[htbp]
@@ -35,7 +35,7 @@ For the three exchange families with full-day Ethereum-log reconciliations, we c
 \caption{Ethereum-log checks and route-construction consequences}
 \label{tab:app:route-validation}
 \input{../output/tables/route_reconstruction_exact_chain_validation.tex}
-\exhibitnote{Panel A uses 206 release-bound full-day venue ledgers across 74 dates. Provider-only events are provider rows absent from the corresponding Ethereum logs; chain-only events are Ethereum-log events absent from the provider rows. Panels B and C rerun the route construction on the 50 dates with at least one swap action. Panel D repeats the pair decomposition on the six common January--June audit dates in each endpoint year. The current releases omit 35 historical auxiliary venue-days. Auxiliary log-order corrections would collide with another provider-ordered leg in 2 transactions; together they contain 47 legs and 2 reconstructed routes. The comparison validates the release-bound dates; it does not measure transaction-trace recall outside them.}
+\exhibitnote{Panel A uses full-day venue ledgers for 206 venue-days across 74 sampled dates. Provider-only events are provider rows absent from the corresponding Ethereum logs; chain-only events are Ethereum-log events absent from the provider rows. Panels B and C rerun the route construction on the 50 dates with at least one swap correction. Panel D repeats the pair decomposition on the six common January--June sampled dates in each endpoint year. Available indexed records omit 35 historical auxiliary venue-days. Auxiliary log-order corrections would collide with another provider-ordered leg in 2 transactions; together they contain 47 legs and 2 reconstructed routes. The comparison validates the sampled dates; transaction-trace recall beyond them remains unmeasured.}
 \end{table}
 % output/exhibits/route_reconstruction_exact_chain_validation.jsonl; scripts/analyze/run_route_reconstruction_validation.py
 \clearpage
@@ -62,6 +62,18 @@ Historical token precision cannot be verified for 13 tokens traded in 22 constan
 \label{app:quoters}
 
 The counterfactual comparison requires an exact-input quote from each pool's state and the proposed input amount. Because pool families use different invariants and arithmetic, we validate their pricing models separately. For selected executed swaps, we reconstruct the state immediately beforehand and compare predicted with realised output. Curve's amplification coefficient and Balancer's weight ratio are unavailable in the historical subgraph records, so we estimate them on one set of trades and evaluate the resulting quotes on held-out trades. A route enters the cost comparison only when the relevant pool states and pricing models are available before the transaction.
+
+For a route $r$, let $e(r)$ record its block, transaction position, and first pool-event position; $e(r)^-$ is the state immediately before that transaction begins. The route has an ordered pool sequence $(p_{1},\ldots,p_{m(r)})$ and token sequence $(k_0,\ldots,k_{m(r)})$, where $k_0=i$ is the input and $k_{m(r)}=o$ is the output. The dollar input notional $q$ corresponds to $\Delta_i(q,e)=q/P_{i,e}$ units of the input token. Let $\chi_{p,e^-}$ denote pool $p$'s pretrade state and let $Q_p(i\to j,\Delta_i;\chi_{p,e^-})$ denote its exact-input output in token $j$. Composing the pool quotes gives the route's token output and dollar value,
+\begin{equation}
+\label{eq:route}
+\begin{aligned}
+\Delta_{k_h}&=Q_{p_h}\!\left(k_{h-1}\to k_h,\Delta_{k_{h-1}};\chi_{p_h,e(r)^-}\right),
+&&h=1,\ldots,m(r),\\
+Q_r(q,e(r))&=\Delta_o,
+&O_r(q,e(r))&=P_{o,e(r)}Q_r(q,e(r)).
+\end{aligned}
+\end{equation}
+Pool invariants take token quantities as arguments, so the dollar notional $q$ and token input $\Delta_i$ remain distinct. Equation~\eqref{eq:route} describes an executed route and, after reconstructing the same pretrade state, prices a feasible alternative path. The subsections below specify $Q_p$ for each pool family.
 
 \subsection{Constant-product pools}
 \label{app:quoters:cp}
@@ -568,6 +580,21 @@ At the median, round trips account for 12.8\% of multi-leg routes by count and 2
 
 \section{Additional composition and network results}
 \label{app:additional-composition}
+
+For route $r$, let $\mathcal{M}(r)$ denote the assets between its source and destination and define $Z_{r,k}=\mathbf{1}_{\{k\in\mathcal{M}(r)\}}$. Let $a(k)$ assign each token to an economic asset group and set $Z_{r,g}=\sum_{k:a(k)=g}Z_{r,k}$ for $g\in\{\mathrm{native},\mathrm{stable}\}$. On an exact two-leg route, $Z_{r,g}$ is an indicator. Let $\mathcal R^{(2),NS}_t$ contain the exact two-leg routes on day $t$ whose intermediary is native or stable, and let $\mathcal R^{(2),NS,V}_t$ retain the routes whose source, intermediary, and destination values agree within 20\%. The count- and dollar-weighted shares are
+% src/ddvc/route_roles.py, component_value_support
+\begin{equation}
+\label{eq:dominance}
+S^{N}_{g,t} \,=\,
+\frac{\sum_{r \in \mathcal{R}^{(2),NS}_{t}} Z_{r,g}}
+     {|\mathcal{R}^{(2),NS}_{t}|},
+\qquad
+S^{V}_{g,t} \,=\,
+\frac{\sum_{r \in \mathcal{R}^{(2),NS,V}_{t}} \nu_{r} Z_{r,g}}
+     {\sum_{r \in \mathcal{R}^{(2),NS,V}_{t}} \nu_{r}},
+\end{equation}
+where $\nu_r$ is the arithmetic mean of the route's total dollar value at its observed source and destination. The value sample also requires each intermediary's incoming and outgoing dollar values to have a ratio between 0.8 and 1.2. The native and stable groups exhaust the denominator in Equation~\eqref{eq:dominance}.
+% src/ddvc/route_roles.py, component_value_support and component_notional
 
 Let $W_y$ be the share of native-plus-stable activity in continuing pairs, $\omega_{p,y}$ pair $p$'s weight within that activity, and $s_{p,y}$ its stablecoin share. Continuing pairs have stablecoin share $S_{C,y}=\sum_p\omega_{p,y}s_{p,y}$, while period-specific pairs have share $S_{E,y}$. Total stablecoin share is $S_y=W_yS_{C,y}+(1-W_y)S_{E,y}$. Writing $\Delta x=x_{2026}-x_{2024}$ and $\bar{x}=(x_{2024}+x_{2026})/2$ gives
 \begin{equation}

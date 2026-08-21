@@ -275,6 +275,7 @@ def render_price_rank_crossing_values(
         f"\\newcommand{{\\RankCrossingCurrentShare}}{{{pct(float(crossing['mean_incumbent_route_share']))}}}",
         f"\\newcommand{{\\RankCrossingNextShare}}{{{pct(float(following['mean_incumbent_route_share']))}}}",
         f"\\newcommand{{\\RankCrossingPlaceboEffect}}{{{pp(float(placebo['coefficient_pp']))}}}",
+        f"\\newcommand{{\\RankCrossingPlaceboDrop}}{{{pp(abs(float(placebo['coefficient_pp'])))}}}",
         f"\\newcommand{{\\RankCrossingCapitalPersistence}}{{{pp(float(capital['coefficient_pp']), 2)}}}",
         f"\\newcommand{{\\RankCrossingStillAhead}}{{{pct(float(still_ahead['event_share']))}}}",
         f"\\newcommand{{\\RankCrossingRetaken}}{{{pct(float(retaken['event_share']))}}}",

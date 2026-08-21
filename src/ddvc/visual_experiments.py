@@ -282,7 +282,7 @@ def render_annual_composition_bands(
             str(tick_labels[i]).replace(" ", "\n") for i in display_indices
         ]
     panels = (
-        ("episode_share", "Intermediary episodes"),
+        ("episode_share", "Intermediary positions"),
         ("usd_share_within_20pct", "Routed value"),
     )
 
@@ -370,7 +370,7 @@ def render_annual_composition_bands(
                     ha="center",
                 )
                 axis.set_xlim(min(points) - 0.25, max(points) + 0.25)
-                axis.set_ylim(0, 1.02)
+                axis.set_ylim(0, 1.0)
                 axis.set_yticks(np.linspace(0, 1.0, 6))
                 axis.yaxis.set_major_formatter(PercentFormatter(1.0, decimals=0))
                 axis.grid(axis="y", color="#D1D5DB", linewidth=0.6, alpha=0.75)
@@ -391,10 +391,7 @@ def render_annual_composition_bands(
                         end - start >= 1 for _, start, end in stable_runs
                     )
                     if latest_gap <= 0.02 and not sustained_stable_lead:
-                        label = (
-                            f"Near parity by {tick_labels[-1]}\n"
-                            "no sustained stable lead"
-                        )
+                        label = f"Near parity by {tick_labels[-1]}"
                     elif sustained_stable_lead:
                         label = "Stable leads in consecutive periods"
                     else:

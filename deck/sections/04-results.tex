@@ -6,6 +6,8 @@
 \input{../output/exhibits/bridge_liquidity_deck_values.tex}
 \input{../output/exhibits/bridge_exante_values.tex}
 \input{../output/exhibits/contestable_vehicle_choice_values.tex}
+\input{../output/exhibits/first_contestable_vehicle_choice_values.tex}
+\input{../output/exhibits/price_rank_crossing_values.tex}
 
 % EVIDENCE-SOURCES: output/figures/experiments/annual_vehicle_composition_bands_deck.pdf; output/exhibits/intermediation_by_type.jsonl.
 % EVIDENCE-STATUS: principal descriptive result using every complete route length.
@@ -198,38 +200,80 @@ stablecoins carry \textbf{\BridgeExanteLaterShare} of their routes in that windo
 \decknote{We quote the best feasible stablecoin and WETH routes before each observed trade. Both routes use exact Uniswap v2, SushiSwap v2, or Uniswap v3 state and keep every leg below 5\% own-price impact. Price leadership requires more than 1 bp. The fixed-effect estimate has standard error \ContestChallengerSE{} over \ContestChallengerN{} routes; inference clusters by pair and date.}
 \end{frame}
 
-% EVIDENCE-SOURCES: output/exhibits/contestable_vehicle_choice.jsonl; output/exhibits/contestable_vehicle_choice_support.jsonl.
-% EVIDENCE-STATUS: joint exact-output and prior weak-leg-capital regression.
-% VISUAL-FUNCTION: joint determinants of retention | two coefficient blocks with shared conditioning set | show that depth adds information beyond current output
-\begin{frame}{Bridge capital predicts retention beyond current output}
-\evidencekicker{Same sample; pair and date fixed effects}
-\vspace{0.16cm}
-\begin{columns}[T,totalwidth=0.90\textwidth]
-\begin{column}{0.41\textwidth}
-\begin{beamercolorbox}[rounded=true,sep=0.30cm,wd=\textwidth]{block body}
-{\small\color{muted} +100 BP INCUMBENT OUTPUT ADVANTAGE\par}\vspace{0.12cm}
-{\fontsize{28}{30}\selectfont\bfseries\color{ucldark}\ContestOutputAdvantageHundredBpEffect\par}
-{\small with capital; price-only: \ContestSameSampleOutputAdvantageHundredBpEffect}
+% EVIDENCE-SOURCES: output/exhibits/first_contestable_vehicle_choice.jsonl; output/exhibits/first_contestable_vehicle_choice_support.jsonl.
+% EVIDENCE-STATUS: entry-family retention and joint output-capital estimates at the first sampled exact contest.
+% VISUAL-FUNCTION: first vehicle challenge | retention level and two conditioned estimates | distinguish current output from earlier full-range capital
+\begin{frame}{The entry vehicle carries \FirstContestRouteRetention{} of first-contest routes}
+\evidencekicker{First sampled exact contest}
+\vspace{0.02cm}
+\begin{columns}[T,totalwidth=0.91\textwidth]
+\begin{column}{0.35\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.21cm,wd=\textwidth]{block body}
+{\small\color{muted} ENTRY FAMILY RETAINED\par}\vspace{0.06cm}
+{\fontsize{29}{31}\selectfont\bfseries\color{stable}\FirstContestRouteRetention\par}
+{\small of routes\par}\vspace{0.06cm}
+{\large\bfseries\color{ucldark}\FirstContestPairRetention\par}
+{\small with equal pair weights}
 \end{beamercolorbox}
 \end{column}
 \hfill
-\begin{column}{0.41\textwidth}
-\begin{beamercolorbox}[rounded=true,sep=0.30cm,wd=\textwidth]{block body}
-{\small\color{muted} +10 PP PRIOR WEAK-LEG CAPITAL SHARE\par}\vspace{0.12cm}
-{\fontsize{28}{30}\selectfont\bfseries\color{stable}\ContestCapitalAdvantageTenPpEffect\par}
-{\small incumbent retention}
+\begin{column}{0.48\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.21cm,wd=\textwidth]{block body}
+{\small\color{muted} +100 BP ENTRY-FAMILY EXACT-OUTPUT ADVANTAGE\par}\vspace{0.06cm}
+{\fontsize{27}{29}\selectfont\bfseries\color{ucldark}\FirstContestRetentionOutputOnlyEffect\par}
+{\small exact output only\par}\vspace{0.06cm}
+{\large\bfseries\color{ucldark}\FirstContestRetentionJointOutputEffect\par}
+{\small after prior V2 capital enters}
 \end{beamercolorbox}
 \end{column}
 \end{columns}
-\vspace{0.14cm}
+\vspace{0.10cm}
+\begin{beamercolorbox}[rounded=true,sep=0.13cm,wd=0.91\textwidth]{block body}
+\centering
+{\small Prior-day V2 weak-leg capital share (+10 pp):\quad
+{\fontsize{20}{22}\selectfont\bfseries\color{accent}\FirstContestRetentionJointCapitalEffect}
+\quad (s.e. \FirstContestRetentionJointCapitalSE).\par}
+\end{beamercolorbox}
+\vspace{0.10cm}
+{\normalsize\bfseries\color{ucldark}\centering Current output separates survival; earlier V2 capital adds little here.\par}
+\decknote{Table 5, panel A reports retention. Panel B, columns 2 and 3 use \FirstContestRetentionRegressionN{} routes across \FirstContestRetentionRegressionPairs{} pairs with positive prior-day V2 capital for both families. Monthly exact-state sampling and strict quote rules yield \FirstContestCoverage{} coverage; inference applies to these observed contests.}
+\end{frame}
+
+% EVIDENCE-SOURCES: output/exhibits/price_rank_crossing.jsonl; output/exhibits/price_rank_crossing_support.jsonl.
+% EVIDENCE-STATUS: exact-price rank crossings, matched pre-event movement, and next-month price-rank persistence.
+% VISUAL-FUNCTION: price leadership reversal | paired share movement and durability estimate | separate immediate allocation from persistence of the new price lead
+\begin{frame}{When the price lead flips, route share follows}
+\evidencekicker{Within-pair exact-price crossing}
+\vspace{-0.02cm}
 \begin{center}
 \begin{tikzpicture}[x=1cm,y=1cm]
-\node[softbox,text width=9.8cm,align=center,inner sep=4pt] {
-\small Current exact output and prior deposited capital enter together.\\[-0.03cm]
-\scriptsize Pair and date effects absorb persistent pair differences and market-wide conditions.};
+\node[softbox,text width=3.35cm,minimum height=1.40cm,align=center] (before) at (-4.15,1.20)
+{{\scriptsize MONTH $-1$\\INCUMBENT LEADS}\par\vspace{0.06cm}{\fontsize{27}{29}\selectfont\bfseries\color{ucldark}\RankCrossingPriorShare}\par{\small incumbent share}};
+\node[softbox,text width=3.35cm,minimum height=1.40cm,align=center,fill=accent!7] (crossing) at (4.15,1.20)
+{{\scriptsize CROSSING MONTH\\CHALLENGER LEADS}\par\vspace{0.06cm}{\fontsize{27}{29}\selectfont\bfseries\color{accent}\RankCrossingCurrentShare}\par{\small incumbent share}};
+\draw[-{Stealth[length=8pt]},draw=accent,line width=1.8pt] (before)--node[above,font=\small\bfseries,text=accent,align=center]{price lead\\changes hands}(crossing);
 \end{tikzpicture}
 \end{center}
-\decknote{Table 5, columns 3 and 4 use the same \ContestOutputAdvantageHundredBpN{} routes. Weak-leg capital is the smaller prior-day stock across the two required legs, aggregated over Uniswap v2 and SushiSwap v2; both vehicle families have positive capital. Column 4 standard errors are \ContestOutputAdvantageHundredBpSE{} and \ContestCapitalAdvantageTenPpSE{}, clustered by pair and date.}
+\vspace{-0.04cm}
+\begin{columns}[T,totalwidth=0.91\textwidth]
+\begin{column}{0.40\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.14cm,wd=\textwidth]{block body}
+{\scriptsize\color{muted} CROSSING CHANGE VS. EARLIER MOVE\par}\vspace{0.04cm}
+{\fontsize{23}{25}\selectfont\bfseries\color{accent}\RankCrossingPlaceboEffect\par}
+\end{beamercolorbox}
+\end{column}
+\hfill
+\begin{column}{0.46\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.14cm,wd=\textwidth]{block body}
+{\scriptsize\color{muted} CHALLENGER PRIOR WEAK-LEG CAPITAL SHARE (+10 PP)\par}\vspace{0.04cm}
+{\fontsize{23}{25}\selectfont\bfseries\color{stable}\RankCrossingCapitalPersistence\par}
+{\small probability the price lead lasts one month}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\vspace{0.10cm}
+{\normalsize\bfseries\color{ucldark}\centering Prices move flow. Earlier depth predicts which lead lasts.\par}
+\decknote{Table 7: panel A follows \RankCrossingBalancedEvents{} crossings from $-3$ to $+3$. Panel B compares crossing and earlier movement (column 4); columns 1 and 2 relate prior depth to current share and next-month leadership.}
 \end{frame}
 
 % EVIDENCE-SOURCES: output/exhibits/contestable_vehicle_choice_support.jsonl.

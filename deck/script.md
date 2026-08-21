@@ -1,6 +1,6 @@
 # 30-minute talk notes
 
-Spoken notes for the current deck. Short chunks on purpose. The main talk takes about 28 minutes, leaving a little time for transitions and the 18-second film. The backup section has bullets for every appendix page.
+Spoken notes for the current deck. Short chunks on purpose. The main talk takes about 29 minutes, including transitions and the 18-second film. The backup section has bullets for every appendix page.
 
 ## Cover. The Making of Dominant Vehicle Currencies
 
@@ -202,7 +202,7 @@ For each trade, we quote the best stablecoin route and the best WETH route. Same
 
 First, the raw split. When the incumbent vehicle gives more output, it keeps 93.3 percent of routes. When the challenger gives more, incumbent retention falls to 27.2 percent.
 
-Then the regressions in Table 5.
+Then the regressions in Table 6.
 
 Column 1: stablecoin price leadership raises stablecoin choice by 57.59 percentage points, within the same pair and date.
 
@@ -210,31 +210,39 @@ Column 2: challenger price leadership lowers incumbent retention by 58.08 points
 
 So the incumbent is sticky. Current price leadership can overturn it.
 
-Then one level deeper. Does earlier bridge capital still matter once current output enters the same regression?
+That is the broad contest. Now go back to the first time both vehicle families can compete after pair entry.
 
-## Slide 13. Bridge capital predicts retention beyond current output
+## Slide 13. The entry vehicle carries 83.1% of first-contest routes
 
-Now compare columns 3 and 4 of Table 5. Same 17,778 routes in both.
+This is a narrower and cleaner question. What happens at the first sampled monthly date when the same trade can use either vehicle family?
 
-A 100-basis-point incumbent output advantage adds 10.56 points to retention when it enters alone. After prior capital enters, the estimate is 10.13. Almost unchanged.
+The entry family still carries 83.1 percent of routes. Give each pair equal weight, and it is 84.4 percent. Table 5, panel A.
 
-A 10-point prior-day advantage in the incumbent's weak-leg capital share adds another 2.77 points.
+There is an important scope point. We begin with 118,447 material entrants. Only 580 reach this strict sampled exact contest. Exact pool states are sampled monthly, and both paths must pass the same quote rules. So this result belongs to that observed opportunity set.
 
-Both are precisely estimated. 17,778 routes, pair and date fixed effects, standard errors clustered both ways.
+Now panel B. On the common V2-capital sample, a 100-basis-point exact-output advantage for the entry family adds 10.31 points to retention. Add prior capital, and it is 10.20. Basically the same.
 
-Weak-leg capital means exactly what it sounds like. A vehicle route needs two legs. Take the smaller deposited-capital stock across them. That is the bottleneck. We compare the incumbent's share of that capital with the challenger route's share.
+The capital coefficient itself is 1.85 points for a 10-point shift, with a standard error of 4.58. Here, current output explains survival. Earlier V2 capital adds little once output is in the same model.
 
-So current output matters a lot. Earlier deposited depth still carries an independent relation with vehicle use. This is the link from persistence to market structure.
+That is one contest date. We can also watch the same pair when the price lead actually changes hands.
 
-One supply-side idea is divergence loss. Lower relative-price risk can make a bridge easier to supply. The divergence-risk appendix table finds exactly that within pairs: 10 points more relative volatility predicts 0.117 lower log bridge depth now and 0.093 lower depth 30 days later.
+## Slide 14. When the price lead flips, route share follows
 
-That is a local allocation result. Stablecoin bridges actually have higher median volatility than WETH bridges, 148.4 against 126.9 percent, and the stablecoin route has lower risk in only 29.4 percent of pair-months. So divergence risk helps explain where capital sits. It does not explain the aggregate stablecoin ascent by itself.
+A crossing means the challenger moves from at least one basis point behind to at least one basis point ahead. Same pair. Consecutive months. Exact output on both sides.
 
-Now, does choosing the lower-output vehicle cost anything economically meaningful?
+Immediately before the crossing, the incumbent carries 66.9 percent of routes. In the crossing month, 38.1 percent. Table 7, panel A.
 
-## Slide 14. Output shortfalls concentrate in younger pairs
+The matched comparison in panel B, column 4 is minus 29.0 points. It compares the actual crossing with the same event's earlier move, from month minus three to minus two. So the route-share break lines up with the price-rank break.
 
-Use the same contestable routes behind Table 5.
+Depth is doing something different. Its immediate coefficient in column 1 is tiny. In column 2, a 10-point larger challenger share of prior weak-leg capital raises the chance that the new price lead lasts one month by 3.70 points.
+
+So prices move the flow now. Earlier depth helps the new lead stick.
+
+Then the consequence. What does using the lower-output vehicle cost?
+
+## Slide 15. Output shortfalls concentrate in younger pairs
+
+Use the same contestable routes behind Table 6.
 
 12.9 percent use a vehicle family that returns at least one basis point less than the other family.
 
@@ -244,11 +252,11 @@ Age changes the magnitude. The value-weighted shortfall is 16.8 basis points for
 
 So younger relationships can leave meaningful output on the table. Among mature relationships, current prices still move route choice, and the average cost of retaining the incumbent is much smaller.
 
-I read this as an economically useful boundary on stickiness. The first vehicle predicts later use. It is still exposed to price competition. Earlier two-leg capital gives it an additional edge.
+I read this as an economically useful boundary on stickiness. The first vehicle predicts later use. Current prices can overturn it. Earlier depth is especially informative about whether a new price lead lasts.
 
 That brings me back to the larger point.
 
-## Slide 15. Dominance grows when new pairs choose a vehicle
+## Slide 16. Dominance grows when new pairs choose a vehicle
 
 Let me leave you with three things.
 
@@ -256,7 +264,7 @@ First, dominance moves through pair entry. Between 2024 H1 and 2026 H1, net swit
 
 Second, vehicle identity persists after pair entry. A 10-point higher entry share maps into roughly 8 to 9 points more use over the next four months.
 
-Third, persistence has structure. Current output matters a lot. Earlier weak-leg capital matters in the same regression. And the output shortfall is concentrated among younger pairs.
+Third, persistence has structure. Current output explains survival at the first exact contest. When the price lead flips, route share follows, and earlier challenger depth predicts which lead lasts. The output shortfall is concentrated among younger pairs.
 
 Dominance carries the history of market formation. New trading relationships form, liquidity gathers on both legs, and later prices either reinforce or challenge that first vehicle.
 
