@@ -151,6 +151,19 @@ def load_material_entries(
                 entry_native_routes,
                 entry_stable_routes,
                 entry_stable_routes / entry_primary_routes AS entry_stable_share,
+                CASE
+                    WHEN entry_stable_routes > entry_native_routes THEN 1.0
+                    WHEN entry_native_routes > entry_stable_routes THEN 0.0
+                    ELSE NULL
+                END AS entry_stable,
+                entry_stable_routes = entry_native_routes AS entry_tie,
+                (
+                    (entry_stable_routes > 0 AND entry_native_routes = 0)
+                    OR (entry_native_routes > 0 AND entry_stable_routes = 0)
+                ) AS entry_exclusive,
+                (
+                    entry_stable_routes > 0 AND entry_native_routes > 0
+                ) AS entry_mixed,
                 entry_coherent_routes,
                 entry_coherent_value_usd
             FROM first_primary
@@ -490,11 +503,13 @@ def _fit_entry_model(
     model_id: str,
     predictors: tuple[str, ...],
     sample: str,
+    outcome: str = "chosen_stable",
+    choice_timing: str = "original_pair_entry_day",
 ) -> pd.DataFrame:
     """Fit one entry-choice column with four absorbed controls."""
 
     columns = [
-        "chosen_stable",
+        outcome,
         *predictors,
         "log_input_usd",
         "ordered_pair",
@@ -508,7 +523,7 @@ def _fit_entry_model(
         or data["day"].nunique() < MIN_CLUSTERS
     ):
         raise ValueError(f"entry-choice model {model_id} has insufficient support")
-    stacked = data[["chosen_stable", *regressors]]
+    stacked = data[[outcome, *regressors]]
     fixed_effects = tuple(data[column] for column in FIXED_EFFECT_COLUMNS)
     transformed = absorb_fixed_effects(stacked, *fixed_effects)
     # With more than two absorbed dimensions, the shared covariance helper takes
@@ -516,7 +531,7 @@ def _fit_entry_model(
     # minus one per dimension is conservative when the partitions are disconnected.
     k_absorbed = sum(data[column].nunique() - 1 for column in FIXED_EFFECT_COLUMNS)
     fit = ols_clustered(
-        transformed["chosen_stable"],
+        transformed[outcome],
         transformed[regressors],
         data["ordered_pair"],
         add_constant=False,
@@ -541,7 +556,7 @@ def _fit_entry_model(
                 "record_type": "entry_day_vehicle_choice_regression",
                 "model_id": model_id,
                 "sample": sample,
-                "outcome": "stablecoin_selected",
+                "outcome": outcome,
                 "regressor": regressor,
                 "coefficient": float(coefficient),
                 "coefficient_pp": 100.0 * float(coefficient),
@@ -563,7 +578,7 @@ def _fit_entry_model(
                 "covariance": "two_way_ordered_pair_calendar_date_cr1",
                 "absorbed_degrees_of_freedom": int(fit.absorbed_degrees_of_freedom),
                 "within_r_squared": float(fit.r_squared),
-                "dependent_mean": float(data["chosen_stable"].mean()),
+                "dependent_mean": float(data[outcome].mean()),
                 "minimum_entry_value_usd": float(
                     frame["entry_coherent_value_usd"].min()
                 ),
@@ -571,7 +586,10 @@ def _fit_entry_model(
                 "maximum_leg_price_impact": QUOTED_LEG_MAX_PRICE_IMPACT,
                 "value_agreement_threshold": 0.20,
                 "capital_timing": "exact_prior_calendar_day",
-                "interpretation": "descriptive_selection_inside_exact_contestable_entry_days",
+                "choice_timing": choice_timing,
+                "interpretation": (
+                    "descriptive_selection_inside_exact_two_family_opportunity_set"
+                ),
             }
         )
     return pd.DataFrame(rows)
