@@ -7,13 +7,13 @@
 {"construction": "what_matters", "corpus_max": 0.18006662465112092, "corpus_median": 0.045911574307883014, "corpus_min": 0.0, "corpus_reference": 0.18006662465112092, "draft": 0.0, "verdict": "in range"}
 {"construction": "it_is_worth", "corpus_max": 0.0, "corpus_median": 0.0, "corpus_min": 0.0, "corpus_reference": 0.0, "draft": 0.0, "verdict": "in range"}
 {"construction": "importantly", "corpus_max": 0.5280165585992777, "corpus_median": 0.12164463547157571, "corpus_min": 0.0, "corpus_reference": 0.5280165585992777, "draft": 0.0, "verdict": "in range"}
-{"construction": "triple_list", "corpus_max": 2.0718897561915774, "corpus_median": 0.4803073967339097, "corpus_min": 0.12672397406382666, "corpus_reference": 2.0718897561915774, "draft": 1.883042159221676, "verdict": "in range"}
+{"construction": "triple_list", "corpus_max": 2.0718897561915774, "corpus_median": 0.4803073967339097, "corpus_min": 0.12672397406382666, "corpus_reference": 2.0718897561915774, "draft": 2.0427910977314268, "verdict": "in range"}
 {"construction": "so_that_tail", "corpus_max": 1.182757091262382, "corpus_median": 0.09791921664626684, "corpus_min": 0.0, "corpus_reference": 1.182757091262382, "draft": 0.0, "verdict": "in range"}
 {"construction": "document_self_reference", "corpus_max": 0.0, "corpus_median": 0.0, "corpus_min": 0.0, "corpus_reference": 0.0, "draft": 0.0, "verdict": "in range"}
 {"construction": "screen_word", "corpus_max": 0.6427620403103622, "corpus_median": 0.0, "corpus_min": 0.0, "corpus_reference": 0.6427620403103622, "draft": 0.0, "verdict": "in range"}
-{"construction": "against_prep", "corpus_max": 1.7160433867573255, "corpus_median": 0.21346995410395986, "corpus_min": 0.0, "corpus_reference": 1.7160433867573255, "draft": 0.3138403598702793, "verdict": "in range"}
+{"construction": "against_prep", "corpus_max": 1.7160433867573255, "corpus_median": 0.21346995410395986, "corpus_min": 0.0, "corpus_reference": 1.7160433867573255, "draft": 0.32254596279969894, "verdict": "in range"}
 {"construction": "what_cleft", "corpus_max": 0.7770762506070908, "corpus_median": 0.09636696540425942, "corpus_min": 0.0, "corpus_reference": 0.7770762506070908, "draft": 0.0, "verdict": "in range"}
-{"construction": "negation_periphrastic", "corpus_max": 4.752149027393499, "corpus_median": 1.8678620984096488, "corpus_min": 1.039785475838669, "corpus_reference": 3.427172582619339, "draft": 1.987655612511769, "verdict": "in range"}
-{"construction": "not_any", "corpus_max": 5.660337508184257, "corpus_median": 2.698275031319264, "corpus_min": 1.5105740181268883, "corpus_reference": 4.308445532435741, "draft": 2.4061094256721414, "verdict": "in range"}
+{"construction": "negation_periphrastic", "corpus_max": 4.752149027393499, "corpus_median": 1.8678620984096488, "corpus_min": 1.039785475838669, "corpus_reference": 3.427172582619339, "draft": 2.0427910977314268, "verdict": "in range"}
+{"construction": "not_any", "corpus_max": 5.660337508184257, "corpus_median": 2.698275031319264, "corpus_min": 1.5105740181268883, "corpus_reference": 4.308445532435741, "draft": 2.472852381464359, "verdict": "in range"}
 {"construction": "neither_nor", "corpus_max": 0.2937576499388005, "corpus_median": 0.042241324687942214, "corpus_min": 0.0, "corpus_reference": 0.18164479360610328, "draft": 0.0, "verdict": "in range"}
 {"construction": "hedging_stack", "corpus_max": 0.0, "corpus_median": 0.0, "corpus_min": 0.0, "corpus_reference": 0.0, "draft": 0.0, "verdict": "in range"}

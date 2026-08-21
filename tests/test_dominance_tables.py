@@ -226,12 +226,17 @@ def test_paper_has_one_consumer_and_no_duplicate_inline_body() -> None:
     assert r"\input{../output/tables/usdt_transition.tex}" not in paper
     assert r"\begin{tabular}" not in section
     assert r"\begin{tabularx}" not in section
-    assert r"S^{(m)}_{pds,y}=\alpha^{(m)}_{pds}+\beta^{(m)}\mathbf{1}_{\{y=2026\}}" in section
+    matched_specification = (
+        r"S^{(m)}_{pds,y}=\alpha^{(m)}_{pds}+\beta^{(m)}"
+        r"\mathbf{1}_{\{y=2026\}}"
+    )
+    assert matched_specification not in section
+    assert matched_specification in appendix
     assert r"y\in\{2024,2026\}" in section
-    assert "same pair, date within the year, and realised single- or cross-exchange route class" in section
-    assert "weighted by native-plus-stable route count or supported routed value" in section
-    assert "standard errors cluster by pair and date" in section
-    assert "The comparison is descriptive" in section
+    assert "same pair, month-day, and realised single- or cross-exchange route class" in section
+    assert "weighted by native-plus-stable route count or supported routed value" in appendix
+    assert "standard errors cluster by pair and date" in appendix
+    assert "pair-by-calendar-cell effects" in section
 
 
 @pytest.mark.parametrize(

@@ -114,6 +114,7 @@ def test_relative_depth_uses_within_event_changes() -> None:
 def test_bridge_exante_table_contains_all_three_economic_margins() -> None:
     results = pd.DataFrame(
         [
+            {"record_type": "exante_bridge_support", "model_id": "lagged_capital_threshold", "min_stable_weak_leg_usd": 10_000.0, "events": 100},
             {"record_type": "exante_bridge_adoption", "model_id": "within_30_days", "estimate": 0.6, "events": 100},
             {"record_type": "exante_bridge_adoption", "model_id": "within_120_days", "estimate": 0.8, "events": 100},
             {"record_type": "exante_bridge_retention", "model_id": "stable_route_observed_days_30_119", "estimate": 0.7, "events": 60},
@@ -129,6 +130,8 @@ def test_bridge_exante_table_contains_all_three_economic_margins() -> None:
     assert "Change from the prior 30 calendar days" in rendered
     assert "Prior-day weak-leg depth and route allocation" in rendered
     values = render_bridge_exante_values(results)
+    assert r"\newcommand{\BridgeExanteThreshold}{\$10{,}000}" in values
+    assert r"\newcommand{\BridgeExanteThresholdShort}{\$10k}" in values
     assert r"\newcommand{\BridgeExanteEvents}{100}" in values
     assert r"\newcommand{\BridgeExanteAdoptionThirty}{60.0\%}" in values
     assert (
