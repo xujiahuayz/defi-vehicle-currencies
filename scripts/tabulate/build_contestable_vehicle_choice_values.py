@@ -125,6 +125,14 @@ def render_contestable_vehicle_choice_values(
         outcome="incumbent_retained",
         regressor="incumbent_v2_capital_advantage_10pp",
     )
+    price_capital_interaction = _single(
+        estimates,
+        record_type="contestable_vehicle_choice_regression",
+        model_id="exclusive_retention_price_v2_capital_interaction",
+        sample="mature_exclusive_entry_positive_v2_bridge_capital",
+        outcome="incumbent_retained",
+        regressor="price_x_incumbent_v2_capital",
+    )
     incumbent_leads = _single(
         support,
         record_type="incumbent_price_relation_summary",
@@ -165,7 +173,13 @@ def render_contestable_vehicle_choice_values(
         split_category="365_plus_days",
     )
 
-    for row in (price_leader, challenger, output_advantage, capital_advantage):
+    for row in (
+        price_leader,
+        challenger,
+        output_advantage,
+        capital_advantage,
+        price_capital_interaction,
+    ):
         _finite(row, "coefficient_pp", "standard_error_pp", "observations")
         if float(row["standard_error_pp"]) <= 0 or float(row["observations"]) <= 0:
             raise ValueError("contestable-choice regression support must be positive")
@@ -210,6 +224,7 @@ def render_contestable_vehicle_choice_values(
         and float(challenger["coefficient_pp"]) < 0
         and float(output_advantage["coefficient_pp"]) > 0
         and float(capital_advantage["coefficient_pp"]) > 0
+        and float(price_capital_interaction["coefficient_pp"]) < 0
     ):
         raise ValueError("contestable-choice coefficient directions changed")
     if int(output_advantage["observations"]) != int(capital_advantage["observations"]):
@@ -229,6 +244,9 @@ def render_contestable_vehicle_choice_values(
         f"\\newcommand{{\\ContestCapitalAdvantageTenPpEffect}}{{{_signed_pp(float(capital_advantage['coefficient_pp']))}}}",
         f"\\newcommand{{\\ContestCapitalAdvantageTenPpSE}}{{{_unsigned_pp(float(capital_advantage['standard_error_pp']))}}}",
         f"\\newcommand{{\\ContestCapitalAdvantageTenPpN}}{{{_integer(capital_advantage['observations'])}}}",
+        f"\\newcommand{{\\ContestPriceCapitalInteractionEffect}}{{{_signed_pp(float(price_capital_interaction['coefficient_pp']))}}}",
+        f"\\newcommand{{\\ContestPriceCapitalInteractionSE}}{{{_unsigned_pp(float(price_capital_interaction['standard_error_pp']))}}}",
+        f"\\newcommand{{\\ContestPriceCapitalInteractionN}}{{{_integer(price_capital_interaction['observations'])}}}",
         f"\\newcommand{{\\ContestIncumbentLeaderRetention}}{{{_pct(float(incumbent_leads['incumbent_retained_share']))}}}",
         f"\\newcommand{{\\ContestIncumbentLeaderN}}{{{_integer(incumbent_leads['routes'])}}}",
         f"\\newcommand{{\\ContestChallengerLeaderRetention}}{{{_pct(float(challenger_leads['incumbent_retained_share']))}}}",

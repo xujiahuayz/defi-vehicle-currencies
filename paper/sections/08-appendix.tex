@@ -11,7 +11,7 @@
 \section{From contract events to economic routes}
 \label{app:route-construction}
 
-Route construction begins with the contract and event format of each exchange. We identify pools from the protocol's factory or registry, map contract addresses to tokens, and convert raw integer amounts using the token precision that applied at the time of the trade. Contract addresses define token identity because unrelated tokens can share a symbol and the same economic asset can appear in native and wrapped form. ETH and WETH are consolidated only after this address-level reconstruction; every other token remains distinct unless a stated economic classification combines it. Within each transaction, pool-swap legs are ordered by block, transaction, and log position. The resulting token flows reveal the exchange that occurred. A single connected chain gives one route and therefore one exchange between its pair endpoints; parallel chains identify an order split, and disconnected event groups remain separate. Because one transaction can contain unrelated calls as well as trades across several exchanges, this procedure also prevents two simultaneous routes from being mistaken for one longer route. The output records the leg sequence and pools traversed, together with the pair. It does not infer that sequence from the transaction sender or router label.
+Route construction begins with the contract and event format of each exchange. We identify pools from the protocol's factory or registry, map contract addresses to tokens, and convert raw integer amounts using the token precision that applied at the time of the trade. Contract addresses define token identity because unrelated tokens can share a symbol and the same economic asset can appear in native and wrapped form. ETH and WETH are consolidated only after this address-level reconstruction; every other token remains distinct unless a stated economic classification combines it. Within each transaction, pool-swap legs are ordered by block, transaction, and log position. The resulting token flows reveal the exchange that occurred. A single connected chain gives one route and therefore one exchange between its pair endpoints; parallel chains identify an order split, and disconnected event groups remain separate. Because one transaction can contain unrelated calls as well as trades across several exchanges, this procedure also prevents two simultaneous routes from being mistaken for one longer route. Pool identities enter reconstruction; the unified route panel retains the ordered venue and token sequence together with the pair. It does not infer that sequence from the transaction sender or router label.
 
 Disconnected event groups become more common late in the sample. They comprise \DisconnectedShareBase{} of reconstructed components in 2024 and \DisconnectedShareEnd{} in 2026. In 2026 the rate is \DisconnectedVFourShareEnd{} among components touching Uniswap v4 and \DisconnectedOtherShareEnd{} among other components. Table~\ref{tab:app:disconnected} uses the internally connected token flow of each group as a separate route. This alternative preserves the principal economic result: the 2026 stablecoin share is \ComponentRouteCountEnd{} by count and \ComponentRouteValueEnd{} by value, both slightly above the connected-transaction estimates.
 % output/exhibits/disconnected_component_boundary.jsonl; output/exhibits/disconnected_component_boundary_values.tex
@@ -29,8 +29,21 @@ Disconnected event groups become more common late in the sample. They comprise \
 
 A complete token sequence is sufficient for the route-count sample. Value weighting additionally requires coherent amounts on every leg and a common dollar valuation. A failed valuation removes the observation from the value calculation while preserving the observed route. Appendix~\ref{app:roundtrip} gives the separate exclusion for self-returning routes.
 
+A hypothetical AAVE--WETH--USDC--UNI route makes the units concrete. Suppose one AAVE is worth \$100, one WETH \$2,500, one USDC \$1, and one UNI \$10. If one AAVE returns 0.04 WETH, the second leg returns 100 USDC, and the third returns 10 UNI, then $q=\$100$, $Q_r=10$ UNI, and $O_r=\$100$. Each leg carries \$100 on both sides. The route value $\nu_r$ is also \$100 because it averages the \$100 source and destination values. In the data, the same calculation uses transaction-time prices and allows limited measurement error under the value-agreement rule.
+% src/ddvc/route_roles.py; pedagogical unit calculation, not an empirical estimate
+
 Historical token precision cannot be verified for 13 tokens traded in 22 constant-product pools. Reserve-reconstruction analyses omit those pools. An upper-bound check removes every route involving any of the 13 tokens: the resulting bound is 5,950 routes and \$10.91 million of route value. Only 1,036 of those routes use one of the affected tokens as an intermediary, representing \$1.284 million, or 0.00043\% of value on routes whose legs can all be valued. All 13 tokens lie outside the native and stablecoin groups used in the main comparison. The exclusion affects exact reserve reconstruction; the route-composition result is unchanged.
 % docs/findings/README.md, 13 unresolved V2 token-precision records and worst-case route deletion bound
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Protocol architecture and native-asset pairing}
+\label{tab:app:v1-architecture}
+\input{../output/tables/v1_architecture.tex}
+\exhibitnote{Panel A reports connected Uniswap v1 token-to-token routes reconstructed from the exchange registry and matched ETH legs. The protocol allowed only ETH--token pools, so each such route crossed ETH. Panel B reports Uniswap v2 activity during January through June 2026. A single-leg trade uses a WETH pool when either pool token is WETH. A token combination first traded with WETH when either token in the newly active combination is WETH. V2 allowed arbitrary ERC-20 token pools throughout this period.}
+\end{table}
+% data/processed/v1_trade_classes_daily.parquet; data/processed/v2_pair_routing_daily.parquet; data/processed/v2_pair_first_trade.parquet; scripts/tabulate/build_v1_architecture_deck_values.py
 
 \section{Pricing models and validation}
 \label{app:quoters}
@@ -135,7 +148,7 @@ with $b$ and $c$ formed from the balances of the tokens the swap does not touch.
 carrying the contract's own off-by-one guard on the raw difference.
 % src/ddvc/pricing/stableswap.py, get_d, get_y and quote_exact_input
 
-$A_p$ is Curve-specific and the standardised subgraph schema drops it, so it is identified from data instead of fetched. Every other quantity in the invariant is observed and every Curve swap reports both amounts, which leaves $A_p$ as the only unknown,
+$A_p$ is Curve-specific and the standardised subgraph schema drops it. We identify it from data because every other quantity in the invariant is observed and every Curve swap reports both amounts,
 \[
 \widehat A_p=\arg\min_{A_p}Q_{0.90}\!\left\{
 \frac{|Q_p(i\to o,\Delta_i;\chi_{p,e^-}(A_p))-\Delta_o|}{\Delta_o}
@@ -287,7 +300,7 @@ which is a single reverse pass over the period. The alternative reading takes th
 which accumulates every unrecorded balance change between the two stored points. Replaying forward returns a median absolute quote error of 11.8\% against realised outputs, whereas unwinding backward returns 0.0000\%.
 % src/ddvc/cpquote.py, unwind_hour measured docstring on 8,024 executed v2 swaps
 
-Liquidity additions and withdrawals also move constant-product pool balances, so the ordered replay includes them alongside swaps. We unwind the sequence to the start of the period and compare the reconstructed opening balance with an independently observed reserve state,
+Liquidity additions and withdrawals also move constant-product pool balances; the ordered replay includes them alongside swaps. We unwind the sequence to the start of the period and compare the reconstructed opening balance with an independently observed reserve state,
 \[
 \left\|\left(\mathbf R^{\mathrm{pre}}_{p,1}-\mathbf R^{\mathrm{end}}_{p,\mathrm{prev}}\right)
 \oslash\mathbf R^{\mathrm{end}}_{p,\mathrm{prev}}\right\|_{\infty}<\tau,
@@ -303,7 +316,13 @@ The Balancer replay includes joins and exits as well as swaps. Omitting those ev
 \section{Restricting hypothetical trades to observed size--depth combinations}
 \label{app:support}
 
-Component-validation samples contain executed swaps and therefore pools deep enough to serve the observed trade. Hypothetical routes can demand much more output relative to pool depth, where the observed errors no longer describe pricing accuracy. We include a hypothetical leg in the cost comparison only when its own price impact is at most 5\%, calculated under the pricing rule of the pool family it would traverse.
+Component-validation samples contain executed swaps and therefore pools deep enough to serve the observed trade. Hypothetical routes can demand much more output relative to pool depth, where the observed errors no longer describe pricing accuracy. Let $\widetilde Q_{\ell}$ denote leg $\ell$'s output at the pool's marginal rate. We include a hypothetical leg only when
+\begin{equation}
+\label{eq:support}
+\pi_{\ell}(\Delta_i,e^-)=\frac{\widetilde Q_{\ell}(\Delta_i,e^-)-Q_{\ell}(\Delta_i,e^-)}{\widetilde Q_{\ell}(\Delta_i,e^-)}\leq \bar\pi,
+\qquad \bar\pi=0.05.
+\end{equation}
+The ceiling is calculated under the pricing rule of the pool family the leg would traverse; contract-specific limits add further restrictions.
 % output/exhibits/quoter_support_bounds.jsonl; planned common 5 percent own-price-impact rule
 
 For constant-product swaps, input relative to reserves provides a transparent size--depth comparison,
@@ -380,6 +399,22 @@ Equation~\eqref{eq:support} applies the same 5\% own-price-impact ceiling to eve
 
 \section{Coverage of the price comparison}
 \label{app:coverage}
+
+Realised routes identify the assets that carried each trade. The price frontier holds the source $i$, destination $o$, dollar input $q$, and pre-transaction pool state $e^-$ fixed. The best direct and two-leg outputs through intermediary $k$ are
+\begin{equation*}
+O^{D}_{i,o,q,e}=P_{o,e}\max_{p\in\mathcal P_{i,o,e^-}}Q_p\!\left(i\to o,\Delta_i(q,e);\chi_{p,e^-}\right),
+\end{equation*}
+\begin{equation*}
+O^{I}_{i,o,k,q,e}=P_{o,e}\max_{p'\in\mathcal P_{k,o,e^-}}Q_{p'}\!\left(k\to o,\max_{p\in\mathcal P_{i,k,e^-}}Q_p\!\left(i\to k,\Delta_i(q,e);\chi_{p,e^-}\right);\chi_{p',e^-}\right).
+\end{equation*}
+The vehicle-route shortfall relative to direct execution is
+\begin{equation*}
+\Delta C^{D}_{i,o,k,q,e}=\frac{O^{D}_{i,o,q,e}-O^{I}_{i,o,k,q,e}}{O^{D}_{i,o,q,e}},
+\end{equation*}
+reported in basis points as $10^{4}\Delta C^{D}_{i,o,k,q,e}$. The comparison extends the realised-versus-optimised allocation benchmark of \citet{XiMoallemi2026Routing} from parallel pools connecting the same assets to sequential routes through an intermediary. Swaps and liquidity changes are replayed in on-chain order so every quote uses information available before the trade.
+
+The opportunity set expands in three stages: alternative paths using the same vehicle and venue families as the observed route, paths using the same vehicle across Uniswap v2, SushiSwap v2, and Uniswap v3, and paths using any named public vehicle or the direct connection across those exchanges. Each observed two-leg route must reproduce realised output within one basis point. Leg values must agree within 20\%, input value must be at least \$100, and every observed or hypothetical leg must satisfy Equation~\eqref{eq:support}.
+% output/exhibits/exact_vehicle_frontier_monthly.jsonl
 
 \begin{table}[tbp]
 \centering
@@ -464,7 +499,7 @@ Year & \multicolumn{2}{r}{Native leg} & \multicolumn{2}{r}{Stable leg} & Other v
 \exhibitnote{A pool serves the \emph{native} leg when it contains ETH or a staking derivative, the \emph{stable} leg when every token is stable, including baskets and interest-bearing wrappers, and the \emph{other volatile} leg otherwise. Stablecoin base-pool tokens are classified with the underlying stable assets. The sample contains 28 measured Curve pool-days from 11 February 2020 through 28 April 2026.}
 \end{table}
 
-The exclusions are concentrated in routes involving the native asset. In Panel B of Table~\ref{tab:app:curveleg}, the excluded share of native-leg volume exceeds the stable-leg share by at least 33 pp in every sample year and by 54 pp in the 2023 row. Tricrypto pools pairing WBTC and WETH with a stablecoin account for \$818m, or 44.6\%, of the \$1.83bn excluded, including seven of the twelve largest excluded pool-days. These pools use CryptoSwap, so the missing coverage is concentrated where Curve supplies depth between ETH and stablecoins.
+The exclusions are concentrated in routes involving the native asset. In Panel B of Table~\ref{tab:app:curveleg}, the excluded share of native-leg volume exceeds the stable-leg share by at least 33 pp in every sample year and by 54 pp in the 2023 row. Tricrypto pools pairing WBTC and WETH with a stablecoin account for \$818m, or 44.6\%, of the \$1.83bn excluded, including seven of the twelve largest excluded pool-days. These CryptoSwap pools concentrate the missing coverage where Curve supplies depth between ETH and stablecoins.
 % docs/findings/venue-coverage.md, curve_excluded_composition.jsonl, 28 measured pool-days
 
 SushiSwap v3 is omitted from the route-cost comparison because its historical records lack the pool's root price, in-range liquidity, and tick spacing. Its reserves are distributed across ticks, and the balance and weight fields exposed by the common schema do not describe that invariant. The exchange accounts for 0.016\% of volume among the seven exchanges used for route costs over the full sample and 0.176\% in 2026. Across fourteen sampled days, only 4.1\% of its volume occurs on token combinations unavailable on another included exchange, never more than \$37,609 on one day.
@@ -543,6 +578,15 @@ At the median, round trips account for 12.8\% of multi-leg routes by count and 2
 
 \begin{table}[tbp]
 \centering
+\caption{Alternative accounting for the route-count rotation}
+\label{tab:app:pair-market-accounting}
+\small
+\input{../output/tables/pair_market_accounting.tex}
+\exhibitnote{The table factors the pooled route-count change into pair support, vehicle-route support, activity reallocation, vehicle incidence, and stablecoin share within continuing vehicle-using pairs. It is an alternative accounting of the same total reported in Table~\ref{tab:pair-composition}, panel A; its components use a different mass and are not added to the main decomposition.}
+\end{table}
+
+\begin{table}[tbp]
+\centering
 \caption{Time-window and endpoint restrictions on the stablecoin rotation}
 \label{tab:app:rotation-boundaries}
 \textit{Panel A. Adjacent January--June comparisons, route count}\par\smallskip
@@ -583,83 +627,16 @@ The full route panel supports two complementary measures. Intermediary-position 
 
 Table~\ref{tab:network-position}, panel A, shows the same stablecoin rotation under both all-route normalisations. Panel B shows a different movement in graph position. WETH remains the first-ranked betweenness node in every year, even as USDC and USDT gain realised intermediary use. The result separates the existence of leg connections from the depth and execution conditions that determine route allocation.
 
-For a pair active on date $t$ with no stablecoin vehicle, define $H_{p,t+30}$ as an indicator that a stablecoin route appears within 30 days. The rolling-hazard specification is
-\begin{equation}
-\label{eq:stable-turn-on}
-H_{p,t+30}=\alpha+\beta_N\log(1+N_{p,t})+\beta_A\log(1+A_{p,t})+\mu_d+\varepsilon_{p,t+30},
-\end{equation}
-where $N_{p,t}$ is origin-date route count, $A_{p,t}$ is pair age, and $\mu_d$ absorbs month-day effects. The mixed-vehicle analysis compares vehicles inside the same set defined by pair, date, and route class and relates each vehicle's route share to its network reach outside that set.
-
-\begin{table}[tbp]
-\centering
-\caption{Stablecoin arrival and vehicle network reach}
-\label{tab:vehicle-mechanism-regressions}
-{\tiny
-\renewcommand{\arraystretch}{0.88}
-\input{../output/tables/vehicle_mechanism_regressions.tex}
-}
-\exhibitnote{Rolling-hazard rows estimate Equation~\eqref{eq:stable-turn-on} on active native-only pair-days with complete 30-day support. Turn-on and leader-switch rows compare matched January--June observations defined by pair, date, and route class in 2024 and 2026. Mixed-set rows compare native and stable vehicles within the same observed set defined by pair, date, and route class. Coefficients appear above clustered standard errors in parentheses and are reported in pp. Reach, route count, and pair age enter as \(\log(1+x)\). The designs use month-day or risk-set fixed effects as appropriate and cluster by pair and date. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively. The estimates are predictive associations.}
-\end{table}
-
-Table~\ref{tab:vehicle-mechanism-regressions} shows that one log point of origin-date route count predicts \MechanismHazardLogMarketCoef{} higher probability of stablecoin arrival within 30 days, and pair age predicts another \MechanismHazardPairAgeCoef{}. Once native and stable vehicles coexist, same-day and prior-30-day network reach predict route allocation.
-
-USDC and USDT together account for \JointStableContribution{} of the increase in stablecoin route-count share. The direct endpoint decomposition identifies USDT inside the high-value stable-to-stable channel. Table~\ref{tab:usdt-transition} reports the supplementary role-specialisation ratio, defined as intermediary share divided by endpoint share.
-
-\begin{table}[tbp]
-\centering
-\caption{USDT role specialisation relative to observed endpoint demand}
-\label{tab:usdt-transition}
-\small
-\input{../output/tables/usdt_transition.tex}
-\exhibitnote{Intermediary and endpoint shares are formed across native, staked-native, stable, and imported currencies on complete routes that do not return to their starting asset. Direct routes enter the endpoint denominator. Intermediation intensity is intermediary share divided by endpoint share; the gap is their difference. Ratios use full-year 2024 and January--June 2026, while the share gap uses matched January--June dates. Dollar-weighted measures apply the 20\% value-agreement rule. The ratio measures specialisation, not aggregate importance.}
-\end{table}
-
-On matched dates, USDT's intermediary share minus its endpoint share rises from \USDTEndpointGapBase{} to \USDTEndpointGapEnd{}. Its intermediation-intensity ratio rises from \USDTCountExcessBase{} to \USDTCountExcessEnd{} by count and from \USDTValueExcessBase{} to \USDTValueExcessEnd{} by value. The observed route can begin after the user's broader instruction when the executor supplies inventory, so the direct additive decomposition remains the issuer-level result.
-
-Let $I_{a,t}$ be currency $a$'s share of the day's intermediary uses and $D_{a,t}$ its share of route-endpoint appearances, both in pp. We estimate
-\begin{equation}
-\label{eq:within-day-role-regression}
-I_{a,t}=\alpha+\beta D_{a,t}+\mathbf A_a'\theta+\mu_t+\eta_a+\varepsilon_{a,t},
-\end{equation}
-where $\mathbf A_a$ contains asset-class indicators, $\mu_t$ date effects, and $\eta_a$ currency effects. Currency effects absorb the time-invariant class indicators, so the two do not appear together in the final specification.
-
-\begin{table}[tbp]
-\centering
-\caption{Intermediary role within a day}
-\label{tab:within-day-ladder}
-\small
-\input{../output/tables/within_day_ladder.tex}
-\exhibitnote{The table estimates Equation~\eqref{eq:within-day-role-regression} on \DateFETokenDays{} currency-days over \DateFETokens{} currencies and \DateFEDays{} dates. The outcome and demand regressor are measured in pp. Coefficients appear above standard errors in parentheses clustered by date and currency. The final column absorbs currency and date effects jointly, leaving class indicators unidentified. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
-\end{table}
-
-Table~\ref{tab:within-day-ladder} reports a demand coefficient of \DateFESlope{} across currencies within a date and \DateFESlopeWithinToken{} within a currency after absorbing date and currency effects. Figure~\ref{fig:within-day-contrasts} reports the class and issuer contrasts.
-
-\begin{figure}[tbp]
-\centering
-\caption{Within-day intermediary role, conditional on endpoint demand}
-\label{fig:within-day-contrasts}
-\includegraphics[width=0.98\textwidth]{../output/figures/within_day_role_contrasts.pdf}
-\exhibitnote{Each row is one coefficient from Equation~\eqref{eq:within-day-role-regression} with date fixed effects. Bars are 95\% confidence intervals. Panel A compares asset classes with the residual unclassified group, Panel B compares the native asset with stablecoins, and Panel C compares stablecoin backing regimes and USDT with USDC. The panels use separate horizontal scales.}
-\end{figure}
-
-Figure~\ref{fig:integration-change} shows that cross-exchange routes grow from \CrossVenueCountStart{} of route count in 2020 to \CrossVenueCountEnd{} in 2026 and account for \CrossVenueValueEnd{} of routed value in 2026. Within a date, cross-exchange routes carry \WithinDayVenueGapValue{} more stablecoin share by routed value than single-exchange routes; the count difference is \WithinDayVenueGapCount{}. Exchange span is selected by the router, so this comparison is descriptive.
-
-\begin{figure}[tbp]
-\centering
-\caption{Stablecoin intermediary share rises within single- and cross-exchange routes}
-\label{fig:integration-change}
-\includegraphics[width=0.92\textwidth]{../output/figures/experiments/integration_change_forest.pdf}
-\exhibitnote{The sample contains complete routes that do not return to their starting asset, including routes with more than two legs. Each route contributes once for every intermediary it uses. Stablecoin shares use all intermediary types as the denominator. Count and dollar-weighted estimates compare matched January--June dates in 2024 and 2026. Dollar-weighted measures apply the 20\% value-agreement rule.}
-\end{figure}
+The issuer split in Appendix Table~\ref{tab:app:endpoint-direction}, panel B, keeps the token-level result beside the endpoint composition it explains. Together with Table~\ref{tab:network-position}, these exhibits show that the rotation spans longer routes and separately issued stablecoins even though WETH remains the graph's most central connector.
 
 \section{Secondary route and liquidity comparisons}
 \label{app:secondary-mechanisms}
 
-This section reports evidence used directly to interpret the main estimates: entry-activity restrictions, differences across venue pricing families, the composition of capital growth before first use, and subsequent comovement between route use and capital. Pool states and first-use dates are equilibrium outcomes, so the estimates describe how route use and liquidity line up.
+This section reports evidence used directly to interpret the main estimates: entry-activity restrictions, differences across venue pricing families, the composition of capital growth before first use, and subsequent comovement between route use and capital. Pool states and first-use dates are equilibrium outcomes; the estimates describe how route use and liquidity line up.
 
 \subsection{Persistence among pairs with greater entry activity}
 
-Table~\ref{tab:app:entry-persistence-robustness} repeats the post-entry stablecoin-share regressions after requiring at least five or ten routes on the entry day. The estimates remain close to one-for-one at both horizons, so the main persistence result is also present among entrants with a more precisely measured initial allocation.
+Table~\ref{tab:app:entry-persistence-robustness} repeats the post-entry stablecoin-share regressions after requiring at least five or ten routes on the entry day. The estimates remain close to one-for-one at both horizons. The main persistence result is also present among entrants with a more precisely measured initial allocation.
 
 \begin{table}[tbp]
 \centering

@@ -1,13 +1,13 @@
 % EVIDENCE-MANAGED-FILE
 % VISUAL-MANAGED-FILE
 \input{../output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex}
-\input{../output/exhibits/vehicle_formation_deck_values.tex}
+\input{../output/exhibits/vehicle_transition_pair_lifecycle_values.tex}
+\input{../output/exhibits/entry_vehicle_persistence_values.tex}
 \input{../output/exhibits/bridge_liquidity_deck_values.tex}
-\input{../output/exhibits/exact_vehicle_frontier_values.tex}
-\input{../output/exhibits/result_resolution_values.tex}
+\input{../output/exhibits/contestable_vehicle_choice_values.tex}
 
-% EVIDENCE-SOURCES: output/figures/experiments/annual_vehicle_composition_bands_deck.pdf; output/exhibits/intermediation_by_type.jsonl
-% EVIDENCE-STATUS: main descriptive result using all complete route lengths.
+% EVIDENCE-SOURCES: output/figures/experiments/annual_vehicle_composition_bands_deck.pdf; output/exhibits/intermediation_by_type.jsonl.
+% EVIDENCE-STATUS: principal descriptive result using every complete route length.
 % VISUAL-FUNCTION: all-route vehicle rotation | half-year two-panel line chart | establish turnover in frequency and routed value
 \begin{frame}{Stablecoins regain the routed-value lead by 2026 H1}
 \evidencekicker{All route lengths}
@@ -26,22 +26,23 @@
 \decknote{Each complete route contributes once for every intermediary position, including routes with more than two legs. Every point covers six calendar months; the final point is 2026 H1. Routed value requires source, intermediary, and destination values to agree within 20\%.}
 \end{frame}
 
-% EVIDENCE-SOURCES: output/figures/vehicle_dominance_timelapse.mp4; output/figures/vehicle_dominance_timelapse_poster.pdf
-% EVIDENCE-STATUS: main dynamic view of generated monthly composition.
+% EVIDENCE-SOURCES: output/figures/vehicle_dominance_timelapse.mp4; output/figures/vehicle_dominance_timelapse_poster.pdf.
+% EVIDENCE-STATUS: dynamic view of generated monthly composition.
 % VISUAL-FUNCTION: vehicle leadership through time | embedded time-lapse scatter film | reveal movement that no single frame contains
 \begin{frame}{Vehicle leadership turns over through time}
 \centering
 \vspace{-0.10cm}
 \href{run:../output/figures/vehicle_dominance_timelapse.mp4}{%
-\includegraphics[width=0.88\textwidth,height=0.68\textheight,keepaspectratio]{../output/figures/vehicle_dominance_timelapse_poster.pdf}}
+\includegraphics[width=0.88\textwidth,height=0.64\textheight,keepaspectratio]{../output/figures/vehicle_dominance_timelapse_poster.pdf}}
 \par\vspace{-0.06cm}
 {\scriptsize\bfseries\color{ucldark}Click the film to play in Adobe Acrobat\par}
-\decknote{The film follows WETH, USDC, USDT, and DAI in route participation, supported value, and pair breadth. Each frame retains six months of history, so no single frame contains the full transition. The poster is the PDF fallback.}
+{\fontsize{6.7}{7.2}\selectfont\color{muted}Preview and browser readers show the static poster.\par}
+\decknote{The film follows WETH, USDC, USDT, and DAI in route participation, supported value, and pair breadth. Each frame retains six months of history. The MP4 is embedded in the final PDF and retained separately as a talk asset.}
 \end{frame}
 
-% EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_decomposition.jsonl
+% EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_lifecycle.jsonl.
 % EVIDENCE-STATUS: central exact decomposition.
-% VISUAL-FUNCTION: sources of aggregate rotation | three contribution blocks and share arrow | make pair formation and near-zero net switching memorable
+% VISUAL-FUNCTION: sources of aggregate rotation | three contribution blocks and share arrow | separate pair formation from net switching
 \begin{frame}{Pair formation supplies most of the rotation}
 \evidencekicker{Exact decomposition in percentage points (pp): 2024 H1 to 2026 H1}
 \vspace{0.06cm}
@@ -51,8 +52,10 @@
 {\small\mbox{Same continuing}\\pair\\[0.14cm]{\fontsize{21}{23}\selectfont\bfseries\color{accent}\mbox{\PairPooledWithin}}};
 \node[softbox,text width=3.05cm,minimum height=1.45cm,align=center] at (0,1.55)
 {\small Activity shifts across pairs\\[0.14cm]{\fontsize{21}{23}\selectfont\bfseries\color{ucldark}\mbox{\PairPooledReweight}}};
-\node[softbox,text width=3.05cm,minimum height=1.45cm,align=center,fill=stable!9] at (4.35,1.55)
-{\small Pairs in one period\\[0.14cm]{\fontsize{21}{23}\selectfont\bfseries\color{stable}\mbox{\PairPooledExclusive}}};
+\node[softbox,text width=3.25cm,minimum height=1.45cm,align=center,fill=stable!9] at (4.35,1.55)
+{\small First-observed pair entry\\[0.14cm]{\fontsize{21}{23}\selectfont\bfseries\color{stable}\mbox{\PairLifecycleCountEntry}}};
+\node[font=\fontsize{7.0}{7.5}\selectfont,text=muted,align=center,text width=5.40cm] at (4.35,0.28)
+{Other lifecycle terms: \PairLifecycleCountOffset;\quad net: \PairLifecycleCountNet};
 \draw[rule,line width=1pt] (-5.95,-0.05)--(5.95,-0.05);
 \node[font=\normalsize\bfseries,text=ink,align=left] at (-4.30,-0.72) {Stablecoin\\share};
 \node[font=\scriptsize\bfseries,text=muted] at (-1.45,-0.42) {2024 H1};
@@ -64,190 +67,178 @@
 \end{center}
 \vspace{0.02cm}
 {\large\bfseries\color{ucldark}The aggregate rises \PairPooledTotal; net switching inside continuing pairs is \PairPooledWithin.\par}
-\decknote{Exact two-leg native-or-stable vehicle routes on matched January--June dates. A further \PairPooledSupportMass{} comes from the changing weight of continuing versus period-specific pairs. Components use unrounded values and sum to the aggregate change.}
+\decknote{Exact two-leg native-or-stable vehicle routes on matched January--June dates. Full pair histories split first-observed entry from the period-specific net; reactivation, vehicle-role turnover, and exit form the offset. Continuing-pair weight contributes \PairPooledSupportMass{}. Unrounded components sum to the aggregate change.}
 \end{frame}
 
-% EVIDENCE-SOURCES: output/exhibits/vehicle_formation_exploration.jsonl; output/tables/vehicle_formation_regressions.tex
-% EVIDENCE-STATUS: main predictive persistence result.
-% VISUAL-FUNCTION: persistence after pair entry | three-horizon coefficient sequence | connect first vehicle use to later allocation
-\begin{frame}{The first vehicle is sticky}
-\evidencekicker{Predictive persistence after pair entry}
-\vspace{0.15cm}
-\begin{columns}[T,totalwidth=0.92\textwidth]
-\begin{column}{0.25\textwidth}
-{\color{muted}\scriptsize INITIAL STABLECOIN SHARE\par}\vspace{0.08cm}
-{\fontsize{26}{28}\selectfont\bfseries\color{stable}+1 pp}\par
-{\small at pair entry\par}
-\end{column}
-\begin{column}{0.06\textwidth}
-\centering\vspace{0.50cm}{\Large$\Longrightarrow$}
-\end{column}
-\begin{column}{0.25\textwidth}
-{\color{muted}\scriptsize NEXT 30 DAYS\par}\vspace{0.08cm}
-{\fontsize{26}{28}\selectfont\bfseries\color{ucldark}\FormationPathEntryShareThirtyCoef}\par
-{\small stablecoin share\par}
-\end{column}
-\begin{column}{0.06\textwidth}
-\centering\vspace{0.50cm}{\Large$\Longrightarrow$}
-\end{column}
-\begin{column}{0.25\textwidth}
-{\color{muted}\scriptsize NEXT 120 DAYS\par}\vspace{0.08cm}
-{\fontsize{26}{28}\selectfont\bfseries\color{ucldark}\FormationPathEntryShareOneTwentyCoef}\par
-{\small stablecoin share\par}
-\end{column}
-\end{columns}
-\vspace{0.72cm}
-{\large The first vehicle remains a focal point for the new trading relationship.\par}
-\decknote{\FormationPathDependenceRows{} non-WETH pairs observed by route scope. Regressions control for entry size, cohort year, endpoint class, direct-route share, and route complexity. Standard errors are clustered by entry date. ``Sticky'' means predictive persistence in observed route use; it does not identify trader inertia.}
-\end{frame}
-
-% EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl
-% EVIDENCE-STATUS: main descriptive depth association.
-% VISUAL-FUNCTION: bridge depth and route use | ordered depth blocks | show how a technically available route becomes competitive
-\begin{frame}{A shallow stablecoin bridge attracts little route flow}
-\evidencekicker{First 30 days after persistent stablecoin support}
-\vspace{0.05cm}
+% EVIDENCE-SOURCES: output/exhibits/entry_vehicle_persistence_models.jsonl; output/exhibits/entry_vehicle_persistence_support.jsonl.
+% EVIDENCE-STATUS: corrected post-entry persistence with the entry day removed and disjoint follow-up windows.
+% VISUAL-FUNCTION: post-entry persistence | two follow-up estimates on a timeline | show strong vehicle continuity among pairs that trade again
+\begin{frame}{A pair carries its first vehicle into later trading}
+\evidencekicker{Effect of 10 pp more stablecoin use on the entry day}
+\vspace{0.16cm}
 \begin{center}
 \begin{tikzpicture}[x=1cm,y=1cm]
-\node[softbox,text width=3.25cm,minimum height=1.70cm,align=center] (thin) at (-4.25,1.35)
-{\small Below $0.1\times$ WETH depth\\[0.14cm]{\fontsize{24}{26}\selectfont\bfseries\color{muted}\BridgeDepthThinFirstShare}};
-\node[softbox,text width=3.25cm,minimum height=1.70cm,align=center,fill=stable!7] (equal) at (0,1.35)
-{\small At least WETH depth\\[0.14cm]{\fontsize{24}{26}\selectfont\bfseries\color{stable}\BridgeDepthEqualFirstShare}};
-\node[softbox,text width=3.25cm,minimum height=1.70cm,align=center,fill=stable!12] (double) at (4.25,1.35)
-{\small At least $2\times$ WETH depth\\[0.14cm]{\fontsize{24}{26}\selectfont\bfseries\color{stable}\BridgeDepthDoubleFirstShare}};
-\draw[-{Stealth[length=7pt]},line width=1.6pt,draw=stable] (thin)--(equal);
-\draw[-{Stealth[length=7pt]},line width=1.6pt,draw=stable] (equal)--(double);
+\node[softbox,text width=2.70cm,minimum height=1.50cm,align=center,fill=stable!8] (entry) at (-4.25,1.45)
+{\small Entry day\\[0.12cm]{\large\bfseries\color{stable}vehicle mix}};
+\node[softbox,text width=3.10cm,minimum height=1.50cm,align=center] (early) at (0,1.45)
+{\small Days 1--30\\[0.12cm]{\fontsize{23}{25}\selectfont\bfseries\color{ucldark}\EntryPersistenceEarlyPairEffectPerTen}};
+\node[softbox,text width=3.10cm,minimum height=1.50cm,align=center] (late) at (4.40,1.45)
+{\small Days 31--120\\[0.12cm]{\fontsize{23}{25}\selectfont\bfseries\color{ucldark}\EntryPersistenceLatePairEffectPerTen}};
+\draw[-{Stealth[length=7pt]},draw=stable,line width=1.6pt] (entry)--(early);
+\draw[-{Stealth[length=7pt]},draw=stable,line width=1.6pt] (early)--(late);
 \end{tikzpicture}
 \end{center}
-\vspace{0.28cm}
-{\large\bfseries Vehicle competition turns on relative depth.\par}
-\decknote{Depth is prior-calendar deposited capital on the weaker leg. The route-share comparison uses \BridgeDepthDoseFirstRows{} pair-days across \BridgeDepthDoseFirstEvents{} bridge events. Support and depth refer to the same stablecoin set. Capital and route demand are jointly determined.}
-\end{frame}
-
-% EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl; Milionis et al. (2022)
-% EVIDENCE-STATUS: descriptive first-use comparison plus economic interpretation of LP risk.
-% VISUAL-FUNCTION: support to first use | two uncluttered probability blocks | separate binary support from usable depth
-\begin{frame}{Usable depth turns support into route use}
-\evidencekicker{Probability of first stablecoin use within 30 days}
-\vspace{0.34cm}
+\vspace{0.22cm}
 \begin{columns}[T,totalwidth=0.86\textwidth]
-\begin{column}{0.38\textwidth}
-\begin{beamercolorbox}[rounded=true,sep=0.40cm,wd=\textwidth]{block body}
-{\small\color{muted} BELOW $0.1\times$ WETH DEPTH\par}\vspace{0.12cm}
-{\fontsize{30}{32}\selectfont\bfseries\color{accent}\BridgeTimingShallowMonthShare\par}
-\end{beamercolorbox}
+\begin{column}{0.41\textwidth}\centering
+{\color{muted}\scriptsize PAIRS TRADING AGAIN, DAYS 1--30\par}
+{\large\bfseries\color{ucldark}\EntryPersistenceEarlyRetradeRate\par}
 \end{column}
-\begin{column}{0.10\textwidth}\centering\vspace{0.70cm}{\Large$\rightarrow$}\end{column}
-\begin{column}{0.38\textwidth}
-\begin{beamercolorbox}[rounded=true,sep=0.40cm,wd=\textwidth]{block body}
-{\small\color{muted} AT LEAST $0.1\times$ WETH DEPTH\par}\vspace{0.12cm}
-{\fontsize{30}{32}\selectfont\bfseries\color{stable}\BridgeTimingCompetitiveMonthShare\par}
-\end{beamercolorbox}
+\begin{column}{0.41\textwidth}\centering
+{\color{muted}\scriptsize PAIRS TRADING AGAIN, DAYS 31--120\par}
+{\large\bfseries\color{ucldark}\EntryPersistenceLateRetradeRate\par}
 \end{column}
 \end{columns}
-\vspace{0.48cm}
-{\large Positive pool capital becomes economically useful as both route legs deepen.\par}
-\vspace{0.18cm}
-{\small\color{muted} Lower divergence loss may attract LPs; issuers or affiliated market makers may also seed conversion pools.\par}
-\decknote{The sample follows \BridgeTimingEvents{} pair events after persistent support appears. The estimates compare first use within 30 days. The supply-side sentence gives two economic interpretations: smaller relative-price movements imply smaller constant-product loss versus holding, and issuer-linked capital may seed convertibility. Provider profitability additionally depends on entry prices, fee income, hedges, and expectations.}
+\vspace{0.22cm}
+{\large\bfseries\color{stable}\centering Vehicle identity persists among pairs that remain active.\par}
+\decknote{The sample contains \EntryPersistenceEntrants{} pairs entering by March 2 in 2024 or 2026. The entry day is excluded; follow-up windows do not overlap. The share regressions condition on trading again and control for cohort year, stablecoin endpoints, entry activity, direct-route share, and route complexity. Standard errors cluster by entry date: \EntryPersistenceEarlyPairSEPerTen{} and \EntryPersistenceLatePairSEPerTen{}, respectively.}
 \end{frame}
 
-% EVIDENCE-SOURCES: output/figures/experiments/bridge_adoption_capital_path.pdf
-% EVIDENCE-STATUS: main event-time capital path among eventual users.
-% VISUAL-FUNCTION: capital before first use | event-time line chart and two estimates | establish that bridge depth rises before observed routing
-\begin{frame}{Bridge capital builds before first use}
-\evidencekicker{Supported stablecoin first used at day zero}
-\vspace{0.02cm}
-\begin{columns}[T,totalwidth=0.95\textwidth]
-\begin{column}{0.66\textwidth}
-\includegraphics[width=\textwidth,height=0.65\textheight,keepaspectratio]{../output/figures/experiments/bridge_adoption_capital_path.pdf}
+% EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl; output/figures/experiments/bridge_adoption_capital_path.pdf.
+% EVIDENCE-STATUS: descriptive formation evidence connecting persistent technical support, relative weak-leg depth, and first use.
+% VISUAL-FUNCTION: support to first use | depth-conditioned first-use contrast plus event-time arrow | connect technical availability to usable bridge formation
+\begin{frame}{A supported bridge becomes usable as both legs deepen}
+\evidencekicker{Persistent support, relative weak-leg depth, and first use}
+\vspace{0.14cm}
+\begin{columns}[T,totalwidth=0.92\textwidth]
+\begin{column}{0.57\textwidth}
+{\color{muted}\scriptsize FIRST STABLECOIN USE WITHIN 30 DAYS\par}
+\vspace{0.13cm}
+\begin{tikzpicture}[x=1cm,y=1cm]
+\node[softbox,text width=2.75cm,minimum height=1.72cm,align=center] (shallow) at (0,0)
+{{\scriptsize BELOW $0.1\times$ WETH DEPTH}\par\vspace{0.10cm}{\fontsize{26}{28}\selectfont\bfseries\color{accent}\BridgeTimingShallowMonthShare}};
+\node[softbox,text width=2.75cm,minimum height=1.72cm,align=center,fill=stable!9] (usable) at (4.15,0)
+{{\scriptsize AT LEAST $0.1\times$ WETH DEPTH}\par\vspace{0.10cm}{\fontsize{26}{28}\selectfont\bfseries\color{stable}\BridgeTimingCompetitiveMonthShare}};
+\draw[-{Stealth[length=7pt]},draw=stable,line width=1.6pt] (shallow)--(usable);
+\end{tikzpicture}
 \end{column}
 \hfill
-\begin{column}{0.27\textwidth}
-{\color{muted}\scriptsize BEFORE FIRST USE\par}\vspace{0.05cm}
-{\fontsize{23}{25}\selectfont\bfseries\color{stable}\BridgeAdoptionCapitalPreCoef}\par
-{\small stablecoin bridge, day -7 to 0\par}
-\vspace{0.38cm}
-{\color{muted}\scriptsize AFTER FIRST USE\par}\vspace{0.05cm}
-{\fontsize{23}{25}\selectfont\bfseries\color{accent}\BridgeAdoptionCapitalPostCoef}\par
-{\small stablecoin bridge, day 0 to +7\par}
+\begin{column}{0.29\textwidth}
+{\color{muted}\scriptsize WEEK BEFORE FIRST USE\par}
+\vspace{0.22cm}
+\begin{tikzpicture}[x=0.95cm,y=1cm]
+\node[font=\scriptsize,text=muted] (dminus) at (0,0) {day $-7$};
+\node[font=\scriptsize\bfseries,text=stable,align=center] (first) at (3.15,0) {first\\use};
+\draw[-{Stealth[length=7pt]},draw=stable,line width=1.7pt] (dminus)--(first);
+\node[font=\fontsize{23}{25}\selectfont\bfseries,text=stable] at (1.58,0.72) {\BridgeAdoptionCapitalPreCoef};
+\node[font=\scriptsize,text=ink,align=center] at (1.58,-0.72) {log weak-leg\\capital};
+\end{tikzpicture}
 \end{column}
 \end{columns}
-\vspace{0.02cm}
-{\large Capital builds into first use, then partly unwinds.\par}
-\decknote{\BridgeAdoptionCapitalEvents{} pair events with first use 7 to 119 days after persistent support. Relative to WETH, capital changes \BridgeAdoptionCapitalMatchedPreCoef{} before and \BridgeAdoptionCapitalMatchedPostCoef{} after first use. \BridgePoolMarginContinuingCapitalShare{} of first-use capital lies in pools active one week earlier, so the rise mainly deepens existing bridges. Capital is lagged one day; intervals cluster by pair and adoption date. First use is endogenous.}
+\vspace{0.42cm}
+{\large\bfseries\color{ucldark}\centering Pool existence opens a route; two-leg depth makes it usable.\par}
+\decknote{Persistent support means positive prior-calendar capital on both legs on at least 24 of the next 30 days. First-use rates follow \BridgeTimingEvents{} pair events. The capital path uses \BridgeAdoptionCapitalEvents{} later users from day -7 to day zero; the matched change relative to WETH is \BridgeAdoptionCapitalMatchedPreCoef{} log points. First-use timing is endogenous.}
 \end{frame}
 
-% EVIDENCE-SOURCES: output/exhibits/exact_vehicle_frontier_monthly.jsonl
-% EVIDENCE-STATUS: main exact pre-transaction price comparison.
-% VISUAL-FUNCTION: venue and vehicle price competition | nested opportunity-set blocks | separate venue improvement from vehicle replacement
-\begin{frame}{Price competition usually changes the venue}
-\evidencekicker{Share of routes with a quote more than 1 bp better than execution}
-\vspace{0.08cm}
-\begin{columns}[T,totalwidth=0.94\textwidth]
-\begin{column}{0.26\textwidth}
-\begin{beamercolorbox}[rounded=true,sep=0.30cm,wd=\textwidth]{block body}
-{\color{muted}\scriptsize 1. SAME VEHICLE, USED VENUES\par}\vspace{0.10cm}
-{\fontsize{25}{27}\selectfont\bfseries\color{ucldark}\ExactFrontierWithinShare\par}
-{\small of observed routes}
+% EVIDENCE-SOURCES: output/exhibits/contestable_vehicle_choice.jsonl; output/exhibits/contestable_vehicle_choice_support.jsonl.
+% EVIDENCE-STATUS: exact stablecoin-versus-WETH route comparison on common support.
+% VISUAL-FUNCTION: price leadership and incumbency | conditional retention blocks plus fixed-effect estimate | show that current output can overturn the entry vehicle
+\begin{frame}{Current prices can overturn incumbency}
+\evidencekicker{Same pair, input, pretrade state, and venue set}
+\vspace{0.22cm}
+\begin{columns}[T,totalwidth=0.88\textwidth]
+\begin{column}{0.38\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.34cm,wd=\textwidth]{block body}
+{\small\color{muted} INCUMBENT RETURNS MORE OUTPUT\par}\vspace{0.10cm}
+{\fontsize{29}{31}\selectfont\bfseries\color{ucldark}\ContestIncumbentLeaderRetention\par}
+{\small retain the incumbent}
 \end{beamercolorbox}
 \end{column}
-\begin{column}{0.05\textwidth}\centering\vspace{0.56cm}{\large$\rightarrow$}\end{column}
-\begin{column}{0.26\textwidth}
-\begin{beamercolorbox}[rounded=true,sep=0.30cm,wd=\textwidth]{block body}
-{\color{muted}\scriptsize 2. SAME VEHICLE,\\ALL EXACT VENUES\par}\vspace{0.10cm}
-{\fontsize{25}{27}\selectfont\bfseries\color{stable}\ExactFrontierSameVehicleShare\par}
-{\small of observed routes}
-\end{beamercolorbox}
-\end{column}
-\begin{column}{0.05\textwidth}\centering\vspace{0.56cm}{\large$\rightarrow$}\end{column}
-\begin{column}{0.26\textwidth}
-\begin{beamercolorbox}[rounded=true,sep=0.30cm,wd=\textwidth]{block body}
-{\color{muted}\scriptsize 3. ANY VEHICLE\\OR DIRECT\par}\vspace{0.10cm}
-{\fontsize{25}{27}\selectfont\bfseries\color{stable}\ExactFrontierAllPathShare\par}
-{\small of observed routes}
+\begin{column}{0.10\textwidth}\centering\vspace{0.78cm}{\Large$\longleftrightarrow$}\end{column}
+\begin{column}{0.38\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.34cm,wd=\textwidth]{block body}
+{\small\color{muted} CHALLENGER RETURNS MORE OUTPUT\par}\vspace{0.10cm}
+{\fontsize{29}{31}\selectfont\bfseries\color{accent}\ContestChallengerLeaderRetention\par}
+{\small retain the incumbent}
 \end{beamercolorbox}
 \end{column}
 \end{columns}
-\vspace{0.44cm}
+\vspace{0.42cm}
+\begin{beamercolorbox}[rounded=true,sep=0.20cm,wd=0.88\textwidth]{block body}
+\centering
+{\small Pair and date fixed effects: challenger price leadership changes incumbent retention by\quad
+{\fontsize{22}{24}\selectfont\bfseries\color{accent}\ContestChallengerEffect}.\par}
+\end{beamercolorbox}
+\decknote{We quote the best feasible stablecoin and WETH routes before each observed trade. Both routes use exact Uniswap v2, SushiSwap v2, or Uniswap v3 state and keep every leg below 5\% own-price impact. Price leadership requires more than 1 bp. The fixed-effect estimate has standard error \ContestChallengerSE{} over \ContestChallengerN{} routes; inference clusters by pair and date.}
+\end{frame}
+
+% EVIDENCE-SOURCES: output/exhibits/contestable_vehicle_choice.jsonl; output/exhibits/contestable_vehicle_choice_support.jsonl.
+% EVIDENCE-STATUS: joint exact-output and prior weak-leg-capital regression.
+% VISUAL-FUNCTION: joint determinants of retention | two coefficient blocks with shared conditioning set | show that depth adds information beyond current output
+\begin{frame}{Bridge capital predicts retention beyond current output}
+\evidencekicker{Joint regression with pair and date fixed effects}
+\vspace{0.16cm}
+\begin{columns}[T,totalwidth=0.90\textwidth]
+\begin{column}{0.41\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.30cm,wd=\textwidth]{block body}
+{\small\color{muted} +100 BP INCUMBENT OUTPUT ADVANTAGE\par}\vspace{0.12cm}
+{\fontsize{28}{30}\selectfont\bfseries\color{ucldark}\ContestOutputAdvantageHundredBpEffect\par}
+{\small incumbent retention}
+\end{beamercolorbox}
+\end{column}
+\hfill
+\begin{column}{0.41\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.30cm,wd=\textwidth]{block body}
+{\small\color{muted} +10 PP PRIOR WEAK-LEG CAPITAL SHARE\par}\vspace{0.12cm}
+{\fontsize{28}{30}\selectfont\bfseries\color{stable}\ContestCapitalAdvantageTenPpEffect\par}
+{\small incumbent retention}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\vspace{0.26cm}
+\begin{center}
+\begin{tikzpicture}[x=1cm,y=1cm]
+\node[softbox,text width=9.8cm,align=center,inner sep=5pt] {
+\small Current exact output and prior deposited capital enter together.\\[-0.02cm]
+\scriptsize Pair effects absorb persistent pair differences; date effects absorb market-wide conditions.};
+\end{tikzpicture}
+\end{center}
+\decknote{The outcome is incumbent retention for mature pairs with one exclusive entry vehicle family. Weak-leg capital is the smaller prior-day deposited-capital stock across the two required legs, aggregated over Uniswap v2 and SushiSwap v2. Both vehicle families have positive capital. The model contains \ContestOutputAdvantageHundredBpN{} routes; two-way clustered standard errors are \ContestOutputAdvantageHundredBpSE{} and \ContestCapitalAdvantageTenPpSE{}.}
+\end{frame}
+
+% EVIDENCE-SOURCES: output/exhibits/contestable_vehicle_choice_support.jsonl.
+% EVIDENCE-STATUS: output consequence on symmetric common support.
+% VISUAL-FUNCTION: economic magnitude | pooled shortfall statistics and pair-age profile | show where retention has an observable execution consequence
+\begin{frame}{Output shortfalls concentrate in younger pairs}
+\evidencekicker{Exact stablecoin-versus-WETH comparison; input-value weights}
+\vspace{0.15cm}
 \begin{columns}[T,totalwidth=0.90\textwidth]
 \begin{column}{0.42\textwidth}
-{\fontsize{23}{25}\selectfont\bfseries\color{ucldark}\ExactFrontierVehicleAddition}\par
-{\small added by opening other vehicles and the direct path\par}
+{\color{muted}\scriptsize ROUTES USING THE LOWER-OUTPUT FAMILY\par}
+{\fontsize{26}{28}\selectfont\bfseries\color{accent}\ContestLowerOutputFamilyShare\par}
+{\small Conditional median: \textbf{\ContestForegoneMedianBps}\par}
 \end{column}
 \hfill
 \begin{column}{0.42\textwidth}
-{\fontsize{23}{25}\selectfont\bfseries\color{stable}\ExactFrontierStableChange}\par
-{\small change in stablecoin vehicle share\par}
+{\color{muted}\scriptsize VALUE-WEIGHTED SHORTFALL, ALL ROUTES\par}
+{\fontsize{26}{28}\selectfont\bfseries\color{ucldark}\ContestForegoneInputValueWeightedBps\par}
+{\small before gas\par}
 \end{column}
 \end{columns}
-\decknote{Routes are repriced for the same pair and input immediately before execution. The sample contains \ExactFrontierRoutes{} routes on \ExactFrontierDates{} monthly dates across exact Uniswap v2, SushiSwap v2, and Uniswap v3 states; minimum input is \ExactFrontierMinimumInput{} and the impact limit is \ExactFrontierImpactLimit{}. Quotes are gross of gas. The next slide independently quotes feasible stablecoin and WETH paths.}
-\end{frame}
-
-% EVIDENCE-SOURCES: output/exhibits/entry_vehicle_exact_price_alignment.jsonl
-% EVIDENCE-STATUS: descriptive exact-price comparison at least 120 days after pair entry.
-% VISUAL-FUNCTION: current price and persistence | two large conditional shares | distinguish reduced-form persistence from current competitiveness
-\begin{frame}{Current prices discipline persistence}
-\evidencekicker{At least 120 days after pair entry; both vehicle paths feasible}
-\vspace{0.32cm}
-\begin{columns}[T,totalwidth=0.88\textwidth]
-\begin{column}{0.39\textwidth}
-\begin{beamercolorbox}[rounded=true,sep=0.40cm,wd=\textwidth]{block body}
-{\small\color{muted} ENTRY VEHICLE GIVES MORE OUTPUT\par}\vspace{0.12cm}
-{\fontsize{30}{32}\selectfont\bfseries\color{ucldark}\PriceIncumbentLeaderRetention\par}
-{\small of routes keep the entry vehicle\par}
-\end{beamercolorbox}
-\end{column}
-\begin{column}{0.10\textwidth}\centering\vspace{0.82cm}{\Large$\longleftrightarrow$}\end{column}
-\begin{column}{0.39\textwidth}
-\begin{beamercolorbox}[rounded=true,sep=0.40cm,wd=\textwidth]{block body}
-{\small\color{muted} OTHER VEHICLE GIVES MORE OUTPUT\par}\vspace{0.12cm}
-{\fontsize{30}{32}\selectfont\bfseries\color{accent}\PriceChallengerIncumbentRetention\par}
-{\small of routes keep the entry vehicle\par}
-\end{beamercolorbox}
-\end{column}
-\end{columns}
-\vspace{0.48cm}
-{\large\bfseries The first vehicle survives primarily while its path remains price competitive.\par}
-\decknote{For the same pair, input, and pretrade state, we independently quote the best feasible stablecoin and WETH paths. The leader improves gross output by more than 1 bp; every leg remains below 5\% own-price impact. The other-vehicle group contains \PriceChallengerRoutes{} routes in \PriceChallengerPairs{} pairs. Pair-day weighting gives \PriceIncumbentLeaderPairDayRetention{} when the entry vehicle leads and \PriceChallengerPairDayRetention{} when the other vehicle leads. The comparison is descriptive, gross of gas, and limited to exact venues.}
+\vspace{0.42cm}
+\begin{center}
+\begin{tikzpicture}[x=1cm,y=1cm]
+\node[softbox,text width=3.20cm,minimum height=1.18cm,align=center] at (-4.15,0)
+{\scriptsize PAIR AGE: 0--89 DAYS\\[0.08cm]{\fontsize{20}{22}\selectfont\bfseries\color{accent}\ContestYoungForegoneInputValueWeightedBps}};
+\node[softbox,text width=3.20cm,minimum height=1.18cm,align=center] at (0,0)
+{\scriptsize PAIR AGE: 90--364 DAYS\\[0.08cm]{\fontsize{20}{22}\selectfont\bfseries\color{accent}\ContestMiddleForegoneInputValueWeightedBps}};
+\node[softbox,text width=3.20cm,minimum height=1.18cm,align=center,fill=stable!8] at (4.15,0)
+{\scriptsize PAIR AGE: 365+ DAYS\\[0.08cm]{\fontsize{20}{22}\selectfont\bfseries\color{stable}\ContestMatureForegoneInputValueWeightedBps}};
+\draw[-{Stealth[length=6pt]},draw=rule,line width=1.5pt] (-2.50,0)--(-1.65,0);
+\draw[-{Stealth[length=6pt]},draw=rule,line width=1.5pt] (1.65,0)--(2.50,0);
+\end{tikzpicture}
+\end{center}
+\vspace{0.05cm}
+{\large\bfseries\color{stable}\centering Mature pair routes track public prices more closely.\par}
+\decknote{A shortfall occurs when the observed family returns at least 1 bp less than the best feasible alternative family. The conditional 90th percentile is \ContestForegonePNinetyBps{}. Age groups are mutually exclusive and use the same routes where both vehicle families are feasible. Values are gross of gas and cover the declared exact venues.}
 \end{frame}

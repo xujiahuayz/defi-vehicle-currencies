@@ -1,14 +1,14 @@
 % VISUAL-MANAGED-FILE
-% Framing and institutional setting. Sources: Krugman (1980); BIS Project Nexus FX provision; BIS Project Rialto; project route-release audit.
+% Framing and compact measurement setup.
 \IfFileExists{../output/exhibits/presentation_values.tex}{%
 \input{../output/exhibits/presentation_values.tex}%
 }{\PackageError{dvc-deck}{Missing generated route-results values}{Run scripts/tabulate/render_presentation_values.py.}}
 \input{../output/exhibits/disconnected_component_boundary_values.tex}
+\input{../output/exhibits/route_replay_deck_values.tex}
 
 % EVIDENCE-STATUS: conceptual motivation from official cross-border payment designs; no empirical estimate is displayed.
 % SOURCE: BIS Project Nexus FX provision, https://docs.bis.org/nexus/fx-provision/key-points; BIS Project Rialto, https://www.bis.org/about/bisih/topics/cbdc/rialto.htm.
-% SCIENTIFIC-LIMITATION: the payment-system examples motivate the currency-conversion and liquidity problem. We estimate quantities from executed DEX pool routes; these examples supply no identification event.
-% VISUAL-FUNCTION: cross-border liquidity problem | payment-provider route schematic plus vehicle reveal | motivate why a third currency and its liquidity are economically necessary
+% VISUAL-FUNCTION: cross-border liquidity problem | payment-provider route schematic | motivate the intermediary and its liquidity
 \begin{frame}{A cross-border payment needs someone to make the FX market}
 \begin{columns}[T,totalwidth=\textwidth]
 \begin{column}{0.48\textwidth}
@@ -37,9 +37,9 @@
 \decknote{Project Nexus states that every cross-border, cross-currency payment needs an actor willing and able to exchange the currencies. Project Rialto experimentally uses a vehicle currency when direct exchange is unavailable. We study the intermediary asset observed inside DEX pool routes.}
 \end{frame}
 
-% EVIDENCE-STATUS: conceptual motivation from vehicle-currency theory and FX reporting limits; no empirical estimate is displayed.
-% SOURCE: Krugman (1980), vehicle currency theory; Somogyi (2026), dollar dominance inference from pair-level FX volumes; BIS Triennial reporting guidelines, pair-level turnover.
-% VISUAL-FUNCTION: traditional-FX route analogy | two-leg schematic plus measurement contrast | motivate why transaction-level route reconstruction matters
+% EVIDENCE-STATUS: conceptual motivation from vehicle-currency theory and conventional FX reporting limits.
+% SOURCE: Krugman (1980), vehicle currency theory; Somogyi (2026), dollar dominance inference from pair-level FX volumes; BIS Triennial reporting guidelines.
+% VISUAL-FUNCTION: traditional-FX route analogy | two-leg schematic and brief definitions | show what pool routes add
 \begin{frame}{Pool routes reveal the vehicle currency}
 \begin{columns}[T,totalwidth=\textwidth]
 \begin{column}{0.47\textwidth}
@@ -47,119 +47,62 @@
 \vspace{0.10cm}
 {\large A Singapore-dollar payment to Norway may be converted through US dollars.\par}
 \vspace{0.24cm}
-{\small Conventional turnover data show two legs, not the customer's connected route.\par}
+{\small Conventional turnover data record two legs. Pool logs preserve their connected route.\par}
 \end{column}
 \begin{column}{0.49\textwidth}
 \centering
 \begin{tikzpicture}[x=1cm,y=1cm]
-\node[nodepoint,minimum size=42pt,font=\small\bfseries] (jpy) at (0.2,2.45) {SGD};
+\node[nodepoint,minimum size=42pt,font=\small\bfseries] (sgd) at (0.2,2.45) {SGD};
 \node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=42pt,font=\small\bfseries] (usd) at (2.55,2.45) {USD};
-\node[nodepoint,minimum size=42pt,font=\small\bfseries] (eur) at (4.9,2.45) {NOK};
-\draw[route,draw=ucldark,line width=1.7pt] (jpy)--(usd);
-\draw[route,draw=ucldark,line width=1.7pt] (usd)--(eur);
+\node[nodepoint,minimum size=42pt,font=\small\bfseries] (nok) at (4.9,2.45) {NOK};
+\draw[route,draw=ucldark,line width=1.7pt] (sgd)--(usd);
+\draw[route,draw=ucldark,line width=1.7pt] (usd)--(nok);
 \node[font=\scriptsize\bfseries,text=white,fill=ucldark,rounded corners=2pt,inner sep=4pt] at (2.55,1.45) {vehicle};
-\node[softbox,text width=5.30cm,align=center] at (2.55,0.42) {\small Pool logs reveal the route.};
+\node[softbox,text width=5.30cm,align=center] at (2.55,0.42) {\small One instruction; two linked markets.};
 \end{tikzpicture}
 \end{column}
 \end{columns}
 \vspace{0.22cm}
 \begin{beamercolorbox}[wd=\textwidth,sep=0.15cm]{block body}
-{\small \textbf{DeFi} is on-chain finance executed by smart contracts; decentralised exchanges (DEXs) trade tokens through liquidity pools. \textbf{Stablecoins} are tokens designed to track a reference currency, usually the US dollar.\par}
+{\small \textbf{DeFi} is on-chain finance executed by smart contracts. Decentralised exchanges trade tokens through liquidity pools; \textbf{stablecoins} target a reference currency, usually the U.S. dollar.\par}
 \end{beamercolorbox}
-\decknote{The currency labels illustrate a possible indirect conversion, not an observed customer route. Conventional FX records report turnover in each currency pair but generally do not link the two legs to one instruction. The DEX setting preserves the transaction-level pool route, so the intermediary asset is observed directly.}
+\decknote{The currency labels illustrate a possible indirect conversion. Conventional FX records report turnover in each currency pair but generally do not link the two legs to one instruction. The DEX setting preserves the transaction-level pool route, so the intermediary asset is observed directly.}
 \end{frame}
 
-% EVIDENCE-STATUS: principal route-panel scope; counts and dates come from the aggregate reconstruction-quality exhibit and the daily routing series.
-% EVIDENCE-SOURCES: output/exhibits/unified_route_quality.jsonl; output/exhibits/cross_venue_routing_series.jsonl; output/exhibits/presentation_values.tex; src/ddvc/fetch/sources.py
-% SCIENTIFIC-LIMITATION: Uniswap v1 enters the principal panel through the exact exchange-to-token registry; it is isolated only when the venue rule itself is the object of comparison.
-% VISUAL-FUNCTION: sample perimeter | three large scope statistics plus deployment list | establish scale, time span, and venue coverage before the transaction example
-\begin{frame}{The route panel links pool-level swaps}
-\vspace{0.16cm}
-\begin{columns}[T,totalwidth=0.94\textwidth]
-\begin{column}{0.31\textwidth}\centering
-{\fontsize{23}{25}\selectfont\bfseries\color{ucldark}\mbox{\RoutePanelRawSwaps}}\par\vspace{0.12cm}
+% EVIDENCE-STATUS: principal route-panel scope and one authentic connected pool-swap component.
+% EVIDENCE-SOURCES: output/exhibits/unified_route_quality.jsonl; output/exhibits/cross_venue_routing_series.jsonl; output/exhibits/route_replay.json; data/unified/20260110.parquet.
+% EVIDENCE-CASE: transaction 0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9, component 0.
+% VISUAL-FUNCTION: compact empirical object | scope statistics plus observed two-leg route | establish scale and terminology on one page
+\begin{frame}{One transaction reveals the connected route}
+\vspace{-0.04cm}
+\begin{columns}[T,totalwidth=0.96\textwidth]
+\begin{column}{0.31\textwidth}
+\evidencekicker{Route panel}
+{\fontsize{22}{24}\selectfont\bfseries\color{ucldark}\mbox{\RoutePanelRawSwaps}\par}
 {\small pool-level swaps\par}
-\end{column}
-\begin{column}{0.31\textwidth}\centering
-{\fontsize{23}{25}\selectfont\bfseries\color{ucldark}\RoutePanelCalendarDates}\par\vspace{0.12cm}
-{\small calendar dates\par}
-\end{column}
-\begin{column}{0.31\textwidth}\centering
-{\fontsize{23}{25}\selectfont\bfseries\color{ucldark}\RoutePanelDeploymentCount}\par\vspace{0.12cm}
+\vspace{0.24cm}
+{\fontsize{20}{22}\selectfont\bfseries\color{ucldark}\RoutePanelSpan\par}
+\vspace{0.24cm}
+{\fontsize{20}{22}\selectfont\bfseries\color{ucldark}\RoutePanelDeploymentCount\par}
 {\small DEX deployments\par}
 \end{column}
-\end{columns}
-\par\vspace{0.65cm}
-\begin{beamercolorbox}[wd=0.94\textwidth,sep=0.20cm]{block body}
+\begin{column}{0.64\textwidth}
 \centering
-{\large\bfseries \RoutePanelSpan\par}
-\vspace{0.16cm}
-{\small Uniswap v1, v2, v3, and v4; SushiSwap v2 and v3; Curve; Balancer; and Fluid.\par}
-\end{beamercolorbox}
-\decknote{The exchange families were selected for Ethereum volume. They account for \EthereumMarketCoveragePooled{} of total Ethereum DEX volume in DeFiLlama from 2020 through 2026 H1. The nine deployments span major constant-product, concentrated-liquidity, stable-swap, weighted-pool, singleton, and integrated-liquidity designs. Other Ethereum venues remain outside the panel. The exact exchange registry maps every observed Uniswap v1 exchange to its token.}
-\end{frame}
-
-\input{../output/exhibits/route_replay_deck_values.tex}
-% EVIDENCE-STATUS: authentic connected pool-swap component from the same transaction; exact same-state alternative remains outside this exhibit
-% EVIDENCE-SOURCES: output/exhibits/route_replay.json; data/unified/20260110.parquet
-% EVIDENCE-CASE: transaction 0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9, component 0.
-% VISUAL-FUNCTION: observed vehicle use | source-versus-pool-route breadcrumb plus native connected-route diagram | define the component endpoints and intermediary used in the vehicle-dominance measure
-\begin{frame}{Inside the pools, USDT links USDC to USDe}
-\centering
-\vspace{-0.05cm}
-\evidencekicker{Ordered transfers and route reconstruction}
-\vspace{0.06cm}
+\evidencekicker{Observed pool route}
 \begin{tikzpicture}[x=1cm,y=1cm]
-\node[softbox,inner sep=4pt,text width=3.35cm,minimum height=0.58cm,align=center] (user) at (2.75,0) {\scriptsize User instruction: PYUSD $\rightarrow$ USDe};
-\node[font=\small\bfseries,text=muted] at (5.20,0) {$\Longrightarrow$};
-\node[softbox,inner sep=4pt,draw=stable,text width=4.15cm,minimum height=0.58cm,align=center] (pools) at (8.30,0) {\scriptsize Pool route: USDC $\rightarrow$ USDT $\rightarrow$ USDe};
-\end{tikzpicture}
-\vspace{0.20cm}
-\begin{tikzpicture}[x=1cm,y=1cm]
-\node[nodepoint,minimum size=46pt,font=\small\bfseries] (a) at (1.30,3.25) {USDC};
-\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=46pt,font=\small\bfseries] (k) at (6.15,3.25) {USDT};
-\node[nodepoint,minimum size=46pt,font=\small\bfseries] (b) at (11.00,3.25) {USDe};
-\draw[route,draw=ucldark,line width=1.8pt] (a)--(k);
-\draw[route,draw=ucldark,line width=1.8pt] (k)--(b);
-\node[font=\normalsize\bfseries,text=ucldark,align=center] at (3.72,4.18) {Fluid};
-\node[font=\normalsize\bfseries,text=ucldark,align=center] at (8.57,4.18) {Uniswap V4};
-\node[font=\small,text=muted,align=center] at (3.72,2.31) {\RouteReplayInputAmount{} USDC\\$\rightarrow$ \RouteReplayVehicleAmount{} USDT};
-\node[font=\small,text=muted,align=center] at (8.57,2.31) {\RouteReplayVehicleAmount{} USDT\\$\rightarrow$ \RouteReplayOutputAmount{} USDe};
-\node[font=\scriptsize\bfseries,text=white,fill=ucldark,rounded corners=2pt,inner sep=4pt] at (6.15,1.15) {vehicle};
-\end{tikzpicture}
-\vspace{0.15cm}
-\begin{minipage}{0.78\textwidth}
-\centering
-{\small The ordered endpoint pair, or pair, is USDC $\rightarrow$ USDe. Its legs are USDC $\rightarrow$ USDT and USDT $\rightarrow$ USDe; USDT is the vehicle.\par}
-\end{minipage}
-\par\vspace{0.04cm}
-{\raggedright\decknote{The route is the connected pool-swap component of transaction \ethtx{0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9}{0xbda1d07f\ldots 9bf67ad9} on 10 January 2026. The pool component begins at USDC. It does not reveal whether PYUSD became USDC in an unobserved pool or through the executor's inventory.}}
-\end{frame}
-
-% VISUAL-FUNCTION: dominance denominator | route glyph plus paired measure definitions | separate count and value shares
-\begin{frame}{The full route and the one-vehicle choice answer different questions}
-\begin{columns}[T,totalwidth=\textwidth]
-\begin{column}{0.43\textwidth}
-\evidencekicker{Measurement}
-\begin{itemize}
-\item Every complete route contributes each currency used in an intermediary position.
-\item Exact two-leg routes isolate one vehicle choice.
-\end{itemize}
-\end{column}
-\begin{column}{0.53\textwidth}
-\centering
-\begin{tikzpicture}[x=1cm,y=1cm]
-\node[nodepoint] (a) at (0,3.45) {$i$};
-\node[nodepoint,fill=ucldark,text=white,draw=ucldark] (k) at (2.0,3.45) {$k$};
-\node[nodepoint] (b) at (4.0,3.45) {$o$};
-\draw[route] (a) -- (k);
-\draw[route] (k) -- (b);
-\node[anchor=west,font=\small\bfseries,text=ucldark] at (0,2.10) {All route lengths};
-\node[anchor=west,font=\small,align=left,text width=6.0cm] at (0,1.58) {Presence on a route and share of all intermediary positions};
-\node[anchor=west,font=\small\bfseries,text=stable] at (0,0.78) {One vehicle per route};
-\node[anchor=west,font=\small,align=left,text width=6.0cm] at (0,0.26) {Exact two-leg routes support the decomposition};
+\node[nodepoint,minimum size=44pt,font=\small\bfseries] (a) at (0.45,2.55) {USDC};
+\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=44pt,font=\small\bfseries] (k) at (3.45,2.55) {USDT};
+\node[nodepoint,minimum size=44pt,font=\small\bfseries] (b) at (6.45,2.55) {USDe};
+\draw[route,draw=ucldark,line width=1.7pt] (a)--(k);
+\draw[route,draw=ucldark,line width=1.7pt] (k)--(b);
+\node[font=\small\bfseries,text=ucldark] at (1.95,3.28) {Fluid};
+\node[font=\small\bfseries,text=ucldark] at (4.95,3.28) {Uniswap V4};
+\node[font=\scriptsize,text=muted] at (1.95,1.82) {leg 1};
+\node[font=\scriptsize,text=muted] at (4.95,1.82) {leg 2};
+\node[softbox,text width=6.55cm,align=center,inner sep=5pt] at (3.45,0.72)
+{\small Pair: USDC $\rightarrow$ USDe\qquad Vehicle: USDT\\[-0.02cm]\scriptsize The ordered sequence of legs is the route.};
 \end{tikzpicture}
 \end{column}
 \end{columns}
-\decknote{Intermediary-position shares sum to 100\%. Route-participation shares can exceed 100\% because long routes use several currencies. Exact two-leg routes isolate one vehicle choice; longer routes can use both families.}
+\decknote{The route is the connected pool-swap component of transaction \ethtx{0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9}{0xbda1d07f\ldots 9bf67ad9} on 10 January 2026. The panel covers \RoutePanelCalendarDates{} dates across Uniswap v1, v2, v3, and v4; SushiSwap v2 and v3; Curve; Balancer; and Fluid. Pairs, legs, and routes are directed. The exact exchange registry maps every observed Uniswap v1 exchange to its token.}
 \end{frame}

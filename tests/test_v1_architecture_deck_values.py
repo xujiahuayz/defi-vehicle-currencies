@@ -6,6 +6,7 @@ import pytest
 from scripts.tabulate.build_v1_architecture_deck_values import (
     WETH,
     render_v1_architecture_deck_values,
+    render_v1_architecture_table,
 )
 
 
@@ -31,6 +32,14 @@ def test_renders_values_from_structured_inputs() -> None:
     assert r"\newcommand{\VOneForcedRoutes}{217,003}" in rendered
     assert r"\newcommand{\VTwoWethTradeShare}{94.7\%}" in rendered
     assert r"\newcommand{\VTwoWethNewPairShare}{97.9\%}" in rendered
+
+
+def test_renders_compact_appendix_table_from_same_inputs() -> None:
+    rendered = render_v1_architecture_table(*_inputs())
+    assert "Reconstructed token-to-token routes [count] & 217,003" in rendered
+    assert r"Single-leg trades executed in WETH pools, 2026 [\%] & 94.7" in rendered
+    assert r"Token combinations first traded with WETH, 2026 [\%] & 97.9" in rendered
+    assert "8.6" not in rendered
 
 
 def test_refuses_empty_inputs() -> None:

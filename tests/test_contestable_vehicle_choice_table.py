@@ -24,6 +24,12 @@ REGRESSORS = {
         "incumbent_v2_capital_advantage_10pp",
         "log_input_usd",
     ),
+    "exclusive_retention_price_v2_capital_interaction": (
+        "incumbent_output_advantage_100bp",
+        "incumbent_v2_capital_advantage_10pp",
+        "price_x_incumbent_v2_capital",
+        "log_input_usd",
+    ),
 }
 
 
@@ -60,19 +66,23 @@ def test_contestable_choice_table_renders_joint_economic_models() -> None:
 
     assert r"\begin{tabularx}{\linewidth}" in rendered
     assert "Stablecoin chosen" in rendered
-    assert rendered.count("Incumbent retained") == 2
+    assert rendered.count("Incumbent retained") == 3
     assert "Outcome; estimates [pp]" in rendered
     assert "Stablecoin route has higher exact output" in rendered
     assert "Challenger route has higher exact output" in rendered
     assert "Incumbent exact-output advantage [100 bp]" in rendered
-    assert "Incumbent lagged V2 capital-share advantage [10 pp]" in rendered
+    assert "Incumbent lagged full-range capital-share advantage [10 pp]" in rendered
+    assert (
+        "Output advantage $\\times$ capital-share advantage "
+        "[100 bp $\\times$ 10 pp]"
+    ) in rendered
     assert "$+10.12^{***}$" in rendered
     assert "49,212" in rendered
-    assert "Pair fixed effects & Yes & Yes & Yes" in rendered
-    assert "Two-way clustered s.e. & Pair, date & Pair, date & Pair, date" in rendered
-    assert "Prior-day V2 bridge capital positive, both vehicles & No & No & Yes" in rendered
-    assert "Minimum absolute output difference [bp] & 1 & 1 & 1" in rendered
-    assert "Continuous output gap cap [bp] &  &  & 1,000" in rendered
+    assert "Pair fixed effects & Yes & Yes & Yes & Yes" in rendered
+    assert "Two-way clustered s.e. & Pair, date & Pair, date & Pair, date & Pair, date" in rendered
+    assert "Prior-day full-range capital positive, both vehicles & No & No & Yes & Yes" in rendered
+    assert "Minimum absolute output difference [bp] & 1 & 1 & 1 & 1" in rendered
+    assert "Continuous output gap cap [bp] &  &  & 1,000 & 1,000" in rendered
 
 
 def test_contestable_choice_table_rejects_missing_primary_regressor() -> None:

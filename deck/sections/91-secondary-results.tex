@@ -5,9 +5,9 @@
 \input{../output/exhibits/route_methodology_heterogeneity_deck_values.tex}
 \input{../output/exhibits/endpoint_direction_deck_values.tex}
 \input{../output/exhibits/stable_stable_vehicle_values.tex}
-\input{../output/exhibits/v4_lp_origin_timing_deck_values.tex}
-\input{../output/exhibits/v4_lp_volatility_state_deck_values.tex}
 \input{../output/exhibits/network_position_deck_values.tex}
+\input{../output/exhibits/exact_vehicle_frontier_values.tex}
+\input{../output/exhibits/result_resolution_values.tex}
 
 % VISUAL-FUNCTION: graph position and realised use | three currency comparison columns | separate binary connectivity from intermediary allocation
 \begin{frame}{A14. WETH stays the graph hub as realised use shifts}
@@ -174,28 +174,168 @@ Currency fixed effects & No & No & No & Yes \\
 \decknote{\BridgePoolMarginEvents{} first-use events. A newly active pool has positive prior-calendar capital on day zero and none on day -7; continuing pools are positive on both dates. Difference inference clusters by pair and adoption date.}
 \end{frame}
 
-% VISUAL-FUNCTION: V4 routing and later participation | three horizon-state estimates | show how account participation broadens over time
-\begin{frame}{A20. V4 participation broadens after internal routing}
-\evidencekicker{10 pp more internal same-asset routing}
-\vspace{0.18cm}
-\begin{columns}[T,totalwidth=0.92\textwidth]
-\begin{column}{0.28\textwidth}
-{\color{muted}\scriptsize DAYS 1 TO 30\par}
-{\fontsize{23}{25}\selectfont\bfseries\color{stable}\VFourOriginNearIncumbentCoef}\par
-{\small actions by previously active origins\par}
+% EVIDENCE-STATUS: descriptive depth association supporting the contestable route-choice result.
+% EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl.
+% VISUAL-FUNCTION: relative depth and route use | ordered depth blocks | show how a supported bridge becomes competitive
+\begin{frame}{A20. Relative depth predicts route flow}
+\evidencekicker{First 30 days after persistent stablecoin support}
+\vspace{0.05cm}
+\begin{center}
+\begin{tikzpicture}[x=1cm,y=1cm]
+\node[softbox,text width=3.25cm,minimum height=1.70cm,align=center] (thin) at (-4.25,1.35)
+{\small Below $0.1\times$ WETH depth\\[0.14cm]{\fontsize{24}{26}\selectfont\bfseries\color{muted}\BridgeDepthThinFirstShare}};
+\node[softbox,text width=3.25cm,minimum height=1.70cm,align=center,fill=stable!7] (equal) at (0,1.35)
+{\small At least WETH depth\\[0.14cm]{\fontsize{24}{26}\selectfont\bfseries\color{stable}\BridgeDepthEqualFirstShare}};
+\node[softbox,text width=3.25cm,minimum height=1.70cm,align=center,fill=stable!12] (double) at (4.25,1.35)
+{\small At least $2\times$ WETH depth\\[0.14cm]{\fontsize{24}{26}\selectfont\bfseries\color{stable}\BridgeDepthDoubleFirstShare}};
+\draw[-{Stealth[length=7pt]},line width=1.6pt,draw=stable] (thin)--(equal);
+\draw[-{Stealth[length=7pt]},line width=1.6pt,draw=stable] (equal)--(double);
+\end{tikzpicture}
+\end{center}
+\vspace{0.28cm}
+{\large\bfseries Vehicle competition turns on relative depth.\par}
+\decknote{Depth is prior-calendar deposited capital on the weaker leg. The route-share comparison uses \BridgeDepthDoseFirstRows{} pair-days across \BridgeDepthDoseFirstEvents{} bridge events. Support and depth refer to the same stablecoin set. Capital and route demand are jointly determined.}
+\end{frame}
+
+% EVIDENCE-STATUS: descriptive first-use comparison with economic interpretations of liquidity supply.
+% EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl; Milionis et al. (2022).
+% VISUAL-FUNCTION: support to first use | two probability blocks | separate binary support from usable depth
+\begin{frame}{A21. Usable depth turns support into first use}
+\evidencekicker{Probability of first stablecoin use within 30 days}
+\vspace{0.34cm}
+\begin{columns}[T,totalwidth=0.86\textwidth]
+\begin{column}{0.38\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.40cm,wd=\textwidth]{block body}
+{\small\color{muted} BELOW $0.1\times$ WETH DEPTH\par}\vspace{0.12cm}
+{\fontsize{30}{32}\selectfont\bfseries\color{accent}\BridgeTimingShallowMonthShare\par}
+\end{beamercolorbox}
 \end{column}
-\hfill
-\begin{column}{0.28\textwidth}
-{\color{muted}\scriptsize DAYS 31 TO 120\par}
-{\fontsize{23}{25}\selectfont\bfseries\color{stable}\VFourOriginLateEntryCoef}\par
-{\small origins first active after measurement\par}
-\end{column}
-\hfill
-\begin{column}{0.28\textwidth}
-{\color{muted}\scriptsize PERSISTENT VOLATILITY\par}
-{\fontsize{23}{25}\selectfont\bfseries\color{stable}\VFourVolStateLateInteractionCoef}\par
-{\small additional later first-active-origin association\par}
+\begin{column}{0.10\textwidth}\centering\vspace{0.70cm}{\Large$\rightarrow$}\end{column}
+\begin{column}{0.38\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.40cm,wd=\textwidth]{block body}
+{\small\color{muted} AT LEAST $0.1\times$ WETH DEPTH\par}\vspace{0.12cm}
+{\fontsize{30}{32}\selectfont\bfseries\color{stable}\BridgeTimingCompetitiveMonthShare\par}
+\end{beamercolorbox}
 \end{column}
 \end{columns}
-\decknote{V4 vehicle-days with 180 prior days used to classify origins. Specifications absorb vehicle and date effects, include origin-day controls, and cluster by date. Transaction origins proxy for account participation. The estimates are predictive.}
+\vspace{0.48cm}
+{\large Positive pool capital becomes useful as both route legs deepen.\par}
+\decknote{The sample follows \BridgeTimingEvents{} pair events after persistent support appears. The estimates compare first use within 30 days. Lower divergence loss and issuer-linked pool seeding are two possible supply channels. Provider profitability also depends on entry prices, fee income, hedges, and expectations.}
+\end{frame}
+
+% EVIDENCE-STATUS: descriptive event-time capital path among eventual users.
+% EVIDENCE-SOURCES: output/figures/experiments/bridge_adoption_capital_path.pdf; output/exhibits/bridge_liquidity_dominance.jsonl.
+% VISUAL-FUNCTION: capital before first use | event-time line chart and two estimates | show depth building into observed routing
+\begin{frame}{A22. Bridge capital builds before first use}
+\evidencekicker{Supported stablecoin first used at day zero}
+\vspace{0.02cm}
+\begin{columns}[T,totalwidth=0.95\textwidth]
+\begin{column}{0.66\textwidth}
+\includegraphics[width=\textwidth,height=0.65\textheight,keepaspectratio]{../output/figures/experiments/bridge_adoption_capital_path.pdf}
+\end{column}
+\hfill
+\begin{column}{0.27\textwidth}
+{\color{muted}\scriptsize BEFORE FIRST USE\par}\vspace{0.05cm}
+{\fontsize{23}{25}\selectfont\bfseries\color{stable}\BridgeAdoptionCapitalPreCoef\par}
+{\small stablecoin bridge, day -7 to 0\par}
+\vspace{0.38cm}
+{\color{muted}\scriptsize AFTER FIRST USE\par}\vspace{0.05cm}
+{\fontsize{23}{25}\selectfont\bfseries\color{accent}\BridgeAdoptionCapitalPostCoef\par}
+{\small stablecoin bridge, day 0 to +7\par}
+\end{column}
+\end{columns}
+\vspace{0.02cm}
+{\large Capital builds into first use, then partly unwinds.\par}
+\decknote{\BridgeAdoptionCapitalEvents{} pair events with first use 7 to 119 days after persistent support. Relative to WETH, capital changes \BridgeAdoptionCapitalMatchedPreCoef{} before and \BridgeAdoptionCapitalMatchedPostCoef{} after first use. \BridgePoolMarginContinuingCapitalShare{} of first-use capital lies in pools active one week earlier. Capital is lagged one day; intervals cluster by pair and adoption date.}
+\end{frame}
+
+% EVIDENCE-STATUS: exact pre-transaction opportunity-set comparison.
+% EVIDENCE-SOURCES: output/exhibits/exact_vehicle_frontier_monthly.jsonl.
+% VISUAL-FUNCTION: venue and vehicle price competition | nested opportunity-set blocks | separate venue improvement from vehicle replacement
+\begin{frame}{A23. Broader price search mostly changes the venue}
+\evidencekicker{Share of routes with a quote more than 1 bp better than execution}
+\vspace{0.08cm}
+\begin{columns}[T,totalwidth=0.94\textwidth]
+\begin{column}{0.26\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.30cm,wd=\textwidth]{block body}
+{\color{muted}\scriptsize SAME VEHICLE, USED VENUES\par}\vspace{0.10cm}
+{\fontsize{25}{27}\selectfont\bfseries\color{ucldark}\ExactFrontierWithinShare\par}
+\end{beamercolorbox}
+\end{column}
+\begin{column}{0.05\textwidth}\centering\vspace{0.56cm}{\large$\rightarrow$}\end{column}
+\begin{column}{0.26\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.30cm,wd=\textwidth]{block body}
+{\color{muted}\scriptsize SAME VEHICLE, ALL EXACT VENUES\par}\vspace{0.10cm}
+{\fontsize{25}{27}\selectfont\bfseries\color{stable}\ExactFrontierSameVehicleShare\par}
+\end{beamercolorbox}
+\end{column}
+\begin{column}{0.05\textwidth}\centering\vspace{0.56cm}{\large$\rightarrow$}\end{column}
+\begin{column}{0.26\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.30cm,wd=\textwidth]{block body}
+{\color{muted}\scriptsize ANY VEHICLE OR DIRECT\par}\vspace{0.10cm}
+{\fontsize{25}{27}\selectfont\bfseries\color{stable}\ExactFrontierAllPathShare\par}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\vspace{0.44cm}
+{\large Opening other vehicles adds \ExactFrontierVehicleAddition{}; stablecoin share changes by \ExactFrontierStableChange{}.\par}
+\decknote{Routes are repriced for the same pair and input immediately before execution. The sample contains \ExactFrontierRoutes{} routes on \ExactFrontierDates{} monthly dates across exact Uniswap v2, SushiSwap v2, and Uniswap v3 states; minimum input is \ExactFrontierMinimumInput{} and the impact limit is \ExactFrontierImpactLimit{}. Quotes are gross of gas.}
+\end{frame}
+
+% EVIDENCE-STATUS: robustness of corrected persistence to stronger entry-day support.
+% EVIDENCE-SOURCES: output/exhibits/entry_vehicle_persistence_models.jsonl; output/exhibits/entry_vehicle_persistence_support.jsonl.
+% VISUAL-FUNCTION: persistence robustness | two support rows and two horizons | show stability when entry vehicle use is measured more precisely
+\begin{frame}{A24. Persistence is equally strong on busy entry days}
+\evidencekicker{Effect of 10 pp more stablecoin use on the entry day}
+\vspace{0.18cm}
+\begin{center}
+\renewcommand{\arraystretch}{1.45}
+\begin{tabularx}{0.86\textwidth}{@{}>{\raggedright\arraybackslash}Xcc@{}}
+\toprule
+ & Days 1--30 & Days 31--120 \\
+\midrule
+At least 5 entry routes & \textbf{\color{ucldark}\EntryPersistenceEarlyMinFiveEffectPerTen} & \textbf{\color{ucldark}\EntryPersistenceLateMinFiveEffectPerTen} \\
+At least 10 entry routes & \textbf{\color{stable}\EntryPersistenceEarlyMinTenEffectPerTen} & \textbf{\color{stable}\EntryPersistenceLateMinTenEffectPerTen} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+\vspace{0.48cm}
+{\large\bfseries\color{ucldark}\centering Stronger entry measurement leaves the persistence estimate intact.\par}
+\decknote{The entry day is excluded and the follow-up windows do not overlap. The 5-route samples contain \EntryPersistenceEarlyMinFivePairs{} and \EntryPersistenceLateMinFivePairs{} pairs; the 10-route samples contain \EntryPersistenceEarlyMinTenPairs{} and \EntryPersistenceLateMinTenPairs{}. Controls match the main pair-weighted specification, and standard errors cluster by entry date.}
+\end{frame}
+
+% EVIDENCE-STATUS: boundary test relating prior relative-price risk to constant-product bridge capital.
+% EVIDENCE-SOURCES: output/exhibits/bridge_lp_divergence_risk_models.jsonl; output/exhibits/bridge_lp_divergence_risk_support.jsonl; output/tables/bridge_lp_divergence_risk.tex.
+% VISUAL-FUNCTION: divergence risk and bridge capital | directional regression and cross-family comparison | delimit the liquidity-supply interpretation
+\begin{frame}{A25. Divergence risk helps locate bridge capital}
+\evidencekicker{Effect of 10 pp more prior relative volatility}
+\vspace{0.20cm}
+\begin{columns}[T,totalwidth=0.90\textwidth]
+\begin{column}{0.41\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.32cm,wd=\textwidth]{block body}
+{\small\color{muted} LOG BRIDGE CAPITAL\par}
+\vspace{0.14cm}
+{\fontsize{23}{25}\selectfont\bfseries\color{ucldark}\BridgeRiskCurrentVolEffect\par}
+{\small current date\quad (\BridgeRiskCurrentVolSE)\par}
+\vspace{0.18cm}
+{\fontsize{23}{25}\selectfont\bfseries\color{stable}\BridgeRiskFutureVolEffect\par}
+{\small 30 days later\quad (\BridgeRiskFutureVolSE)\par}
+\end{beamercolorbox}
+\end{column}
+\hfill
+\begin{column}{0.41\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.32cm,wd=\textwidth]{block body}
+{\small\color{muted} MEDIAN RELATIVE VOLATILITY\par}
+\vspace{0.14cm}
+{\large\bfseries\color{ucldark}Native\quad \BridgeRiskNativeMedianVol\par}
+\vspace{0.18cm}
+{\large\bfseries\color{accent}Stablecoin\quad \BridgeRiskStableMedianVol\par}
+\vspace{0.18cm}
+{\small Stablecoin bridge has lower risk in \textbf{\BridgeRiskStableLowerShare} of pair-months.}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\vspace{0.36cm}
+{\large\bfseries\color{stable}\centering Risk shapes local capital; the rotation extends beyond it.\par}
+\decknote{The panel contains \BridgeRiskObservations{} constant-product WETH and stablecoin bridge observations with positive capital on both legs. Models absorb pair-by-date and vehicle effects, control for prior route activity, and cluster by \BridgeRiskPairClusters{} pairs and \BridgeRiskDateClusters{} dates. Daily divergence loss gives the same directional result. The comparison describes deposited capital, not provider returns.}
 \end{frame}

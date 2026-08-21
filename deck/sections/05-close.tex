@@ -1,25 +1,29 @@
 % EVIDENCE-MANAGED-FILE
 % VISUAL-MANAGED-FILE
 
-% EVIDENCE-STATUS: synthesis of the central decomposition, persistence, depth, and price results.
-% EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_formation_exploration.jsonl; output/exhibits/bridge_liquidity_dominance.jsonl; output/exhibits/entry_vehicle_exact_price_alignment.jsonl
-% VISUAL-FUNCTION: economic takeaway | three short findings and one synthesis line | close on relationships, inherited vehicles, and two-leg depth
-\begin{frame}{New pairs reshape currency dominance}
-\vspace{0.18cm}
-\begin{beamercolorbox}[rounded=true,sep=0.25cm,wd=\textwidth]{block body}
-{\large\bfseries\color{ucldark}Network growth carries the rotation\par}
-{\small Pair formation and shifts across pairs carry the aggregate change.}
+% EVIDENCE-STATUS: synthesis of the exact decomposition, corrected persistence, joint price-capital regression, and output consequence.
+% EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_lifecycle.jsonl; output/exhibits/entry_vehicle_persistence_models.jsonl; output/exhibits/contestable_vehicle_choice.jsonl; output/exhibits/contestable_vehicle_choice_support.jsonl.
+% VISUAL-FUNCTION: economic interpretation | three-stage sequence and market-structure implication | close on pair formation and contestable retention
+\begin{frame}{Dominance grows when new pairs choose a vehicle}
+\vspace{0.10cm}
+\begin{center}
+\begin{tikzpicture}[x=1cm,y=1cm]
+\node[softbox,text width=3.45cm,minimum height=1.70cm,align=center,fill=stable!8] (formation) at (-4.30,1.55)
+{\small\bfseries First-observed pair entry\\[0.12cm]{\large\bfseries\color{stable}\PairLifecycleCountEntry}\\[-0.02cm]\scriptsize \PairLifecycleCountEntryShare{} of the rotation};
+\node[softbox,text width=3.45cm,minimum height=1.70cm,align=center] (persistence) at (0,1.55)
+{\small\bfseries Later route use\\[0.12cm]{\large\bfseries\color{ucldark}\EntryPersistenceEarlyPairEffectPerTen}\\[-0.02cm]\scriptsize per 10 pp at entry};
+\node[softbox,text width=3.45cm,minimum height=1.70cm,align=center] (contest) at (4.30,1.55)
+{\small\bfseries Prior bridge capital\\[0.12cm]{\large\bfseries\color{ucldark}\ContestCapitalAdvantageTenPpEffect}\\[-0.02cm]\scriptsize beyond current output};
+\draw[-{Stealth[length=7pt]},draw=stable,line width=1.6pt] (formation)--(persistence);
+\draw[-{Stealth[length=7pt]},draw=ucldark,line width=1.6pt] (persistence)--(contest);
+\end{tikzpicture}
+\end{center}
+\vspace{0.22cm}
+\begin{beamercolorbox}[rounded=true,sep=0.24cm,wd=\textwidth]{block body}
+{\large\bfseries\color{ucldark}Two margins of currency competition\par}
+{\small Which vehicle a pair builds around; which survives price and depth changes.\par}
 \end{beamercolorbox}
-\vspace{0.30cm}
-\begin{beamercolorbox}[rounded=true,sep=0.25cm,wd=\textwidth]{block body}
-{\large\bfseries\color{ucldark}Current prices discipline persistence\par}
-{\small The first vehicle carries \PriceIncumbentLeaderRetention{} of routes while its path leads.}
-\end{beamercolorbox}
-\vspace{0.30cm}
-\begin{beamercolorbox}[rounded=true,sep=0.25cm,wd=\textwidth]{block body}
-{\large\bfseries\color{ucldark}Two-leg depth makes a bridge competitive\par}
-{\small Stablecoin use rises with depth relative to WETH.}
-\end{beamercolorbox}
-\vspace{0.34cm}
-{\large\bfseries\color{stable}\centering New pairs choose the bridges shaping dominance.\par}
+\vspace{0.24cm}
+{\large\bfseries\color{stable}\centering Vehicle liquidity links otherwise unrelated pairs.\par}
+\decknote{Other lifecycle terms reduce entry's \PairLifecycleCountEntry{} to \PairLifecycleCountNet{} net. Among retrading pairs, 10 pp more entry-day stablecoin use predicts \EntryPersistenceEarlyPairEffectPerTen{} in days 1--30.}
 \end{frame}

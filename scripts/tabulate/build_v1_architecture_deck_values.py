@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from ddvc.paper_tables import write_table_artifacts
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
 from ddvc.runtime import atomic_output
 
@@ -19,6 +20,7 @@ V2_FIRST_TRADE = PROCESSED_DIR / "v2_pair_first_trade.parquet"
 DECK_VALUES = OUTPUT_DIR / "exhibits" / "v1_architecture_deck_values.tex"
 WETH = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
 DISPLAY_YEAR = 2026
+TABLE_STEM = "v1_architecture"
 
 
 def load_inputs(
@@ -46,12 +48,12 @@ def load_inputs(
     return v1, routing, first_trade
 
 
-def render_v1_architecture_deck_values(
+def _architecture_facts(
     v1_classes: pd.DataFrame,
     v2_routing: pd.DataFrame,
     v2_first_trade: pd.DataFrame,
-) -> str:
-    """Render the three displayed architecture facts from structured inputs."""
+) -> tuple[int, float, float]:
+    """Return the three architecture facts shared by the paper and deck."""
 
     required = {
         "v1 trade classes": (v1_classes, {"n_token_to_token"}),
@@ -77,6 +79,21 @@ def render_v1_architecture_deck_values(
     weth_trade_share = float(direct.loc[direct_weth, "n"].sum()) / direct_total
     first_weth = v2_first_trade["token0"].eq(WETH) | v2_first_trade["token1"].eq(WETH)
     weth_new_pair_share = float(first_weth.mean())
+    return forced_routes, weth_trade_share, weth_new_pair_share
+
+
+def render_v1_architecture_deck_values(
+    v1_classes: pd.DataFrame,
+    v2_routing: pd.DataFrame,
+    v2_first_trade: pd.DataFrame,
+) -> str:
+    """Render the three displayed architecture facts from structured inputs."""
+
+    forced_routes, weth_trade_share, weth_new_pair_share = _architecture_facts(
+        v1_classes,
+        v2_routing,
+        v2_first_trade,
+    )
     trade_share_text = f"{weth_trade_share:.1%}".replace("%", r"\%")
     new_pair_share_text = f"{weth_new_pair_share:.1%}".replace("%", r"\%")
 
@@ -86,6 +103,41 @@ def render_v1_architecture_deck_values(
             f"\\newcommand{{\\VOneForcedRoutes}}{{{forced_routes:,}}}",
             f"\\newcommand{{\\VTwoWethTradeShare}}{{{trade_share_text}}}",
             f"\\newcommand{{\\VTwoWethNewPairShare}}{{{new_pair_share_text}}}",
+            "",
+        ]
+    )
+
+
+def render_v1_architecture_table(
+    v1_classes: pd.DataFrame,
+    v2_routing: pd.DataFrame,
+    v2_first_trade: pd.DataFrame,
+) -> str:
+    """Render the compact institutional comparison used in the appendix."""
+
+    forced_routes, weth_trade_share, weth_new_pair_share = _architecture_facts(
+        v1_classes,
+        v2_routing,
+        v2_first_trade,
+    )
+    return "\n".join(
+        [
+            r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xr@{}}",
+            r"\toprule",
+            r"Measure & Estimate \\",
+            r"\midrule",
+            r"\multicolumn{2}{@{}l}{\textit{Panel A. Uniswap v1: ETH intermediation required}} \\",
+            f"Reconstructed token-to-token routes [count] & {forced_routes:,} \\\\",
+            r"\addlinespace",
+            r"\multicolumn{2}{@{}l}{\textit{Panel B. Uniswap v2: arbitrary token pools allowed}} \\",
+            "Single-leg trades executed in WETH pools, 2026 [\\%] & "
+            + f"{100.0 * weth_trade_share:.1f}"
+            + r" \\",
+            "Token combinations first traded with WETH, 2026 [\\%] & "
+            + f"{100.0 * weth_new_pair_share:.1f}"
+            + r" \\",
+            r"\bottomrule",
+            r"\end{tabularx}",
             "",
         ]
     )
@@ -106,6 +158,11 @@ def run(
     rendered = render_v1_architecture_deck_values(*frames)
     with atomic_output(output_path) as temporary:
         temporary.write_text(rendered, encoding="utf-8")
+    write_table_artifacts(
+        TABLE_STEM,
+        render_v1_architecture_table(*frames),
+        preview_width="6.8in",
+    )
     print(f"wrote {output_path}")
     return 0
 

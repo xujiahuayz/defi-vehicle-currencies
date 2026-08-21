@@ -9,6 +9,7 @@ from ddvc.dominance_tables import (
     parse_newcommands,
     render_dominance_rotation,
     render_pair_composition,
+    render_pair_market_accounting,
     render_usdt_transition,
 )
 ROOT = Path(__file__).resolve().parents[1]
@@ -25,12 +26,35 @@ def test_checked_in_fragments_equal_their_named_renderers() -> None:
         _jsonl(EXHIBITS / "intermediation_complexity_rival.jsonl")
     )
     pair = render_pair_composition(
-        parse_newcommands(
-            (EXHIBITS / "vehicle_transition_pair_decomposition_deck_values.tex").read_text(
-                encoding="utf-8"
-            )
-        ),
+        {
+            **parse_newcommands(
+                (
+                    EXHIBITS
+                    / "vehicle_transition_pair_decomposition_deck_values.tex"
+                ).read_text(encoding="utf-8")
+            ),
+            **parse_newcommands(
+                (
+                    EXHIBITS / "vehicle_transition_pair_lifecycle_values.tex"
+                ).read_text(encoding="utf-8")
+            ),
+        },
         _jsonl(EXHIBITS / "vehicle_transition_pair_fixed_effects.jsonl"),
+    )
+    market_accounting = render_pair_market_accounting(
+        {
+            **parse_newcommands(
+                (
+                    EXHIBITS
+                    / "vehicle_transition_pair_decomposition_deck_values.tex"
+                ).read_text(encoding="utf-8")
+            ),
+            **parse_newcommands(
+                (
+                    EXHIBITS / "vehicle_transition_pair_lifecycle_values.tex"
+                ).read_text(encoding="utf-8")
+            ),
+        }
     )
     usdt = render_usdt_transition(
         parse_newcommands(
@@ -42,6 +66,9 @@ def test_checked_in_fragments_equal_their_named_renderers() -> None:
 
     assert (TABLES / "dominance_rotation.tex").read_text(encoding="utf-8") == rotation
     assert (TABLES / "pair_composition.tex").read_text(encoding="utf-8") == pair
+    assert (
+        TABLES / "pair_market_accounting.tex"
+    ).read_text(encoding="utf-8") == market_accounting
     assert (TABLES / "usdt_transition.tex").read_text(encoding="utf-8") == usdt
 
 
@@ -65,7 +92,7 @@ def test_rotation_and_usdt_values_are_exact() -> None:
     assert "$-7.13$ & $+7.95$" in usdt
 
 
-def test_pair_panel_d_contains_all_three_fixed_effect_rows() -> None:
+def test_pair_panel_c_contains_all_three_fixed_effect_rows() -> None:
     pair = (TABLES / "pair_composition.tex").read_text(encoding="utf-8")
     assert (
         "All two-leg routes, count share & $+0.23\\ (0.77)$ & 188,344"
@@ -103,35 +130,44 @@ def test_pair_panel_d_contains_all_three_fixed_effect_rows() -> None:
             assert row[field] is not None
 
 
-def test_pair_table_keeps_the_two_count_factorisations_apart() -> None:
-    """Panels A and B decompose one total two ways; only the total may agree.
+def test_pair_tables_keep_the_two_count_factorisations_apart() -> None:
+    """The main and appendix tables decompose one total two ways.
 
-    Both are registered against ``raw_pooled_count_share_change``, but Panel A
-    conditions on observed market activity and Panel B on native-plus-stable
-    choice mass, so no component of one is the same object as a component of
-    the other. They previously shared row labels, which invited exactly that
-    reading.
+    Both are registered against ``raw_pooled_count_share_change``, but the
+    appendix accounting conditions on observed market activity and the main
+    decomposition on native-plus-stable choice mass. No component of one is
+    the same object as a component of the other.
     """
 
     pair = (TABLES / "pair_composition.tex").read_text(encoding="utf-8")
-    macros = parse_newcommands(
-        (EXHIBITS / "vehicle_transition_pair_decomposition_deck_values.tex").read_text(
-            encoding="utf-8"
-        )
-    )
+    market = (TABLES / "pair_market_accounting.tex").read_text(encoding="utf-8")
+    macros = {
+        **parse_newcommands(
+            (
+                EXHIBITS / "vehicle_transition_pair_decomposition_deck_values.tex"
+            ).read_text(encoding="utf-8")
+        ),
+        **parse_newcommands(
+            (EXHIBITS / "vehicle_transition_pair_lifecycle_values.tex").read_text(
+                encoding="utf-8"
+            )
+        ),
+    }
 
     assert macros["MarketBridgeTotal"] == macros["PairPooledTotal"]
     total = macros["MarketBridgeTotal"].removesuffix(" pp")
-    assert pair.count(f"Total route-count change & {total}") == 2
+    assert pair.count(f"Total route-count change & {total}") == 1
+    assert market.count(f"Total route-count change & {total}") == 1
 
-    # Panel A's labels belong to Panel A alone.
+    # The alternative accounting's labels stay out of the central table.
     for label in (
         "Market activity shifting across continuing pairs",
         "Change in how often continuing pairs use a vehicle",
         "Stablecoin share within continuing vehicle-using pairs",
         "Pairs entering or leaving the sample",
     ):
-        assert pair.count(label) == 1
+        assert label not in pair
+        assert market.count(label) == 1
 
     # The identity's labels appear once in its count panel and once in its
     # value panel, and nowhere else.
@@ -139,7 +175,15 @@ def test_pair_table_keeps_the_two_count_factorisations_apart() -> None:
         "Net stablecoin-share change within continuing pairs",
         "Vehicle activity shifting across continuing pairs",
         "Weight of continuing versus year-specific pairs",
-        "Pairs traded in only one year",
+        "Net contribution of period-specific vehicle activity",
+    ):
+        assert pair.count(label) == 2
+
+    for label in (
+        "Pairs first observed after 2024 H1",
+        "Pairs reactivated after absence in 2024 H1",
+        "Vehicle-role turnover in continuing pairs",
+        "Pairs exiting before 2026 H1",
     ):
         assert pair.count(label) == 2
 
@@ -148,7 +192,7 @@ def test_pair_table_keeps_the_two_count_factorisations_apart() -> None:
         "PairPooledWithin",
         "PairPooledReweight",
         "PairPooledSupportMass",
-        "PairPooledExclusive",
+        "PairLifecycleCountNetTable",
     ):
         assert macros[macro].removesuffix(" pp") in pair
 
@@ -156,6 +200,14 @@ def test_pair_table_keeps_the_two_count_factorisations_apart() -> None:
     assert "Pairs moving toward native assets (1,487) & $-1.4$" in pair
     assert "Pairs moving toward stablecoins (1,505) & $+2.3$" in pair
     assert "Pairs moving toward native assets (1,445) & $-2.4$" in pair
+    assert "Pairs first observed after 2024 H1 & $+20.09$" in pair
+    assert "Pairs first observed after 2024 H1 & $+21.94$" in pair
+    assert "Pairs reactivated after absence in 2024 H1 & $+0.20$" in pair
+    assert "Pairs reactivated after absence in 2024 H1 & $+0.04$" in pair
+    assert "Vehicle-role turnover in continuing pairs & $-0.77$" in pair
+    assert "Vehicle-role turnover in continuing pairs & $-1.72$" in pair
+    assert "Pairs exiting before 2026 H1 & $-1.73$" in pair
+    assert "Pairs exiting before 2026 H1 & $-1.10$" in pair
 
 
 def test_paper_has_one_consumer_and_no_duplicate_inline_body() -> None:
@@ -166,8 +218,12 @@ def test_paper_has_one_consumer_and_no_duplicate_inline_body() -> None:
         encoding="utf-8"
     )
     paper = section + "\n" + appendix
-    for stem in ("dominance_rotation", "pair_composition", "usdt_transition"):
+    for stem in ("dominance_rotation", "pair_composition"):
         assert paper.count(rf"\input{{../output/tables/{stem}.tex}}") == 1
+    # Issuer-level transition estimates remain available as generated output,
+    # but the manuscript uses the endpoint-direction evidence instead of
+    # carrying a second, disconnected transition table.
+    assert r"\input{../output/tables/usdt_transition.tex}" not in paper
     assert r"\begin{tabular}" not in section
     assert r"\begin{tabularx}" not in section
     assert r"S^{(m)}_{pds,y}=\alpha^{(m)}_{pds}+\beta^{(m)}\mathbf{1}_{\{y=2026\}}" in section
@@ -179,7 +235,13 @@ def test_paper_has_one_consumer_and_no_duplicate_inline_body() -> None:
 
 
 @pytest.mark.parametrize(
-    "stem", ("dominance_rotation", "pair_composition", "usdt_transition")
+    "stem",
+    (
+        "dominance_rotation",
+        "pair_composition",
+        "pair_market_accounting",
+        "usdt_transition",
+    ),
 )
 def test_generated_table_artifacts_exist_for_named_renderers(stem: str) -> None:
     # Git does not preserve filesystem mtimes across clones. Exact TeX equality

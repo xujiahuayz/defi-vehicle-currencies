@@ -1,8 +1,53 @@
 % VISUAL-MANAGED-FILE
-% Mechanisms and estimands. Sources: docs/specifications/confirmatory.json and README.md.
-% APPENDIX-NAVIGATION: V4: shared accounting, one PoolManager, and the conclusion that the singleton changes where balances settle are retained in the appendix frame "Protocol design changes markets, depth, and settlement."
+% Institutional change and the three margins of aggregate dominance.
+% APPENDIX-NAVIGATION: V4: shared accounting, one PoolManager, and the singleton changes where balances settle are retained in Appendix A5.3.
+\IfFileExists{../output/exhibits/v1_architecture_deck_values.tex}{%
+\input{../output/exhibits/v1_architecture_deck_values.tex}%
+}{\PackageError{dvc-deck}{Missing generated V1/V2 architecture values}{Rebuild the admitted V1/V2 presentation binding.}}
 
-% VISUAL-FUNCTION: aggregate decomposition | three-part map | distinguish switching, reallocation, and pair entry
+% EVIDENCE-STATUS: admitted V1 mandate and V2 pool-formation result.
+% EVIDENCE-SOURCES: docs/findings/v1-forced-vehicle.md; output/exhibits/v1_forced_vehicle_report.md; output/exhibits/v1_architecture_deck_values.tex.
+% VISUAL-FUNCTION: architecture and persistence | V1-to-V2 comparison | turn imposed intermediation into an endogenous vehicle choice
+\begin{frame}{V2 turns a mandate into a market choice}
+\begin{columns}[T,totalwidth=\textwidth]
+\begin{column}{0.43\textwidth}
+\evidencekicker{V1: November 2018}
+\vspace{0.10cm}
+\begin{tikzpicture}[x=1cm,y=1cm]
+\node[nodepoint] (a) at (0.35,2.55) {A};
+\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=38pt] (eth) at (2.55,2.55) {ETH};
+\node[nodepoint] (b) at (4.75,2.55) {B};
+\draw[route,draw=accent,line width=1.7pt] (a)--(eth);
+\draw[route,draw=accent,line width=1.7pt] (eth)--(b);
+\node[font=\fontsize{22}{24}\selectfont\bfseries,text=ucldark] at (2.55,1.18) {\VOneForcedRoutes};
+\node[font=\small,text=muted,align=center] at (2.55,0.62) {of token-to-token routes\\pass through ETH};
+\end{tikzpicture}
+\end{column}
+\begin{column}{0.08\textwidth}
+\centering\vspace{2.10cm}{\Large$\Longrightarrow$}
+\end{column}
+\begin{column}{0.45\textwidth}
+\evidencekicker{V2: May 2020}
+\vspace{0.16cm}
+\begin{beamercolorbox}[sep=0.24cm,wd=\textwidth]{block body}
+{\fontsize{22}{24}\selectfont\bfseries\color{ucldark}\VTwoWethTradeShare\par}
+{\small of single-leg trades use a WETH pool in 2026}
+\end{beamercolorbox}
+\vspace{0.22cm}
+\begin{beamercolorbox}[sep=0.24cm,wd=\textwidth]{block body}
+{\fontsize{22}{24}\selectfont\bfseries\color{stable}\VTwoWethNewPairShare\par}
+{\small of new token combinations include WETH}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\vspace{0.12cm}
+{\large\bfseries\color{ucldark}\centering The rule disappears; inherited liquidity can remain.\par}
+\decknote{V1 links token-to-ETH and ETH-to-token swaps within one transaction. V2 permits any token combination. Early V2 inherited liquidity, users, and routing conventions from V1; the 2026 comparisons show how much native-asset pairing remains after the mandate ends.}
+\end{frame}
+
+% EVIDENCE-STATUS: exact accounting identity used in the principal decomposition.
+% EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_lifecycle.jsonl.
+% VISUAL-FUNCTION: aggregate decomposition | three-part map | distinguish switching, reallocation, and pair turnover
 \begin{frame}{Aggregate dominance can change in three ways}
 \begin{center}
 \begin{tikzpicture}[x=1cm,y=1cm]
@@ -11,7 +56,7 @@
 \node[softbox,text width=3.55cm,minimum height=1.55cm,align=center] (reweight) at (0,1.70)
 {\normalsize\bfseries Across-pair shift\\[0.10cm]\small activity moves across\\continuing pairs};
 \node[softbox,text width=3.55cm,minimum height=1.55cm,align=center,fill=stable!8] (entry) at (4.30,1.70)
-{\normalsize\bfseries Pair formation\\[0.10cm]\small pairs enter or exit\\with a vehicle};
+{\normalsize\bfseries Pair turnover\\[0.10cm]\small pairs appear, return,\\or exit with a vehicle};
 \node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=50pt,font=\small\bfseries,align=center] (d) at (0,-0.50) {aggregate\\dominance};
 \draw[route,draw=accent] (switch)--(d);
 \draw[route,draw=uclbright] (reweight)--(d);
@@ -19,81 +64,6 @@
 \end{tikzpicture}
 \end{center}
 \vspace{0.16cm}
-\decknote{The decomposition is exact. The next step asks why a pair keeps its first vehicle and when a competing two-leg bridge becomes deep enough to attract routes.}
-\end{frame}
-
-% EVIDENCE-STATUS: institutional chronology from the canonical source registry and protocol deployments.
-% EVIDENCE-SOURCES: src/ddvc/fetch/sources.py; Uniswap protocol deployment records.
-% VISUAL-FUNCTION: protocol chronology | alternating V1--V4 timeline | show how the feasible route set changes before the persistence evidence
-\begin{frame}{Protocol design changes the route set in steps}
-\evidencekicker{Uniswap on Ethereum}
-\vspace{0.08cm}
-\begin{center}
-\begin{tikzpicture}[x=1cm,y=1cm]
-\draw[rule,line width=2pt] (-5.45,1.55)--(5.45,1.55);
-\foreach \x/\version in {-4.80/V1,-1.60/V2,1.60/V3,4.80/V4}{
-  \fill[ucldark] (\x,1.55) circle (4.5pt);
-}
-\draw[ucldark,line width=1.0pt] (-4.80,1.55)--(-4.80,1.95);
-\node[softbox,inner sep=4pt,text width=2.55cm,align=center,anchor=south] at (-4.80,1.95)
-{\footnotesize\bfseries V1: Nov. 2018\\[-0.03cm]\tiny ETH--token pools; ETH required};
-\draw[ucldark,line width=1.0pt] (-1.60,1.55)--(-1.60,1.15);
-\node[softbox,inner sep=4pt,text width=2.55cm,align=center,anchor=north] at (-1.60,1.15)
-{\footnotesize\bfseries V2: May 2020\\[-0.03cm]\tiny any token combination};
-\draw[ucldark,line width=1.0pt] (1.60,1.55)--(1.60,1.95);
-\node[softbox,inner sep=4pt,text width=2.55cm,align=center,anchor=south] at (1.60,1.95)
-{\footnotesize\bfseries V3: May 2021\\[-0.03cm]\tiny concentrated liquidity};
-\draw[ucldark,line width=1.0pt] (4.80,1.55)--(4.80,1.15);
-\node[softbox,inner sep=4pt,text width=2.55cm,align=center,anchor=north] at (4.80,1.15)
-{\footnotesize\bfseries V4: Jan. 2025\\[-0.03cm]\tiny singleton; flash accounting};
-\end{tikzpicture}
-\end{center}
-\vspace{0.02cm}
-{\normalsize\bfseries\color{ucldark}\centering V2 opens vehicle choice; later versions change how liquidity is supplied.\par}
-\decknote{First-swap dates. The next slide isolates V1 to V2: compulsory ETH routing ends while the inherited market structure remains.}
-\end{frame}
-
-\IfFileExists{../output/exhibits/v1_architecture_deck_values.tex}{%
-\input{../output/exhibits/v1_architecture_deck_values.tex}%
-}{\PackageError{dvc-deck}{Missing generated V1/V2 architecture values}{Rebuild the admitted V1/V2 presentation binding.}}
-
-% EVIDENCE-STATUS: admitted V1 mandate and V2 pool-formation result
-% EVIDENCE-SOURCES: docs/findings/v1-forced-vehicle.md; output/exhibits/v1_forced_vehicle_report.md; output/exhibits/v1_architecture_deck_values.tex
-% VISUAL-FUNCTION: architecture and persistence | V1-to-V2 mechanism comparison | show how imposed intermediation becomes endogenous pool formation
-\begin{frame}{Native-asset pairing persists after it becomes optional}
-\begin{columns}[T,totalwidth=\textwidth]
-\begin{column}{0.43\textwidth}
-\evidencekicker{V1: protocol rule}
-\vspace{0.16cm}
-\begin{tikzpicture}[x=1cm,y=1cm]
-\node[nodepoint] (a) at (0.35,2.45) {A};
-\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=38pt] (eth) at (2.55,2.45) {ETH};
-\node[nodepoint] (b) at (4.75,2.45) {B};
-\draw[route,draw=accent,line width=1.7pt] (a)--(eth);
-\draw[route,draw=accent,line width=1.7pt] (eth)--(b);
-\node[font=\small\bfseries,text=ucldark,align=center] at (2.55,0.95) {\VOneForcedRoutes{} token-to-token trades\\pass through ETH};
-\end{tikzpicture}
-\vspace{0.10cm}
-{\small Every pool is an ETH--token pool, so the architecture imposes the vehicle.\par}
-\end{column}
-\begin{column}{0.08\textwidth}
-\centering
-\vspace{2.05cm}
-{\Large$\Longrightarrow$}
-\end{column}
-\begin{column}{0.45\textwidth}
-\evidencekicker{V2: pool formation}
-\vspace{0.20cm}
-\begin{beamercolorbox}[sep=0.28cm,wd=\textwidth]{block body}
-{\fontsize{24}{26}\selectfont\bfseries\color{ucldark}\VTwoWethTradeShare}\par
-{\small of single-leg V2 trades use a WETH pool in 2026}
-\end{beamercolorbox}
-\vspace{0.26cm}
-\begin{beamercolorbox}[sep=0.28cm,wd=\textwidth]{block body}
-{\fontsize{24}{26}\selectfont\bfseries\color{stable}\VTwoWethNewPairShare}\par
-{\small of token combinations first traded in 2026 include WETH}
-\end{beamercolorbox}
-\end{column}
-\end{columns}
-\decknote{V1 links token-to-ETH and ETH-to-token swaps within one transaction. V2 reports legs and newly traded token combinations on that venue. Early V2 inherited liquidity, users, and routing conventions from V1, so part of the initial persistence is mechanical; later pool formation shows how long that structure lasts.}
+{\large\bfseries\color{ucldark}\centering The decomposition locates the rotation; the next tests explain persistence.\par}
+\decknote{The decomposition is exact. All-route shares first establish the aggregate rotation. Exact two-leg routes then isolate one vehicle family per route for the pair decomposition and the stablecoin-versus-WETH comparison.}
 \end{frame}

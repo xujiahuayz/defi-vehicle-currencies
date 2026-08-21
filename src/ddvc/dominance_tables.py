@@ -136,19 +136,17 @@ def render_dominance_rotation(rows: Iterable[Mapping[str, object]]) -> str:
     return "\n".join(lines) + "\n"
 
 
-PAIR_ACCOUNTING_MACROS = (
+MARKET_ACCOUNTING_MACROS = (
     "MarketSupportBridge",
     "VehicleRoleSupportBridge",
     "MarketActivityReweight",
     "VehicleIncidenceReweight",
     "WithinPairStableShare",
     "MarketBridgeTotal",
-    # The midpoint common/exclusive identity, reported for both measures. Its
-    # count terms were previously prose-only even though Section 3.2 interprets
-    # each of them, and its row labels must stay distinguishable from the
-    # Shapley bridge above: the two factorisations decompose the same route-count
-    # total over different mass (all market activity against native-plus-stable
-    # choice mass), so no component of one equals a component of the other.
+)
+
+
+PAIR_ACCOUNTING_MACROS = (
     "PairPooledWithin",
     "PairPooledReweight",
     "PairPooledSupportMass",
@@ -159,6 +157,16 @@ PAIR_ACCOUNTING_MACROS = (
     "PairValueSupportMass",
     "PairValueExclusive",
     "PairValueTotal",
+    "PairLifecycleCountEntryTable",
+    "PairLifecycleCountReactivationTable",
+    "PairLifecycleCountRoleTurnoverTable",
+    "PairLifecycleCountExitTable",
+    "PairLifecycleCountNetTable",
+    "PairLifecycleValueEntryTable",
+    "PairLifecycleValueReactivationTable",
+    "PairLifecycleValueRoleTurnoverTable",
+    "PairLifecycleValueExitTable",
+    "PairLifecycleValueNetTable",
     "MarginWithinGainPairs",
     "MarginWithinLossPairs",
     "MarginWithinGrossUp",
@@ -170,11 +178,34 @@ PAIR_ACCOUNTING_MACROS = (
 )
 
 
+def render_pair_market_accounting(macros: Mapping[str, str]) -> str:
+    """Render the alternative route-count accounting for the appendix."""
+
+    _require_macros(macros, MARKET_ACCOUNTING_MACROS)
+    display = {name: _without_pp(value) for name, value in macros.items()}
+    lines = [
+        r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xr@{}}",
+        r"\toprule",
+        r"Component & Estimate [pp] \\",
+        r"\midrule",
+        f"Pairs entering or leaving the sample & {display['MarketSupportBridge']}" + r" \\",
+        f"Pairs gaining or losing a vehicle route & {display['VehicleRoleSupportBridge']}" + r" \\",
+        f"Market activity shifting across continuing pairs & {display['MarketActivityReweight']}" + r" \\",
+        f"Change in how often continuing pairs use a vehicle & {display['VehicleIncidenceReweight']}" + r" \\",
+        f"Stablecoin share within continuing vehicle-using pairs & {display['WithinPairStableShare']}" + r" \\",
+        r"\midrule",
+        f"Total route-count change & {display['MarketBridgeTotal']}" + r" \\",
+        r"\bottomrule",
+        r"\end{tabularx}",
+    ]
+    return "\n".join(lines) + "\n"
+
+
 def render_pair_composition(
     macros: Mapping[str, str],
     fixed_effect_rows: Iterable[Mapping[str, object]],
 ) -> str:
-    """Render accounting panels and the three fixed-effect regression rows."""
+    """Render the central pair lifecycle panels and fixed-effect estimates."""
 
     _require_macros(macros, PAIR_ACCOUNTING_MACROS)
     records = list(fixed_effect_rows)
@@ -216,17 +247,7 @@ def render_pair_composition(
         r"\toprule",
         r"Component or estimate & Estimate [pp] & Obs. \\",
         r"\midrule",
-        r"\multicolumn{3}{l}{\emph{Panel A. Route-count share: market activity and"
-        r" vehicle incidence}} \\",
-        f"Pairs entering or leaving the sample & {display['MarketSupportBridge']} & \\\\",
-        f"Pairs gaining or losing a vehicle route & {display['VehicleRoleSupportBridge']} & \\\\",
-        f"Market activity shifting across continuing pairs & {display['MarketActivityReweight']} & \\\\",
-        f"Change in how often continuing pairs use a vehicle & {display['VehicleIncidenceReweight']} & \\\\",
-        f"Stablecoin share within continuing vehicle-using pairs & {display['WithinPairStableShare']} & \\\\",
-        r"\midrule",
-        f"Total route-count change & {display['MarketBridgeTotal']} & \\\\",
-        r"\addlinespace",
-        r"\multicolumn{3}{l}{\emph{Panel B. Route-count share: continuing and"
+        r"\multicolumn{3}{l}{\emph{Panel A. Route-count share: continuing and"
         r" year-specific pairs}} \\",
         f"Net stablecoin-share change within continuing pairs & {display['PairPooledWithin']} & \\\\",
         r"\quad Pairs moving toward stablecoins ("
@@ -237,11 +258,15 @@ def render_pair_composition(
         + f") & {display['MarginWithinGrossDown']} & \\\\",
         f"Vehicle activity shifting across continuing pairs & {display['PairPooledReweight']} & \\\\",
         f"Weight of continuing versus year-specific pairs & {display['PairPooledSupportMass']} & \\\\",
-        f"Pairs traded in only one year & {display['PairPooledExclusive']} & \\\\",
+        f"Net contribution of period-specific vehicle activity & {display['PairLifecycleCountNetTable']} & \\\\",
+        rf"\quad Pairs first observed after 2024 H1 & {display['PairLifecycleCountEntryTable']} & \\",
+        rf"\quad Pairs reactivated after absence in 2024 H1 & {display['PairLifecycleCountReactivationTable']} & \\",
+        rf"\quad Vehicle-role turnover in continuing pairs & {display['PairLifecycleCountRoleTurnoverTable']} & \\",
+        rf"\quad Pairs exiting before 2026 H1 & {display['PairLifecycleCountExitTable']} & \\",
         r"\midrule",
         f"Total route-count change & {display['PairPooledTotal']} & \\\\",
         r"\addlinespace",
-        r"\multicolumn{3}{l}{\emph{Panel C. Dollar-weighted share: continuing and"
+        r"\multicolumn{3}{l}{\emph{Panel B. Dollar-weighted share: continuing and"
         r" year-specific pairs}} \\",
         f"Net stablecoin-share change within continuing pairs & {display['PairValueWithin']} & \\\\",
         r"\quad Pairs moving toward stablecoins ("
@@ -252,11 +277,15 @@ def render_pair_composition(
         + f") & {display['MarginWithinValueGrossDown']} & \\\\",
         f"Vehicle activity shifting across continuing pairs & {display['PairValueReweight']} & \\\\",
         f"Weight of continuing versus year-specific pairs & {display['PairValueSupportMass']} & \\\\",
-        f"Pairs traded in only one year & {display['PairValueExclusive']} & \\\\",
+        f"Net contribution of period-specific vehicle activity & {display['PairLifecycleValueNetTable']} & \\\\",
+        rf"\quad Pairs first observed after 2024 H1 & {display['PairLifecycleValueEntryTable']} & \\",
+        rf"\quad Pairs reactivated after absence in 2024 H1 & {display['PairLifecycleValueReactivationTable']} & \\",
+        rf"\quad Vehicle-role turnover in continuing pairs & {display['PairLifecycleValueRoleTurnoverTable']} & \\",
+        rf"\quad Pairs exiting before 2026 H1 & {display['PairLifecycleValueExitTable']} & \\",
         r"\midrule",
         f"Total change in dollar-weighted share & {display['PairValueTotal']} & \\\\",
         r"\addlinespace",
-        r"\multicolumn{3}{l}{\emph{Panel D. Matched pair estimates}} \\",
+        r"\multicolumn{3}{l}{\emph{Panel C. Matched pair estimates}} \\",
         r"\midrule",
     ]
     for label, row in regressions:

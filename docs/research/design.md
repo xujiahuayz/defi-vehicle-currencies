@@ -8,81 +8,100 @@ the present paper.
 
 ## JFE depth revision
 
-The paper now needs a deeper economic spine, not a longer inventory of results.
-Route reconstruction and the aggregate decomposition remain essential because
-they establish the empirical object and the central fact. Their presentation,
-however, should be compact enough to leave the main body for the questions that
-follow: which vehicle wins a contestable route, why an established vehicle
-persists, how liquidity responds, and what the persistence costs or protects.
+The paper is an empirical market-structure paper enabled by a new measurement,
+not a measurement paper. Route reconstruction must earn the economic object and
+the pair decomposition must establish the central fact. Both should be compact.
+The empirical middle then asks the harder questions: which vehicle is present
+when a pair first appears, how long that initial allocation persists, when a
+rival bridge becomes genuinely contestable, how current prices and prior
+two-leg depth divide route flow, and what retaining an incumbent costs.
 
-The revision follows one connected loop:
+This ordering follows the published-JFE pattern documented in
+[`../../literature/audit.md`](../../literature/audit.md): the measured object is
+made auditable early, while the body is devoted to conditioned estimates,
+mechanism-discriminating comparisons, economic magnitude, and the strongest
+rivals. Focus comes from making every exhibit answer the next question, not
+from demoting all formal analysis.
+
+The revision follows one connected graph and convergence loop:
 
 ```text
-aggregate rotation and pair composition
-  -> routes on which stablecoins and WETH are both feasible
-  -> current price and weak-leg depth determine vehicle choice
-  -> entry state versus persistence after entry
-  -> subsequent route use and bridge capital
-  -> execution-cost and risk consequences
+compact route measurement and exact-chain validation
+  -> aggregate rotation and exact pair lifecycle decomposition
+  -> first vehicle at pair entry and later vehicle use
+  -> prior-information bridge formation and relative two-leg depth
+  -> stablecoin and WETH paths feasible at the same pretrade state
+  -> current output x prior weak-leg depth x incumbency
+  -> execution-cost and network-risk consequences
   -> rival explanation or unresolved implication
        -> directly observable: test it and rebuild the chain
        -> unobservable or disproportionate: state the remaining boundary
   -> rebuild paper -> deck -> speaking notes -> paper until they agree
 ```
 
-This is focus by hierarchy rather than deletion. A result belongs in the main
-text when it advances the chain. Technical derivations, validation, alternative
-samples, and robustness checks belong in the appendix. An unrelated significant
-coefficient belongs in neither place; its code and output can remain available
-for a later paper.
+This is focus by hierarchy. A result belongs in the main text when it advances
+the chain or changes the interpretation of a result already there. Technical
+derivations, protocol-specific construction, exact-chain validation details,
+alternative samples, additional horizons, and local robustness checks belong in
+the appendix. A disconnected coefficient belongs in neither place merely
+because it is statistically significant; its code and output can remain
+available for a later paper.
 
 ### Main-text evidence
 
-1. **Central fact.** Keep one all-route rotation figure and one compact exact
-   pair-composition table. Fold the current before/after share table into these
-   exhibits. Report gross movements in both directions so the near-zero net
-   within-pair term is not mistaken for an absence of switching.
-2. **Contestable vehicle choice.** On routes for which stablecoin and WETH paths
+1. **Measurement and validation.** Define pair, leg, route, path, vehicle, and
+   dominance once. Keep one compact panel table. Exact-chain correction results
+   should appear as one concise validation line in the data section and a
+   technical appendix table unless they materially change pair or vehicle
+   assignment.
+2. **Central fact and lifecycle.** Keep one all-route rotation figure and one
+   exact pair-composition table. The table separates net switching within
+   continuing pairs, reweighting across continuing pairs, first-observed pair
+   entry, reactivation, vehicle-role turnover, and pair exit. Gross entry must
+   remain distinct from the net period-specific-pair term.
+3. **Persistence after entry.** Measure days 1--30 and 31--120 separately, remove
+   the entry day from every outcome, report later trading explicitly, and show
+   pair- and activity-weighted estimates. Entry identity is descriptive state
+   dependence until prices and challenger depth enter the comparison.
+4. **Liquidity formation.** Date usable bridge formation only with information
+   available before the event. Retain continuous relative weak-leg depth and the
+   capital path around first use. Future-persistence definitions may remain as a
+   robustness construction, not as the sole main-text event date.
+5. **Contestable vehicle choice.** On routes for which stablecoin and WETH paths
    are both feasible at the same input, state, and public venue set, estimate
-   stablecoin choice as a function of the stablecoin path's output advantage,
-   relative weak-leg depth, the vehicle used at pair entry, and their
-   interactions. Use a conventional column ladder with pair and date effects,
-   trade-size and venue-access controls, and pair/date clustered inference.
-3. **Persistence after entry.** Rebuild the current entry regressions because the
-   existing outcome includes the entry day. Measure days 1--30 and 31--120
-   separately, require and report later trading, show pair- and activity-weighted
-   estimates, and ask whether entry identity still predicts use once the rival
-   route becomes comparably deep and cheaper.
-4. **Liquidity formation.** Retain the continuous weak-leg-depth relation and
-   pool-capital path. Strengthen the bidirectional route-use/depth forecasts with
-   bridge and date effects, flexible initial states, exact horizons,
-   time-reversed benchmarks, and alternative weights. Describe these as
-   equilibrium relations unless a design supplies external variation.
-5. **Financial consequence.** For each contestable route, measure the gross
-   output lost or gained relative to the feasible rival vehicle. Report economic
-   magnitudes by pair age, incumbent identity, trade size, and challenger depth,
-   with transparent gas bounds. This gives persistence a financial consequence.
-6. **Risk transmission, conditional on evidence.** Use the March 2023 USDC shock
-   only if a pair-level exposure design has credible pre-trends and survives
-   restrictions for dust, round trips, and automated flow. Otherwise retain the
-   aggregate episode as motivation or omit it.
+   retention as a function of current exact-output advantage, prior weak-leg
+   capital, and their interaction. Use a conventional column ladder with pair
+   and date effects and pair/date clustered inference. This comparison separates
+   a shallow or expensive challenger from residual incumbent retention after the
+   challenger offers more output.
+6. **Financial consequence.** For each contestable route, measure gross output
+   relative to the feasible rival family. Report route and input-value weights,
+   pair age, conditional shortfall quantiles, and transparent gas and venue
+   bounds. This converts persistence into an economically scaled outcome.
+7. **Risk transmission, conditional on evidence.** Promote an issuer shock only
+   if a pair-level exposure design has credible pretrends, comparison support,
+   and restrictions for dust, round trips, and automated flow. The existing
+   aggregate USDC episode does not clear that bar by itself.
 
 The current bridge-choice estimates and exact-price comparison already warrant
-the second step. A vehicle with the deepest weak leg carries most route mass,
+the fifth step. A vehicle with the deepest weak leg carries most route mass,
 and incumbent retention changes sharply with contemporaneous price leadership.
-The joint price--depth--incumbency model is therefore the first new central
-estimate; it does not require another raw-data fetch.
+The joint price--depth--incumbency model is therefore a central estimate; it
+does not require another raw-data fetch.
 
 ### Experiment order and promotion gates
 
 | Order | Analysis | Required inputs | Main-text gate | Current disposition |
 |---|---|---|---|---|
-| 1 | Correct post-entry persistence | Existing entry and route panels | Entry day excluded; later trading explicit; stable across pair and activity weights | Passed; main text |
-| 2 | Joint price, depth, and incumbency choice | Existing exact-price, bridge-depth, and entry panels on Studio | Same opportunity and pre-trade state; interpretable magnitudes; pair/date effects | Passed; main text |
-| 3 | Dynamic route-use and bridge-depth relation | Existing route-share and capital panels | No mechanical coupling; initial states, time-reversed benchmarks, and alternative horizons pass | Corrected; appendix boundary because time reversal also predicts outcomes |
-| 4 | Cost of retaining the incumbent | Existing exact-price panel | Same-size rival path; route- and value-weighted economic magnitude; gas bounds | Passed gross-of-gas comparison; main text with gas boundary |
-| 5 | USDC shock exposure | Existing routes, prices, and capital; targeted refetch only if a field is missing | Pair-level exposure, pre-trends, comparison group, and flow restrictions | Gated; run only if the comparison design clears the stated bar |
-| 6 | LP risk and supply | Existing prices, volumes, fees, and capital if coverage aligns | Within-opportunity divergence-risk or volatility measure adds information beyond demand and fees | Completed; appendix because risk locates depth but does not explain the aggregate rotation |
+| 1 | Exact-chain route sensitivity | Existing reconciliation ledgers and reconstructed audited dates | Report how chain corrections change pair, vehicle, topology, and headline shares | Running on Studio; technical appendix unless conclusions move |
+| 2 | Pair lifecycle accounting | Existing all-history pair support and 2024/2026 decomposition | Entry, reactivation, role turnover, and exit add exactly to the period-specific term | Passed; gross first-observed entry belongs in the central decomposition |
+| 3 | Correct post-entry persistence | Existing entry and route panels | Entry day excluded; later trading explicit; stable across pair and activity weights | Passed; main text |
+| 4 | Prior-information bridge formation | Existing route-share and capital panels | Event date uses only lagged information; adoption timing and continuous depth reported | Running on Studio; replaces future-persistence dating if support is adequate |
+| 5 | Joint price, depth, and incumbency choice | Existing exact-price, bridge-depth, and entry panels on Studio | Same opportunity and pre-trade state; interpretable magnitudes; pair/date effects | Passed; main text |
+| 6 | Dynamic route-use and bridge-depth relation | Existing route-share and capital panels | No mechanical coupling; initial states, time-reversed benchmarks, and alternative horizons pass | Corrected; appendix boundary because time reversal also predicts outcomes |
+| 7 | Cost of retaining the incumbent | Existing exact-price panel | Same-size rival path; route- and value-weighted economic magnitude; gas bounds | Passed gross-of-gas comparison; main text with gas boundary |
+| 8 | USDC shock exposure | Existing routes, prices, and capital; targeted refetch only if a field is missing | Pair-level exposure, pretrends, comparison group, and flow restrictions | Gated; run only if the comparison design clears the stated bar |
+| 9 | LP risk and supply | Existing prices, volumes, fees, and capital if coverage aligns | Within-opportunity divergence-risk or volatility measure adds information beyond demand and fees | Completed; appendix because risk locates depth but does not explain the aggregate rotation |
 
 The first LP-risk pass finds that lower prior endpoint--vehicle relative-price
 risk predicts deeper full-range constant-product bridge capital. It does not

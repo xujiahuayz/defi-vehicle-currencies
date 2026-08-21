@@ -278,12 +278,18 @@ def test_v1_architecture_deck_values_match_the_admitted_source_tables() -> None:
     from scripts.tabulate.build_v1_architecture_deck_values import (
         load_inputs,
         render_v1_architecture_deck_values,
+        render_v1_architecture_table,
     )
 
+    inputs = load_inputs()
     binding = (
         ROOT / "output" / "exhibits" / "v1_architecture_deck_values.tex"
     ).read_text(encoding="utf-8")
-    assert binding == render_v1_architecture_deck_values(*load_inputs())
+    table = (ROOT / "output" / "tables" / "v1_architecture.tex").read_text(
+        encoding="utf-8"
+    )
+    assert binding == render_v1_architecture_deck_values(*inputs)
+    assert table == render_v1_architecture_table(*inputs)
 
 
 def test_deck_states_units_scopes_and_primary_protocol_sources() -> None:

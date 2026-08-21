@@ -9,9 +9,10 @@ Captions, labels, placement, and interpretation stay in the paper/deck source.
 |---|---|---|
 | `render_dominance_rotation.py` | `dominance_rotation.tex/.pdf` | `tab:app:rotation` |
 | `render_disconnected_component_boundary.py` | `disconnected_component_boundary.tex/.pdf` and generated values | `tab:app:disconnected` |
-| `render_pair_composition.py` | `pair_composition.tex/.pdf` | `tab:pair-composition` |
+| `render_pair_composition.py` | `pair_composition.tex/.pdf`, `pair_market_accounting.tex/.pdf` | `tab:pair-composition`, `tab:app:pair-market-accounting` |
 | `render_entry_vehicle_persistence.py` | `entry_vehicle_persistence.tex/.pdf`, `entry_vehicle_persistence_robustness.tex/.pdf` | `tab:entry-persistence`, `tab:app:entry-persistence-robustness` |
 | `render_contestable_vehicle_choice.py` | `contestable_vehicle_choice.tex/.pdf` | `tab:contestable-vehicle-choice` |
+| `render_contestable_vehicle_consequences.py` | `contestable_vehicle_consequences.tex/.pdf` | `tab:contestable-vehicle-consequences` |
 | `render_usdt_transition.py` | `usdt_transition.tex/.pdf` | `tab:usdt-transition` |
 | `render_within_day_ladder.py` | `within_day_ladder.tex/.pdf` | `tab:within-day-ladder` |
 | `render_venue_technology_rival.py` | `venue_technology_rival.tex/.pdf` | `tab:venue-technology` |
@@ -26,6 +27,7 @@ Captions, labels, placement, and interpretation stay in the paper/deck source.
 | `build_endpoint_direction_deck_values.py` | `endpoint_direction_deck_values.tex` | endpoint-direction paper/deck values |
 | `build_stable_stable_vehicle_values.py` | `stable_stable_vehicle_values.tex` | stable-to-stable intermediary-identity values |
 | `render_venue_coverage.py` | `venue_coverage.tex/.pdf` | `tab:app:venues` |
+| `build_v1_architecture_deck_values.py` | `v1_architecture.tex/.pdf` and generated deck values | `tab:app:v1-architecture` |
 
 The remaining active manuscript tables are intentionally inline because each is
 a short validation or sample-description display: `tab:panel`, `tab:app:cl`,
@@ -44,6 +46,7 @@ economic question more directly than an exhibit already in the main sequence.
 |---|---|
 | `render_presentation_values.py` | shared current route-result macros |
 | `build_vehicle_transition_pair_deck_values.py` | pair decomposition and support macros |
+| `build_pair_turnover_lifecycle_values.py` | pair-entry, reactivation, vehicle-role turnover, and exit macros |
 | `build_excess_use_date_fe_deck_values.py` | date-FE result macros |
 | `build_backing_regime_deck_values.py` | backing-regime macros |
 | `build_fixed_opportunity_deck_values.py` | fixed-opportunity macros |
@@ -59,10 +62,11 @@ economic question more directly than an exhibit already in the main sequence.
 | `build_stable_stress_event_deck_values.py` | USDC/SVB stable-identity stress-screen macros |
 | `build_vehicle_formation_deck_values.py` | exploratory market-formation macros |
 | `build_vehicle_market_size_deck_values.py` | exploratory market-size vehicle-use macros |
-| `build_v1_architecture_deck_values.py` | V1 mandate and V2 routing facts |
+| `build_v1_architecture_deck_values.py` | V1 mandate and V2 routing facts; also owns the appendix table above |
 | `render_exact_vehicle_frontier.py` | exact pre-transaction vehicle and venue frontier macros |
 | `build_entry_vehicle_persistence_values.py` | post-entry persistence and retrading macros |
 | `build_contestable_vehicle_choice_values.py` | exact-price, capital, retention, and output-shortfall macros |
+| `build_bridge_lp_divergence_risk_deck_values.py` | deck macros for the divergence-risk boundary test |
 
 Each generated file has one owner. Inline empirical tables should be moved to a
 renderer when next edited.
