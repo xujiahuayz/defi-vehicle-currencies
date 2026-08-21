@@ -198,9 +198,9 @@ Among bridges below one tenth of WETH depth, 42.6 percent carry their first stab
 
 That is a big gap between technical support and economically usable support. Both legs have to become deep enough.
 
-There is also a plausible supply-side reason stablecoin links can form. While both pegs hold, a stablecoin--stablecoin pool has much less relative-price movement than a stablecoin--WETH pool. For a constant-product LP, that means less loss versus holding, usually called impermanent or divergence loss. Lower risk may make those links attractive to supply. A peg break can reverse the comparison.
+There are also two plausible supply-side reasons stablecoin links can form. While both pegs hold, a stablecoin--stablecoin pool has much less relative-price movement than a stablecoin--WETH pool. For a constant-product LP, that means less loss versus holding, usually called impermanent or divergence loss. Lower risk may make those links attractive to supply. A peg break can reverse the comparison.
 
-That last part is interpretation. Deposited capital tells us how much was supplied. Provider entry prices, fees, hedges, and expectations would be needed to measure profitability.
+A new stablecoin also benefits from a liquid conversion link into incumbent dollar tokens. An issuer or affiliated market maker may seed that link. Both ideas are interpretations. Deposited capital tells us how much was supplied. Provider identities, funding relationships, entry prices, fees, hedges, and expectations would be needed to separate them and measure profitability.
 
 Next: does depth arrive before or after first use?
 
@@ -295,7 +295,7 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 
 - The Bahamian dollar trades at one-for-one parity with the U.S. dollar and remains a separately issued currency.
 - Likewise, USDC, USDT, and DAI share a unit of account while retaining issuer, redemption, and liquidity differences.
-- While pegs hold, stable--stable pools may offer LPs lower divergence loss; profitability also depends on fees, entry prices, hedges, and peg stress.
+- Stable--stable pools may offer LPs lower divergence loss, while issuer-linked market makers may seed conversion pools; profitability also depends on fees, entry prices, hedges, and peg stress.
 
 ## A3. One route universe supports two measurements
 
