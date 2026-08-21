@@ -34,18 +34,19 @@ question and literature                    done
         source status metadata             provisional / registered / confirmed
         review snapshots                   versioned and shareable while work continues
 
-        ╔════════════════ parallel research loops ════════════════╗
-        ║ I1 mechanism search: dominance drivers, LP behavior     ║
-        ║ I2 input build: make eligible panels/releases           ║
-        ║ I3 experiments: run exploratory and robustness variants ║
-        ║ I4 challenge: caveats, rivals, interpretations          ║
-        ║    directly testable ─→ fetch/reconstruct/test ─→ rerun ║
-        ║    unidentified or disproportionate ─→ state boundary   ║
-        ║ I5 draft integration: show results; keep status in source║
-        ║ I6 review loop: source PDF → annotation ledger → revise ║
-        ║    rebuild → inspect every affected page → close ledger ║
-        ║ weak result/comment unresolved ────────────────↺ I1/I2  ║
-        ║ strong result/comment resolved ─→ upgrade result status ║
+        ╔══════════════ JFE depth revision ═══════════════════════╗
+        ║ compact route validation and aggregate decomposition    ║
+        ║       ↓                                                 ║
+        ║ contestable stablecoin-versus-WETH choice               ║
+        ║       ↓ price advantage × weak-leg depth × incumbency   ║
+        ║ post-entry persistence and liquidity formation          ║
+        ║       ↓                                                 ║
+        ║ execution-cost and risk consequences                    ║
+        ║       ↓                                                 ║
+        ║ rival implication observable?                           ║
+        ║   yes → test on Studio → rebuild all three deliverables ║
+        ║   no  → state the remaining boundary precisely          ║
+        ║       ↺ paper → deck → speaking notes → paper           ║
         ╚══════════════════════════════════════════════════════════╝
 
   → convergence candidate                  when paper/deck and comments stabilize
@@ -55,37 +56,24 @@ question and literature                    done
 The detailed claim state is in [`docs/findings/`](docs/findings/README.md). The
 two active confirmatory families are the vehicle-role transition and V2
 deposited-capital predictability. They make the current paper measurable and
-reproducible, but not yet submission-ready. The current research mode is
-parallel: keep the paper and slides presentable, integrate provisional results
-with explicit status labels, and continue the scoped mechanism and review loops.
-Current provisional layers cover vehicle birth, active-day birth-state
-hysteresis, controlled persistence from entry conditions, value-supported entry persistence, non-WETH entry drivers, route-architecture entry interactions,
-large-entrant routing, low-activity pair turn-on with a direct-route by thinness
-interaction, rolling native-only-to-stable turn-on hazards, same-day and
-prior-30-day candidate-network reach inside observed mixed-risk-set rival checks,
-endpoint claim-class formation splits, endpoint price-history formation screens,
-persistent established vehicle regimes, USDC/USDT concentration at stable-entry,
-controlled stable-candidate identity persistence, USDC/SVB
-stress-window identity persistence and LP capital non-chase,
-extra-hop gas economics and route-level fixed-toll feasibility, LP capital-use
-gaps, stable-basket portfolio rebalancing, delayed/asymmetric LP rebalancing,
-stable-candidate LP response heterogeneity, LP extensive-margin behavior, V2
-pool-capital concentration/fragmentation, same-pool capital-chase screens,
-bounded V3 fee/rent-incidence and TVL-normalized fee-yield screens, V3 mint/burn action-count, provider-day, activity-controlled provider-day responses, V3-versus-V4 same-candidate-date LP-action response contrasts, comparable V3/V4 internal-routing participation and volatility contrasts, V4 modify-liquidity action composition, activity-controlled response, flash-accounting netting proxies, screened candidate-side V4 LP flow, V4 flash-to-wide-range LP reallocation, V4 incumbent-origin activity and later first-active-origin participation, persistent-volatility shifts in V4 transaction-origin participation,
-stable-shortfall x V4 flash-accounting LP repositioning,
-local bridge-liquidity dominance, entry-date local bridge-depth choice screens,
-first stable-bridge establishment, continuous stable-versus-WETH bottleneck depth,
-depth-conditioned route reallocation, adoption timing after persistent support,
-capital accumulation before first use of the supported stablecoin, stable-specific dynamic
-local bridge-depth feedback, pool activation and continuing-pool scaling before first use,
-and V2 capital predictability. A
-matched-calendar endpoint-direction decomposition and its stable-to-stable
-intermediary-identity split locate the value channel in USDT. A
-result becomes headline evidence only if it is economically material,
-distinguishes at least one serious rival story, fits the literature contribution,
-and has a complete producer-to-deliverable path.
-Routing maturation, direct-cost dominance, provider-flow behavior, and broader
-V3/V4 depth are supporting, withheld, or expansion work until they pass that bar.
+reproducible, but not yet submission-ready. The revision now organizes the
+evidence into four states:
+
+- **Retain and compress:** route validation, the all-route rotation, and the
+  exact endpoint-pair decomposition.
+- **Promote and connect:** within-opportunity weak-leg depth, the independent
+  stablecoin-versus-WETH price contest, and pool-capital formation.
+- **Rebuild before use:** entry persistence, whose current follow-up window
+  includes the entry day, and dynamic route-use/depth forecasts, which need
+  initial-state controls and placebo leads.
+- **Test next on Studio:** joint price--depth--incumbency choice, the cost of
+  retaining a dominated vehicle, and then a gated shock or LP-risk analysis.
+
+The V3/V4 participation, flash-accounting, and broad provider-result inventory
+is preserved in code and output for a possible separate study. It does not
+belong in this manuscript merely because some estimates are significant. The
+full evidence chain and appendix admission rule are in
+[`docs/research/design.md`](docs/research/design.md).
 
 Parallel work uses named branches or small focused commits without creating
 sibling checkouts, backup folders, or another project truth.

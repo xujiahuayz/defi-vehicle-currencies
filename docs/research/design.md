@@ -6,115 +6,112 @@ the current numerical results are in [`../findings/`](../findings/README.md).
 Ideas that are not in those two places are future work, not unfinished parts of
 the present paper.
 
-## Current expansion agenda
+## JFE depth revision
 
-The executable gate is green for the two registered baseline families, but the
-research target is now stronger than measurement. The open mode is parallel:
-keep a presentable paper and deck, send versioned review snapshots when useful,
-and continue mechanism search, input building, experiments, and comment response
-at the same time. A weak, merely measurable, or literature-incremental result
-loops back to more search; it does not stop the paper and slides from being
-rebuilt.
+The paper now needs a deeper economic spine, not a longer inventory of results.
+Route reconstruction and the aggregate decomposition remain essential because
+they establish the empirical object and the central fact. Their presentation,
+however, should be compact enough to leave the main body for the questions that
+follow: which vehicle wins a contestable route, why an established vehicle
+persists, how liquidity responds, and what the persistence costs or protects.
+
+The revision follows one connected loop:
+
+```text
+aggregate rotation and pair composition
+  -> routes on which stablecoins and WETH are both feasible
+  -> current price and weak-leg depth determine vehicle choice
+  -> entry state versus persistence after entry
+  -> subsequent route use and bridge capital
+  -> execution-cost and risk consequences
+  -> rival explanation or unresolved implication
+       -> directly observable: test it and rebuild the chain
+       -> unobservable or disproportionate: state the remaining boundary
+  -> rebuild paper -> deck -> speaking notes -> paper until they agree
+```
+
+This is focus by hierarchy rather than deletion. A result belongs in the main
+text when it advances the chain. Technical derivations, validation, alternative
+samples, and robustness checks belong in the appendix. An unrelated significant
+coefficient belongs in neither place; its code and output can remain available
+for a later paper.
+
+### Main-text evidence
+
+1. **Central fact.** Keep one all-route rotation figure and one compact exact
+   pair-composition table. Fold the current before/after share table into these
+   exhibits. Report gross movements in both directions so the near-zero net
+   within-pair term is not mistaken for an absence of switching.
+2. **Contestable vehicle choice.** On routes for which stablecoin and WETH paths
+   are both feasible at the same input, state, and public venue set, estimate
+   stablecoin choice as a function of the stablecoin path's output advantage,
+   relative weak-leg depth, the vehicle used at pair entry, and their
+   interactions. Use a conventional column ladder with pair and date effects,
+   trade-size and venue-access controls, and pair/date clustered inference.
+3. **Persistence after entry.** Rebuild the current entry regressions because the
+   existing outcome includes the entry day. Measure days 1--30 and 31--120
+   separately, require and report later trading, show pair- and activity-weighted
+   estimates, and ask whether entry identity still predicts use once the rival
+   route becomes comparably deep and cheaper.
+4. **Liquidity formation.** Retain the continuous weak-leg-depth relation and
+   pool-capital path. Strengthen the bidirectional route-use/depth forecasts with
+   bridge and date effects, flexible initial states, exact horizons, placebo
+   leads, and alternative weights. Describe these as equilibrium relations
+   unless a design supplies external variation.
+5. **Financial consequence.** For each contestable route, measure the gross
+   output lost or gained relative to the feasible rival vehicle. Report economic
+   magnitudes by pair age, incumbent identity, trade size, and challenger depth,
+   with transparent gas bounds. This gives persistence a financial consequence.
+6. **Risk transmission, conditional on evidence.** Use the March 2023 USDC shock
+   only if a pair-level exposure design has credible pre-trends and survives
+   restrictions for dust, round trips, and automated flow. Otherwise retain the
+   aggregate episode as motivation or omit it.
+
+The current bridge-choice estimates and exact-price comparison already warrant
+the second step. A vehicle with the deepest weak leg carries most route mass,
+and incumbent retention changes sharply with contemporaneous price leadership.
+The joint price--depth--incumbency model is therefore the first new central
+estimate; it does not require another raw-data fetch.
+
+### Experiment order and promotion gates
+
+| Order | Analysis | Required inputs | Main-text gate |
+|---|---|---|---|
+| 1 | Correct post-entry persistence | Existing entry and route panels | Entry day excluded; later trading explicit; stable across pair and activity weights |
+| 2 | Joint price, depth, and incumbency choice | Existing exact-price, bridge-depth, and entry panels on Studio | Same opportunity and pre-trade state; interpretable magnitudes; pair/date effects |
+| 3 | Dynamic route-use and bridge-depth relation | Existing route-share and capital panels | No mechanical coupling; initial states, placebo leads, and alternative horizons pass |
+| 4 | Cost of retaining the incumbent | Existing exact-price panel | Same-size rival path; route- and value-weighted economic magnitude; gas bounds |
+| 5 | USDC shock exposure | Existing routes, prices, and capital; targeted refetch only if a field is missing | Pair-level exposure, pre-trends, comparison group, and flow restrictions |
+| 6 | LP risk and supply | Existing prices, volumes, fees, and capital if coverage aligns | Within-opportunity divergence-risk or volatility measure adds information beyond demand and fees |
+
+Every promoted regression must identify its unit, risk set, variation,
+conditioning set, weighting, fixed effects, clustering, economic magnitude, and
+strongest rival explanation. A conventional table places specifications in
+columns and reports sample size, effects, and fit; a collection of unrelated
+one-coefficient rows is not a substitute.
+
+### Appendix rule
+
+An appendix exhibit must be consumed by a named main-text result through one of
+four roles: derivation, measurement validation, alternative sample, or
+robustness. The route-boundary checks, quoter validation, coverage, adjacent-year
+decompositions, endpoint restrictions, and venue/pricing-family checks meet this
+rule. The V3/V4 participation and flash-accounting tables do not support the
+present chain closely enough; preserve their scripts and outputs outside the
+manuscript for a possible separate study rather than using the appendix as a
+result archive.
 
 ## Resolve before caveating
 
-For every central result, list the serious alternative explanations, measurement
-limits, and interpretive steps. Then classify each one by whether the repository
-can observe its implication.
-
-1. A missing field, stale fetch, incomplete crosswalk, or rebuildable historical
-   input is a data task. Fetch or reconstruct it, rerun every dependent result,
-   and remove the obsolete caveat.
-2. A testable interpretation becomes a focused empirical design. Use the most
-   direct object available: exact route repricing for price alternatives,
-   decomposition for accounting margins, transition matrices for switching,
-   event time for sequencing, and regression only when conditioning or variation
-   is the question.
-3. A result replaces the interpretation when the test discriminates among the
-   alternatives. If the test leaves several explanations observationally
-   equivalent, state that remaining set precisely.
-4. Retain a limitation only when it concerns identification, user or provider
-   intent absent from the chain, unavailable external data, or an extension whose
-   cost and scope are disproportionate to the paper's contribution.
-
-This loop is recursive. A new result can expose another resolvable boundary; the
-paper, deck, tables, figures, and speaking notes are rebuilt after the boundary
-is closed.
-
-### Current result-resolution map
-
-| Main evidence | Question that can be settled with current or fetchable data | Direct check | Residual boundary |
-|---|---|---|---|
-| Executed pool routes | Did missing V1 token identities truncate the route panel, or do disconnected calls drive the rotation? | Re-fetch the exact V1 exchange registry, rebuild the common panel, and compare the principal connected-transaction rule with separately reconstructed components. | A pool-event component identifies the executed on-chain route. User instructions, executor inventory, and off-pool transfers remain unobserved. |
-| Aggregate stablecoin rotation | Is the endpoint comparison a selected window, is the near-zero within-pair term hiding gross switching, or do stablecoin and WETH endpoints create the result? | Report positive and negative pair contributions separately; apply the identical decomposition to every adjacent January--June year pair; and repeat 2024--2026 where neither endpoint is WETH or a stablecoin. | The accounting locates the margin of change; it does not assign an external cause to pair entry, exit, or trading reallocation. |
-| Vehicle use after pair entry | Does the first vehicle merely predict later use, or does persistence survive an observable challenger? | Report transition and majority-state persistence, condition on continuous stablecoin-versus-WETH depth, and compare the chosen vehicle with the exact pretrade price leader when the panels overlap. | Trader and liquidity-provider intent are absent from the chain, so behavior and expectations remain observationally equivalent after measured price and depth are held fixed. |
-| Persistent bridge support and first use | Is support only a binary availability indicator, and what happens to capital around first use? | Measure the continuous bottleneck-depth ratio, the adoption gradient, pre- and post-use capital paths, and new-pool versus continuing-pool capital. | First use and deposited capital are equilibrium outcomes; without external variation the sequence does not identify a liquidity-supply effect. |
-| Exact route prices | Would the realised route change after opening more venues, another vehicle, or the direct path? | Reprice the same input at pretrade state through nested opportunity sets and report route-level transitions. | Candidate-specific gas, private order flow, and venues without reconstructable historical state remain outside the exact all-in comparison. |
-
-The adjacent-year decomposition is part of the vehicle-transition rebuild. The
-entry-price comparison runs after the V1-inclusive exact-price and entry panels
-have both been rebuilt; stale outputs fail the renderer's independent-price
-schema and minimum-gain checks.
-
-Priority experiments:
-
-1. Making of vehicle dominance: estimate which asset, market, and route features
-   predict vehicle adoption, dominance intensity, leader switches, entry, exit,
-   reversals, and persistence. Preferred designs condition on the same endpoint
-   pair and date when feasible, so the comparison is among candidate vehicles in
-   the same trading opportunity.
-2. Liquidity-provision behavior: separate capital stocks from liquidity-supply
-   flows, provider entry/exit, withdrawals, reallocation across vehicles, and
-   V3/V4 route or netting behavior where the required inputs exist.
-3. Mechanism distinction: compare route cost, executable depth, venue coverage,
-   route redundancy, candidate centrality, pool age, and capital concentration
-   as competing explanations. Correlations are admissible when causal evidence
-   is not defensible, but each result must state the unit, conditioning set,
-   strongest rival, and economic magnitude.
-4. Framing: motivate the paper with concrete traditional-finance analogies, such
-   as a dealer or treasurer routing a thin currency pair through a liquid vehicle
-   currency because direct execution is expensive or unavailable. The analogy is
-   motivation only; it should not substitute for the DEX evidence.
-
-Draft rule: provisional results may enter the paper and deck if they are clearly
-labelled and rebuildable enough for review. Claim-status upgrades are separate:
-a result becomes headline evidence only if it is economically material, survives
-a serious rival explanation, clarifies the contribution relative to the
-literature, and can be rebuilt from declared inputs. If those conditions are not
-met, the workflow loops back to mechanism search and additional experiments
-while the current draft remains presentable.
-
-The current V4 participation extension distinguishes transaction origins active
-in the preceding 180 days from origins first active after the measurement date.
-It excludes zero-liquidity updates in the primary sample and separates days
-1--30 from days 31--120. Transaction origin is a participation proxy, not a
-verified LP-position owner. The registered comparison asks whether internal
-same-asset routing is followed first by more actions from incumbent origins and
-later by origins absent from the prior window. The family uses the existing
-vehicle and date effects, origin-day controls, date clustering, and Holm
-adjustment across the three accounting proxies and four timing outcomes.
-
-The state-dependent extension uses lagged 30-day mean realised WETH volatility
-from one-minute prices. It interacts that state with internal same-asset routing,
-allows every vehicle and origin-day control its own volatility slope, and keeps
-vehicle and date effects. The registered outcomes are actions by 180-day
-incumbent origins during days 1 to 30 and first-active origins during days 31 to
-120. A seven-day state, zero-liquidity updates, a 90-day prior window, and
-leave-one-vehicle-out estimates are sensitivities. This test distinguishes
-persistent risk-bearing conditions from an architecture-only account without
-calling volatility an exogenous provider constraint.
-
-The protocol comparison constructs internal same-asset routing identically from
-V3 and V4 swap legs, pairs the same vehicle and calendar day, and measures future
-participation from nonzero V3 mint/burn and V4 modify-liquidity actions. The
-primary 180-day-history sample runs from 23 July 2025 through 2 March 2026. On
-that mature common calendar, neither the level difference in routing slopes nor
-the V4-minus-V3 difference in their persistent-volatility interactions survives
-the two-outcome Holm correction. A pooled 90-day-history sample produces large
-differences, but neither its early nor mature calendar segment reproduces that
-pooled estimate. The protocol-specific interpretation is therefore withheld:
-the V4 result describes participation under its singleton architecture, while
-common trading demand and risk-bearing conditions remain viable explanations.
+For every central result, list serious alternative explanations, measurement
+limits, and interpretive steps. A missing field, stale fetch, incomplete
+crosswalk, or rebuildable historical input is a data task. A testable
+interpretation becomes a focused analysis using the most direct object available:
+exact repricing for price alternatives, decomposition for accounting margins,
+transition matrices for switching, event time for sequencing, and regression
+when conditioning or variation is the question. Retain a limitation only when
+identification, unobserved intent, unavailable external data, or disproportionate
+scope prevents a useful test.
 
 ## Question and contribution
 
