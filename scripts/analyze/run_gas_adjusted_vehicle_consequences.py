@@ -350,6 +350,7 @@ def run(
     frontier, selection = prepare_frontier(raw_frontier)
     frontier = frontier[frontier["symmetric_common_support"]].copy()
     frontier["year"] = frontier["date"].dt.year.astype(int)
+    frontier["tx_hash"] = frontier["route_id"].astype(str).str.split(":", n=1).str[0]
     prices = output_token_prices(frontier, unified)
     frontier = frontier.merge(prices, on="route_id", how="left", validate="one_to_one")
     frontier = frontier.merge(
