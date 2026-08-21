@@ -11,7 +11,10 @@ from ddvc.analysis.bridge_exante import (
     relative_depth_regressions,
 )
 from scripts.analyze.run_bridge_exante import event_support_rows
-from scripts.tabulate.render_bridge_exante import render_bridge_exante
+from scripts.tabulate.render_bridge_exante import (
+    render_bridge_exante,
+    render_bridge_exante_values,
+)
 
 
 def _event_panel() -> pd.DataFrame:
@@ -125,3 +128,10 @@ def test_bridge_exante_table_contains_all_three_economic_margins() -> None:
     assert "Route use after the lagged-capital threshold" in rendered
     assert "Change from the prior 30 calendar days" in rendered
     assert "Prior-day weak-leg depth and route allocation" in rendered
+    values = render_bridge_exante_values(results)
+    assert r"\newcommand{\BridgeExanteEvents}{100}" in values
+    assert r"\newcommand{\BridgeExanteAdoptionThirty}{60.0\%}" in values
+    assert (
+        r"\newcommand{\BridgeExanteChangeThirty}"
+        r"{$\mathord{+8.00}$ pp}"
+    ) in values
