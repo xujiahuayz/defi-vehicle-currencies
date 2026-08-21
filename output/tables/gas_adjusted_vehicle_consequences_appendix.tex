@@ -1,0 +1,20 @@
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xrrrrrr@{}}
+\toprule
+\multicolumn{7}{@{}l}{\textit{Panel A. Held-out prediction accuracy}} \\
+Sample & Test routes & Actual gas & MAE & MAPE [\%] & Legs-only MAPE [\%] & IQR coverage [\%] \\
+\midrule
+All routes & 7,520 & 290,864 & 49,762 & 17.4 & 34.5 & 45.0 \\
+Two-leg routes & 4,860 & 289,920 & 49,651 & 17.4 & 35.1 & 46.0 \\
+\addlinespace
+\multicolumn{7}{@{}l}{\textit{Panel B. Path-specific interquartile gas bounds}} \\
+ & \multicolumn{3}{c}{Lower-output route [\%]} & \multicolumn{3}{c}{Weighted shortfall [bp]} \\
+\cmidrule(lr){2-4}\cmidrule(l){5-7}
+Input value & Central & Favorable & Unfavorable & Central & Favorable & Unfavorable \\
+\midrule
+All routes & 13.7 & 6.2 & 30.1 & 7.65 & 6.31 & 11.85 \\
+\$100--999 & 14.7 & 4.2 & 41.7 & 22.01 & 12.01 & 104.67 \\
+\$1,000--9,999 & 13.0 & 6.5 & 24.1 & 9.51 & 6.46 & 18.48 \\
+\$10,000--99,999 & 13.1 & 10.5 & 16.5 & 9.21 & 8.04 & 10.83 \\
+\$100,000 and above & 9.7 & 9.7 & 10.8 & 3.77 & 3.68 & 3.89 \\
+\bottomrule
+\end{tabularx}
