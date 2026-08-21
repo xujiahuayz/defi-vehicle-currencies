@@ -146,7 +146,7 @@
 \end{columns}
 \vspace{0.02cm}
 {\large Capital builds into first use, then partly unwinds.\par}
-\decknote{Equal-event series for \BridgeAdoptionCapitalEvents{} pair events whose supported stablecoin is first used 7 to 119 days after persistent support. Relative to the matched WETH bridge, the changes are \BridgeAdoptionCapitalMatchedPreCoef{} before and \BridgeAdoptionCapitalMatchedPostCoef{} after first use. Capital is lagged one calendar day; shading gives 95\% confidence intervals clustered by pair and adoption date. First use is an endogenous event date, so the post-use decline need not be withdrawal caused by the trade.}
+\decknote{Equal-event series for \BridgeAdoptionCapitalEvents{} pair events whose supported stablecoin is first used 7 to 119 days after persistent support. Relative to the matched WETH bridge, the changes are \BridgeAdoptionCapitalMatchedPreCoef{} before and \BridgeAdoptionCapitalMatchedPostCoef{} after first use. \BridgePoolMarginContinuingCapitalShare{} of first-use capital lies in pools active one week earlier, so the pre-use rise is mainly deeper existing bridges. Capital is lagged one day; intervals cluster by pair and adoption date. First use is endogenous, so the post-use decline need not be caused by the trade.}
 \end{frame}
 
 % EVIDENCE-SOURCES: output/exhibits/exact_vehicle_frontier_monthly.jsonl

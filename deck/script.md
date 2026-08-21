@@ -46,13 +46,13 @@ We collected 475 million pool-level swaps, across 2,798 calendar dates, from Nov
 
 Nine Ethereum deployments: Uniswap v1, v2, v3 and v4; SushiSwap v2 and v3; Curve; Balancer; and Fluid.
 
-V1 is in the same route panel now. The old pull kept the exchange address but not the token behind it. We went back to the exchange registry and recovered the exact token address and symbol for all 1,744 v1 exchanges in the daily data.
+V1 is in the same route panel. Its events name the exchange contract. The exchange registry gives us the token behind that contract, so all 1,744 v1 exchanges in the daily data now have an exact token address and symbol.
 
 Within a transaction, the shared hash and matching ETH amount link the token-to-ETH and ETH-to-token legs. So the early forced-ETH routes and the later market routes now sit in one continuous panel. We still look at v1 separately when the protocol rule itself is the question.
 
-One caveat before the results: the pool route we observe can begin after the user's broader instruction begins.
+What exactly do we observe? The connected sequence of pool trades. That sequence can begin after the user's broader instruction begins.
 
-How representative is this? Broad, but not a census. These nine deployments span the main AMM designs—constant product, concentrated liquidity, stable swap, weighted pools, the v4 singleton, and Fluid's integrated liquidity. Other Ethereum venues remain outside the panel. So the route evidence covers a large and varied part of the market; any venue-volume shares I show are shares of the observed sources, not the whole Ethereum DEX market.
+How representative is this? Nine deployments spanning the main AMM designs—constant product, concentrated liquidity, stable swap, weighted pools, the v4 singleton, and Fluid's integrated liquidity. Other Ethereum venues remain outside the panel. So any venue-volume shares I show are shares of these observed sources.
 
 ## Slide 4. Inside the pools, USDT links USDC to USDe
 
@@ -198,9 +198,9 @@ Human version: liquidity builds, then the first routed trade appears.
 
 After first use, stablecoin bridge capital falls by 0.44 log points over the next week, or 0.46 relative to WETH. So the picture is a build-up into first use and then a partial unwind.
 
-Two readings remain possible. Traders may wait until the route is deep enough. Or providers may anticipate demand and build before it appears in our route data. The sequence fits both, so I keep both on the table.
+The appendix split tells us where that capital comes from. About 92.5 percent is in pools already active one week earlier. So this is mainly an existing bridge getting deeper, with a smaller contribution from newly active pools.
 
-What about that decline? Providers may be reallocating after the route becomes usable. Temporary incentives or short-lived expected demand could also do it. And first use is an endogenous event date: it can naturally line up with a local peak in capital. We do not observe provider motives here, so I would not tell the stronger “safe, then withdraw” story from this figure alone.
+What it does not tell us is why. Providers may anticipate demand; traders may wait for depth. And first use is an endogenous date, so it can line up with a local peak. We observe the timing and the pool margin. We do not observe provider motives.
 
 The useful takeaway is narrower. Vehicle competition moves continuously with depth, and capital is concentrated around the moment the new route first carries flow.
 One last rival: perhaps the observed vehicle survives only because the router missed a better price.
