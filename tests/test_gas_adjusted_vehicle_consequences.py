@@ -6,7 +6,11 @@ from scripts.analyze.run_gas_adjusted_vehicle_consequences import (
     consequence_panel,
     consequence_rows,
 )
-from scripts.tabulate.render_gas_adjusted_vehicle_consequences import render
+from scripts.tabulate.render_gas_adjusted_vehicle_consequences import (
+    render,
+    render_appendix,
+    render_macros,
+)
 
 
 def _panel() -> pd.DataFrame:
@@ -59,5 +63,39 @@ def test_consequence_rows_cover_sizes_and_bounds() -> None:
         "usd_100k_plus",
     }
     rendered = render(rows)
-    assert "Panel A. Share using the lower-output vehicle path" in rendered
-    assert "Panel B. Input-value-weighted output shortfall" in rendered
+    assert "Lower-output route" in rendered
+    assert "Net of gas" in rendered
+    assert "Favorable" not in rendered
+    assert "Unfavorable" not in rendered
+
+
+def test_appendix_separates_validation_and_bounds() -> None:
+    rows = consequence_rows(_panel())
+    support = pd.DataFrame(
+        [
+            {
+                "record_type": "held_out_gas_validation",
+                "sample": sample,
+                "test_transactions": 100,
+                "median_actual_gas_units": 300_000,
+                "median_absolute_error_gas_units": 50_000,
+                "median_absolute_percentage_error": 0.16,
+                "legs_only_median_absolute_percentage_error": 0.32,
+                "interquartile_interval_coverage": 0.45,
+            }
+            for sample in ("all_routes", "exact_two_leg_routes")
+        ]
+    )
+    rendered = render_appendix(rows, support)
+    assert "Held-out prediction accuracy" in rendered
+    assert "Path-specific interquartile gas bounds" in rendered
+    assert "Favorable" in rendered
+    assert "Unfavorable" in rendered
+
+
+def test_value_macros_cover_overall_and_small_routes() -> None:
+    rendered = render_macros(consequence_rows(_panel()))
+    assert r"\GasConsequenceOverallNetLowerShare" in rendered
+    assert r"\GasConsequenceOverallNetShortfallBp" in rendered
+    assert r"\GasConsequenceSmallNetLowerShare" in rendered
+    assert r"\GasConsequenceSmallNetShortfallBp" in rendered
