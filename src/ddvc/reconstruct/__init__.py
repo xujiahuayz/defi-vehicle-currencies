@@ -45,6 +45,7 @@ from datetime import datetime, timezone
 from functools import cache
 import gzip
 from pathlib import Path
+from typing import Callable
 
 import pandas as pd
 import pyarrow.parquet as pq
@@ -794,8 +795,14 @@ def reconstruct_day_with_quality(
     dexes: list[str],
     *,
     data_root: Path | None = None,
+    leg_loader: Callable[..., list[dict]] = load_legs,
 ) -> tuple[pd.DataFrame, dict[str, object]]:
-    """Build one canonical route day and expose every exclusion before publication."""
+    """Build one route day and expose every exclusion before publication.
+
+    ``leg_loader`` is injectable so bounded validation exercises can rerun the
+    same reconstruction engine against independently corrected source rows.
+    The canonical build keeps the provider-row loader as its default.
+    """
     active = active_route_sources(day, dexes)
     quality = _empty_quality(day, active)
     input_bytes, input_mtime_ns, unavailable = route_input_state(
@@ -810,7 +817,7 @@ def reconstruct_day_with_quality(
     all_legs: list[dict] = []
     for dex in active:
         all_legs.extend(
-            load_legs(
+            leg_loader(
                 dex,
                 day,
                 data_root=data_root,

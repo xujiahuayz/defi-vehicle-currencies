@@ -84,7 +84,8 @@ Every non-self-returning token sequence retained by the connected-transaction ru
 Transactions and contract-state changes are publicly observable \citep{Schar2021DeFi}. Reconstructing a route still requires matching pool events, venues, and token units. This procedure identifies the executed route and its calling contract, while the executor address does not establish which frontend or software formed the quote \citep{XiMoallemi2026Routing}. The results are therefore attributed to executed routes, not to a particular routing service.
 % docs/research/router-identification.md
 
-Table~\ref{tab:panel} reports the resulting panel coverage and route frequencies. Appendix~\ref{app:route-construction} gives the route-construction checks, while Appendix~\ref{app:quoters} validates the pretrade pricing models used for the counterfactual comparisons.
+Table~\ref{tab:panel} reports the resulting panel coverage and route frequencies. Appendix~\ref{app:route-construction} gives the route-construction checks, while Appendix~\ref{app:quoters} validates the pretrade pricing models used for the counterfactual comparisons. Appendix Table~\ref{tab:app:route-validation} applies independently verified Ethereum-log corrections on the full days bound by the current V2 and V3 event releases and measures the resulting changes in routes and stablecoin shares.
+% output/exhibits/route_reconstruction_exact_chain_validation.jsonl
 
 \begin{table}[htbp]
 \centering
