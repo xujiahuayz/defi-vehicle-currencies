@@ -62,7 +62,6 @@ analysis exhibit that supplies each value.
 | `build_v3_v4_lp_protocol_deck_values.py` | V3/V4 same-candidate-date LP protocol-contrast macros |
 | `build_v3_v4_lp_flow_protocol_deck_values.py` | V3/V4 same-candidate-date LP-flow protocol-contrast macros |
 | `build_v3_v4_tvl_protocol_deck_values.py` | V3/V4 same-candidate-date reported-TVL protocol-contrast macros |
-| `build_bridge_liquidity_feedback_deck_values.py` | local bridge-depth feedback macros |
 | `build_stable_stress_event_deck_values.py` | USDC/SVB stable-identity stress-screen macros |
 | `build_vehicle_formation_deck_values.py` | exploratory market-formation macros |
 | `build_vehicle_market_size_deck_values.py` | exploratory market-size vehicle-use macros |

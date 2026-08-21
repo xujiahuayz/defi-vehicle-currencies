@@ -65,7 +65,7 @@ evidence into four states:
   stablecoin-versus-WETH price contest, and pool-capital formation.
 - **Rebuild before use:** entry persistence, whose current follow-up window
   includes the entry day, and dynamic route-use/depth forecasts, which need
-  initial-state controls and placebo leads.
+  initial-state controls and symmetric time-reversed benchmarks.
 - **Test next on Studio:** joint price--depth--incumbency choice, the cost of
   retaining a dominated vehicle, and then a gated shock or LP-risk analysis.
 

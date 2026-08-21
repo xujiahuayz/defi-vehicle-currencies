@@ -55,9 +55,9 @@ for a later paper.
    route becomes comparably deep and cheaper.
 4. **Liquidity formation.** Retain the continuous weak-leg-depth relation and
    pool-capital path. Strengthen the bidirectional route-use/depth forecasts with
-   bridge and date effects, flexible initial states, exact horizons, placebo
-   leads, and alternative weights. Describe these as equilibrium relations
-   unless a design supplies external variation.
+   bridge and date effects, flexible initial states, exact horizons,
+   time-reversed benchmarks, and alternative weights. Describe these as
+   equilibrium relations unless a design supplies external variation.
 5. **Financial consequence.** For each contestable route, measure the gross
    output lost or gained relative to the feasible rival vehicle. Report economic
    magnitudes by pair age, incumbent identity, trade size, and challenger depth,
@@ -79,7 +79,7 @@ estimate; it does not require another raw-data fetch.
 |---|---|---|---|
 | 1 | Correct post-entry persistence | Existing entry and route panels | Entry day excluded; later trading explicit; stable across pair and activity weights |
 | 2 | Joint price, depth, and incumbency choice | Existing exact-price, bridge-depth, and entry panels on Studio | Same opportunity and pre-trade state; interpretable magnitudes; pair/date effects |
-| 3 | Dynamic route-use and bridge-depth relation | Existing route-share and capital panels | No mechanical coupling; initial states, placebo leads, and alternative horizons pass |
+| 3 | Dynamic route-use and bridge-depth relation | Existing route-share and capital panels | No mechanical coupling; initial states, time-reversed benchmarks, and alternative horizons pass |
 | 4 | Cost of retaining the incumbent | Existing exact-price panel | Same-size rival path; route- and value-weighted economic magnitude; gas bounds |
 | 5 | USDC shock exposure | Existing routes, prices, and capital; targeted refetch only if a field is missing | Pair-level exposure, pre-trends, comparison group, and flow restrictions |
 | 6 | LP risk and supply | Existing prices, volumes, fees, and capital if coverage aligns | Within-opportunity divergence-risk or volatility measure adds information beyond demand and fees |

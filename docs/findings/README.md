@@ -108,7 +108,8 @@ stable-shortfall x V4 flash-accounting LP repositioning, and local
 bridge-liquidity dominance, entry-date local bridge-depth choice screens, plus
 first stable-bridge establishment, continuous stable-versus-WETH bottleneck depth,
 depth-conditioned route reallocation, and adoption timing after persistent support, plus
-stable-specific dynamic local bridge-depth feedback and the split between newly active and
+stable-specific conditional-level bridge-depth predictability, exact-horizon
+time-reversal checks, and the split between newly active and
 continuing pools before first use. The deck
 also reports an exact endpoint-direction decomposition and the concentration of
 the stable-to-stable routed-value channel in USDT. A monthly exact-state frontier
@@ -119,6 +120,12 @@ while opening other named vehicles and the direct path raises that incidence to
 also carries the traditional-FX route analogy as motivation. These layers
 strengthen the
 mechanism story but do not change the registered confirmatory claim set.
+
+Two bridge-depth extensions remain open. A future run should admit zero-depth
+exits at the end of each horizon, and an opportunity-level robustness should
+absorb pair-date-scope effects alongside candidate-bridge effects. The current
+conditional-level estimates apply only to continuing positive-depth bridges and
+retain bridge and calendar-date effects.
 
 Routing maturation beyond the exact three-venue frontier, all-in direct-cost dominance, the joint V2/V3
 capital-flow family, side-specific LP inventory, and full V4

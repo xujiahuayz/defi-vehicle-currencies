@@ -1,14 +1,35 @@
-\begin{tabularx}{\linewidth}{@{}>{\hsize=1.65\hsize\raggedright\arraybackslash}X*{2}{>{\hsize=0.675\hsize\centering\arraybackslash}X}@{}}
+\begin{tabularx}{\linewidth}{@{}>{\hsize=1.72\hsize\raggedright\arraybackslash}X*{3}{>{\hsize=0.76\hsize\centering\arraybackslash}X}@{}}
 \toprule
-Feedback equation & 30 days & 120 days \\
+Conditional level equation & 30 days & 60 days & 120 days \\
 \midrule
-$R_{b,t}\rightarrow\Delta B_{b,t+h}$, pooled [log points] & \begin{tabular}{@{}c@{}}$+0.020^{***}$\\$(0.005)$\end{tabular} & \begin{tabular}{@{}c@{}}$+0.097^{***}$\\$(0.013)$\end{tabular} \\
-$R_{b,t}\rightarrow\Delta B_{b,t+h}$, stable [log points] & \begin{tabular}{@{}c@{}}$+0.024^{***}$\\$(0.005)$\end{tabular} & \begin{tabular}{@{}c@{}}$+0.115^{***}$\\$(0.012)$\end{tabular} \\
-$B_{b,t}\rightarrow\Delta R_{b,t+h}$, pooled [pp] & \begin{tabular}{@{}c@{}}$+1.262^{***}$\\$(0.189)$\end{tabular} & \begin{tabular}{@{}c@{}}$+1.595^{***}$\\$(0.271)$\end{tabular} \\
-$B_{b,t}\rightarrow\Delta R_{b,t+h}$, stable [pp] & \begin{tabular}{@{}c@{}}$+1.773^{***}$\\$(0.228)$\end{tabular} & \begin{tabular}{@{}c@{}}$+2.463^{***}$\\$(0.292)$\end{tabular} \\
+\multicolumn{4}{@{}l}{\textit{Panel A: Forward levels, route-activity weights}} \\
+$R_{b,t}\rightarrow B_{b,t+h}$, pooled [log points] & \begin{tabular}{@{}c@{}}$-0.007^{*}$\\$(0.004)$\end{tabular} & \begin{tabular}{@{}c@{}}$-0.007$\\$(0.006)$\end{tabular} & \begin{tabular}{@{}c@{}}$+0.010$\\$(0.014)$\end{tabular} \\
+$R_{b,t}\rightarrow B_{b,t+h}$, stablecoin [log points] & \begin{tabular}{@{}c@{}}$-0.002$\\$(0.007)$\end{tabular} & \begin{tabular}{@{}c@{}}$-0.002$\\$(0.005)$\end{tabular} & \begin{tabular}{@{}c@{}}$+0.017$\\$(0.012)$\end{tabular} \\
+$B_{b,t}\rightarrow R_{b,t+h}$, pooled [pp] & \begin{tabular}{@{}c@{}}$+0.728^{***}$\\$(0.239)$\end{tabular} & \begin{tabular}{@{}c@{}}$+1.665^{***}$\\$(0.463)$\end{tabular} & \begin{tabular}{@{}c@{}}$+3.281^{**}$\\$(1.315)$\end{tabular} \\
+$B_{b,t}\rightarrow R_{b,t+h}$, stablecoin [pp] & \begin{tabular}{@{}c@{}}$+1.823^{*}$\\$(0.938)$\end{tabular} & \begin{tabular}{@{}c@{}}$+4.837^{***}$\\$(1.718)$\end{tabular} & \begin{tabular}{@{}c@{}}$+4.916^{**}$\\$(2.099)$\end{tabular} \\
+\addlinespace
+\multicolumn{4}{@{}l}{\textit{Panel B: Time-reversed benchmark, route-activity weights}} \\
+$R_{b,t+h}\rightarrow B_{b,t}$, pooled [log points] & \begin{tabular}{@{}c@{}}$+0.012^{***}$\\$(0.004)$\end{tabular} & \begin{tabular}{@{}c@{}}$+0.029^{***}$\\$(0.009)$\end{tabular} & \begin{tabular}{@{}c@{}}$+0.026^{**}$\\$(0.011)$\end{tabular} \\
+$R_{b,t+h}\rightarrow B_{b,t}$, stablecoin [log points] & \begin{tabular}{@{}c@{}}$+0.015^{**}$\\$(0.006)$\end{tabular} & \begin{tabular}{@{}c@{}}$+0.032^{***}$\\$(0.008)$\end{tabular} & \begin{tabular}{@{}c@{}}$+0.036^{***}$\\$(0.010)$\end{tabular} \\
+$B_{b,t+h}\rightarrow R_{b,t}$, pooled [pp] & \begin{tabular}{@{}c@{}}$-0.483$\\$(0.323)$\end{tabular} & \begin{tabular}{@{}c@{}}$-0.339$\\$(0.343)$\end{tabular} & \begin{tabular}{@{}c@{}}$+1.114$\\$(1.600)$\end{tabular} \\
+$B_{b,t+h}\rightarrow R_{b,t}$, stablecoin [pp] & \begin{tabular}{@{}c@{}}$-0.599$\\$(1.073)$\end{tabular} & \begin{tabular}{@{}c@{}}$+0.065$\\$(0.806)$\end{tabular} & \begin{tabular}{@{}c@{}}$+2.930$\\$(1.990)$\end{tabular} \\
+\addlinespace
+\multicolumn{4}{@{}l}{\textit{Panel C: Forward levels, equal pair-date-scope weights}} \\
+$R_{b,t}\rightarrow B_{b,t+h}$, pooled [log points] & \begin{tabular}{@{}c@{}}$+0.000$\\$(0.001)$\end{tabular} & \begin{tabular}{@{}c@{}}$-0.000$\\$(0.002)$\end{tabular} & \begin{tabular}{@{}c@{}}$+0.006$\\$(0.005)$\end{tabular} \\
+$R_{b,t}\rightarrow B_{b,t+h}$, stablecoin [log points] & \begin{tabular}{@{}c@{}}$+0.002$\\$(0.002)$\end{tabular} & \begin{tabular}{@{}c@{}}$+0.004$\\$(0.003)$\end{tabular} & \begin{tabular}{@{}c@{}}$+0.015^{***}$\\$(0.006)$\end{tabular} \\
+$B_{b,t}\rightarrow R_{b,t+h}$, pooled [pp] & \begin{tabular}{@{}c@{}}$+0.841$\\$(0.565)$\end{tabular} & \begin{tabular}{@{}c@{}}$+1.274$\\$(0.818)$\end{tabular} & \begin{tabular}{@{}c@{}}$+0.248$\\$(1.086)$\end{tabular} \\
+$B_{b,t}\rightarrow R_{b,t+h}$, stablecoin [pp] & \begin{tabular}{@{}c@{}}$+1.117$\\$(0.712)$\end{tabular} & \begin{tabular}{@{}c@{}}$+2.107^{**}$\\$(1.068)$\end{tabular} & \begin{tabular}{@{}c@{}}$+1.577$\\$(1.165)$\end{tabular} \\
+\addlinespace
+\multicolumn{4}{@{}l}{\textit{Panel D: Time-reversed benchmark, equal pair-date-scope weights}} \\
+$R_{b,t+h}\rightarrow B_{b,t}$, pooled [log points] & \begin{tabular}{@{}c@{}}$+0.003^{*}$\\$(0.002)$\end{tabular} & \begin{tabular}{@{}c@{}}$+0.006^{*}$\\$(0.003)$\end{tabular} & \begin{tabular}{@{}c@{}}$-0.001$\\$(0.004)$\end{tabular} \\
+$R_{b,t+h}\rightarrow B_{b,t}$, stablecoin [log points] & \begin{tabular}{@{}c@{}}$+0.003$\\$(0.002)$\end{tabular} & \begin{tabular}{@{}c@{}}$+0.008^{**}$\\$(0.004)$\end{tabular} & \begin{tabular}{@{}c@{}}$+0.004$\\$(0.005)$\end{tabular} \\
+$B_{b,t+h}\rightarrow R_{b,t}$, pooled [pp] & \begin{tabular}{@{}c@{}}$+0.646$\\$(0.604)$\end{tabular} & \begin{tabular}{@{}c@{}}$+0.320$\\$(0.865)$\end{tabular} & \begin{tabular}{@{}c@{}}$+1.015$\\$(1.185)$\end{tabular} \\
+$B_{b,t+h}\rightarrow R_{b,t}$, stablecoin [pp] & \begin{tabular}{@{}c@{}}$+1.431^{**}$\\$(0.629)$\end{tabular} & \begin{tabular}{@{}c@{}}$+1.715^{*}$\\$(1.020)$\end{tabular} & \begin{tabular}{@{}c@{}}$+3.592^{***}$\\$(0.990)$\end{tabular} \\
 \midrule
-Rows / pairs / dates & 51,240 / 503 / 303 & 18,304 / 340 / 123 \\
-Asset and date effects & \multicolumn{2}{r}{Yes} \\
-Two-way clustered covariance & \multicolumn{2}{r}{Pair and date} \\
+Pooled rows / pair clusters / dates & 51,204 / 502 / 303 & 39,964 / 435 / 243 & 18,303 / 339 / 123 \\
+Stablecoin rows / pair clusters / dates & 30,181 / 483 / 303 & 23,389 / 421 / 243 & 10,608 / 326 / 123 \\
+Bridge and date effects & \multicolumn{3}{r}{Yes} \\
+Initial outcome level & \multicolumn{3}{r}{Cubic} \\
+Two-way clustered covariance & \multicolumn{3}{r}{Pair and date} \\
 \bottomrule
 \end{tabularx}

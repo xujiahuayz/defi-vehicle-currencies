@@ -286,6 +286,9 @@ def _path_fields(prefix: str, quote: PathQuote | None) -> dict[str, object]:
     return {
         f"{prefix}_public_out": quote.amount_out if quote is not None else None,
         f"{prefix}_public_vehicle": quote.vehicle if quote is not None else None,
+        f"{prefix}_public_max_leg_price_impact": (
+            max(quote.price_impacts) if quote is not None else None
+        ),
         f"{prefix}_public_venues": (
             "|".join(quote.venues) if quote is not None else None
         ),

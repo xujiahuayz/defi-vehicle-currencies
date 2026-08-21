@@ -5,6 +5,7 @@ import math
 import pandas as pd
 
 from scripts.analyze.run_exact_vehicle_frontier import (
+    _path_fields,
     _clustered_mean,
     _holm,
     best_family_path,
@@ -13,7 +14,7 @@ from scripts.analyze.run_exact_vehicle_frontier import (
     summarize_support,
     vehicle_class,
 )
-from ddvc.pricing.path_frontier import LegQuote
+from ddvc.pricing.path_frontier import LegQuote, PathQuote
 
 
 def test_monthly_calendar_is_bounded_and_complete() -> None:
@@ -55,6 +56,21 @@ def test_family_quote_is_independent_of_the_executed_vehicle() -> None:
     assert native is not None and native.vehicle == "native"
     assert stable is not None and stable.vehicle == "stable2"
     assert stable.amount_out == 92.0
+
+
+def test_family_quote_fields_include_maximum_leg_price_impact() -> None:
+    quote = PathQuote(
+        amount_out=95.0,
+        vehicle="stable",
+        venues=("uniswap_v2", "uniswap_v3"),
+        pools=("pool-a", "pool-b"),
+        price_impacts=(0.01, 0.035),
+    )
+    fields = _path_fields("stable", quote)
+    assert fields["stable_public_max_leg_price_impact"] == 0.035
+    assert _path_fields("stable", None)[
+        "stable_public_max_leg_price_impact"
+    ] is None
 
 
 def test_holm_preserves_missing_inference_and_adjusts_finite_tests() -> None:

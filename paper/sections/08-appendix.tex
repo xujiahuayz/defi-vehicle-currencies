@@ -663,7 +663,7 @@ Table~\ref{tab:router-windows} compares route structure before and after three p
 
 \subsection{Capital composition and later adjustment}
 
-Table~\ref{tab:bridge-pool-margins} separates newly active pools from capital growth in pools already supporting the route. Newly active pools hold \BridgePoolMarginNewCapitalShare{} of stablecoin weak-leg capital on the first-use day; \BridgePoolMarginContinuingCapitalShare{} lies in pools active one week earlier. Table~\ref{tab:bridge-feedback} follows the same local bridge across exact 30- and 120-day horizons. Current route share predicts later depth growth, and current depth predicts later route-share growth. Both directions remain descriptive because expected use and capital can adjust together.
+Table~\ref{tab:bridge-pool-margins} separates newly active pools from capital growth in pools already supporting the route. Newly active pools hold \BridgePoolMarginNewCapitalShare{} of stablecoin weak-leg capital on the first-use day; \BridgePoolMarginContinuingCapitalShare{} lies in pools active one week earlier. Table~\ref{tab:bridge-feedback} follows the same local bridge across exact 30-, 60-, and 120-day horizons. Under route-activity weights, current depth is positively associated with later route share. Equal pair-date-scope weights yield smaller forward estimates. The time-reversed benchmarks are also positive in some specifications, especially under equal weights. The table therefore records persistent comovement; provider response to route use remains unresolved.
 
 \begin{table}[htbp]
 \caption{Pool activation and capital growth before stablecoin route use}
@@ -677,13 +677,13 @@ Table~\ref{tab:bridge-pool-margins} separates newly active pools from capital gr
 
 \begin{table}[tbp]
 \centering
-\caption{Route use and subsequent local bridge depth}
+\caption{Route use and local bridge depth at later horizons}
 \label{tab:bridge-feedback}
 {\scriptsize
 \renewcommand{\arraystretch}{0.90}
 \input{../output/tables/bridge_liquidity_feedback.tex}
 }
-\exhibitnote{For source--vehicle--destination bridge \(b\), route use is the vehicle share of five-vehicle route activity and bridge depth is \(\log(1+\min\{K_{iv,t},K_{vj,t}\})\). Changes compare exact future dates with the origin date. Route-use rows report later depth growth for 10 pp more current route share. Bridge-depth rows report later route-share growth for one log point more current depth. Regressions absorb vehicle and origin-date effects, control for the other current state, weight by route count, and cluster by pair and date. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
+\exhibitnote{For source--vehicle--destination bridge \(b\), \(R_{b,t}\) is one vehicle's share of route activity among WETH, WBTC, DAI, USDC, and USDT, and \(B_{b,t}=\log(1+\min\{K_{iv,t},K_{vj,t}\})\) is weak-leg deposited capital. Stablecoin rows retain DAI, USDC, and USDT separately. The sample draws on January--June 2024 and January--June 2026 and retains continuing bridges with positive deposited capital and positive five-vehicle route activity at both exact dates. Forward panels regress the exact future level on the dated predictor, a cubic in the current outcome level, bridge effects, and date effects. Time-reversed panels use the end-of-window predictor for the earlier outcome and a cubic in the end-of-window outcome level. Route-activity weights are measured on the predictor date; equal weights make each pair-date-scope sum to one. Route-use rows report the coefficient for 10 pp more route share in natural-log points; bridge-depth rows report the coefficient for one natural-log point more depth in pp. Standard errors are two-way clustered by pair and date. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively. The p-values are unadjusted for the displayed family of horizons, samples, timings, and weights.}
 \end{table}
 
 Table~\ref{tab:lp-behavior-regressions} extends the description to provider activity. We use the outcomes to locate adjustment and keep them supplementary because demand and capital respond to common shocks.
