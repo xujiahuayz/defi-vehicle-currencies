@@ -4,13 +4,13 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from ddvc.pricing.tick_replay import initialization_root
+from scripts.analyze.run_contestable_vehicle_choice import DAI
 from scripts.analyze.run_entry_day_vehicle_choice import (
-    DAI,
     _fit_entry_model,
     load_material_entries,
     regression_results,
 )
-from ddvc.pricing.tick_replay import initialization_root
 
 
 def _support_row(

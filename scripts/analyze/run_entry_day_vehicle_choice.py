@@ -45,6 +45,7 @@ import numpy as np
 import pandas as pd
 
 from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered
+from ddvc.analysis.transaction_frontier import RealisedPath
 from ddvc.paths import OUTPUT_DIR, PRIMARY_REPO_ROOT, REPO_ROOT, SHARED_RUNTIME_DIR
 from ddvc.pricing.tick_replay import TickReplayEvent, TickReplayState, load_tick_day_events
 from ddvc.pricing.v2_replay import V2ReplayDay, load_v2_replay_day
@@ -52,13 +53,10 @@ from ddvc.realised import LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
 from ddvc.runtime import exclusive_job
 from ddvc.tables import write_exhibit, write_panel
 from scripts.analyze.run_contestable_vehicle_choice import (
-    CAPITAL_STATUS,
-    DAI,
     MAX_LINEAR_ADVANTAGE_BPS,
     QUOTED_STABLES,
     QUOTED_VEHICLES,
     QUOTED_LEG_MAX_PRICE_IMPACT,
-    WETH,
     attach_v2_bridge_capital,
     load_lagged_v2_bridge_capital,
 )
@@ -256,8 +254,6 @@ def entry_route_targets(
             reasons["nonsequential_chain_order"] += 1
             continue
         try:
-            from ddvc.analysis.transaction_frontier import RealisedPath
-
             realised = RealisedPath(
                 token_in=str(row.src).lower(),
                 token_out=str(row.tgt).lower(),
