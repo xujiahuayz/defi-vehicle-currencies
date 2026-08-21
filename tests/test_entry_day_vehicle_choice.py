@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 from ddvc.pricing.tick_replay import initialization_root
-from scripts.analyze.run_contestable_vehicle_choice import DAI
+from scripts.analyze.run_contestable_vehicle_choice import DAI, attach_v2_bridge_capital
 from scripts.analyze.run_entry_day_vehicle_choice import (
     _fit_entry_model,
     load_material_entries,
@@ -107,6 +107,39 @@ def test_tick_initializations_follow_the_selected_raw_root(tmp_path) -> None:
     assert initialization_root(raw_root) == (
         tmp_path / "raw" / "ethereum" / "tick_initializations" / "daily"
     )
+
+
+def test_capital_attachment_does_not_require_incumbency_fields() -> None:
+    frontier = pd.DataFrame(
+        [
+            {
+                "day": "20240115",
+                "token_in": "src",
+                "token_out": "tgt",
+                "stable_public_vehicle": "stable",
+                "native_public_vehicle": "native",
+                "entry_stable": 1.0,
+            }
+        ]
+    )
+    capital = pd.DataFrame(
+        [
+            {
+                "day": "20240115",
+                "token_in": "src",
+                "token_out": "tgt",
+                "stable_public_vehicle": "stable",
+                "native_public_vehicle": "native",
+                "stable_v2_bridge_capital_usd": 40.0,
+                "native_v2_bridge_capital_usd": 60.0,
+            }
+        ]
+    )
+
+    result = attach_v2_bridge_capital(frontier, capital)
+
+    assert result["stable_v2_capital_share"].item() == pytest.approx(0.4)
+    assert "incumbent_v2_capital_share" not in result
 
 
 def _synthetic_panel() -> pd.DataFrame:
