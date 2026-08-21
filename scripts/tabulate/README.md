@@ -7,32 +7,21 @@ Captions, labels, placement, and interpretation stay in the paper/deck source.
 
 | Owner | Output | Manuscript label |
 |---|---|---|
-| `render_dominance_rotation.py` | `dominance_rotation.tex/.pdf` | `tab:rotation` |
+| `render_dominance_rotation.py` | `dominance_rotation.tex/.pdf` | `tab:app:rotation` |
 | `render_disconnected_component_boundary.py` | `disconnected_component_boundary.tex/.pdf` and generated values | `tab:app:disconnected` |
 | `render_pair_composition.py` | `pair_composition.tex/.pdf` | `tab:pair-composition` |
+| `render_entry_vehicle_persistence.py` | `entry_vehicle_persistence.tex/.pdf`, `entry_vehicle_persistence_robustness.tex/.pdf` | `tab:entry-persistence`, `tab:app:entry-persistence-robustness` |
+| `render_contestable_vehicle_choice.py` | `contestable_vehicle_choice.tex/.pdf` | `tab:contestable-vehicle-choice` |
 | `render_usdt_transition.py` | `usdt_transition.tex/.pdf` | `tab:usdt-transition` |
 | `render_within_day_ladder.py` | `within_day_ladder.tex/.pdf` | `tab:within-day-ladder` |
-| `render_vehicle_dominance_determinants.py` | `vehicle_dominance_determinants.tex/.pdf` | `tab:vehicle-dominance-determinants` |
-| `render_routing_technology_windows.py` | `routing_technology_windows.tex/.pdf` | `tab:router-windows` |
 | `render_venue_technology_rival.py` | `venue_technology_rival.tex/.pdf` | `tab:venue-technology` |
-| `render_vehicle_formation_regressions.py` | `vehicle_formation_regressions.tex/.pdf` | `tab:formation-regressions` |
 | `render_vehicle_mechanism_regressions.py` | `vehicle_mechanism_regressions.tex/.pdf` | `tab:vehicle-mechanism-regressions` |
 | `render_network_position.py` | `network_position.tex/.pdf` and generated deck values | `tab:network-position` |
 | `render_endpoint_direction.py` | `endpoint_direction.tex/.pdf` | `tab:app:endpoint-direction` |
 | `build_bridge_liquidity_deck_values.py` | `bridge_establishment_regressions.tex`, `bridge_adoption_pool_margins.tex` | `tab:bridge-establishment`, `tab:bridge-pool-margins` |
 | `render_bridge_liquidity_feedback.py` | `bridge_liquidity_feedback.tex/.pdf` | `tab:bridge-feedback` |
-| `render_liquidity_provision_regressions.py` | `liquidity_provision_regressions.tex/.pdf` | `tab:lp-behavior-regressions` |
-| `render_v4_flash_lp_mechanism.py` | `v4_flash_lp_mechanism.tex/.pdf` | `tab:v4-flash-lp` |
-| `render_v4_lp_origin_timing.py` | `v4_lp_origin_timing.tex/.pdf` | `tab:app:v4-origin-timing` |
-| `render_v4_lp_volatility_state.py` | `v4_lp_volatility_state.tex/.pdf` | `tab:v4-lp-volatility-state` |
-| `render_v3_v4_internal_routing_participation.py` | `v3_v4_internal_routing_participation.tex/.pdf` | `tab:app:v3-v4-routing-participation` |
-| `render_v4_flash_gap_interactions.py` | `v4_flash_gap_interactions.tex/.pdf` | `tab:v4-flash-gap` |
-| `render_v4_flash_gap_flow_interactions.py` | `v4_flash_gap_flow_interactions.tex/.pdf` | `tab:v4-flash-gap-flow` |
-| `render_v3_v4_lp_protocol_contrast.py` | `v3_v4_lp_protocol_contrast.tex/.pdf` | `tab:v3-v4-lp-protocol` |
-| `render_v3_v4_lp_flow_protocol_contrast.py` | `v3_v4_lp_flow_protocol_contrast.tex/.pdf` | `tab:v3-v4-lp-flow-protocol` |
-| `render_v3_v4_tvl_protocol_contrast.py` | `v3_v4_tvl_protocol_contrast.tex/.pdf` | `tab:v3-v4-tvl-protocol` |
-| `render_v3_v4_lp_summary.py` | `v3_v4_lp_summary.tex/.pdf` | `tab:v3-v4-lp-summary` |
-| `render_exact_vehicle_frontier.py` | `exact_vehicle_frontier.tex/.pdf` and generated values | `tab:exact-vehicle-frontier` |
+| `render_bridge_lp_divergence_risk.py` | `bridge_lp_divergence_risk.tex/.pdf` | `tab:app:bridge-lp-risk` |
+| `render_exact_vehicle_frontier.py` | `exact_vehicle_frontier.tex/.pdf` and generated values | `tab:app:exact-vehicle-frontier` |
 | `render_result_resolution_checks.py` | adjacent-year, nonvehicle-endpoint, and priced-challenger tables plus generated values | `tab:app:rotation-boundaries`, `tab:app:entry-price-alignment` |
 | `build_endpoint_direction_deck_values.py` | `endpoint_direction_deck_values.tex` | endpoint-direction paper/deck values |
 | `build_stable_stable_vehicle_values.py` | `stable_stable_vehicle_values.tex` | stable-to-stable intermediary-identity values |
@@ -43,6 +32,11 @@ a short validation or sample-description display: `tab:panel`, `tab:app:cl`,
 `tab:app:curve`, `tab:app:weighted`, `tab:app:support`, `tab:app:curveleg`, and
 `tab:app:roundtrip`. Their evidence-source comments name the machine-readable
 analysis exhibit that supplies each value.
+
+Renderers for router windows, exploratory formation models, liquidity-provider
+comparisons, and V3/V4 results remain available for later work but do not feed
+the current manuscript. They should return only when they answer the paper's
+economic question more directly than an exhibit already in the main sequence.
 
 ## Shared paper/deck values
 
@@ -67,6 +61,8 @@ analysis exhibit that supplies each value.
 | `build_vehicle_market_size_deck_values.py` | exploratory market-size vehicle-use macros |
 | `build_v1_architecture_deck_values.py` | V1 mandate and V2 routing facts |
 | `render_exact_vehicle_frontier.py` | exact pre-transaction vehicle and venue frontier macros |
+| `build_entry_vehicle_persistence_values.py` | post-entry persistence and retrading macros |
+| `build_contestable_vehicle_choice_values.py` | exact-price, capital, retention, and output-shortfall macros |
 
 Each generated file has one owner. Inline empirical tables should be moved to a
 renderer when next edited.

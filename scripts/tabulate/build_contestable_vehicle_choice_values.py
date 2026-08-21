@@ -140,6 +140,30 @@ def render_contestable_vehicle_choice_values(
         record_type="family_output_consequence",
         sample="contestable_symmetric_common_support",
     )
+    retained_consequence = _single(
+        support,
+        record_type="family_output_consequence_split",
+        split_dimension="mature_exclusive_route_choice",
+        split_category="incumbent_retained",
+    )
+    young_consequence = _single(
+        support,
+        record_type="family_output_consequence_split",
+        split_dimension="pair_age",
+        split_category="0_to_89_days",
+    )
+    middle_consequence = _single(
+        support,
+        record_type="family_output_consequence_split",
+        split_dimension="pair_age",
+        split_category="90_to_364_days",
+    )
+    mature_consequence = _single(
+        support,
+        record_type="family_output_consequence_split",
+        split_dimension="pair_age",
+        split_category="365_plus_days",
+    )
 
     for row in (price_leader, challenger, output_advantage, capital_advantage):
         _finite(row, "coefficient_pp", "standard_error_pp", "observations")
@@ -167,6 +191,20 @@ def render_contestable_vehicle_choice_values(
         and float(consequence["input_value_weighted_foregone_bps"]) >= 0
     ):
         raise ValueError("foregone-output statistics have invalid ordering")
+    for row in (
+        retained_consequence,
+        young_consequence,
+        middle_consequence,
+        mature_consequence,
+    ):
+        _finite(
+            row,
+            "lower_output_family_share",
+            "input_value_weighted_foregone_bps",
+            "median_foregone_output_bps_if_over_1bp",
+        )
+        if not 0 <= float(row["lower_output_family_share"]) <= 1:
+            raise ValueError("split lower-output share lies outside [0, 1]")
     if not (
         float(price_leader["coefficient_pp"]) > 0
         and float(challenger["coefficient_pp"]) < 0
@@ -199,6 +237,12 @@ def render_contestable_vehicle_choice_values(
         f"\\newcommand{{\\ContestForegoneMedianBps}}{{{_bp(float(consequence['median_foregone_output_bps_if_over_1bp']))}}}",
         f"\\newcommand{{\\ContestForegonePNinetyBps}}{{{_bp(float(consequence['p90_foregone_output_bps_if_over_1bp']))}}}",
         f"\\newcommand{{\\ContestForegoneInputValueWeightedBps}}{{{_bp(float(consequence['input_value_weighted_foregone_bps']))}}}",
+        f"\\newcommand{{\\ContestRetainedLowerOutputShare}}{{{_pct(float(retained_consequence['lower_output_family_share']))}}}",
+        f"\\newcommand{{\\ContestRetainedForegoneMedianBps}}{{{_bp(float(retained_consequence['median_foregone_output_bps_if_over_1bp']))}}}",
+        f"\\newcommand{{\\ContestRetainedForegoneInputValueWeightedBps}}{{{_bp(float(retained_consequence['input_value_weighted_foregone_bps']))}}}",
+        f"\\newcommand{{\\ContestYoungForegoneInputValueWeightedBps}}{{{_bp(float(young_consequence['input_value_weighted_foregone_bps']))}}}",
+        f"\\newcommand{{\\ContestMiddleForegoneInputValueWeightedBps}}{{{_bp(float(middle_consequence['input_value_weighted_foregone_bps']))}}}",
+        f"\\newcommand{{\\ContestMatureForegoneInputValueWeightedBps}}{{{_bp(float(mature_consequence['input_value_weighted_foregone_bps']))}}}",
     ]
     return "\n".join(lines) + "\n"
 

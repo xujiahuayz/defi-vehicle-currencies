@@ -85,6 +85,37 @@ def _support_rows() -> list[dict[str, object]]:
             "p90_foregone_output_bps_if_over_1bp": 171.482,
             "input_value_weighted_foregone_bps": 7.4183,
         },
+        {
+            "record_type": "family_output_consequence_split",
+            "sample": "mature:incumbent_retained",
+            "split_dimension": "mature_exclusive_route_choice",
+            "split_category": "incumbent_retained",
+            "routes": 27_215,
+            "incumbent_retained_share": None,
+            "lower_output_family_share": 0.106596,
+            "median_foregone_output_bps_if_over_1bp": 17.1133,
+            "p90_foregone_output_bps_if_over_1bp": 126.5254,
+            "input_value_weighted_foregone_bps": 3.3143,
+        },
+        *[
+            {
+                "record_type": "family_output_consequence_split",
+                "sample": f"pair_age:{category}",
+                "split_dimension": "pair_age",
+                "split_category": category,
+                "routes": routes,
+                "incumbent_retained_share": None,
+                "lower_output_family_share": share,
+                "median_foregone_output_bps_if_over_1bp": median,
+                "p90_foregone_output_bps_if_over_1bp": p90,
+                "input_value_weighted_foregone_bps": weighted,
+            }
+            for category, routes, share, median, p90, weighted in (
+                ("0_to_89_days", 13_159, 0.1520, 40.6648, 232.1973, 16.8207),
+                ("90_to_364_days", 13_166, 0.1290, 52.1678, 217.6697, 19.0334),
+                ("365_plus_days", 26_152, 0.1180, 13.5226, 89.2889, 2.1311),
+            )
+        ],
     ]
 
 
@@ -115,6 +146,12 @@ def test_contestable_choice_values_render_decisive_macros() -> None:
         r"\newcommand{\ContestForegoneMedianBps}{27.2 bp}",
         r"\newcommand{\ContestForegonePNinetyBps}{171.5 bp}",
         r"\newcommand{\ContestForegoneInputValueWeightedBps}{7.4 bp}",
+        r"\newcommand{\ContestRetainedLowerOutputShare}{10.7\%}",
+        r"\newcommand{\ContestRetainedForegoneMedianBps}{17.1 bp}",
+        r"\newcommand{\ContestRetainedForegoneInputValueWeightedBps}{3.3 bp}",
+        r"\newcommand{\ContestYoungForegoneInputValueWeightedBps}{16.8 bp}",
+        r"\newcommand{\ContestMiddleForegoneInputValueWeightedBps}{19.0 bp}",
+        r"\newcommand{\ContestMatureForegoneInputValueWeightedBps}{2.1 bp}",
     )
     for macro in expected:
         assert macro in rendered

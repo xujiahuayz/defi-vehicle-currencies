@@ -381,6 +381,15 @@ Equation~\eqref{eq:support} applies the same 5\% own-price-impact ceiling to eve
 \section{Coverage of the price comparison}
 \label{app:coverage}
 
+\begin{table}[tbp]
+\centering
+\caption{Exact pre-transaction prices and vehicle identity}
+\label{tab:app:exact-vehicle-frontier}
+\input{../output/tables/exact_vehicle_frontier.tex}
+\exhibitnote{The sample contains exact two-leg routes executed on Uniswap v2, SushiSwap v2, or Uniswap v3 on the fifteenth day of each month from June 2020 through June 2026. Source, destination, input amount, and pre-transaction pool state remain fixed. Each observed quote reproduces realised output within one basis point. Leg values must agree within 20\%, input must be at least \$100, and every observed or hypothetical leg must remain below 5\% own-price impact. The public vehicle set contains WETH, USDC, USDT, DAI, and WBTC; a realised vehicle outside that set remains eligible. A route changes vehicle only when gross output improves by more than one basis point. Standard errors in parentheses are clustered by date. P-values use Holm adjustment across route- and input-value-weighted comparisons in five reported samples. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively. The three exact venues contain \ExactFrontierVenueCoverage{} of linear routes over the sampled dates, and \ExactFrontierReproduction{} of mapped observed routes reproduce within one basis point. Coverage falls as other exchanges expand late in the sample. The comparison is gross of gas and excludes private order flow. \ExactFrontierExtremeRoutes{} routes imply more than twice realised output under standard invariant pricing; removing them leaves every displayed share unchanged at one decimal place, and they are excluded from the median-gain calculation.}
+\end{table}
+% output/exhibits/exact_vehicle_frontier_monthly.jsonl; output/exhibits/exact_vehicle_frontier_monthly_support.jsonl; output/tables/exact_vehicle_frontier.tex
+
 Table~\ref{tab:app:entry-price-alignment} compares later route use with the independently quoted price leader.
 
 \begin{table}[tbp]
@@ -525,6 +534,15 @@ At the median, round trips account for 12.8\% of multi-leg routes by count and 2
 
 \begin{table}[tbp]
 \centering
+\caption{Stablecoin share among native and stable intermediaries}
+\label{tab:app:rotation}
+\small
+\input{../output/tables/dominance_rotation.tex}
+\exhibitnote{The denominator contains exact two-leg routes whose sole intermediary is native or stable. Daily shares receive equal weight over matched January--June dates in 2024 and 2026. Dollar-weighted estimates require source, intermediary, and destination values to agree within 20\%. Standard errors use a Newey--West covariance with a 30-day Bartlett bandwidth.}
+\end{table}
+
+\begin{table}[tbp]
+\centering
 \caption{Time-window and endpoint restrictions on the stablecoin rotation}
 \label{tab:app:rotation-boundaries}
 \textit{Panel A. Adjacent January--June comparisons, route count}\par\smallskip
@@ -637,20 +655,23 @@ Figure~\ref{fig:integration-change} shows that cross-exchange routes grow from \
 \section{Secondary route and liquidity comparisons}
 \label{app:secondary-mechanisms}
 
-This section collects comparisons that complement the central pair decomposition and bridge-depth evidence. They describe changes around router releases, differences across venue pricing families, the composition of capital growth before first use, subsequent comovement between route use and capital, and provider activity in Uniswap v3 and v4. The event dates and pool states are equilibrium outcomes, so these estimates describe patterns in the data.
+This section reports evidence used directly to interpret the main estimates: entry-activity restrictions, differences across venue pricing families, the composition of capital growth before first use, and subsequent comovement between route use and capital. Pool states and first-use dates are equilibrium outcomes, so the estimates describe how route use and liquidity line up.
 
-\subsection{Router releases and venue pricing families}
+\subsection{Persistence among pairs with greater entry activity}
 
-Table~\ref{tab:router-windows} compares route structure before and after three public Uniswap router releases. Cross-exchange routing expands around the first two releases, while the incidence of intermediation and route length move little. Table~\ref{tab:venue-technology} divides routes by the pricing family used on every leg. The stablecoin rotation is present among routes priced entirely by the constant-product family, which carries \VenueCPEpisodeShare{} of vehicle-currency intermediary positions in 2026.
+Table~\ref{tab:app:entry-persistence-robustness} repeats the post-entry stablecoin-share regressions after requiring at least five or ten routes on the entry day. The estimates remain close to one-for-one at both horizons, so the main persistence result is also present among entrants with a more precisely measured initial allocation.
 
 \begin{table}[tbp]
 \centering
-\caption{Route structure around public router releases}
-\label{tab:router-windows}
-\small
-\input{../output/tables/routing_technology_windows.tex}
-\exhibitnote{Symmetric windows cover 60 calendar days on either side of each release and exclude the release date. Indirect is the share of economic routes with more than one leg; Intermediated is the share using a third asset; Cross-exchange is the share of intermediated routes using more than one exchange. Shares and changes are in pp. The releases were available to every pair at the same time, so the table reports route composition around the dates.}
+\caption{Post-entry persistence among pairs with greater entry activity}
+\label{tab:app:entry-persistence-robustness}
+\input{../output/tables/entry_vehicle_persistence_robustness.tex}
+\exhibitnote{Each column regresses the stablecoin share in the stated later window on the stablecoin share observed on the entry day. The sample requires complete follow-up through day 120 and subsequent trading in the stated window; the entry day is excluded from every later outcome. All columns control for cohort year, endpoint class, log entry routes, direct-route share, and longer-route share and use equal-pair weights. Coefficients and entry-date-clustered CR1 standard errors in parentheses report the outcome change in pp for a 10 pp higher entry share. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
 \end{table}
+
+\subsection{Venue pricing families}
+
+Table~\ref{tab:venue-technology} divides routes by the pricing family used on every leg. The stablecoin rotation is present among routes priced entirely by the constant-product family, which carries \VenueCPEpisodeShare{} of vehicle-currency intermediary positions in 2026.
 
 \begin{table}[tbp]
 \centering
@@ -686,136 +707,17 @@ Table~\ref{tab:bridge-pool-margins} separates newly active pools from capital gr
 \exhibitnote{For source--vehicle--destination bridge \(b\), \(R_{b,t}\) is one vehicle's share of route activity among WETH, WBTC, DAI, USDC, and USDT, and \(B_{b,t}=\log(1+\min\{K_{iv,t},K_{vj,t}\})\) is weak-leg deposited capital. Stablecoin rows retain DAI, USDC, and USDT separately. The sample draws on January--June 2024 and January--June 2026 and retains continuing bridges with positive deposited capital and positive five-vehicle route activity at both exact dates. Forward panels regress the exact future level on the dated predictor, a cubic in the current outcome level, bridge effects, and date effects. Time-reversed panels use the end-of-window predictor for the earlier outcome and a cubic in the end-of-window outcome level. Route-activity weights are measured on the predictor date; equal weights make each pair-date-scope sum to one. Route-use rows report the coefficient for 10 pp more route share in natural-log points; bridge-depth rows report the coefficient for one natural-log point more depth in pp. Standard errors are two-way clustered by pair and date. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively. The p-values are unadjusted for the displayed family of horizons, samples, timings, and weights.}
 \end{table}
 
-Table~\ref{tab:lp-behavior-regressions} extends the description to provider activity. We use the outcomes to locate adjustment and keep them supplementary because demand and capital respond to common shocks.
+\subsection{Relative-price risk and deposited bridge capital}
+
+Lower endpoint--vehicle relative-price risk is associated with deeper constant-product bridges at the measurement date and 30 days later. This relation is consistent with divergence risk influencing where liquidity providers place capital. Panel B of Table~\ref{tab:app:bridge-lp-risk} gives the corresponding vehicle comparison. Stablecoin bridges have higher median risk than WETH bridges and carry the lower relative volatility in fewer than one third of comparable pair-months. Divergence risk can therefore help locate bridge capital without accounting for the aggregate rise of stablecoin intermediation.
 
 \begin{table}[tbp]
 \centering
-\caption{Provider activity following stablecoin route--capital gaps}
-\label{tab:lp-behavior-regressions}
-{\tiny
-\renewcommand{\arraystretch}{0.82}
-\input{../output/tables/liquidity_provision_regressions.tex}
-}
-\exhibitnote{Each cell reports the association with a 10 pp larger stablecoin route-share minus deposited-capital-share gap, with clustered standard errors in parentheses. Capital-share changes contain mechanical mean reversion because origin capital share enters both the gap and the future change. Log outcomes use \(\log(1+q)\). Vehicle-day specifications absorb vehicle and origin-date effects; pool specifications absorb pool--vehicle and origin-date effects. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
-\end{table}
-
-\subsection{Uniswap v4 settlement and provider activity}
-
-Uniswap v4 records a complete pool route inside one singleton and settles the final net balances at the end of the call. Table~\ref{tab:v4-flash-lp} relates its internal routing and net settlement to later provider activity, and Table~\ref{tab:v4-lp-volatility-state} shows how those associations vary with persistent volatility. The remaining comparisons through Table~\ref{tab:v3-v4-lp-summary} use within-day and cross-protocol variation while preserving an observational interpretation.
-
-\begin{table}[tbp]
-\centering
-\caption{Uniswap v4 internal settlement and subsequent liquidity provision}
-\label{tab:v4-flash-lp}
-{\tiny
-\renewcommand{\arraystretch}{0.88}
-\input{../output/tables/v4_flash_lp_mechanism.tex}
-}
-\exhibitnote{Each cell reports the association between a 10 pp increase in the row's v4 accounting measure and a future provider outcome, with standard errors in parentheses. The unit is a vehicle-day. Specifications absorb vehicle and origin-date effects, include origin-day activity, flow, reported-liquidity, action, and range-composition controls, and cluster by origin date. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
-\end{table}
-
-\begin{table}[tbp]
-\centering
-\caption{Uniswap v4 participation under persistent volatility}
-\label{tab:v4-lp-volatility-state}
+\caption{Relative-price risk and deposited bridge capital}
+\label{tab:app:bridge-lp-risk}
 {\scriptsize
-\renewcommand{\arraystretch}{0.90}
-\input{../output/tables/v4_lp_volatility_state.tex}
+\renewcommand{\arraystretch}{0.94}
+\input{../output/tables/bridge_lp_divergence_risk.tex}
 }
-\exhibitnote{Each cell reports the internal-routing association at the named volatility state, with standard errors in parentheses. Outcomes are future log action counts by previously active or first-active transaction origins. Specifications absorb vehicle and origin-date effects, allow vehicle-specific volatility slopes, interact volatility with the origin-day controls, and cluster by origin date. Transaction origins proxy for account participation. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
-\end{table}
-
-\begin{table}[tbp]
-\centering
-\caption{Stablecoin route--capital gaps, v4 settlement, and LP repositioning}
-\label{tab:v4-flash-gap}
-{\tiny
-\renewcommand{\arraystretch}{0.88}
-\input{../output/tables/v4_flash_gap_interactions.tex}
-}
-\exhibitnote{Each cell reports the interaction of a 10 pp larger stablecoin route--capital gap with a 10 pp larger v4 accounting measure. The unit is a stablecoin vehicle-day. Specifications use the 120-day horizon, absorb vehicle and origin-date effects, include origin-day activity and provider controls, and cluster by origin date. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
-\end{table}
-
-\begin{table}[tbp]
-\centering
-\caption{Stablecoin route--capital gaps and liquidity provision in v4 relative to v3}
-\label{tab:v3-v4-lp-summary}
-{\scriptsize
-\renewcommand{\arraystretch}{0.90}
-\input{../output/tables/v3_v4_lp_summary.tex}
-}
-\exhibitnote{Each row reports the v4-minus-v3 difference associated with a 10 pp larger stablecoin route--capital gap, with standard errors in parentheses. The stacked unit is a protocol--vehicle--date row on dates with observed v4 singleton activity. Specifications absorb vehicle-date and protocol effects, include the corresponding protocol's origin-day provider controls, and cluster by date. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
-\end{table}
-
-\section{Additional liquidity-provider estimates}
-\label{app:lp-detail}
-
-Table~\ref{tab:app:v4-origin-timing} separates actions by previously active and first-active transaction origins. Table~\ref{tab:app:v3-v4-routing-participation} compares routing-linked participation in v3 and v4 on the same vehicle-dates. Table~\ref{tab:v4-flash-gap-flow} reports vehicle-token flow outcomes that accompany Table~\ref{tab:v4-flash-gap}. Tables~\ref{tab:v3-v4-lp-protocol}, \ref{tab:v3-v4-lp-flow-protocol}, and \ref{tab:v3-v4-tvl-protocol} report every horizon and outcome behind Table~\ref{tab:v3-v4-lp-summary}.
-
-\begin{table}[tbp]
-\centering
-\caption{V4 internal settlement and transaction-origin participation}
-\label{tab:app:v4-origin-timing}
-{\tiny
-\renewcommand{\arraystretch}{0.90}
-\input{../output/tables/v4_lp_origin_timing.tex}
-}
-\exhibitnote{Each cell reports the response to a 10 pp increase in the row's V4 accounting proxy, with standard errors in parentheses. The unit is a vehicle-day. The primary sample excludes modify-liquidity updates with zero liquidity change. An incumbent origin was active for the same vehicle during the preceding 180 days. A newly active origin in days 1 to 30 was absent from that prior window. A first-active origin in days 31 to 120 was absent both from the prior window and from days 1 to 30. All specifications absorb vehicle and origin-date effects, include origin-day swap activity, vehicle-token-side LP flow, vehicle-linked reported liquidity, LP actions, and range composition, and cluster by origin date. P-values are Holm-adjusted across the twelve displayed estimates. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively. Transaction origins proxy for account participation, not beneficial ownership of LP positions. The estimates are predictive associations.}
-\end{table}
-% output/exhibits/v4_lp_origin_timing.jsonl; output/tables/v4_lp_origin_timing.tex; producer scripts/analyze/run_v4_lp_origin_timing.py and scripts/tabulate/render_v4_lp_origin_timing.py.
-
-\begin{table}[tbp]
-\centering
-\caption{Internal routing and subsequent participation in V3 and V4}
-\label{tab:app:v3-v4-routing-participation}
-{\scriptsize
-\renewcommand{\arraystretch}{0.90}
-\input{../output/tables/v3_v4_internal_routing_participation.tex}
-}
-\exhibitnote{Each coefficient is in log points for 10 pp more internal same-asset routing. Standard errors are in parentheses. Panel A reports protocol-specific slopes and their difference from 23 July 2025 through 2 March 2026, requiring 180 prior days to classify incumbent origins. Panel B interacts routing with one standard deviation more lagged 30-day mean realised WETH volatility on that calendar. Panel C uses a 90-day prior window and separates the mature calendar from 24 April through 27 July 2025; the Pooled dates row combines both periods. The unit is a vehicle-day with positive vehicle transaction counts in both protocols. Specifications first difference V4 and V3 outcomes for the same vehicle-day, absorb vehicle and origin-date effects, include protocol-specific routing-activity and prior-action controls, and cluster by origin date. State specifications also include vehicle-specific and protocol-control-specific volatility slopes. Stars appear only on V4-minus-V3 rows and use Holm adjustment across the two outcomes within each sample. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively. V3 participation uses nonzero mint and burn events; V4 participation uses nonzero modify-liquidity events. Transaction origins proxy for account participation, not beneficial ownership of LP positions. The estimates are predictive protocol comparisons.}
-\end{table}
-% output/exhibits/v3_v4_internal_routing_participation.jsonl; output/tables/v3_v4_internal_routing_participation.tex; producer scripts/process/build_v3_internal_routing_candidate_daily.py, scripts/process/build_v3_v4_lp_origin_candidate_daily.py, scripts/analyze/run_v3_v4_internal_routing_participation.py, and scripts/tabulate/render_v3_v4_internal_routing_participation.py.
-
-\begin{table}[tbp]
-\centering
-\caption{Stablecoin shortfalls, V4 flash accounting, and LP-flow sides}
-\label{tab:v4-flash-gap-flow}
-{\tiny
-\renewcommand{\arraystretch}{0.88}
-\input{../output/tables/v4_flash_gap_flow_interactions.tex}
-}
-\exhibitnote{Each cell reports the interaction of a 10 pp larger stablecoin route-minus-capital gap with a 10 pp larger V4 accounting proxy. Outcomes are future log admissible vehicle-token-side modify-liquidity flow over 120 days. The unit, fixed effects, controls, covariance, and stablecoin sample match Table~\ref{tab:v4-flash-gap}. Add and remove flows value the vehicle-token sides assigned through V4 modify-liquidity records. These predictive specifications measure vehicle-token flows; whole-pool inventory and causal LP supply remain outside their scope. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
-\end{table}
-
-\begin{table}[tbp]
-\centering
-\caption{Stablecoin shortfalls and the V4-minus-V3 LP-action response}
-\label{tab:v3-v4-lp-protocol}
-{\scriptsize
-\renewcommand{\arraystretch}{0.90}
-\input{../output/tables/v3_v4_lp_protocol_contrast.tex}
-}
-\exhibitnote{Each cell reports the V4-minus-V3 difference in the association between a 10 pp larger stablecoin route-minus-capital gap and the future LP-action outcome, with standard errors in parentheses. Outcomes are log points. The stacked unit is a protocol--vehicle--date row restricted to dates with observed V4 singleton swap activity. All columns absorb vehicle-date and protocol fixed effects, include same-protocol current LP-action and active-origin controls, and cluster by date. V3 outcomes are mint and burn event counts and active origins; V4 outcomes are modify-liquidity event counts and active origins. The estimates are conditional protocol differences and do not identify the effect of V4 adoption. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
-\end{table}
-
-\begin{table}[tbp]
-\centering
-\caption{Stablecoin shortfalls and the V4-minus-V3 LP-flow response}
-\label{tab:v3-v4-lp-flow-protocol}
-{\scriptsize
-\renewcommand{\arraystretch}{0.90}
-\input{../output/tables/v3_v4_lp_flow_protocol_contrast.tex}
-}
-\exhibitnote{Each cell reports the V4-minus-V3 difference in the association between a 10 pp larger stablecoin route-minus-capital gap and future vehicle-token-side LP flow, with standard errors in parentheses. Flow-amount outcomes are log points; range-composition outcomes are pp. The stacked unit is a protocol--vehicle--date row restricted to dates with observed V4 singleton swap activity. All columns absorb vehicle-date and protocol fixed effects, include same-protocol current gross, add, remove, and sender-day flow controls, and cluster by date. V3 outcomes value mint and burn token sides; V4 outcomes value modify-liquidity token sides. The estimates are conditional protocol differences and do not identify the effect of V4 adoption. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
-\end{table}
-
-\begin{table}[tbp]
-\centering
-\caption{Stablecoin shortfalls and the V4-minus-V3 reported-liquidity footprint}
-\label{tab:v3-v4-tvl-protocol}
-{\scriptsize
-\renewcommand{\arraystretch}{0.90}
-\input{../output/tables/v3_v4_tvl_protocol_contrast.tex}
-}
-\exhibitnote{Each cell reports the V4-minus-V3 difference in the association between a 10 pp larger stablecoin route-minus-capital gap and future growth in vehicle-linked reported full-pool TVL or pool count, with standard errors in parentheses. Outcomes are changes in log one plus the reported quantity. The stacked unit is a protocol--vehicle--date row restricted to V4-active dates with strict origin and target support in both protocols. All columns absorb vehicle-date and protocol fixed effects, include same-protocol origin TVL and pool-count controls, and cluster by date. A pool contributes its full reported TVL when it contains the vehicle; vehicle--vehicle pools can enter both vehicle series. The quantity is a reported stock-and-footprint proxy; reconstructed deposited capital, side-specific LP inventory, and causal protocol effects remain outside its scope. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
+\exhibitnote{The unit is a pair, monthly date, and vehicle among WETH, DAI, USDC, and USDT. Each row requires at least ten routes for the pair during the preceding calendar month, at least 20 daily return observations during days -30 through -1, and positive deposited capital on both route legs for at least one native and one stablecoin bridge in the pair-month. Bridge depth is the smaller deposited-capital stock across the two legs in full-range Uniswap v2 and SushiSwap v2 pools, measured at the prior-calendar state. Relative volatility is the larger annualised endpoint--vehicle volatility across the two legs. Daily divergence loss applies the exact 50--50 constant-product expression to the same relative returns and takes the larger leg value. Columns 3 and 4 control for initial bridge depth; every column controls for prior vehicle-route activity and absorbs pair-by-date and vehicle effects. Standard errors are two-way clustered by pair and date. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively. The estimates describe equilibrium liquidity allocation; fee income, provider hedges, and provider-level returns are unavailable.}
 \end{table}

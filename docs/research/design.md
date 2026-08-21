@@ -75,14 +75,14 @@ estimate; it does not require another raw-data fetch.
 
 ### Experiment order and promotion gates
 
-| Order | Analysis | Required inputs | Main-text gate |
-|---|---|---|---|
-| 1 | Correct post-entry persistence | Existing entry and route panels | Entry day excluded; later trading explicit; stable across pair and activity weights |
-| 2 | Joint price, depth, and incumbency choice | Existing exact-price, bridge-depth, and entry panels on Studio | Same opportunity and pre-trade state; interpretable magnitudes; pair/date effects |
-| 3 | Dynamic route-use and bridge-depth relation | Existing route-share and capital panels | No mechanical coupling; initial states, time-reversed benchmarks, and alternative horizons pass |
-| 4 | Cost of retaining the incumbent | Existing exact-price panel | Same-size rival path; route- and value-weighted economic magnitude; gas bounds |
-| 5 | USDC shock exposure | Existing routes, prices, and capital; targeted refetch only if a field is missing | Pair-level exposure, pre-trends, comparison group, and flow restrictions |
-| 6 | LP risk and supply | Existing prices, volumes, fees, and capital if coverage aligns | Within-opportunity divergence-risk or volatility measure adds information beyond demand and fees |
+| Order | Analysis | Required inputs | Main-text gate | Current disposition |
+|---|---|---|---|---|
+| 1 | Correct post-entry persistence | Existing entry and route panels | Entry day excluded; later trading explicit; stable across pair and activity weights | Passed; main text |
+| 2 | Joint price, depth, and incumbency choice | Existing exact-price, bridge-depth, and entry panels on Studio | Same opportunity and pre-trade state; interpretable magnitudes; pair/date effects | Passed; main text |
+| 3 | Dynamic route-use and bridge-depth relation | Existing route-share and capital panels | No mechanical coupling; initial states, time-reversed benchmarks, and alternative horizons pass | Corrected; appendix boundary because time reversal also predicts outcomes |
+| 4 | Cost of retaining the incumbent | Existing exact-price panel | Same-size rival path; route- and value-weighted economic magnitude; gas bounds | Passed gross-of-gas comparison; main text with gas boundary |
+| 5 | USDC shock exposure | Existing routes, prices, and capital; targeted refetch only if a field is missing | Pair-level exposure, pre-trends, comparison group, and flow restrictions | Gated; run only if the comparison design clears the stated bar |
+| 6 | LP risk and supply | Existing prices, volumes, fees, and capital if coverage aligns | Within-opportunity divergence-risk or volatility measure adds information beyond demand and fees | Completed; appendix because risk locates depth but does not explain the aggregate rotation |
 
 The first LP-risk pass finds that lower prior endpoint--vehicle relative-price
 risk predicts deeper full-range constant-product bridge capital. It does not

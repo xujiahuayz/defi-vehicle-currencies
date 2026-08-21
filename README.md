@@ -53,21 +53,25 @@ question and literature                    done
   → submission freeze                      after final conformance and rewrite
 ```
 
-The detailed claim state is in [`docs/findings/`](docs/findings/README.md). The
-two active confirmatory families are the vehicle-role transition and V2
-deposited-capital predictability. They make the current paper measurable and
-reproducible, but not yet submission-ready. The revision now organizes the
-evidence into four states:
+The detailed evidence state is in [`docs/findings/`](docs/findings/README.md).
+The vehicle-role transition and V2 deposited-capital families anchor the
+reproducible baseline. The JFE-depth revision now organizes the evidence into
+four states:
 
-- **Retain and compress:** route validation, the all-route rotation, and the
-  exact endpoint-pair decomposition.
-- **Promote and connect:** within-opportunity weak-leg depth, the independent
-  stablecoin-versus-WETH price contest, and pool-capital formation.
-- **Rebuild before use:** entry persistence, whose current follow-up window
-  includes the entry day, and dynamic route-use/depth forecasts, which need
-  initial-state controls and symmetric time-reversed benchmarks.
-- **Test next on Studio:** joint price--depth--incumbency choice, the cost of
-  retaining a dominated vehicle, and then a gated shock or LP-risk analysis.
+- **Retained and compressed:** route validation, the all-route rotation, and
+  the endpoint-pair decomposition establish the empirical object and central
+  fact without occupying the paper's empirical middle.
+- **Promoted and connected:** corrected post-entry persistence and the
+  stablecoin-versus-WETH choice regression now link vehicle use to exact output,
+  lagged weak-leg capital, and incumbency. The same comparison quantifies the
+  output associated with retaining the incumbent.
+- **Bounded in the appendix:** corrected route-use/depth forecasts establish
+  persistent comovement but leave provider response unresolved; the
+  divergence-risk test helps locate bridge capital but does not account for the
+  stablecoin rotation.
+- **Gated future extensions:** a stablecoin stress design or provider-return
+  analysis enters only if its variation and coverage strengthen this connected
+  sequence. Statistical significance alone is insufficient.
 
 The V3/V4 participation, flash-accounting, and broad provider-result inventory
 is preserved in code and output for a possible separate study. It does not

@@ -7,17 +7,8 @@
 \subsection{The aggregate rotation}
 \label{sec:dominance:transition}
 
-Stablecoins carry a much larger share of vehicle activity in 2026 than in 2024. The comparison uses the same January--June dates in both years because the 2026 panel ends on June 30. Giving each matched day equal weight, stablecoins' share among native and stable intermediaries rises from \StableCountBase{} to \StableCountEnd{} by route count and from \StableValueBase{} to \StableValueEnd{} by routed value. Table~\ref{tab:rotation} reports these paired-day estimates. The decomposition below instead pools route activity so its components allocate the aggregate count or value exactly.
+Stablecoins carry a much larger share of vehicle activity in 2026 than in 2024. The comparison uses the same January--June dates in both years because the 2026 panel ends on June 30. Giving each matched day equal weight, stablecoins' share among native and stable intermediaries rises from \StableCountBase{} to \StableCountEnd{} by route count and from \StableValueBase{} to \StableValueEnd{} by routed value. Appendix Table~\ref{tab:app:rotation} reports the paired-day estimates and their sampling uncertainty. The decomposition below pools route activity so its components allocate the aggregate count or value exactly.
 % output/exhibits/intermediation_complexity_rival.jsonl; output/exhibits/presentation_values.tex
-
-\begin{table}[tbp]
-\centering
-\caption{Stablecoin share among native and stable intermediaries}
-\label{tab:rotation}
-\small
-\input{../output/tables/dominance_rotation.tex}
-\exhibitnote{The denominator contains exact two-leg routes whose sole intermediary is native or stable. Daily shares receive equal weight over matched January--June dates in 2024 and 2026. Dollar-weighted estimates require source, intermediary, and destination values to agree within 20\%. Standard errors use a Newey--West covariance with a 30-day Bartlett bandwidth.}
-\end{table}
 
 The half-year series in Figure~\ref{fig:vehicle-composition} reverses direction. Native assets regain share in 2023 and 2024; stablecoins recover the routed-value lead in 2025. The 20\% value-agreement sample covers 71.6\% of native intermediary value and 55.1\% of stablecoin intermediary value in 2026. Fiat-reserve tokens account for \BackingFiatCountChange{} of the \BackingPooledCountChange{} count increase and \BackingFiatValueChange{} of the \BackingPooledValueChange{} value increase. The aggregate movement is therefore mainly a shift toward reserve-backed dollar tokens, although USDT and USDC follow distinct paths in the token-level results below.
 % output/exhibits/intermediation_by_type.jsonl; output/exhibits/e0_vehicle_transition_backing_regime_estimates.jsonl
@@ -27,7 +18,7 @@ The half-year series in Figure~\ref{fig:vehicle-composition} reverses direction.
 \caption{Intermediary activity rotates between native assets and stablecoins}
 \label{fig:vehicle-composition}
 \includegraphics[width=0.98\textwidth]{../output/figures/experiments/annual_vehicle_composition_bands.pdf}
-\exhibitnote{The sample contains complete routes that do not return to their starting asset. Each route contributes once for every intermediary it uses, so routes with more than two legs can contribute several observations. Shares are formed across all intermediary types; Table~\ref{tab:rotation} uses the narrower native-or-stable denominator. Every point covers six calendar months; the final point is 2026 H1. Routed value requires source, intermediary, and destination dollar amounts to agree within 20\%.}
+\exhibitnote{The sample contains complete routes that do not return to their starting asset. Each route contributes once for every intermediary it uses, so routes with more than two legs can contribute several observations. Shares are formed across all intermediary types; Appendix Table~\ref{tab:app:rotation} uses the narrower native-or-stable denominator. Every point covers six calendar months; the final point is 2026 H1. Routed value requires source, intermediary, and destination dollar amounts to agree within 20\%.}
 \end{figure}
 
 \subsection{Pair formation and persistence}
@@ -69,7 +60,7 @@ Table~\ref{tab:pair-composition} applies Equation~\eqref{eq:pair-decomposition} 
 \exhibitnote{Panels A through C compare pooled activity over matched January--June dates in 2024 and 2026. Panels B and C report Equation~\eqref{eq:pair-decomposition}; their indented rows split the within-pair component into positive and negative contributions. Panel C weights routes by dollar value and applies the 20\% agreement rule. Panel D estimates Equation~\eqref{eq:pair-fe}; standard errors use two-way clustering by pair and date. Panels A and B factor the same route-count change in different ways, so their components should not be combined.}
 \end{table}
 
-Pooling route counts gives an increase from \PairPooledBase{} to \PairPooledEnd{}, or \PairPooledTotal{}, close to the equal-day change in Table~\ref{tab:rotation}. The within-pair component is \PairPooledWithin{} by route count and \PairValueWithin{} by routed value. These net estimates combine \MarginWithinGrossUp{} from pairs moving toward stablecoins and \MarginWithinGrossDown{} from pairs moving toward the native asset. Activity shifting across continuing pairs contributes \PairPooledReweight{} by count and \PairValueReweight{} by value. The changing aggregate weight on continuing pairs contributes \PairPooledSupportMass{} and \PairValueSupportMass{}, while year-specific pairs contribute \PairPooledExclusive{} and \PairValueExclusive{}. The last component is net of entry and exit: pairs observed only in 2026 add their later-period vehicle use, while pairs observed only in 2024 remove their earlier-period vehicle use. Equation~\eqref{eq:pair-fe} reaches the same conclusion on the more restrictive matched sample: stablecoin share changes by \MatchedMarketCountChange{} by count and \MatchedMarketValueChange{} by value. A large aggregate rotation therefore coexists with little net switching inside established cells defined by pair, calendar date, and route class.
+Pooling route counts gives an increase from \PairPooledBase{} to \PairPooledEnd{}, or \PairPooledTotal{}, close to the equal-day change in Appendix Table~\ref{tab:app:rotation}. The within-pair component is \PairPooledWithin{} by route count and \PairValueWithin{} by routed value. These net estimates combine \MarginWithinGrossUp{} from pairs moving toward stablecoins and \MarginWithinGrossDown{} from pairs moving toward the native asset. Activity shifting across continuing pairs contributes \PairPooledReweight{} by count and \PairValueReweight{} by value. The changing aggregate weight on continuing pairs contributes \PairPooledSupportMass{} and \PairValueSupportMass{}, while year-specific pairs contribute \PairPooledExclusive{} and \PairValueExclusive{}. The last component is net of entry and exit: pairs observed only in 2026 add their later-period vehicle use, while pairs observed only in 2024 remove their earlier-period vehicle use. Equation~\eqref{eq:pair-fe} reaches the same conclusion on the more restrictive matched sample: stablecoin share changes by \MatchedMarketCountChange{} by count and \MatchedMarketValueChange{} by value. A large aggregate rotation therefore coexists with little net switching inside established cells defined by pair, calendar date, and route class.
 % output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_fixed_effects.jsonl
 
 The same decomposition covers every adjacent January--June comparison between 2019 and 2026. As shown in Appendix Table~\ref{tab:app:rotation-boundaries}, panel A, the within-pair term ranges only from \AdjacentWithinMin{} to \AdjacentWithinMax{}, while aggregate changes range from \AdjacentLargestDecline{} in \AdjacentLargestDeclineYears{} to \AdjacentLargestIncrease{} in \AdjacentLargestIncreaseYears{}. Pair composition therefore accounts for both stablecoin gains and the intervening reversals.
@@ -81,26 +72,33 @@ Endpoint demand clarifies the composition result. A pair with WETH at one endpoi
 Panel B of Appendix Table~\ref{tab:app:rotation-boundaries} removes every pair with WETH or a stablecoin at either endpoint. Stablecoin vehicle share still rises from \NonvehicleEndpointStableBase{} to \NonvehicleEndpointStableEnd{} by count and from \NonvehicleEndpointValueBase{} to \NonvehicleEndpointValueEnd{} by supported value. Pair entry and exit contribute \NonvehicleEndpointCountExclusive{} and \NonvehicleEndpointValueExclusive{}, respectively. The rotation therefore remains economically large among pairs for which both broad vehicle families are distinct from the assets being exchanged.
 % output/exhibits/vehicle_transition_nonvehicle_endpoint_decomposition.jsonl; output/exhibits/result_resolution_values.tex
 
-The first routes in a new pair predict its subsequent vehicle. For entrant pair $p$ first observed on date $t$, let $S^{\mathrm{entry}}_{p,t}$ be its initial stablecoin share and $S_{p,t+h}$ its stablecoin share through horizon $h$. We estimate
+The first routes in a new pair predict its subsequent vehicle. For pair $p$, let $E_p$ be the stablecoin share on its entry day. For each of the disjoint windows $h\in\{1\text{--}30,31\text{--}120\}$, let $R_{p,h}$ indicate that the pair carries another native- or stablecoin-intermediated route, and let $S_{p,h}$ be the stablecoin share when $R_{p,h}=1$. We estimate
 \begin{equation}
-\label{eq:entry-path}
-S_{p,t+h}=\alpha_h+\beta_h S^{\mathrm{entry}}_{p,t}+\gamma_h\mathbf{1}_{\{S^{\mathrm{entry}}_{p,t}>1/2\}}+X_{p,t}'\delta_h+\varepsilon_{p,t+h},
+\label{eq:entry-persistence}
+\begin{aligned}
+S_{p,h}&=\alpha_h+\beta_h E_p+X_p'\delta_h+\varepsilon_{p,h},
+&& R_{p,h}=1,\\
+R_{p,h}&=a_h+b_h E_p+X_p'c_h+u_{p,h},
+&& \text{all entrant pairs}.
+\end{aligned}
 \end{equation}
-where $X_{p,t}$ contains entry size, cohort year, endpoint class, direct-route share, and route-complexity share. The sample excludes pairs with WETH at an endpoint and requires complete follow-up support.
+The second line is a linear probability model. The controls $X_p$ contain the cohort year, a stablecoin-endpoint indicator, log entry-day route count, direct-route share, and complex-route share. The sample uses pairs entering by March 2 in 2024 or 2026, giving every pair 120 complete calendar days of follow-up. Pairs with a native asset at either endpoint are excluded.
 
 \FloatBarrier
 \begin{table}[tbp]
 \centering
-\caption{Pair entry and later vehicle use}
-\label{tab:formation-regressions}
+\caption{Vehicle persistence after pair entry}
+\label{tab:entry-persistence}
 {\tiny
-\renewcommand{\arraystretch}{0.88}
-\input{../output/tables/vehicle_formation_regressions.tex}
+\renewcommand{\arraystretch}{0.90}
+\input{../output/tables/entry_vehicle_persistence.tex}
 }
-\exhibitnote{The entry-persistence rows estimate Equation~\eqref{eq:entry-path}. Coefficients appear above entry-date-clustered CR1 standard errors in parentheses. Share outcomes and share regressors are measured in percentage points (pp). The unit is an entrant pair by route class without WETH at either endpoint, except for the named-stable identity row, whose unit is a stablecoin entry observation with asset fixed effects. Rows are route-weighted except the stable-value row, which uses routed value satisfying the 20\% agreement rule. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
+\exhibitnote{Panel A estimates the first line of Equation~\eqref{eq:entry-persistence} among pairs that carry another native- or stablecoin-intermediated route in the stated window. Panel B estimates the second line on all entrant pairs. The entry day is excluded from both follow-up windows. Controls are the cohort year, a stablecoin-endpoint indicator, log entry-day route count, direct-route share, and complex-route share. Columns 3 and 6 weight pairs by route activity in the respective follow-up window; all other columns give each pair equal weight. Coefficients report the outcome change in percentage points (pp) associated with a 10 pp higher entry-day stablecoin share. Standard errors in parentheses use CR1 clustering by entry date. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
 \end{table}
 
-Table~\ref{tab:formation-regressions} shows that a 1 pp higher initial stablecoin share predicts \FormationPathEntryShareThirtyCoef{} higher stablecoin share over 30 days and \FormationPathEntryShareOneTwentyCoef{} over 120 days. The 120-day coefficient is \FormationNoDirectPathEntryShareOneTwentyCoef{} among pairs with no direct route at entry and \FormationValuePathEntryShareOneTwentyCoef{} when routes are weighted by supported value. Persistence extends to issuer identity: a 1 pp higher entry share for a named stablecoin predicts \FormationIdentityPathOneTwentyCoef{} higher own-token share over 120 days. We interpret this persistence as an equilibrium outcome: the initial vehicle and its subsequent use share common depth, price, and venue conditions.
-% output/exhibits/vehicle_formation_exploration.jsonl; output/tables/vehicle_formation_regressions.tex
+We separate later vehicle use from pair survival. Of the \EntryPersistenceEntrants{} entrants, \EntryPersistenceEarlyRetradeRate{} trade again during days 1--30 and \EntryPersistenceLateRetradeRate{} do so during days 31--120. Among pairs that trade again, a 10 pp higher entry-day stablecoin share predicts \EntryPersistenceEarlyPairEffectPerTen{} higher stablecoin share during days 1--30 and \EntryPersistenceLatePairEffectPerTen{} during days 31--120 (Table~\ref{tab:entry-persistence}, panel A, columns 2 and 5). The route-activity-weighted estimates are \EntryPersistenceEarlyActivityEffectPerTen{} and \EntryPersistenceLateActivityEffectPerTen{}, respectively (columns 3 and 6). Every follow-up outcome begins after the entry day, so these estimates capture continued vehicle use across subsequent routes.
+
+The share estimates describe pairs that remain active in each window. Entry-day stablecoin share also predicts a modestly higher probability of subsequent trading: a 10 pp increase corresponds to \EntryPersistenceEarlyRetradeEffectPerTen{} during days 1--30 and \EntryPersistenceLateRetradeEffectPerTen{} during days 31--120 (Table~\ref{tab:entry-persistence}, panel B). The evidence therefore combines strong persistence in vehicle identity among surviving pairs with a smaller survival margin. We interpret both as descriptive equilibrium relationships: relative prices, depth, and venue access can shape the vehicle at entry and remain relevant for later trading.
+% output/exhibits/entry_vehicle_persistence_models.jsonl; output/exhibits/entry_vehicle_persistence_support.jsonl; output/tables/entry_vehicle_persistence.tex
 
 Network reach, issuer-level specialisation, within-day endpoint demand, and exchange span provide supplementary views of the same formation result. Appendix~\ref{app:additional-composition} reports these estimates. They show that stablecoin arrival is more common in older and more active pairs, intermediary use moves closely with a currency's endpoint demand within a day, and the stablecoin rotation appears in both single- and cross-exchange routes. These comparisons help locate the result but do not replace the direct decomposition in Table~\ref{tab:pair-composition}.

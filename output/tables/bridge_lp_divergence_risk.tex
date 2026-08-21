@@ -1,0 +1,26 @@
+\begin{tabularx}{\linewidth}{@{}>{\hsize=1.58\hsize\raggedright\arraybackslash}X*{4}{>{\hsize=0.855\hsize\centering\arraybackslash}X}@{}}
+\toprule
+ & (1) & (2) & (3) & (4) \\
+Log deposited bridge capital & Depth at $t$ & Depth at $t$ & Depth at $t+30$ & Depth at $t+30$ \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{Panel A: Relative-price risk and bridge depth}} \\
+Relative volatility [10 pp] & \begin{tabular}{@{}c@{}}$-0.117^{**}$\\$(0.049)$\end{tabular} &  & \begin{tabular}{@{}c@{}}$-0.093^{***}$\\$(0.029)$\end{tabular} &  \\
+Daily divergence loss [1 bp] &  & \begin{tabular}{@{}c@{}}$-0.053^{**}$\\$(0.021)$\end{tabular} &  & \begin{tabular}{@{}c@{}}$-0.044^{**}$\\$(0.020)$\end{tabular} \\
+Log prior vehicle-route count & \begin{tabular}{@{}c@{}}$+2.218^{***}$\\$(0.097)$\end{tabular} & \begin{tabular}{@{}c@{}}$+2.235^{***}$\\$(0.095)$\end{tabular} & \begin{tabular}{@{}c@{}}$+0.613^{***}$\\$(0.066)$\end{tabular} & \begin{tabular}{@{}c@{}}$+0.625^{***}$\\$(0.067)$\end{tabular} \\
+Log initial bridge depth &  &  & \begin{tabular}{@{}c@{}}$+0.733^{***}$\\$(0.022)$\end{tabular} & \begin{tabular}{@{}c@{}}$+0.734^{***}$\\$(0.022)$\end{tabular} \\
+\midrule
+Within $R^2$ & 0.322 & 0.321 & 0.702 & 0.702 \\
+Observations & 58,447 & 58,447 & 58,447 & 58,447 \\
+Pair clusters & 4,254 & 4,254 & 4,254 & 4,254 \\
+Date clusters & 71 & 71 & 71 & 71 \\
+Pair $\times$ date fixed effects & Yes & Yes & Yes & Yes \\
+Vehicle fixed effects & Yes & Yes & Yes & Yes \\
+Two-way clustered s.e. & Pair, date & Pair, date & Pair, date & Pair, date \\
+\addlinespace
+\multicolumn{5}{@{}l}{\textit{Panel B: Native and stablecoin bridge risk}} \\
+ & \multicolumn{2}{c}{Relative volatility} & \multicolumn{2}{c}{Daily divergence loss} \\
+Native median & \multicolumn{2}{c}{126.9\%} & \multicolumn{2}{c}{5.60 bp} \\
+Stablecoin median & \multicolumn{2}{c}{148.4\%} & \multicolumn{2}{c}{7.68 bp} \\
+Stablecoin has lower risk [pair-months] & \multicolumn{2}{c}{29.4\%} & \multicolumn{2}{c}{28.6\%} \\
+\bottomrule
+\end{tabularx}
