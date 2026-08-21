@@ -19,8 +19,8 @@
 \node[nodepoint] (b) at (4.75,2.55) {B};
 \draw[route,draw=accent,line width=1.7pt] (a)--(eth);
 \draw[route,draw=accent,line width=1.7pt] (eth)--(b);
-\node[font=\fontsize{22}{24}\selectfont\bfseries,text=ucldark] at (2.55,1.18) {\VOneForcedRoutes};
-\node[font=\small,text=muted,align=center] at (2.55,0.62) {of token-to-token routes\\pass through ETH};
+\node[font=\fontsize{22}{24}\selectfont\bfseries,text=ucldark] at (2.55,1.46) {\VOneForcedRoutes};
+\node[font=\small,text=muted,align=center] at (2.55,0.52) {of token-to-token routes\\pass through ETH};
 \end{tikzpicture}
 \end{column}
 \begin{column}{0.08\textwidth}
@@ -42,7 +42,7 @@
 \end{columns}
 \vspace{0.12cm}
 {\large\bfseries\color{ucldark}\centering The rule disappears; inherited liquidity can remain.\par}
-\decknote{V1 links token-to-ETH and ETH-to-token swaps within one transaction. V2 permits any token combination. Early V2 inherited liquidity, users, and routing conventions from V1; the 2026 comparisons show how much native-asset pairing remains after the mandate ends.}
+% \decknote{V1 links token-to-ETH and ETH-to-token swaps within one transaction. V2 permits any token combination. Early V2 inherited liquidity, users, and routing conventions from V1; the 2026 comparisons show how much native-asset pairing remains after the mandate ends.}
 \end{frame}
 
 % EVIDENCE-STATUS: exact accounting identity used in the principal decomposition.
@@ -65,5 +65,5 @@
 \end{center}
 \vspace{0.16cm}
 {\large\bfseries\color{ucldark}\centering The decomposition locates the rotation; later evidence explains persistence.\par}
-\decknote{The decomposition is exact. All-route shares first establish the aggregate rotation. Exact two-leg routes then isolate one vehicle family per route for the pair decomposition and the stablecoin-versus-WETH comparison.}
+% \decknote{The decomposition is exact. All-route shares first establish the aggregate rotation. Exact two-leg routes then isolate one vehicle family per route for the pair decomposition and the stablecoin-versus-WETH comparison.}
 \end{frame}

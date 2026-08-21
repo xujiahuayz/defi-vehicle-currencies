@@ -1,31 +1,34 @@
 % EVIDENCE-MANAGED-FILE
 % VISUAL-MANAGED-FILE
 
-% EVIDENCE-STATUS: synthesis of the exact decomposition, corrected persistence, joint price-capital regression, and output consequence.
-% EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_lifecycle.jsonl; output/exhibits/entry_vehicle_persistence_models.jsonl; output/exhibits/contestable_vehicle_choice.jsonl; output/exhibits/contestable_vehicle_choice_support.jsonl.
-% VISUAL-FUNCTION: economic interpretation | three-stage sequence and market-structure implication | close on pair formation and contestable retention
-\begin{frame}{Dominance grows when new pairs choose a vehicle}
-\vspace{0.10cm}
+% EVIDENCE-STATUS: synthesis of the exact decomposition, corrected persistence, depth association, joint price regression, and output consequence.
+% EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_lifecycle.jsonl; output/exhibits/entry_vehicle_persistence_models.jsonl; output/exhibits/bridge_liquidity_dominance.jsonl; output/exhibits/contestable_vehicle_choice.jsonl; output/exhibits/gas_adjusted_vehicle_consequences.jsonl.
+% VISUAL-FUNCTION: findings summary | five-step result chain | compress the whole arc from formation to consequence on one page
+\begin{frame}{The making of a dominant vehicle currency}
+\vspace{0.34cm}
 \begin{center}
 \begin{tikzpicture}[x=1cm,y=1cm]
-\node[softbox,text width=3.45cm,minimum height=1.70cm,align=center,fill=stable!8] (formation) at (-4.30,1.55)
-{\small\bfseries First-observed pair entry\\[0.12cm]{\large\bfseries\color{stable}\PairLifecycleCountEntry}\\[-0.02cm]\scriptsize \PairLifecycleCountEntryShare{} of the rotation};
-\node[softbox,text width=3.45cm,minimum height=1.70cm,align=center] (persistence) at (0,1.55)
-{\small\bfseries Later route use\\[0.12cm]{\large\bfseries\color{ucldark}\EntryPersistenceEarlyPairEffectPerTen}\\[-0.02cm]\scriptsize per 10 pp at entry};
-\node[softbox,text width=3.45cm,minimum height=1.70cm,align=center] (contest) at (4.30,1.55)
-{\small\bfseries Prior bridge capital\\[0.12cm]{\large\bfseries\color{ucldark}\ContestCapitalAdvantageTenPpEffect}\\[-0.02cm]\scriptsize per 10 pp prior capital\\[-0.03cm]conditional on current output};
-\draw[-{Stealth[length=7pt]},draw=stable,line width=1.6pt] (formation)--(persistence);
-\draw[-{Stealth[length=7pt]},draw=ucldark,line width=1.6pt] (persistence)--(contest);
+\node[softbox,text width=1.92cm,minimum height=1.72cm,align=center,fill=stable!8] (f1) at (-5.16,0)
+{{\scriptsize\bfseries New pairs\\drive the rise}\\[0.10cm]{\normalsize\bfseries\color{stable}\PairLifecycleCountEntry}\\[-0.02cm]{\tiny of \PairPooledTotal}};
+\node[softbox,text width=1.92cm,minimum height=1.72cm,align=center] (f2) at (-2.58,0)
+{{\scriptsize\bfseries Entry vehicle\\persists}\\[0.10cm]{\normalsize\bfseries\color{ucldark}\EntryPersistenceEarlyPairEffectPerTen}\\[-0.02cm]{\tiny per 10 pp entry}};
+\node[softbox,text width=1.92cm,minimum height=1.72cm,align=center] (f3) at (0,0)
+{{\scriptsize\bfseries Depth divides\\the flow}\\[0.10cm]{\normalsize\bfseries\color{stable}\BridgeDepthEqualFirstShare}\\[-0.02cm]{\tiny at equal depth}};
+\node[softbox,text width=1.92cm,minimum height=1.72cm,align=center] (f4) at (2.58,0)
+{{\scriptsize\bfseries Prices can\\flip it}\\[0.10cm]{\normalsize\bfseries\color{accent}\ContestChallengerEffect}\\[-0.02cm]{\tiny retention swing}};
+\node[softbox,text width=1.92cm,minimum height=1.72cm,align=center] (f5) at (5.16,0)
+{{\scriptsize\bfseries Costs fade\\with age}\\[0.10cm]{\normalsize\bfseries\color{ucldark}\ContestMatureForegoneInputValueWeightedBps}\\[-0.02cm]{\tiny mature pairs}};
+\draw[-{Stealth[length=6pt]},draw=stable,line width=1.4pt] (f1)--(f2);
+\draw[-{Stealth[length=6pt]},draw=ucldark,line width=1.4pt] (f2)--(f3);
+\draw[-{Stealth[length=6pt]},draw=ucldark,line width=1.4pt] (f3)--(f4);
+\draw[-{Stealth[length=6pt]},draw=rule,line width=1.4pt] (f4)--(f5);
 \end{tikzpicture}
 \end{center}
-\vspace{0.22cm}
+\vspace{0.44cm}
 \begin{beamercolorbox}[rounded=true,sep=0.24cm,wd=\textwidth]{block body}
 {\large\bfseries\color{ucldark}Two margins of currency competition\par}
-{\small Which vehicle a pair builds around; which survives price and depth changes.\par}
+{\small Which vehicle a new pair builds around; which survives later price and depth changes.\par}
 \end{beamercolorbox}
-\vspace{0.24cm}
-{\large\bfseries\color{stable}\centering Vehicle liquidity links otherwise unrelated pairs.\par}
-\decknote{Other lifecycle terms reduce entry's \PairLifecycleCountEntry{} to \PairLifecycleCountNet{} net. Among retrading pairs, 10 pp more entry-day stablecoin use predicts \EntryPersistenceEarlyPairEffectPerTen{} in days 1--30.}
 \end{frame}
 
 % EVIDENCE-STATUS: qualitative market-design interpretation of the admitted formation and contest results; no empirical estimate is displayed.
@@ -45,16 +48,16 @@
 \end{center}
 \vspace{0.30cm}
 {\large\bfseries\color{ucldark}\centering Liquidity at formation beats price competition later.\par}
-\decknote{Qualitative reading of the admitted results. Project Nexus assigns conversion to an FX provider and Project Rialto uses a vehicle when direct exchange is unavailable; both choose who may make the market inside the rail. The oversight point is a network form of commonality in liquidity; welfare statements would need user surplus, provider returns, and risk incidence.}
+% \decknote{Qualitative reading of the admitted results. Project Nexus assigns conversion to an FX provider and Project Rialto uses a vehicle when direct exchange is unavailable; both choose who may make the market inside the rail. The oversight point is a network form of commonality in liquidity; welfare statements would need user surplus, provider returns, and risk incidence.}
 \end{frame}
 
 % EVIDENCE-STATUS: research outlook on active margins; no empirical estimate is displayed.
-% EVIDENCE-SOURCES: docs/findings/README.md; docs/research/design.md.
+% EVIDENCE-SOURCES: docs/findings/README.md; docs/research/design.md; scripts/analyze/README.md.
 % VISUAL-FUNCTION: research outlook | four open-question rows | invite discussion on the margins under active work
 \begin{frame}{What we are asking next}
 \vspace{0.30cm}
 \begin{itemize}
-\item Who supplies the bridge? Provider-level capital responses to fees, risk, and incentives.
+\item Who supplies the bridge? Provider networks across pairs; issuer circulation into bridge capital; fee and incentive events.
 \item Does settlement architecture move liquidity? Uniswap V4 flash accounting against V3.
 \item Who earns the rents of dominance: traders, providers, or issuers?
 \item The same entry-margin account, taken back to conventional FX.

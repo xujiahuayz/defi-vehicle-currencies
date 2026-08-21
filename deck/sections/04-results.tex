@@ -27,7 +27,7 @@
 \hspace{0.55cm}
 \tikz[baseline=-0.4ex]\draw[muted,dashed,line width=1.3pt] (0,0)--(0.55,0);\;Other\par}
 \vspace{-0.08cm}
-\decknote{Each complete route contributes once for every intermediary position, including routes with more than two legs. Every point covers six calendar months; the final point is 2026 H1. Routed value requires source, intermediary, and destination values to agree within 20\%.}
+% \decknote{Each complete route contributes once for every intermediary position, including routes with more than two legs. Every point covers six calendar months; the final point is 2026 H1. Routed value requires source, intermediary, and destination values to agree within 20\%.}
 \end{frame}
 
 % EVIDENCE-SOURCES: output/figures/vehicle_dominance_timelapse.mp4; output/figures/vehicle_dominance_timelapse_poster.pdf.
@@ -40,7 +40,7 @@
 \includegraphics[width=0.96\textwidth,height=0.70\textheight,keepaspectratio]{../output/figures/vehicle_dominance_timelapse_poster.pdf}}
 \par\vspace{-0.04cm}
 {\scriptsize\bfseries\color{ucldark}$\blacktriangleright$ Play 18-second film\par}
-\decknote{The film follows WETH, USDC, USDT, and DAI in route participation, supported value, and pair breadth. Each frame retains six months of history. The MP4 is embedded in the final PDF.}
+% \decknote{The film follows WETH, USDC, USDT, and DAI in route participation, supported value, and pair breadth. Each frame retains six months of history. The MP4 is embedded in the final PDF.}
 \end{frame}
 
 % EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_lifecycle.jsonl.
@@ -68,7 +68,7 @@ $\par}
 \end{center}
 \vspace{0.16cm}
 {\large\bfseries\color{ucldark}First-observed pair entry supplies \PairLifecycleCountEntry{} of \PairPooledTotal{}; switching gives \PairPooledWithin{}.\par}
-\decknote{Exact two-leg native-or-stable vehicle routes on matched January--June dates. $S$ is the stablecoin share, $W$ the continuing-pair weight, $\omega_p$ and $s_p$ pair $p$'s weight and stablecoin share; bars are midpoints of 2024 H1 and 2026 H1, and unrounded terms sum to the aggregate change. Within the period-specific term, first-observed entry contributes \PairLifecycleCountEntry{} and reactivation, vehicle-role turnover, and exit contribute \PairLifecycleCountOffset{}.}
+% \decknote{Exact two-leg native-or-stable vehicle routes on matched January--June dates. $S$ is the stablecoin share, $W$ the continuing-pair weight, $\omega_p$ and $s_p$ pair $p$'s weight and stablecoin share; bars are midpoints of 2024 H1 and 2026 H1, and unrounded terms sum to the aggregate change. Within the period-specific term, first-observed entry contributes \PairLifecycleCountEntry{} and reactivation, vehicle-role turnover, and exit contribute \PairLifecycleCountOffset{}.}
 \end{frame}
 
 % EVIDENCE-SOURCES: output/exhibits/entry_vehicle_persistence_models.jsonl; output/exhibits/entry_vehicle_persistence_support.jsonl.
@@ -94,7 +94,7 @@ At least 10 entry routes & \EntryPersistenceEarlyMinTenEffectPerTen & \EntryPers
 \end{center}
 \vspace{0.20cm}
 {\large\bfseries\color{stable}\centering Near one-for-one persistence, however precisely entry is measured.\par}
-\decknote{The sample contains \EntryPersistenceEntrants{} pairs entering by March 2 in 2024 or 2026; \EntryPersistenceEarlyRetradeRate{} trade again in days 1--30 and \EntryPersistenceLateRetradeRate{} in days 31--120. The entry day is excluded and follow-up windows are disjoint. Regressions condition on trading again and control for cohort year, stablecoin endpoints, entry activity, direct-route share, and route complexity. Parentheses hold entry-date-clustered standard errors; the restricted rows contain \EntryPersistenceEarlyMinFivePairs{} and \EntryPersistenceEarlyMinTenPairs{} early-window pairs.}
+% \decknote{The sample contains \EntryPersistenceEntrants{} pairs entering by March 2 in 2024 or 2026; \EntryPersistenceEarlyRetradeRate{} trade again in days 1--30 and \EntryPersistenceLateRetradeRate{} in days 31--120. The entry day is excluded and follow-up windows are disjoint. Regressions condition on trading again and control for cohort year, stablecoin endpoints, entry activity, direct-route share, and route complexity. Parentheses hold entry-date-clustered standard errors; the restricted rows contain \EntryPersistenceEarlyMinFivePairs{} and \EntryPersistenceEarlyMinTenPairs{} early-window pairs.}
 \end{frame}
 
 % EVIDENCE-SOURCES: output/exhibits/bridge_exante.jsonl.
@@ -123,7 +123,7 @@ stablecoins carry \textbf{\BridgeExanteLaterShare} of their routes in that windo
 \end{beamercolorbox}
 \vspace{0.22cm}
 {\large\bfseries\color{ucldark}\centering Viability comes first. Dominance develops more slowly.\par}
-\decknote{The sample contains \BridgeExanteEvents{} pair events. The event is the first date on which DAI, USDC, or USDT has at least \BridgeExanteThreshold{} of prior-calendar deposited capital on both required legs. Every pair used WETH earlier, and the event precedes its first observed stablecoin route.}
+% \decknote{The sample contains \BridgeExanteEvents{} pair events. The event is the first date on which DAI, USDC, or USDT has at least \BridgeExanteThreshold{} of prior-calendar deposited capital on both required legs. Every pair used WETH earlier, and the event precedes its first observed stablecoin route.}
 \end{frame}
 
 % EVIDENCE-SOURCES: output/figures/experiments/bridge_adoption_capital_path.pdf; output/exhibits/bridge_liquidity_dominance.jsonl.
@@ -149,7 +149,7 @@ stablecoins carry \textbf{\BridgeExanteLaterShare} of their routes in that windo
 \end{columns}
 \vspace{0.02cm}
 {\large Capital builds into first use, then partly unwinds.\par}
-\decknote{\BridgeAdoptionCapitalEvents{} pair events with first use 7 to 119 days after persistent support. Relative to WETH, capital changes \BridgeAdoptionCapitalMatchedPreCoef{} before and \BridgeAdoptionCapitalMatchedPostCoef{} after first use. \BridgePoolMarginContinuingCapitalShare{} of first-use capital lies in pools active one week earlier. Capital is lagged one day; intervals cluster by pair and adoption date. Providers deepening ahead of demand and traders waiting for usable depth are both consistent with this path.}
+% \decknote{\BridgeAdoptionCapitalEvents{} pair events with first use 7 to 119 days after persistent support. Relative to WETH, capital changes \BridgeAdoptionCapitalMatchedPreCoef{} before and \BridgeAdoptionCapitalMatchedPostCoef{} after first use. \BridgePoolMarginContinuingCapitalShare{} of first-use capital lies in pools active one week earlier. Capital is lagged one day; intervals cluster by pair and adoption date. Providers deepening ahead of demand and traders waiting for usable depth are both consistent with this path.}
 \end{frame}
 
 % EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl; output/exhibits/bridge_exante.jsonl.
@@ -187,7 +187,7 @@ stablecoins carry \textbf{\BridgeExanteLaterShare} of their routes in that windo
 \end{columns}
 \vspace{0.16cm}
 {\large\bfseries\color{ucldark}\centering Vehicle competition turns on relative depth, leg by leg.\par}
-\decknote{Bars: \BridgeDepthDoseFirstRows{} pair-days across \BridgeDepthDoseFirstEvents{} bridge events; \BridgeDepthThinFirstDays{} of those days sit below one tenth of WETH depth, and bar heights mirror the generated shares. Estimates: within ex-ante bridge events with bridge-event, calendar-month, and event-age controls; standard errors cluster by pair and date (\BridgeExanteDepthThirtySE{} and \BridgeExanteDepthOneTwentySE). Capital and route demand are jointly determined.}
+% \decknote{Bars: \BridgeDepthDoseFirstRows{} pair-days across \BridgeDepthDoseFirstEvents{} bridge events; \BridgeDepthThinFirstDays{} of those days sit below one tenth of WETH depth, and bar heights mirror the generated shares. Estimates: within ex-ante bridge events with bridge-event, calendar-month, and event-age controls; standard errors cluster by pair and date (\BridgeExanteDepthThirtySE{} and \BridgeExanteDepthOneTwentySE). Capital and route demand are jointly determined.}
 \end{frame}
 
 % EVIDENCE-SOURCES: output/exhibits/first_contestable_vehicle_choice.jsonl; output/exhibits/first_contestable_vehicle_choice_support.jsonl; output/exhibits/contestable_vehicle_choice.jsonl; output/exhibits/contestable_vehicle_choice_support.jsonl.
@@ -229,7 +229,7 @@ stablecoins carry \textbf{\BridgeExanteLaterShare} of their routes in that windo
 \end{beamercolorbox}
 \vspace{0.08cm}
 {\large\bfseries\color{ucldark}\centering Incumbency holds until the price lead moves.\par}
-\decknote{Both routes use exact Uniswap v2, SushiSwap v2, or Uniswap v3 state with every leg below 5\% own-price impact; price leadership requires more than 1 bp. The fixed-effect estimate has standard error \ContestChallengerSE{} over \ContestChallengerN{} routes, clustered by pair and date. Monthly exact-state sampling yields \FirstContestCoverage{} coverage; inference applies to observed contests.}
+% \decknote{Both routes use exact Uniswap v2, SushiSwap v2, or Uniswap v3 state with every leg below 5\% own-price impact; price leadership requires more than 1 bp. The fixed-effect estimate has standard error \ContestChallengerSE{} over \ContestChallengerN{} routes, clustered by pair and date. Monthly exact-state sampling yields \FirstContestCoverage{} coverage; inference applies to observed contests.}
 \end{frame}
 
 % EVIDENCE-SOURCES: output/exhibits/price_rank_crossing.jsonl; output/exhibits/price_rank_crossing_support.jsonl.
@@ -266,7 +266,7 @@ stablecoins carry \textbf{\BridgeExanteLaterShare} of their routes in that windo
 \end{columns}
 \vspace{0.10cm}
 {\normalsize\bfseries\color{ucldark}\centering Prices move flow. Earlier depth predicts which lead lasts.\par}
-\decknote{Table 7: panel A follows \RankCrossingBalancedEvents{} crossings from $-3$ to $+3$. Panel B compares crossing and earlier movement (column 4); columns 1 and 2 relate prior depth to current share and next-month leadership.}
+% \decknote{Table 7: panel A follows \RankCrossingBalancedEvents{} crossings from $-3$ to $+3$. Panel B compares crossing and earlier movement (column 4); columns 1 and 2 relate prior depth to current share and next-month leadership.}
 \end{frame}
 
 % EVIDENCE-SOURCES: output/exhibits/contestable_vehicle_choice_support.jsonl; output/exhibits/gas_adjusted_vehicle_consequences.jsonl.
@@ -302,5 +302,5 @@ stablecoins carry \textbf{\BridgeExanteLaterShare} of their routes in that windo
 \end{tikzpicture}
 \end{center}
 \vspace{-0.05cm}
-\decknote{Table 8, panels C and D. Age values are gross. Gas columns use the same \GasConsequenceReceiptMatchedRoutes{} receipt-matched routes; the path prediction holds transaction-callee class and effective gas price fixed.}
+% \decknote{Table 8, panels C and D. Age values are gross. Gas columns use the same \GasConsequenceReceiptMatchedRoutes{} receipt-matched routes; the path prediction holds transaction-callee class and effective gas price fixed.}
 \end{frame}

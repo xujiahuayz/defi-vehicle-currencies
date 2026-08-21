@@ -182,17 +182,13 @@ I read this as the boundary of the friction: vehicle inertia is mostly a phenome
 
 Let me pull the threads together.
 
-## Slide 16. Dominance grows when new pairs choose a vehicle
+## Slide 16. The making of a dominant vehicle currency
 
-Three things to take home.
+Here is the whole talk in one chain, left to right.
 
-First, the rotation came in through the door. New pairs supply four fifths of the aggregate stablecoin rise; net switching inside continuing pairs is zero.
+The rotation came in through the door: new pairs supply four fifths of the rise, and switching inside old pairs nets to zero. The vehicle chosen at entry persists, close to one for one over the following four months. Liquidity decides how the contest goes: match the incumbent's depth and you carry half the flow. Prices are what break incumbency, a sixty-point retention swing when the challenger leads. And the cost of loyalty fades as pairs mature, down to two basis points after a year.
 
-Second, the vehicle chosen at entry persists, close to one for one over the following four months, among pairs that keep trading.
-
-Third, the persistence has structure. Depth on both legs opens the contest, current prices decide it, and earlier depth decides whether a new price lead lasts.
-
-In other words, currency competition here operates on two margins: which vehicle a new relationship builds around, and which vehicle survives price and depth changes later. The first margin is where the action was.
+So currency competition operates on two margins: which vehicle a new relationship builds around, and which vehicle survives later price and depth changes. The first margin is where the action was.
 
 And the middle asset is not a private matter. Every pair routed through it inherits its liquidity and its risks. Which brings me to the part I suspect this audience cares most about.
 
@@ -212,7 +208,7 @@ One line, if you keep only one: liquidity at formation beats price competition l
 
 This is very much a living project, so let me end with what we are working on now.
 
-The supply side: who actually provides the bridge capital we saw arriving before first use, and how do providers respond to fees, risk, and incentives.
+The supply side: who actually provides the bridge capital we saw arriving before first use. We are tracing provider networks across pairs, asking whether the same providers specialise in stablecoin legs, whether growth in an issuer's circulation flows into bridge pools, and how providers respond to fee and incentive changes.
 
 Architecture: Uniswap v4 moves settlement into one shared accounting layer. We want to know whether settlement design itself relocates liquidity, and the v4-versus-v3 contrasts are looking promising.
 

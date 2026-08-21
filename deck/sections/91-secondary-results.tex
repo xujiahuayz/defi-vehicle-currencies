@@ -43,7 +43,7 @@
 \end{columns}
 \vspace{0.48cm}
 {\large Binary network position changes much less than actual intermediary use.\par}
-\decknote{Betweenness is approximate and unweighted in annual trading graphs built from trades on the fifteenth day of each month, using 256 source nodes and a fixed seed. Realised shares use all intermediary positions on the same dates. A graph edge records leg presence; realised routes add depth and execution cost.}
+% \decknote{Betweenness is approximate and unweighted in annual trading graphs built from trades on the fifteenth day of each month, using 256 source nodes and a fixed seed. Realised shares use all intermediary positions on the same dates. A graph edge records leg presence; realised routes add depth and execution cost.}
 \end{frame}
 
 % VISUAL-FUNCTION: endpoint demand and intermediary use | four-model regression table | show within-date demand pass-through and fixed-effect progression
@@ -71,7 +71,7 @@ Currency fixed effects & No & No & No & Yes \\
 \end{tabularx}\par}
 \vspace{0.06cm}
 {\footnotesize After date and currency effects, endpoint demand passes through almost one for one into intermediary use.\par}
-\decknote{\DateFETokenDays{} currency-days over \DateFEDays{} dates. Parentheses report currency/date-clustered standard errors. The outcome and demand regressor are in pp. Currency effects absorb time-invariant asset-class indicators. Asterisks \(*\), \(**\), and \(***\) denote significance at 10\%, 5\%, and 1\%, respectively.}
+% \decknote{\DateFETokenDays{} currency-days over \DateFEDays{} dates. Parentheses report currency/date-clustered standard errors. The outcome and demand regressor are in pp. Currency effects absorb time-invariant asset-class indicators. Asterisks \(*\), \(**\), and \(***\) denote significance at 10\%, 5\%, and 1\%, respectively.}
 \end{frame}
 
 % VISUAL-FUNCTION: endpoint eligibility in the decomposition | two-branch composition diagram | isolate the mechanical WETH-endpoint component
@@ -84,7 +84,7 @@ Currency fixed effects & No & No & No & Yes \\
 \end{center}
 \vspace{-0.08cm}
 {\large Changes within fixed pairs are \WethCountWithinFullChange{} overall and \WethCountWithinNoEndpointChange{} after removing WETH endpoints.\par}
-\decknote{A WETH endpoint mechanically excludes WETH as the intermediary. Exact two-leg native-WETH-versus-stablecoin routes on common month-days; fixed-pair estimates also absorb month-day and route scope.}
+% \decknote{A WETH endpoint mechanically excludes WETH as the intermediary. Exact two-leg native-WETH-versus-stablecoin routes on common month-days; fixed-pair estimates also absorb month-day and route scope.}
 \end{frame}
 
 % VISUAL-FUNCTION: endpoint direction and rotation | paired count-value contribution bars | distinguish broad count growth from stable-to-stable value concentration
@@ -95,7 +95,7 @@ Currency fixed effects & No & No & No & Yes \\
 \end{center}
 \vspace{-0.08cm}
 {\large USDT supplies \StableStableUsdtValueContribution{} of the \StableStableValueContribution{} two-stable-endpoint value channel.\par}
-\decknote{Exact additive decomposition on 181 matched dates in 2024 and 2026. Endpoint direction describes the pair; the vehicle remains the intermediary token.}
+% \decknote{Exact additive decomposition on 181 matched dates in 2024 and 2026. Endpoint direction describes the pair; the vehicle remains the intermediary token.}
 \end{frame}
 
 % VISUAL-FUNCTION: window and endpoint restrictions | three compact estimates | show that composition explains reversals and survives nonvehicle endpoints
@@ -124,7 +124,7 @@ Currency fixed effects & No & No & No & Yes \\
 \end{columns}
 \vspace{0.62cm}
 {\large Pair entry and exit contribute \NonvehicleEndpointCountExclusive{} by count and \NonvehicleEndpointValueExclusive{} by value.\par}
-\decknote{Adjacent comparisons use matched January--June dates from 2019 through 2026. The endpoint restriction removes every pair with WETH or a stablecoin at either endpoint. All changes and components are in pp; supported value applies the 20\% agreement rule.}
+% \decknote{Adjacent comparisons use matched January--June dates from 2019 through 2026. The endpoint restriction removes every pair with WETH or a stablecoin at either endpoint. All changes and components are in pp; supported value applies the 20\% agreement rule.}
 \end{frame}
 
 % VISUAL-FUNCTION: local and network liquidity | three coefficient columns | compare bridge depth with broader network reach
@@ -148,7 +148,7 @@ Currency fixed effects & No & No & No & Yes \\
 \end{columns}
 \vspace{0.68cm}
 {\large Local two-leg depth and broader network position both matter.\par}
-\decknote{Five vehicle currencies compared within the same set defined by pair, date, and route scope. Depth is prior-calendar deposited capital on the weaker leg. The regression absorbs set and vehicle effects and clusters by pair and date.}
+% \decknote{Five vehicle currencies compared within the same set defined by pair, date, and route scope. Depth is prior-calendar deposited capital on the weaker leg. The regression absorbs set and vehicle effects and clusters by pair and date.}
 \end{frame}
 
 % VISUAL-FUNCTION: source of pre-use capital | three capital-allocation estimates | distinguish deepening from newly active pools
@@ -171,7 +171,7 @@ Currency fixed effects & No & No & No & Yes \\
 {\small greater probability of a newly active pool\par}
 \end{column}
 \end{columns}
-\decknote{\BridgePoolMarginEvents{} first-use events. A newly active pool has positive prior-calendar capital on day zero and none on day -7; continuing pools are positive on both dates. Difference inference clusters by pair and adoption date.}
+% \decknote{\BridgePoolMarginEvents{} first-use events. A newly active pool has positive prior-calendar capital on day zero and none on day -7; continuing pools are positive on both dates. Difference inference clusters by pair and adoption date.}
 \end{frame}
 
 % EVIDENCE-STATUS: descriptive depth association supporting the contestable route-choice result.
@@ -194,7 +194,7 @@ Currency fixed effects & No & No & No & Yes \\
 \end{center}
 \vspace{0.28cm}
 {\large\bfseries Vehicle competition turns on relative depth.\par}
-\decknote{Depth is prior-calendar deposited capital on the weaker leg. The route-share comparison uses \BridgeDepthDoseFirstRows{} pair-days across \BridgeDepthDoseFirstEvents{} bridge events. Support and depth refer to the same stablecoin set. Capital and route demand are jointly determined.}
+% \decknote{Depth is prior-calendar deposited capital on the weaker leg. The route-share comparison uses \BridgeDepthDoseFirstRows{} pair-days across \BridgeDepthDoseFirstEvents{} bridge events. Support and depth refer to the same stablecoin set. Capital and route demand are jointly determined.}
 \end{frame}
 
 % EVIDENCE-STATUS: descriptive first-use comparison with economic interpretations of liquidity supply.
@@ -220,7 +220,7 @@ Currency fixed effects & No & No & No & Yes \\
 \end{columns}
 \vspace{0.48cm}
 {\large Positive pool capital becomes useful as both route legs deepen.\par}
-\decknote{The sample follows \BridgeTimingEvents{} pair events after persistent support appears. The estimates compare first use within 30 days. Lower divergence loss and issuer-linked pool seeding are two possible supply channels. Provider profitability also depends on entry prices, fee income, hedges, and expectations.}
+% \decknote{The sample follows \BridgeTimingEvents{} pair events after persistent support appears. The estimates compare first use within 30 days. Lower divergence loss and issuer-linked pool seeding are two possible supply channels. Provider profitability also depends on entry prices, fee income, hedges, and expectations.}
 \end{frame}
 
 % EVIDENCE-STATUS: descriptive event-time capital path among eventual users.
@@ -246,7 +246,7 @@ Currency fixed effects & No & No & No & Yes \\
 \end{columns}
 \vspace{0.02cm}
 {\large Capital builds into first use, then partly unwinds.\par}
-\decknote{\BridgeAdoptionCapitalEvents{} pair events with first use 7 to 119 days after persistent support. Relative to WETH, capital changes \BridgeAdoptionCapitalMatchedPreCoef{} before and \BridgeAdoptionCapitalMatchedPostCoef{} after first use. \BridgePoolMarginContinuingCapitalShare{} of first-use capital lies in pools active one week earlier. Capital is lagged one day; intervals cluster by pair and adoption date.}
+% \decknote{\BridgeAdoptionCapitalEvents{} pair events with first use 7 to 119 days after persistent support. Relative to WETH, capital changes \BridgeAdoptionCapitalMatchedPreCoef{} before and \BridgeAdoptionCapitalMatchedPostCoef{} after first use. \BridgePoolMarginContinuingCapitalShare{} of first-use capital lies in pools active one week earlier. Capital is lagged one day; intervals cluster by pair and adoption date.}
 \end{frame}
 
 % EVIDENCE-STATUS: exact pre-transaction opportunity-set comparison.
@@ -279,7 +279,7 @@ Currency fixed effects & No & No & No & Yes \\
 \end{columns}
 \vspace{0.44cm}
 {\large Opening other vehicles adds \ExactFrontierVehicleAddition{}; stablecoin share changes by \ExactFrontierStableChange{}.\par}
-\decknote{Routes are repriced for the same pair and input immediately before execution. The sample contains \ExactFrontierRoutes{} routes on \ExactFrontierDates{} monthly dates across exact Uniswap v2, SushiSwap v2, and Uniswap v3 states; minimum input is \ExactFrontierMinimumInput{} and the impact limit is \ExactFrontierImpactLimit{}. Quotes are gross of gas.}
+% \decknote{Routes are repriced for the same pair and input immediately before execution. The sample contains \ExactFrontierRoutes{} routes on \ExactFrontierDates{} monthly dates across exact Uniswap v2, SushiSwap v2, and Uniswap v3 states; minimum input is \ExactFrontierMinimumInput{} and the impact limit is \ExactFrontierImpactLimit{}. Quotes are gross of gas.}
 \end{frame}
 
 % EVIDENCE-STATUS: robustness of corrected persistence to stronger entry-day support.
@@ -301,7 +301,7 @@ At least 10 entry routes & \textbf{\color{stable}\EntryPersistenceEarlyMinTenEff
 \end{center}
 \vspace{0.48cm}
 {\large\bfseries\color{ucldark}\centering Stronger entry measurement leaves the persistence estimate intact.\par}
-\decknote{The entry day is excluded and the follow-up windows are disjoint. The 5-route samples contain \EntryPersistenceEarlyMinFivePairs{} and \EntryPersistenceLateMinFivePairs{} pairs; the 10-route samples contain \EntryPersistenceEarlyMinTenPairs{} and \EntryPersistenceLateMinTenPairs{}. Controls match the main pair-weighted specification, and standard errors cluster by entry date.}
+% \decknote{The entry day is excluded and the follow-up windows are disjoint. The 5-route samples contain \EntryPersistenceEarlyMinFivePairs{} and \EntryPersistenceLateMinFivePairs{} pairs; the 10-route samples contain \EntryPersistenceEarlyMinTenPairs{} and \EntryPersistenceLateMinTenPairs{}. Controls match the main pair-weighted specification, and standard errors cluster by entry date.}
 \end{frame}
 
 % EVIDENCE-STATUS: boundary test relating prior relative-price risk to constant-product bridge capital.
@@ -337,5 +337,5 @@ At least 10 entry routes & \textbf{\color{stable}\EntryPersistenceEarlyMinTenEff
 \end{columns}
 \vspace{0.36cm}
 {\large\bfseries\color{stable}\centering Risk shapes local capital; the rotation extends beyond it.\par}
-\decknote{The panel contains \BridgeRiskObservations{} constant-product WETH and stablecoin bridge observations with positive capital on both legs. Models absorb pair-by-date and vehicle effects, control for prior route activity, and cluster by \BridgeRiskPairClusters{} pairs and \BridgeRiskDateClusters{} dates. Daily divergence loss gives the same directional result. The outcome is deposited capital; provider returns remain outside measurement.}
+% \decknote{The panel contains \BridgeRiskObservations{} constant-product WETH and stablecoin bridge observations with positive capital on both legs. Models absorb pair-by-date and vehicle effects, control for prior route activity, and cluster by \BridgeRiskPairClusters{} pairs and \BridgeRiskDateClusters{} dates. Daily divergence loss gives the same directional result. The outcome is deposited capital; provider returns remain outside measurement.}
 \end{frame}

@@ -62,7 +62,7 @@ A25 LP risk\par
 \fcolorbox{rule}{white}{\includegraphics[width=0.94\textwidth,height=0.94cm,keepaspectratio,trim=280 320 324 700,clip]{assets/observed_route_blockscout.png}}
 \par\vspace{0.14cm}
 {\normalsize\raggedright The maker supplies the USDC used by the Fluid leg. The instruction is PYUSD $\rightarrow$ USDe.\par}
-\decknote{Transaction \ethtx{0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9}{0xbda1d07f\ldots 9bf67ad9}, 10 January 2026. The role of PYUSD--USDC remains unobserved: another vehicle leg or executor inventory. Disconnected groups comprise \DisconnectedShareEnd{} of reconstructed components in 2026. Treating each internally valid component as a separate route raises stablecoin count dominance from \StableCountEnd{} to \ComponentRouteCountEnd{}.}
+% \decknote{Transaction \ethtx{0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9}{0xbda1d07f\ldots 9bf67ad9}, 10 January 2026. The role of PYUSD--USDC remains unobserved: another vehicle leg or executor inventory. Disconnected groups comprise \DisconnectedShareEnd{} of reconstructed components in 2026. Treating each internally valid component as a separate route raises stablecoin count dominance from \StableCountEnd{} to \ComponentRouteCountEnd{}.}
 \end{frame}
 
 % VISUAL-FUNCTION: route counting unit | one-route transaction glyph | distinguish route units from swap legs
@@ -141,7 +141,7 @@ A25 LP risk\par
 \begin{frame}{A2. Stablecoin backing changes over time}
 \centering
 \resizebox{0.90\textwidth}{!}{\input{assets/backing-regime-heatmap.tex}}\par
-\decknote{Bars begin at public launch or the sample start for older tokens. DAI's dated regimes follow the Maker Governance actions that \href{https://vote.makerdao.com/executive/add-usdc-as-a-collateral-type-2020-03-17}{added USDC-A} and \href{https://vote.makerdao.com/executive/template-executive-vote-activate-rwa001-a-add-psm-usdc-a-momc-changes-april-16-2021}{activated RWA001-A}. FRAX's dashed arrow follows \href{https://gov.frax.finance/t/fip-188-increase-cr-to-100/2147}{FIP-188} and denotes a target, not observed collateral.}
+% \decknote{Bars begin at public launch or the sample start for older tokens. DAI's dated regimes follow the Maker Governance actions that \href{https://vote.makerdao.com/executive/add-usdc-as-a-collateral-type-2020-03-17}{added USDC-A} and \href{https://vote.makerdao.com/executive/template-executive-vote-activate-rwa001-a-add-psm-usdc-a-momc-changes-april-16-2021}{activated RWA001-A}. FRAX's dashed arrow follows \href{https://gov.frax.finance/t/fip-188-increase-cr-to-100/2147}{FIP-188} and denotes a target, not observed collateral.}
 \end{frame}
 
 % VISUAL-FUNCTION: peg and instrument identity | parallel traditional-currency and stablecoin comparison | discipline family aggregation and LP interpretation
@@ -175,7 +175,7 @@ A25 LP risk\par
 {\small Lower divergence loss may attract liquidity providers; issuers or affiliated market makers may also seed conversion pools. Peg stress reverses the comparison.\par}
 \end{minipage}
 \end{center}
-\decknote{The Bahamian-dollar example follows the IMF's 2025 Article IV description of the conventional one-for-one U.S.-dollar peg. The supply-side sentence gives economic interpretations. Separating independent from issuer-linked liquidity and measuring provider returns would require provider identities, funding relationships, entry prices, fees, hedges, and expectations.}
+% \decknote{The Bahamian-dollar example follows the IMF's 2025 Article IV description of the conventional one-for-one U.S.-dollar peg. The supply-side sentence gives economic interpretations. Separating independent from issuer-linked liquidity and measuring provider returns would require provider identities, funding relationships, entry prices, fees, hedges, and expectations.}
 \end{frame}
 
 % VISUAL-FUNCTION: primary measurement funnel | staged route-object and two-support split | separate topology support from dollar-value support
@@ -398,7 +398,7 @@ V4 singleton
 \node[font=\small\bfseries,text=ucldark,align=center] at (2.5,-1.55) {same transaction, matching ETH flow};
 \end{tikzpicture}
 \par\vspace{0.12cm}
-\decknote{Both legs of transaction \ethtx{\VOneCaseTx}{\VOneCaseTxShort} (\VOneCaseDate, block \VOneCaseBlock) report the same ETH amount to the last recorded digit.}
+% \decknote{Both legs of transaction \ethtx{\VOneCaseTx}{\VOneCaseTxShort} (\VOneCaseDate, block \VOneCaseBlock) report the same ETH amount to the last recorded digit.}
 \end{column}
 \end{columns}
 \end{frame}
@@ -422,7 +422,7 @@ V4 singleton
 \begin{center}
 \includegraphics[width=0.99\textwidth,height=0.61\textheight,keepaspectratio]{../output/figures/experiments/integration_change_forest.pdf}
 \end{center}
-\decknote{Changes compare matched January-through-June dates in 2024 and 2026. Bars show calendar-HAC confidence intervals; venue scope records realised routes.}
+% \decknote{Changes compare matched January-through-June dates in 2024 and 2026. Bars show calendar-HAC confidence intervals; venue scope records realised routes.}
 \note{Two-leg routes gain \StableCountChange{} and longer routes gain \MultiLegCountChange{}; the weakest venue-by-length cell gains \WeakestComplexityCountChange{}. Within day, cross-exchange routes carry \WithinDayVenueGapValue{} more stablecoin value share than same-exchange routes.}
 \end{frame}
 
@@ -435,7 +435,7 @@ V4 singleton
 \centering
 \resizebox{0.94\textwidth}{!}{\input{assets/count-value-route-widths.tex}}\par
 \vspace{-0.02cm}
-{\raggedright\decknote{Both panels contain the same routes. Line widths are illustrative, and value weighting applies only on the stated valuation-support band.}}
+% {\raggedright\decknote{Both panels contain the same routes. Line widths are illustrative, and value weighting applies only on the stated valuation-support band.}}
 \end{frame}
 
 % VISUAL-FUNCTION: measurement taxonomy | two-by-two visual grid | separate route status, continuous dominance, graph position, and counterfactual cost
@@ -504,7 +504,7 @@ How often $k$ appears at either observed route endpoint.
 \includegraphics[width=0.93\textwidth,height=0.66\textheight,keepaspectratio]{../output/figures/experiments/integration_vehicle_alluvial.pdf}
 \end{center}
 \vspace{-0.12cm}
-\decknote{Ribbon width is the share of 2026 intermediation jointly classified by venue scope and intermediary type.}
+% \decknote{Ribbon width is the share of 2026 intermediation jointly classified by venue scope and intermediary type.}
 \vfill
 \end{frame}
 
