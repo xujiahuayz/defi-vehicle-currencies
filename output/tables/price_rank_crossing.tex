@@ -1,0 +1,37 @@
+\begin{tabularx}{\linewidth}{@{}>{\hsize=1.25\hsize\raggedright\arraybackslash}X*{3}{>{\hsize=.75\hsize\centering\arraybackslash}X}@{}}
+\toprule
+\multicolumn{4}{@{}l}{\textit{Panel A. Incumbent route share around an exact-price rank crossing [pp]}} \\
+Event month & All crossings & Stable challenger & Native challenger \\
+\midrule
+-3 & \begin{tabular}{@{}c@{}}54.7\\(2.0)\end{tabular} & \begin{tabular}{@{}c@{}}73.7\\(3.0)\end{tabular} & \begin{tabular}{@{}c@{}}35.4\\(3.6)\end{tabular} \\
+-2 & \begin{tabular}{@{}c@{}}54.8\\(2.4)\end{tabular} & \begin{tabular}{@{}c@{}}73.6\\(3.5)\end{tabular} & \begin{tabular}{@{}c@{}}35.7\\(4.6)\end{tabular} \\
+-1 & \begin{tabular}{@{}c@{}}66.9\\(1.8)\end{tabular} & \begin{tabular}{@{}c@{}}83.1\\(2.7)\end{tabular} & \begin{tabular}{@{}c@{}}50.5\\(3.8)\end{tabular} \\
+0 (crossing) & \begin{tabular}{@{}c@{}}38.1\\(1.9)\end{tabular} & \begin{tabular}{@{}c@{}}53.6\\(3.8)\end{tabular} & \begin{tabular}{@{}c@{}}22.5\\(2.7)\end{tabular} \\
++1 & \begin{tabular}{@{}c@{}}49.2\\(2.5)\end{tabular} & \begin{tabular}{@{}c@{}}69.2\\(4.3)\end{tabular} & \begin{tabular}{@{}c@{}}29.0\\(4.4)\end{tabular} \\
++2 & \begin{tabular}{@{}c@{}}55.4\\(2.3)\end{tabular} & \begin{tabular}{@{}c@{}}77.9\\(4.2)\end{tabular} & \begin{tabular}{@{}c@{}}32.5\\(4.2)\end{tabular} \\
++3 & \begin{tabular}{@{}c@{}}50.4\\(2.5)\end{tabular} & \begin{tabular}{@{}c@{}}73.4\\(3.6)\end{tabular} & \begin{tabular}{@{}c@{}}27.0\\(3.9)\end{tabular} \\
+\bottomrule
+\end{tabularx}
+
+\vspace{0.65em}
+
+\begin{tabularx}{\linewidth}{@{}>{\hsize=1.55\hsize\raggedright\arraybackslash}X*{4}{>{\hsize=.75\hsize\centering\arraybackslash}X}@{}}
+\toprule
+\multicolumn{5}{@{}l}{\textit{Panel B. Immediate response and next-month price-rank persistence}} \\
+ & \multicolumn{1}{c}{Incumbent-share change} & \multicolumn{2}{c}{Challenger leads next month} & \multicolumn{1}{c}{Actual vs. placebo} \\
+\cmidrule(lr){2-2}\cmidrule(lr){3-4}\cmidrule(l){5-5}
+ & Material & Material & All & Material \\
+ & (1) & (2) & (3) & (4) \\
+\midrule
+Challenger weak-leg capital share [effect pp per 10 pp] & \begin{tabular}{@{}c@{}}$+0.28$\\$(0.66)$\end{tabular} & \begin{tabular}{@{}c@{}}$+3.70^{**}$\\$(1.52)$\end{tabular} & \begin{tabular}{@{}c@{}}$+3.85^{***}$\\$(0.95)$\end{tabular} &  \\
+Actual crossing [vs. months -3 to -2] &  &  &  & \begin{tabular}{@{}c@{}}$-28.98^{***}$\\$(4.71)$\end{tabular} \\
+Actual crossing $\times$ challenger capital [10 pp] &  &  &  & \begin{tabular}{@{}c@{}}$+2.75$\\$(1.87)$\end{tabular} \\
+\addlinespace
+Crossing controls & Yes & Yes & Yes & Yes \\
+Crossing-month fixed effects & Yes & Yes & Yes & No \\
+Crossing-event fixed effects & No & No & No & Yes \\
+Observations & 361 & 286 & 583 & 440 \\
+Crossing events & 361 & 286 & 583 & 220 \\
+Ordered endpoint pairs & 163 & 122 & 229 & 83 \\
+\bottomrule
+\end{tabularx}

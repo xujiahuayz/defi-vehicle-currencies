@@ -6,6 +6,7 @@ import pytest
 from scripts.tabulate.render_price_rank_crossing import (
     MODEL_COLUMNS,
     render_price_rank_crossing,
+    render_price_rank_crossing_values,
 )
 
 
@@ -30,6 +31,7 @@ def _rows() -> list[dict[str, object]]:
                 }
             )
     for model_index, model_id in enumerate(MODEL_COLUMNS[:3]):
+        coefficient = (0.28, 3.70, 3.85)[model_index]
         for regressor in (
             "challenger_capital_share_10pp",
             "stable_challenger",
@@ -40,7 +42,7 @@ def _rows() -> list[dict[str, object]]:
                     "model_id": model_id,
                     "sample": "material",
                     "regressor": regressor,
-                    "coefficient_pp": 3.70 + model_index,
+                    "coefficient_pp": coefficient,
                     "standard_error_pp": 1.52,
                     "p_value": 0.018,
                     "observations": 286 + model_index,
@@ -75,6 +77,7 @@ def _support() -> pd.DataFrame:
             {
                 "record_type": "price_rank_crossing_support",
                 "material_events": 400,
+                "material_event_pairs": 180,
                 "material_stable_challenger_events": 200,
                 "material_native_challenger_events": 200,
                 "material_balanced_seven_month_events": 147,
@@ -113,3 +116,30 @@ def test_price_rank_crossing_table_requires_reverse_crossings() -> None:
     support.loc[0, "material_native_challenger_events"] = 199
     with pytest.raises(ValueError, match="reverse crossing counts"):
         render_price_rank_crossing(pd.DataFrame(_rows()), support)
+
+
+def test_price_rank_crossing_values_bind_promoted_results() -> None:
+    rows = _rows()
+    rows.extend(
+        [
+            {
+                "record_type": "price_rank_crossing_follow_up",
+                "sample": "material_crossings_with_next_month",
+                "follow_up_rank": "challenger_still_ahead",
+                "event_share": 0.506,
+                "mean_incumbent_route_share": 0.230,
+            },
+            {
+                "record_type": "price_rank_crossing_follow_up",
+                "sample": "material_crossings_with_next_month",
+                "follow_up_rank": "incumbent_ahead_again",
+                "event_share": 0.465,
+                "mean_incumbent_route_share": 0.734,
+            },
+        ]
+    )
+    rendered = render_price_rank_crossing_values(pd.DataFrame(rows), _support())
+
+    assert r"\newcommand{\RankCrossingEvents}{400}" in rendered
+    assert r"\newcommand{\RankCrossingCapitalPersistence}{3.70~pp}" in rendered
+    assert r"\newcommand{\RankCrossingStillAhead}{50.6\%}" in rendered
