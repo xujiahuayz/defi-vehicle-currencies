@@ -795,6 +795,14 @@ def run(
         exact_panel = exact_panel.sort_values(
             ["day", "ordered_pair", "route_id"], kind="stable"
         ).reset_index(drop=True)
+        # Persist the expensive exact replay before estimating the narrower
+        # common-capital models.  If one of those models lacks support, the
+        # scored routes remain available for inspection and ``--estimate-only``.
+        write_panel(
+            exact_panel,
+            panel_path,
+            code_sources=CODE_SOURCES,
+        )
     panel = attach_entry_capital(exact_panel, pool_capital_path)
     results = regression_results(panel)
     elapsed = perf_counter() - started
@@ -805,12 +813,6 @@ def run(
         minimum_entry_value_usd=minimum_entry_value_usd,
         elapsed_seconds=elapsed,
     )
-    if not estimate_only:
-        write_panel(
-            exact_panel,
-            panel_path,
-            code_sources=CODE_SOURCES,
-        )
     write_exhibit(results, output_path, code_sources=CODE_SOURCES, inputs=INPUTS)
     write_exhibit(support, support_path, code_sources=CODE_SOURCES, inputs=INPUTS)
     print(results.to_string(index=False), flush=True)
