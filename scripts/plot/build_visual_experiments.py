@@ -15,6 +15,7 @@ from ddvc.visual_experiments import (
 
 
 TYPE_INPUT = OUTPUT_DIR / "exhibits" / "intermediation_by_type.jsonl"
+HALFYEAR_INPUT = OUTPUT_DIR / "exhibits" / "intermediation_by_halfyear.jsonl"
 RIVAL_INPUT = OUTPUT_DIR / "exhibits" / "intermediation_integration_rival.jsonl"
 OUTPUTS = OUTPUT_DIR / "figures" / "experiments"
 SCRIPT = str(Path(__file__).resolve().relative_to(REPO_ROOT))
@@ -27,18 +28,21 @@ CODE_SOURCES = [
 
 def main() -> int:
     by_type, type_identity = load_current_jsonl(TYPE_INPUT, consumer="visual experiment lane")
+    by_halfyear, halfyear_identity = load_current_jsonl(
+        HALFYEAR_INPUT, consumer="half-year visual experiment lane"
+    )
     rival, rival_identity = load_current_jsonl(RIVAL_INPUT, consumer="visual experiment lane")
     type_outputs = (
-        ("annual_vehicle_composition_bands.pdf", render_annual_composition_bands, "annual native-versus-stable leadership path separated by intermediary episodes and routed value; routed value requires source, intermediary, and destination dollar amounts to agree within 20 percent; other intermediary types remain visible as one exhaustive residual; calendar year is descriptive"),
-        ("integration_vehicle_alluvial.pdf", render_annual_integration_alluvial, "latest-year joint composition by integration scope and intermediary type; selected realised routes, not an integration effect"),
+        ("annual_vehicle_composition_bands.pdf", render_annual_composition_bands, by_halfyear, HALFYEAR_INPUT, halfyear_identity, "half-year native-versus-stable leadership path separated by intermediary episodes and routed value; routed value requires source, intermediary, and destination dollar amounts to agree within 20 percent; other intermediary types remain visible as one exhaustive residual"),
+        ("integration_vehicle_alluvial.pdf", render_annual_integration_alluvial, by_type, TYPE_INPUT, type_identity, "latest-year joint composition by integration scope and intermediary type; selected realised routes, not an integration effect"),
     )
-    for filename, renderer, notes in type_outputs:
+    for filename, renderer, frame, input_path, input_identity, notes in type_outputs:
         output = OUTPUTS / filename
         publish_pdf(
             output,
-            renderer=lambda path, render=renderer: render(by_type, path),
-            input_path=TYPE_INPUT,
-            input_identity=type_identity,
+            renderer=lambda path, render=renderer, data=frame: render(data, path),
+            input_path=input_path,
+            input_identity=input_identity,
             code_sources=CODE_SOURCES,
             notes=notes,
             script=SCRIPT,

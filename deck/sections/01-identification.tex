@@ -96,7 +96,7 @@
 \vspace{0.16cm}
 {\small Uniswap v1, v2, v3, and v4; SushiSwap v2 and v3; Curve; Balancer; and Fluid.\par}
 \end{beamercolorbox}
-\decknote{The nine deployments span major constant-product, concentrated-liquidity, stable-swap, weighted-pool, singleton, and integrated-liquidity designs. They form a broad source panel; other Ethereum venues remain outside it. The appendix reports observed source coverage; within-panel volume shares refer only to these sources. The exact exchange registry maps every observed Uniswap v1 exchange to its token.}
+\decknote{The exchange families were selected for historical Ethereum volume. The nine deployments span major constant-product, concentrated-liquidity, stable-swap, weighted-pool, singleton, and integrated-liquidity designs. Other Ethereum venues remain outside the panel. The appendix compares the observed sources with total Ethereum DEX volume. The exact exchange registry maps every observed Uniswap v1 exchange to its token.}
 \end{frame}
 
 \input{../output/exhibits/route_replay_deck_values.tex}
@@ -161,5 +161,5 @@
 \end{tikzpicture}
 \end{column}
 \end{columns}
-\decknote{Route-participation shares can sum above 100\% because a longer route may use several intermediary currencies. Intermediary-position shares divide all realised intermediary uses and sum to 100\%. Exact two-leg routes map one route to one vehicle.}
+\decknote{Route-participation shares can sum above 100\% because a longer route may use several intermediary currencies. Intermediary-position shares divide all realised intermediary uses and sum to 100\%. Exact two-leg routes map one route to one mutually exclusive vehicle choice; a longer route can use both a native asset and a stablecoin.}
 \end{frame}

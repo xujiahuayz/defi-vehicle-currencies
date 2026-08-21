@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import pandas as pd
@@ -82,7 +83,13 @@ def measure_day(path: Path) -> dict[str, float] | None:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--days", type=int, default=80, help="how many days to sample across the corpus")
+    ap.add_argument(
+        "--days",
+        type=int,
+        default=0,
+        help="number of evenly spaced days; 0 uses every available day",
+    )
+    ap.add_argument("--workers", type=int, default=8)
     # The day the drifted figure came from. A stride sample need not contain it, and then
     # "the worst day in the sample" quietly means something different from the day every
     # doc cites, so it is pinned in rather than left to the stride.
@@ -92,15 +99,33 @@ def main() -> int:
 
     release = route_partitions(COLS, nonempty=False)
     files = list(release.paths)
-    step = max(1, len(files) // args.days)
-    picked = files[::step][: args.days]
+    if args.days < 0:
+        ap.error("--days must be nonnegative")
+    if args.workers < 1:
+        ap.error("--workers must be positive")
+    if args.days == 0 or args.days >= len(files):
+        picked = files
+    else:
+        step = max(1, len(files) // args.days)
+        picked = files[::step][: args.days]
     for day in args.include:
         extra = UNIFIED / f"{day}.parquet"
         if extra.exists() and extra not in picked:
             picked.append(extra)
-    print(f"measuring {len(picked)} days sampled across {len(files):,} available\n", flush=True)
+    scope = "all" if len(picked) == len(files) else "sampled"
+    print(
+        f"measuring {len(picked):,} {scope} days across {len(files):,} available "
+        f"with {args.workers} workers\n",
+        flush=True,
+    )
 
-    rows = [r for r in (measure_day(p) for p in picked) if r]
+    rows = []
+    with ThreadPoolExecutor(max_workers=args.workers) as pool:
+        for index, row in enumerate(pool.map(measure_day, picked), 1):
+            if row:
+                rows.append(row)
+            if index % 250 == 0:
+                print(f"  {index:,}/{len(picked):,}", flush=True)
     if not rows:
         print("no day cleared the minimum multi-leg count")
         return 1

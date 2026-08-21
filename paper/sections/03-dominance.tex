@@ -19,7 +19,7 @@ Stablecoins carry a much larger share of vehicle activity in 2026 than in 2024. 
 \exhibitnote{The denominator contains exact two-leg routes whose sole intermediary is native or stable. Daily shares receive equal weight over matched January--June dates in 2024 and 2026. Dollar-weighted estimates require source, intermediary, and destination values to agree within 20\%. Standard errors use a Newey--West covariance with a 30-day Bartlett bandwidth.}
 \end{table}
 
-The annual series in Figure~\ref{fig:vehicle-composition} shows that the change is not monotonic. Native assets regain share in 2023 and 2024; stablecoins recover the routed-value lead in 2025. The 20\% value-agreement sample covers 71.6\% of native intermediary value and 55.1\% of stablecoin intermediary value in 2026. Fiat-reserve tokens account for \BackingFiatCountChange{} of the \BackingPooledCountChange{} count increase and \BackingFiatValueChange{} of the \BackingPooledValueChange{} value increase. The aggregate movement is therefore mainly a shift toward reserve-backed dollar tokens, although the token-level results below show that USDT and USDC do not move together.
+The half-year series in Figure~\ref{fig:vehicle-composition} shows that the change is not monotonic. Native assets regain share in 2023 and 2024; stablecoins recover the routed-value lead in 2025. The 20\% value-agreement sample covers 71.6\% of native intermediary value and 55.1\% of stablecoin intermediary value in 2026. Fiat-reserve tokens account for \BackingFiatCountChange{} of the \BackingPooledCountChange{} count increase and \BackingFiatValueChange{} of the \BackingPooledValueChange{} value increase. The aggregate movement is therefore mainly a shift toward reserve-backed dollar tokens, although the token-level results below show that USDT and USDC do not move together.
 % output/exhibits/intermediation_by_type.jsonl; output/exhibits/e0_vehicle_transition_backing_regime_estimates.jsonl
 
 \begin{figure}[tbp]
@@ -27,13 +27,15 @@ The annual series in Figure~\ref{fig:vehicle-composition} shows that the change 
 \caption{Intermediary activity rotates between native assets and stablecoins}
 \label{fig:vehicle-composition}
 \includegraphics[width=0.98\textwidth]{../output/figures/experiments/annual_vehicle_composition_bands.pdf}
-\exhibitnote{The sample contains complete routes that do not return to their starting asset. Each route contributes once for every intermediary it uses, so routes with more than two legs can contribute several observations. Shares are formed across all intermediary types; Table~\ref{tab:rotation} uses the narrower native-or-stable denominator. The 2026 observation covers January through June.}
+\exhibitnote{The sample contains complete routes that do not return to their starting asset. Each route contributes once for every intermediary it uses, so routes with more than two legs can contribute several observations. Shares are formed across all intermediary types; Table~\ref{tab:rotation} uses the narrower native-or-stable denominator. Every point covers six calendar months; the final point is 2026 H1.}
 \end{figure}
 
 \subsection{Pair formation and persistence}
 \label{sec:dominance:pairs}
 
-Aggregate dominance can change inside continuing pairs or through the distribution of activity across pairs. Let $p$ denote a pair and $y\in\{2024,2026\}$. A continuing pair carries native-or-stable routes in both matched periods; a year-specific pair carries them in only one. Let $W_y$ be the share of native-plus-stable activity in continuing pairs, $\omega_{p,y}$ pair $p$'s weight within that activity, and $s_{p,y}$ its stablecoin share. Continuing pairs have stablecoin share $S_{C,y}=\sum_p\omega_{p,y}s_{p,y}$, while year-specific pairs have share $S_{E,y}$. Writing $\Delta x=x_{2026}-x_{2024}$ and $\bar{x}=(x_{2024}+x_{2026})/2$ gives the exact midpoint decomposition
+Aggregate dominance can change inside continuing pairs or through the distribution of activity across pairs. Let $p$ denote a pair and $y\in\{2024,2026\}$. A continuing pair carries native-or-stable routes in both matched periods; a year-specific pair carries them in only one. First split total activity between these two sets. Within continuing pairs, stablecoin share can change because a given pair changes its vehicle mix or because trading shifts toward pairs with a different vehicle mix. The remaining change comes from the aggregate weight on continuing pairs and the stablecoin share of pairs observed in only one period.
+
+Formally, let $W_y$ be the share of native-plus-stable activity in continuing pairs, $\omega_{p,y}$ pair $p$'s weight within that activity, and $s_{p,y}$ its stablecoin share. Continuing pairs have stablecoin share $S_{C,y}=\sum_p\omega_{p,y}s_{p,y}$, while year-specific pairs have share $S_{E,y}$. Writing $\Delta x=x_{2026}-x_{2024}$ and $\bar{x}=(x_{2024}+x_{2026})/2$ gives the exact midpoint decomposition
 \begin{equation}
 \label{eq:pair-decomposition}
 \begin{aligned}
@@ -45,10 +47,12 @@ Aggregate dominance can change inside continuing pairs or through the distributi
 \end{aligned}
 \end{equation}
 
+The midpoint averages hold the companion quantity fixed while each component changes, so the four terms add exactly to the aggregate change. The last two terms remain separate because entry and exit alter both the activity outside the continuing set and its vehicle composition.
+
 We also compare the same pair, date within the year, and realised single- or cross-exchange route class. For route-count or routed-value stablecoin share $S^{(m)}_{pds,y}$, the matched regression is
 \begin{equation}
 \label{eq:pair-fe}
-S^{(m)}_{pds,y}=\alpha^{(m)}_{pds}+\beta^{(m)}\mathbf 1\{y=2026\}+\varepsilon^{(m)}_{pds,y},
+S^{(m)}_{pds,y}=\alpha^{(m)}_{pds}+\beta^{(m)}\mathbf{1}_{\{y=2026\}}+\varepsilon^{(m)}_{pds,y},
 \qquad m\in\{N,V\}.
 \end{equation}
 Here $d$ is the month-day and $s$ the realised route class. Observations are weighted by native-plus-stable route count or supported routed value; standard errors cluster by pair and date. The comparison is descriptive because route class and trading activity can respond to the same forces as vehicle choice.
@@ -80,7 +84,7 @@ Panel B of Appendix Table~\ref{tab:app:rotation-boundaries} removes every pair w
 The first routes in a new pair predict its subsequent vehicle. For entrant pair $p$ first observed on date $t$, let $S^{\mathrm{entry}}_{p,t}$ be its initial stablecoin share and $S_{p,t+h}$ its stablecoin share through horizon $h$. We estimate
 \begin{equation}
 \label{eq:entry-path}
-S_{p,t+h}=\alpha_h+\beta_h S^{\mathrm{entry}}_{p,t}+\gamma_h\mathbf 1\{S^{\mathrm{entry}}_{p,t}>1/2\}+X_{p,t}'\delta_h+\varepsilon_{p,t+h},
+S_{p,t+h}=\alpha_h+\beta_h S^{\mathrm{entry}}_{p,t}+\gamma_h\mathbf{1}_{\{S^{\mathrm{entry}}_{p,t}>1/2\}}+X_{p,t}'\delta_h+\varepsilon_{p,t+h},
 \end{equation}
 where $X_{p,t}$ contains entry size, cohort year, endpoint class, direct-route share, and route-complexity share. The sample excludes pairs with WETH at an endpoint and requires complete follow-up support.
 
@@ -96,7 +100,7 @@ where $X_{p,t}$ contains entry size, cohort year, endpoint class, direct-route s
 \exhibitnote{The entry-persistence rows estimate Equation~\eqref{eq:entry-path}. Coefficients appear above entry-date-clustered CR1 standard errors in parentheses. Share outcomes and share regressors are measured in percentage points (pp). The unit is an entrant pair by route class without WETH at either endpoint, except for the named-stable identity row, whose unit is a stablecoin entry observation with asset fixed effects. Rows are route-weighted except the stable-value row, which uses routed value satisfying the 20\% agreement rule. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
 \end{table}
 
-Table~\ref{tab:formation-regressions} shows that a 1 pp higher initial stablecoin share predicts \FormationPathEntryShareThirtyCoef{} higher stablecoin share over 30 days and \FormationPathEntryShareOneTwentyCoef{} over 120 days. The 120-day coefficient is \FormationNoDirectPathEntryShareOneTwentyCoef{} among pairs with no direct route at entry and \FormationValuePathEntryShareOneTwentyCoef{} when routes are weighted by supported value. Persistence extends to issuer identity: a 1 pp higher entry share for a named stablecoin predicts \FormationIdentityPathOneTwentyCoef{} higher own-token share over 120 days. We use \emph{stickiness} as shorthand for this predictive persistence in observed route use. The estimate does not assign the persistence to trader inertia, and the initial vehicle is not randomly assigned.
+Table~\ref{tab:formation-regressions} shows that a 1 pp higher initial stablecoin share predicts \FormationPathEntryShareThirtyCoef{} higher stablecoin share over 30 days and \FormationPathEntryShareOneTwentyCoef{} over 120 days. The 120-day coefficient is \FormationNoDirectPathEntryShareOneTwentyCoef{} among pairs with no direct route at entry and \FormationValuePathEntryShareOneTwentyCoef{} when routes are weighted by supported value. Persistence extends to issuer identity: a 1 pp higher entry share for a named stablecoin predicts \FormationIdentityPathOneTwentyCoef{} higher own-token share over 120 days. Vehicle use is therefore sticky at the pair level: the first observed vehicle mix remains strongly predictive four months later. The estimate does not assign this persistence to trader inertia, and the initial vehicle is not randomly assigned.
 % output/exhibits/vehicle_formation_exploration.jsonl; output/tables/vehicle_formation_regressions.tex
 
 Network reach, issuer-level specialisation, within-day endpoint demand, and exchange span provide supplementary views of the same formation result. Appendix~\ref{app:additional-composition} reports these estimates. They show that stablecoin arrival is more common in older and more active pairs, intermediary use moves closely with a currency's endpoint demand within a day, and the stablecoin rotation appears in both single- and cross-exchange routes. These comparisons help locate the result but do not replace the direct decomposition in Table~\ref{tab:pair-composition}.

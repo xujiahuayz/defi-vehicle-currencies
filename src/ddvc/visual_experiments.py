@@ -82,6 +82,61 @@ def annual_vehicle_composition(frame: pd.DataFrame) -> pd.DataFrame:
     return data.sort_values(["year", "integration_scope", "asset_type"], kind="stable")
 
 
+def halfyear_vehicle_composition(frame: pd.DataFrame) -> pd.DataFrame:
+    """Validate the half-year-by-scope vehicle composition exhibit."""
+
+    required = {
+        "period",
+        "period_order",
+        "integration_scope",
+        "asset_type",
+        "episodes",
+        "episode_share",
+        "usd_within_20pct",
+        "usd_share_within_20pct",
+    }
+    missing = sorted(required - set(frame.columns))
+    if missing:
+        raise ValueError(f"half-year intermediation exhibit is missing {', '.join(missing)}")
+    data = frame[list(required)].copy()
+    data["period"] = data["period"].astype(str)
+    data["period_order"] = pd.to_numeric(data["period_order"], errors="raise").astype(int)
+    data = data.loc[
+        data["integration_scope"].isin(["all", "single_venue", "cross_venue"])
+        & data["asset_type"].isin(ASSET_TYPES)
+    ]
+    for column in ("episodes", "episode_share", "usd_within_20pct", "usd_share_within_20pct"):
+        data[column] = pd.to_numeric(data[column], errors="raise")
+    keys = ["period_order", "integration_scope", "asset_type"]
+    if data.empty or data.duplicated(keys).any():
+        raise ValueError("half-year intermediation exhibit lacks unique period-scope-type cells")
+    period_labels = data[["period_order", "period"]].drop_duplicates()
+    if period_labels.duplicated("period_order").any() or period_labels.duplicated("period").any():
+        raise ValueError("half-year intermediation exhibit has ambiguous period labels")
+    expected = set(
+        pd.MultiIndex.from_product(
+            [
+                sorted(data["period_order"].unique()),
+                ("all", "single_venue", "cross_venue"),
+                ASSET_TYPES,
+            ]
+        ).tolist()
+    )
+    observed = set(data[keys].itertuples(index=False, name=None))
+    if observed != expected:
+        raise ValueError("half-year intermediation exhibit has an incomplete period-scope-type grid")
+    for scope in ("all", "single_venue", "cross_venue"):
+        cells = data.loc[data["integration_scope"].eq(scope)]
+        for share in ("episode_share", "usd_share_within_20pct"):
+            totals = cells.groupby("period_order", observed=True)[share].sum()
+            supported = cells.groupby("period_order", observed=True)[
+                "episodes" if share == "episode_share" else "usd_within_20pct"
+            ].sum().gt(0)
+            if not np.allclose(totals.loc[supported], 1, atol=1e-9, rtol=0):
+                raise ValueError(f"{scope} {share} does not exhaust its supported denominator")
+    return data.sort_values(keys, kind="stable")
+
+
 def annual_integration_flows(frame: pd.DataFrame, *, year: int | None = None) -> pd.DataFrame:
     """Return current annual scope-by-type shares for alluvial rendering."""
 
@@ -192,11 +247,22 @@ def _ribbon(axis: plt.Axes, left: tuple[float, float], right: tuple[float, float
 
 
 def render_annual_composition_bands(frame: pd.DataFrame, output: Path) -> None:
-    """Render the annual native-versus-stable lead path by count and value."""
+    """Render the annual or half-year native-versus-stable path."""
 
-    data = annual_vehicle_composition(frame)
+    halfyear = "period" in frame.columns
+    data = halfyear_vehicle_composition(frame) if halfyear else annual_vehicle_composition(frame)
     data = data.loc[data["integration_scope"].eq("all")]
-    years = sorted(data["year"].unique())
+    index = "period_order" if halfyear else "year"
+    points = sorted(data[index].unique())
+    tick_labels = (
+        data[[index, "period"]]
+        .drop_duplicates()
+        .set_index(index)["period"]
+        .reindex(points)
+        .tolist()
+        if halfyear
+        else [str(point) for point in points]
+    )
     panels = (
         ("episode_share", "Intermediary episodes"),
         ("usd_share_within_20pct", "Routed value"),
@@ -221,14 +287,14 @@ def render_annual_composition_bands(frame: pd.DataFrame, output: Path) -> None:
         try:
             for axis, (column, title) in zip(axes, panels, strict=True):
                 pivot = (
-                    data.pivot(index="year", columns="asset_type", values=column)
-                    .reindex(index=years, columns=ASSET_TYPES)
+                    data.pivot(index=index, columns="asset_type", values=column)
+                    .reindex(index=points, columns=ASSET_TYPES)
                 )
                 other = pivot[
                     [item for item in ASSET_TYPES if item not in {"native", "stable"}]
                 ].sum(axis=1)
                 axis.plot(
-                    years,
+                    points,
                     pivot["native"],
                     color=PALETTE["native"],
                     linewidth=3.0,
@@ -238,7 +304,7 @@ def render_annual_composition_bands(frame: pd.DataFrame, output: Path) -> None:
                     zorder=3,
                 )
                 axis.plot(
-                    years,
+                    points,
                     pivot["stable"],
                     color=PALETTE["stable"],
                     linewidth=3.0,
@@ -248,7 +314,7 @@ def render_annual_composition_bands(frame: pd.DataFrame, output: Path) -> None:
                     zorder=3,
                 )
                 axis.plot(
-                    years,
+                    points,
                     other,
                     color="#9CA3AF",
                     linewidth=1.6,
@@ -259,7 +325,7 @@ def render_annual_composition_bands(frame: pd.DataFrame, output: Path) -> None:
                     zorder=2,
                 )
                 axis.fill_between(
-                    years,
+                    points,
                     pivot["native"],
                     pivot["stable"],
                     where=pivot["stable"].gt(pivot["native"]),
@@ -269,7 +335,7 @@ def render_annual_composition_bands(frame: pd.DataFrame, output: Path) -> None:
                     zorder=1,
                 )
                 axis.fill_between(
-                    years,
+                    points,
                     pivot["native"],
                     pivot["stable"],
                     where=pivot["native"].gt(pivot["stable"]),
@@ -279,8 +345,13 @@ def render_annual_composition_bands(frame: pd.DataFrame, output: Path) -> None:
                     zorder=1,
                 )
                 axis.set_title(title, loc="left", fontsize=12, fontweight="bold")
-                axis.set_xticks(years)
-                axis.set_xlim(min(years) - 0.25, max(years) + 0.25)
+                axis.set_xticks(
+                    points,
+                    tick_labels,
+                    rotation=45 if halfyear else 0,
+                    ha="right" if halfyear else "center",
+                )
+                axis.set_xlim(min(points) - 0.25, max(points) + 0.25)
                 axis.set_ylim(0, 0.9)
                 axis.yaxis.set_major_formatter(PercentFormatter(1.0, decimals=0))
                 axis.grid(axis="y", color="#D1D5DB", linewidth=0.6, alpha=0.75)
@@ -302,13 +373,13 @@ def render_annual_composition_bands(frame: pd.DataFrame, output: Path) -> None:
                     )
                     if latest_gap <= 0.02 and not sustained_stable_lead:
                         label = (
-                            f"Near parity by {latest_year}\n"
+                            f"Near parity by {tick_labels[-1]}\n"
                             "no sustained stable lead"
                         )
                     elif sustained_stable_lead:
-                        label = "Stable leads in consecutive years"
+                        label = "Stable leads in consecutive periods"
                     else:
-                        label = "Native remains the annual leader"
+                        label = "Native remains the period leader"
                     axis.text(
                         0.98,
                         0.97,

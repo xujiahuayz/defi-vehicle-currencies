@@ -53,7 +53,7 @@ TABLE_ROWS: tuple[TableRow, ...] = (
         outcome="Stable-majority follow-up, 120 days",
         regressor=(
             "Stable-majority entry "
-            "($\\mathbf 1\\{S^{\\mathrm{entry}}_{p,t}>1/2\\}$)"
+            "($\\mathbf{1}_{\\{S^{\\mathrm{entry}}_{p,t}>1/2\\}}$)"
         ),
         selector={
             "record_type": "entry_path_dependence_regression",
@@ -227,7 +227,7 @@ def render_vehicle_formation_regressions(results: pd.DataFrame) -> str:
     )
     rows.append(r"\toprule")
     rows.append(
-        r"Model & Outcome & Regressor & Coefficient / (s.e.) & Obs. / clusters \\"
+        r"Model & Outcome & Regressor & Estimate (s.e.) & Obs. / clusters \\"
     )
     rows.append(r"\midrule")
     for row in TABLE_ROWS:

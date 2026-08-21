@@ -20,6 +20,7 @@ data and analysis-ready panels. Each current panel has one owner.
 | `build_v3_v4_lp_origin_candidate_daily.py` | comparable nonzero V3/V4 LP actions by vehicle, day, and transaction origin |
 | `build_endpoint_candidate_composition.py` | choice, audit, exclusion, and pair-support panels |
 | `build_intermediation_by_type.py` | daily intermediary-type panel and its descriptive exhibits |
+| `build_intermediation_halfyear.py` | half-year composition from the admitted daily intermediary panel |
 | `build_vehicle_excess_use.py` | daily excess-use panel and transition exhibits |
 | `build_cross_venue_routing_series.py` | daily cross-venue panel, inference, and router windows |
 | `measure_quoter_support.py` | V2/V4 quote-support bounds used by validation and the appendix |

@@ -1,3 +1,12 @@
+\section{Discussion and policy implications}
+\label{sec:discussion}
+
+The aggregate stablecoin category contains distinct instruments. USDC, USDT, DAI, and other stablecoins can target the same unit of account while differing in issuer, backing, redemption, peg risk, and local pool liquidity. The family-level result therefore measures the rise of tokenised-dollar intermediation, and the issuer-level estimates show how that role is allocated within the family. This distinction matters most for stable-to-stable endpoint pairs, where USDT supplies most of the increase in routed value. It also separates the paper's vehicle role from a currency-equivalent measure that would consolidate every dollar-pegged claim.
+
+Vehicle use connects otherwise unrelated pairs to the liquidity and issuer conditions of the asset in the middle. This concentration can lower trading costs through deeper two-leg markets while transmitting a disruption in those markets across many endpoint pairs. The stablecoin stress comparison in Appendix~\ref{app:additional-composition} shows that issuer identity can change quickly during a reserve-confidence event; the pair-entry estimates show why established relationships may adjust more slowly. These are market-structure implications of observed route allocation, not estimates of the welfare effect of stablecoin regulation.
+
+Payment-system design faces the same extensive margin. Nexus assigns foreign-exchange conversion to a provider, and Rialto uses a third currency when direct exchange is unavailable \citep{BISNexusFX2024,BISRialto2025}. The route evidence suggests that access policy affects more than the price quoted inside an existing relationship. It also affects which two-sided markets form early enough and deeply enough to become the bridge for new relationships.
+
 \section{Conclusion}
 \label{sec:conclusion}
 
@@ -5,4 +14,4 @@ Stablecoin vehicle dominance rises sharply on decentralised exchanges. Between m
 
 The vehicle used at pair entry predicts later use. First-month stablecoin use rises from \BridgeTimingShallowMonthShare{} below one-tenth of WETH depth to \BridgeTimingCompetitiveMonthShare{} once that threshold is reached; capital on the weaker leg builds before first use. Exact pre-transaction prices distinguish venue from vehicle competition. Opening all exact venues finds a better same-vehicle quote on \ExactFrontierSameVehicleShare{} of common-support routes. Adding other vehicles and the direct path raises that incidence by \ExactFrontierVehicleAddition{} and lowers stablecoin vehicle share by \ExactFrontierStableDecline{}.
 
-Nexus assigns FX conversion to a provider; Rialto uses a vehicle when direct exchange is unavailable \citep{BISNexusFX2024,BISRialto2025}. Both show how early entry and deep markets expand a currency's international role. Aggregate dominance therefore combines use within continuing relationships with the vehicle identity of new ones.
+Aggregate dominance combines use within continuing relationships with the vehicle identity of new ones. The large stablecoin rotation comes mainly from where trading grows and which pairs appear, while the first vehicle remains predictive and its use rises with two-leg depth. Currency competition is therefore fought both inside established relationships and at the formation of new ones.

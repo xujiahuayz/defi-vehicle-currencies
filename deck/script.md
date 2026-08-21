@@ -52,7 +52,7 @@ Within a transaction, the shared hash and matching ETH amount link the token-to-
 
 What exactly do we observe? The connected sequence of pool trades. That sequence can begin after the user's broader instruction begins.
 
-How representative is this? Nine deployments spanning the main AMM designs—constant product, concentrated liquidity, stable swap, weighted pools, the v4 singleton, and Fluid's integrated liquidity. Other Ethereum venues remain outside the panel. So any venue-volume shares I show are shares of these observed sources.
+How representative is this? We selected the exchange families for their historical Ethereum volume. The nine deployments span the main AMM designs: constant product, concentrated liquidity, stable swap, weighted pools, the v4 singleton, and Fluid's integrated liquidity. Other Ethereum venues remain outside the panel. The appendix compares these sources with total Ethereum DEX volume.
 
 ## Slide 4. Inside the pools, USDT links USDC to USDe
 
@@ -74,7 +74,7 @@ First, all route lengths. Every intermediary position counts. If a route uses tw
 
 We also report route participation: the fraction of complete routes containing each currency. Those shares can add above 100 percent because one long route may contain several intermediary currencies. That is fine; it is a presence measure.
 
-Second, the exact two-leg route. One route, one intermediary, one vehicle choice. This is the sample used to decompose stablecoin against WETH use.
+Second, the exact two-leg route. One route, one intermediary, one vehicle choice. This is the sample used to decompose stablecoin against WETH use. A longer route can contain both WETH and a stablecoin, so there is no single native-or-stable choice to assign to that route.
 
 Why stablecoins and the native asset? They are the two broad vehicle families present throughout the sample. The all-route figure still shows the other categories.
 
@@ -112,9 +112,7 @@ In Uniswap v1, token-to-token trading had to pass through ETH. We recover 217,00
 
 V2 removed that rule. Any two tokens could form a pool. Yet WETH pairing remained overwhelming: 95.5 percent of single-leg v2 trades use a WETH pool in 2026, and 97.9 percent of token combinations first traded in 2026 include WETH.
 
-Part of the early persistence is mechanical. V2 inherited liquidity, users, and routing habits from v1. Then deep WETH pools and common launch conventions kept reinforcing the structure.
-
-So architecture opens a choice, but it does not erase the inherited focal point. Now watch the stablecoins begin to challenge it.
+So architecture opens a choice. The data show what followed: WETH pairing remained pervasive after arbitrary token pairs became possible. Now watch the stablecoins begin to challenge it.
 
 ## Slide 9. Stablecoins regain the routed-value lead by 2026 H1
 
@@ -223,17 +221,17 @@ So the big jump comes from searching more venues with the same vehicle: 6.6 to 4
 
 Every observation therefore has its own exact counterfactual quote. The three cards report how often each wider opportunity set beats the executed route by more than one basis point.
 
-## Slide 16. Currency competition is won where new relationships form
+## Slide 16. New relationships can reorder currency dominance
 
 Let me leave you with the bigger point.
 
-Why does dominance matter? Because the vehicle sits in the middle of many unrelated exchanges. That concentrates turnover and liquidity in its markets, lowers the cost of using it again, and also exposes many trading relationships to its liquidity and issuer conditions.
+Why does dominance matter? Because the vehicle sits in the middle of many unrelated exchanges. That concentrates turnover and liquidity in its markets. It also links many trading relationships to the same liquidity and issuer conditions.
 
 What changes dominance? New relationships and trading reallocation. The first vehicle is sticky inside a new pair, so competition inside an established relationship moves less than the aggregate market.
 
 Inside a new pair, the first vehicle predicts later use. Route share also rises sharply with two-leg depth. And the exact-price comparison says most public price competition is across venues using the same vehicle.
 
-That is what I would carry back to traditional currency competition. Aggregate dominance reflects the vehicle used inside established relationships and the one inherited by new relationships. Early presence and deep two-sided markets therefore matter alongside quoted prices.
+That is what I would carry back to traditional currency competition. Aggregate dominance reflects the vehicle used inside established relationships and the one chosen when new relationships form. Early presence and deep two-sided markets matter alongside quoted prices.
 
 Thank you.
 

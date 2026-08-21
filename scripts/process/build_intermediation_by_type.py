@@ -42,6 +42,7 @@ from ddvc.tables import write_exhibit, write_panel
 UNIFIED = DATA_DIR / "unified"
 OUT_PARQUET = DATA_DIR / "processed" / "intermediation_by_type_daily.parquet"
 OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "intermediation_by_type.jsonl"
+OUT_HALF_YEAR = OUTPUT_DIR / "exhibits" / "intermediation_by_halfyear.jsonl"
 OUT_RIVAL = OUTPUT_DIR / "exhibits" / "intermediation_integration_rival.jsonl"
 OUT_INTERACTION = OUTPUT_DIR / "exhibits" / "intermediation_integration_interaction.jsonl"
 OUT_TOKEN_INTERACTION = OUTPUT_DIR / "exhibits" / "intermediation_token_integration_interaction.jsonl"
@@ -245,6 +246,67 @@ def annual_composition(panel: pd.DataFrame) -> pd.DataFrame:
                     route_count = float(
                         getattr(observed, f"route_cnt_{asset_type}")
                     )
+                    row["route_count"] = int(route_count)
+                    row["route_participation_share"] = (
+                        route_count / float(getattr(observed, "routes_intermediated"))
+                        if getattr(observed, "routes_intermediated")
+                        else None
+                    )
+                for support in VALUE_SUPPORT_SCOPES:
+                    value_columns = {
+                        candidate: value_field(candidate, scope=scope, support=support)
+                        for candidate in TYPES
+                    }
+                    value_total = sum(
+                        float(getattr(observed, column)) for column in value_columns.values()
+                    )
+                    value = float(getattr(observed, value_columns[asset_type]))
+                    suffix = "" if support == "all_routes" else f"_{support}"
+                    row[f"usd{suffix}"] = value
+                    row[f"usd_share{suffix}"] = value / value_total if value_total else None
+                rows.append(row)
+    return pd.DataFrame(rows)
+
+
+def halfyear_composition(panel: pd.DataFrame) -> pd.DataFrame:
+    """Aggregate the same exhaustive route composition in six-month periods."""
+
+    data = panel.copy()
+    dates = pd.to_datetime(data["date"])
+    data["year"] = dates.dt.year
+    data["half"] = np.where(dates.dt.month.le(6), 1, 2)
+    data["period_order"] = data["year"] * 2 + data["half"] - 1
+    columns = [
+        column
+        for column in data.columns
+        if column.startswith("cnt_")
+        or column.startswith("route_cnt_")
+        or column.startswith("usd_")
+    ]
+    columns.append("routes_intermediated")
+    grouped = data.groupby(["year", "half", "period_order"], as_index=False)[columns].sum()
+    rows: list[dict[str, object]] = []
+    for observed in grouped.itertuples(index=False):
+        for scope in ("all", *INTEGRATION_SCOPES):
+            count_columns = {
+                asset_type: f"cnt_{asset_type}" if scope == "all" else f"cnt_{scope}_{asset_type}"
+                for asset_type in TYPES
+            }
+            count_total = sum(float(getattr(observed, column)) for column in count_columns.values())
+            for asset_type in TYPES:
+                count = float(getattr(observed, count_columns[asset_type]))
+                row = {
+                    "period": f"{int(observed.year)} H{int(observed.half)}",
+                    "period_order": int(observed.period_order),
+                    "year": int(observed.year),
+                    "half": int(observed.half),
+                    "integration_scope": scope,
+                    "asset_type": asset_type,
+                    "episodes": int(count),
+                    "episode_share": count / count_total if count_total else None,
+                }
+                if scope == "all":
+                    route_count = float(getattr(observed, f"route_cnt_{asset_type}"))
                     row["route_count"] = int(route_count)
                     row["route_participation_share"] = (
                         route_count / float(getattr(observed, "routes_intermediated"))

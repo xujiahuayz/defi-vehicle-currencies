@@ -123,6 +123,11 @@ result look formal; choose the design that answers the economic question.
   use conventional statistical language and report the estimate with uncertainty;
   terms such as “statistically clean” describe an internal decision rather than a
   result.
+- Descriptive evidence still warrants economic interpretation. State the most
+  plausible reading with conventional language such as “suggests,” “is
+  consistent with,” or “is indicative of,” then state the narrow remaining
+  identification boundary. Do not make “what the evidence cannot tell us” the
+  centre of the paragraph merely because motives are unobserved.
 
 ## Paper prose
 
@@ -278,6 +283,8 @@ result look formal; choose the design that answers the economic question.
   observed route use; it must not silently become trader inertia or another
   behavioural mechanism the design does not identify.
 - The audience-facing unit is a complete claim, not an approved vocabulary item.
+- Do not call visible comparisons, text boxes, or results “cards.” Name the
+  economic comparisons directly; layout vocabulary stays in source comments.
 - A strong finance slide normally makes the economic actor, quantity, or event
   the subject, uses an active verb, and places a substantive condition beside the
   result when the condition changes interpretation.
@@ -295,7 +302,8 @@ result look formal; choose the design that answers the economic question.
   finance-talk structures. A generic show-of-hands prompt is not.
 - The closing slide is an economic ending. It should synthesize admitted route
   findings, lift them to the market-formation implication, and finish on that
-  implication rather than on a test still to run.
+  implication rather than on a test still to run. Motivation and generic
+  “why this matters” language belong near the opening, not in the conclusion.
 - Speaker notes share the empirical spine with the paper but use a different
   register. Preserve Java's conversational delivery: short bridges, ordinary
   words, occasional fragments, and a little repetition when it helps listeners

@@ -45,6 +45,55 @@ boundary is now quantified, including its V4 concentration and a component-as-ro
 sensitivity that slightly strengthens the aggregate rotation. Each major revision follows the decision rule in
 [`writing-and-rhetoric.md`](writing-and-rhetoric.md) before implementation.
 
+## Annotated review checkpoint: 21 August 2026
+
+The comments in Java's annotated `main 3.pdf` have been consolidated here so
+the Studio revision does not depend on access to the local PDF. They imply the
+following document-wide changes, not isolated word replacements:
+
+- Explain the decomposition in ordinary language before the identity: net
+  vehicle switching within continuing pairs, reweighting among continuing
+  pairs, and pair entry or exit. Keep the numerical contrast easy to locate.
+- Give one numerical route-value example and state why the exact two-leg sample
+  identifies one mutually exclusive native-versus-stable vehicle choice.
+  Longer routes remain evidence through intermediary-position, participation,
+  and network measures; they do not replace the exact decomposition because a
+  longer route can contain both vehicle families.
+- Separate coverage within the retained sources from representativeness of the
+  wider Ethereum DEX market. The wider comparison should use historical market
+  volume, including DeFiLlama, and must not relabel within-source shares as a
+  market census.
+- Prefer full-sample validation where computation is feasible. In particular,
+  replace the 79-day round-trip estimate with the all-day result and remove
+  arbitrary router snapshots unless the dates answer an economic question.
+- Show half-year observations so 2024 H1 and 2026 H1 are visible, retain the
+  issuer-level stablecoin split and stable-to-stable endpoint analysis, and
+  keep the distinction between the stablecoin family and individual dollar
+  claims explicit.
+- Define indicators with conventional subscript notation, use that notation
+  downstream, and give regression-table units and standard-error conventions
+  once in the appropriate header or note.
+- Put a discussion and policy-implications section before the conclusion. The
+  conclusion synthesizes admitted findings and the market-formation implication;
+  motivation belongs at the front of the paper and talk.
+- Replace appendix result dumps with grouped economic questions and connect
+  each group to the main result it qualifies or extends.
+
+Draft source changes on the M3 already cover the numerical route example,
+two-leg rationale, decomposition walkthrough, half-year plotting input,
+indicator notation, full-sample round-trip program, separate discussion
+section, and corresponding deck/transcript language. These are a checkpoint,
+not a completed revision. Studio must rebuild them on the unified V1-inclusive
+panel, update every dependent exhibit and quoted number, inspect the rendered
+paper and every slide, and then iterate paper, deck, and transcript until their
+terminology, evidence, and emphasis agree.
+
+Two points remain deliberate boundaries. Dollar-pegged tokens stay distinct at
+the token level because issuer, redemption, and pool-liquidity differences are
+economically meaningful, while family-level results remain the headline.
+Multi-leg routes broaden the network evidence but cannot be assigned a single
+native-versus-stable vehicle when both families appear in the same route.
+
 ## Economic motivation and contribution
 
 - Open with the foreign-exchange problem faced by a payment provider that does
