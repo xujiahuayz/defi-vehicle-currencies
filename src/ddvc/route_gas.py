@@ -41,20 +41,8 @@ UNIFIED_ROUTE_COLUMNS = [
     "amount_usd",
     "log_index",
     "route_class",
-    "tin_role",
-    "tout_role",
 ]
 SAMPLE_CELL_COLUMNS = ["year", "legs", "venue_sequence", "gas_vehicle"]
-
-
-def _route_notional(group: pd.DataFrame) -> float:
-    """Conservative route value from the first and last observed legs."""
-
-    ordered = group.sort_values("log_index", kind="stable")
-    values = pd.to_numeric(ordered["amount_usd"], errors="coerce")
-    endpoints = values.iloc[[0, -1]].replace([np.inf, -np.inf], np.nan).dropna()
-    endpoints = endpoints[endpoints.gt(0)]
-    return float(endpoints.min()) if len(endpoints) == 2 else float("nan")
 
 
 def route_gas_rows(frame: pd.DataFrame, day: str) -> pd.DataFrame:
@@ -74,73 +62,72 @@ def route_gas_rows(frame: pd.DataFrame, day: str) -> pd.DataFrame:
     ].copy()
     if data.empty:
         return pd.DataFrame(columns=ROUTE_GAS_COLUMNS)
-
-    rows: list[dict[str, object]] = []
-    for tx_hash, tx in data.groupby("tx_hash", sort=False):
-        if tx["component_id"].nunique() != 1:
-            continue
-        component_counts = pd.to_numeric(tx["n_components"], errors="coerce")
-        if component_counts.empty or not component_counts.eq(1).all():
-            continue
-        ordered = tx.sort_values("log_index", kind="stable")
-        if ordered["log_index"].duplicated().any():
-            continue
-        legs = len(ordered)
-        if legs not in (1, 2, 3):
-            continue
-        expected_class = "single" if legs == 1 else "coherent"
-        if not ordered["route_class"].eq(expected_class).all():
-            continue
-        if legs > 1 and not all(
-            left == right
-            for left, right in zip(
-                ordered["token_out"].iloc[:-1],
-                ordered["token_in"].iloc[1:],
-                strict=True,
-            )
-        ):
-            continue
-
-        intermediary_tokens = set(
-            ordered.loc[
-                ordered["tin_role"].eq("intermediate"), "token_in"
-            ].astype(str)
-        ) | set(
-            ordered.loc[
-                ordered["tout_role"].eq("intermediate"), "token_out"
-            ].astype(str)
+    data["n_components"] = pd.to_numeric(data["n_components"], errors="coerce")
+    data["amount_usd"] = pd.to_numeric(data["amount_usd"], errors="coerce")
+    data = data.sort_values(["tx_hash", "component_id", "log_index"], kind="stable")
+    data["next_token_in"] = data.groupby("tx_hash", sort=False)["token_in"].shift(-1)
+    data["next_tx_hash"] = data["tx_hash"].shift(-1)
+    data["connected_leg"] = data["next_tx_hash"].ne(data["tx_hash"]) | data[
+        "token_out"
+    ].eq(data["next_token_in"])
+    grouped = data.groupby("tx_hash", sort=False, dropna=False)
+    routes = grouped.agg(
+        component_count=("component_id", "nunique"),
+        declared_components_min=("n_components", "min"),
+        declared_components_max=("n_components", "max"),
+        legs=("log_index", "size"),
+        unique_log_indices=("log_index", "nunique"),
+        route_class=("route_class", "first"),
+        route_class_count=("route_class", "nunique"),
+        connected=("connected_leg", "all"),
+        venue_sequence=("source", lambda values: ">".join(values.astype(str))),
+        first_mid=("token_out", "first"),
+        first_value=("amount_usd", "first"),
+        last_value=("amount_usd", "last"),
+    ).reset_index()
+    routes = routes[
+        routes["component_count"].eq(1)
+        & routes["declared_components_min"].eq(1)
+        & routes["declared_components_max"].eq(1)
+        & routes["legs"].isin((1, 2, 3))
+        & routes["unique_log_indices"].eq(routes["legs"])
+        & routes["route_class_count"].eq(1)
+        & routes["connected"]
+        & (
+            (routes["legs"].eq(1) & routes["route_class"].eq("single"))
+            | (routes["legs"].gt(1) & routes["route_class"].eq("coherent"))
         )
-        intermediary_tokens.discard("")
-        if legs == 1:
-            mid = None
-            mid_symbol = None
-            mid_type = "direct"
-        elif len(intermediary_tokens) == 1:
-            mid = next(iter(intermediary_tokens))
-            mid_symbol, mid_type = classify(mid)
-        else:
-            mid = "|".join(sorted(intermediary_tokens)) or None
-            mid_symbol = None
-            mid_type = "multi"
-        notional = _route_notional(ordered)
-        if not np.isfinite(notional) or notional <= 0:
-            continue
-        rows.append(
-            {
-                "date": pd.to_datetime(day, format="%Y%m%d"),
-                "day": day,
-                "year": int(day[:4]),
-                "tx_hash": str(tx_hash).lower(),
-                "legs": legs,
-                "venue_sequence": ">".join(ordered["source"].astype(str)),
-                "mid": mid,
-                "mid_symbol": mid_symbol,
-                "mid_type": mid_type,
-                "gas_vehicle": mid if mid_symbol is not None else mid_type,
-                "route_notional_usd": notional,
-            }
-        )
-    return pd.DataFrame(rows, columns=ROUTE_GAS_COLUMNS)
+    ].copy()
+    routes["route_notional_usd"] = routes[["first_value", "last_value"]].min(axis=1)
+    routes = routes[
+        routes["route_notional_usd"].gt(0)
+        & np.isfinite(routes["route_notional_usd"])
+    ].copy()
+    routes["mid"] = np.select(
+        [routes["legs"].eq(1), routes["legs"].eq(2)],
+        [None, routes["first_mid"]],
+        default="multi",
+    )
+    classifications = {
+        mid: classify(mid)
+        for mid in routes.loc[routes["legs"].eq(2), "mid"].dropna().unique()
+    }
+    routes["mid_symbol"] = routes["mid"].map(
+        lambda mid: classifications.get(mid, (None, "multi"))[0]
+    )
+    routes["mid_type"] = np.select(
+        [routes["legs"].eq(1), routes["legs"].eq(2)],
+        ["direct", routes["mid"].map(lambda mid: classifications.get(mid, (None, "other"))[1])],
+        default="multi",
+    )
+    routes["gas_vehicle"] = routes["mid"].where(
+        routes["mid_symbol"].notna(), routes["mid_type"]
+    )
+    routes["date"] = pd.to_datetime(day, format="%Y%m%d")
+    routes["day"] = day
+    routes["year"] = int(day[:4])
+    routes["tx_hash"] = routes["tx_hash"].astype(str).str.lower()
+    return routes.loc[:, ROUTE_GAS_COLUMNS].reset_index(drop=True)
 
 
 def deterministic_route_sample(frame: pd.DataFrame, per_cell: int = 25) -> pd.DataFrame:
@@ -279,4 +266,3 @@ class RouteGasEstimator:
             p75=out["gas_p75"].to_numpy(dtype=float),
             support=out["support"].astype(str).to_numpy(),
         )
-
