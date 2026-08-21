@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
 import pandas as pd
@@ -20,24 +21,35 @@ from ddvc.runtime import atomic_output
 DEFAULT_OUTPUT = DATA_DIR / "interim/route_gas_sample.parquet"
 
 
+def sample_day(path_text: str, per_cell: int) -> pd.DataFrame:
+    path = Path(path_text)
+    frame = pd.read_parquet(path, columns=UNIFIED_ROUTE_COLUMNS)
+    rows = route_gas_rows(frame, path.stem)
+    return deterministic_route_sample(rows, per_cell=per_cell)
+
+
 def run(
     unified: Path,
     output: Path,
     *,
     per_cell: int,
     monthly_day: int | None,
+    workers: int,
 ) -> int:
     parts: list[pd.DataFrame] = []
     paths = sorted(unified.glob("[0-9]" * 8 + ".parquet"))
     if monthly_day is not None:
         paths = [path for path in paths if int(path.stem[6:8]) == monthly_day]
-    for index, path in enumerate(paths, 1):
-        frame = pd.read_parquet(path, columns=UNIFIED_ROUTE_COLUMNS)
-        rows = route_gas_rows(frame, path.stem)
-        if not rows.empty:
-            parts.append(deterministic_route_sample(rows, per_cell=per_cell))
-        if index % 180 == 0 or index == len(paths):
-            print(f"  route days {index:,}/{len(paths):,}", flush=True)
+    with ProcessPoolExecutor(max_workers=max(1, workers)) as pool:
+        futures = {
+            pool.submit(sample_day, str(path), per_cell): path.stem for path in paths
+        }
+        for index, future in enumerate(as_completed(futures), 1):
+            rows = future.result()
+            if not rows.empty:
+                parts.append(rows)
+            if index % 20 == 0 or index == len(paths):
+                print(f"  route days {index:,}/{len(paths):,}", flush=True)
     if not parts:
         raise RuntimeError("unified route files produced no receipt-gas sample")
     sample = deterministic_route_sample(
@@ -55,6 +67,7 @@ def main() -> int:
     parser.add_argument("--unified", type=Path, default=DATA_DIR / "unified")
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--per-cell", type=int, default=25)
+    parser.add_argument("--workers", type=int, default=4)
     parser.add_argument(
         "--monthly-day",
         type=int,
@@ -74,6 +87,7 @@ def main() -> int:
         args.output,
         per_cell=args.per_cell,
         monthly_day=None if args.all_days else args.monthly_day,
+        workers=args.workers,
     )
 
 
