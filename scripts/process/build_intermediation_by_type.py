@@ -32,9 +32,9 @@ from ddvc.analysis.regression import (
     year_endpoint_change,
 )
 from ddvc.asset_types import TYPES, VEHICLE_CANDIDATE_SYMBOLS, classify
+from ddvc.datasets import route_partitions, validate_before_install
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT, SHARED_RUNTIME_DIR
 from ddvc.route_roles import VALUE_SUPPORT_SCOPES
-from ddvc.route_data import route_dataset, route_preinstall_validator
 from ddvc.realised import ROUTE_COLUMNS, realised_routes
 from ddvc.runtime import bounded_workers, exclusive_job, interruptible_process_pool
 from ddvc.tables import write_exhibit, write_panel
@@ -697,7 +697,7 @@ def main() -> int:
     args = parser.parse_args()
     workers = bounded_workers(args.workers)
 
-    route_release = route_dataset(ROUTE_COLUMNS, nonempty=False)
+    route_release = route_partitions(ROUTE_COLUMNS, nonempty=False)
     days = list(route_release.paths)
     if args.limit:
         days = days[: args.limit]
@@ -744,7 +744,7 @@ def main() -> int:
         code_sources=CODE_SOURCES,
         inputs=list(route_release.paths),
         notes="topology-valid non-cyclic routes; counts use full topology support; values report all, 2x and 20 percent source-intermediary-sink coherence bands",
-        preinstall_validator=route_preinstall_validator(route_release),
+        preinstall_validator=validate_before_install(route_release),
     )
     if args.panel_only:
         print(f"wrote analysis-ready panel {OUT_PARQUET.relative_to(REPO_ROOT)}")

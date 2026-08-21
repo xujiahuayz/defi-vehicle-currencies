@@ -40,13 +40,13 @@ That is the measurement advantage. Next, the scale.
 
 ## The route panel links pool-level swaps (4:30 to 5:40)
 
-We collected 472 million pool-level swaps, across 2,332 calendar dates, from February 2020 to June 2026.
+We collected 475 million pool-level swaps, across 2,798 calendar dates, from November 2018 to June 2026.
 
-Eight Ethereum deployments: Uniswap v2, v3 and v4; SushiSwap v2 and v3; Curve; Balancer; and Fluid.
+Nine Ethereum deployments: Uniswap v1, v2, v3 and v4; SushiSwap v2 and v3; Curve; Balancer; and Fluid.
 
-Why no Uniswap v1 here? This comes down to the old data pull. For the other exchanges, we retained pool metadata that links each pool to its token contracts. The v1 pull kept the exchange address but never requested the token address.
+V1 is in the same route panel now. The old pull gave us the exchange address, but not the token behind it. So we went back to the exchange registry and recovered the exact token address and symbol for all 1,744 v1 exchanges in the daily data.
 
-We can still pair the two v1 exchange calls through the transaction hash and the matching ETH amount. That gives us the forced-ETH result later. To add v1 to the full route panel, we would need to re-fetch its exchange records with the token address and symbol, then rebuild the historical crosswalk.
+Within a transaction, the shared hash and matching ETH amount link the token-to-ETH and ETH-to-token legs. So the early forced-ETH routes and the later market routes now sit in one continuous panel. We still look at v1 separately later when the protocol rule itself is the question.
 
 One caveat before the results: the pool route we observe can begin after the user's broader instruction begins.
 
@@ -70,7 +70,7 @@ First, all route lengths. Every intermediary position counts. If a route uses tw
 
 We also report route participation: the fraction of complete routes containing each currency. Those shares can add above 100 percent because one long route may contain several intermediary currencies. That is fine; it is a presence measure.
 
-Second, the exact two-leg route. One route, one intermediary, one vehicle choice. This is the clean sample for decomposing stablecoin against WETH use.
+Second, the exact two-leg route. One route, one intermediary, one vehicle choice. This is the sample used to decompose stablecoin against WETH use.
 
 Why stablecoins and the native asset? They are the two broad vehicle families present throughout the sample. The all-route figure still shows the other categories.
 
@@ -94,7 +94,7 @@ Before that result, one historical reason to expect persistence: Ethereum's earl
 
 In Uniswap v1, token-to-token trading had to pass through ETH. We recover 217,003 such trades. Native intermediation was written into the protocol.
 
-V2 removed that rule. Any two tokens could form a pool. Yet WETH pairing remained overwhelming: 95.5 percent of single-leg v2 trades use a WETH pool in 2026, and 97.9 percent of pairs first traded in 2026 include WETH.
+V2 removed that rule. Any two tokens could form a pool. Yet WETH pairing remained overwhelming: 95.5 percent of single-leg v2 trades use a WETH pool in 2026, and 97.9 percent of token combinations first traded in 2026 include WETH.
 
 Part of the early persistence is mechanical. V2 inherited liquidity, users, and routing habits from v1. Then deep WETH pools and common launch conventions kept reinforcing the structure.
 
@@ -273,7 +273,7 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 ## A5.1. Pool formation determines available paths
 
 - V1 permits ETH-token pools, so ETH is built into the feasible route set.
-- V2 permits arbitrary token pairs, making direct paths and alternative vehicles possible.
+- V2 lets any two ERC-20 tokens form a pool, making direct paths and alternative vehicles possible.
 - Pool creation changes the opportunity set before any router chooses a path.
 
 ## A5.2. Executable depth comes from active liquidity
@@ -292,7 +292,8 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 
 - Two token-exchange contracts, same transaction, matching ETH out and ETH in.
 - That exact ETH flow identifies forced token-to-ETH-to-token routing.
-- Missing token crosswalks limit uniform pair identification, which is why v1 stays separate.
+- The exchange registry maps all 1,744 observed v1 contracts to their exact tokens.
+- V1 enters the route panel; this slide isolates the venue rule that forced ETH intermediation.
 
 ## A7. Daily and weekly frequencies answer different questions
 

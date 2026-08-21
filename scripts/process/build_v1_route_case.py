@@ -25,11 +25,9 @@ Among those, register the transaction with the largest routed ETH amount. The
 manifest records the count surviving each filter stage so the rule's bite is
 inspectable.
 
-Token identity. The V1 raw fetch carries no token addresses (resolution rate
-0%; see the admitted report, section 1), so the manifest identifies the two
-exchange contracts and quantities only. The registered case's token
-identities are externally verified against the public transaction record and
-recorded in the admitted report, not manufactured here.
+Token identity. The exact V1 exchange registry maps every observed exchange
+contract to its ERC-20 token. The public transaction record supplies an
+independent cross-check for the registered case.
 
 Reads   data/raw/thegraph/uniswap_v1/uniswap_v1_swaps_YYYYMMDD.jsonl.gz
 Writes  output/exhibits/v1_route_case.json
@@ -48,13 +46,19 @@ from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 
+import pandas as pd
+
 from ddvc.paths import OUTPUT_DIR, REPO_ROOT
 from ddvc.runtime import atomic_output
 
 V1_RAW = REPO_ROOT / "data" / "raw" / "thegraph" / "uniswap_v1"
+V1_CROSSWALK = REPO_ROOT / "data" / "processed" / "v1_exchange_token_crosswalk.parquet"
 CASE_MANIFEST = OUTPUT_DIR / "exhibits" / "v1_route_case.json"
 DECK_VALUES = OUTPUT_DIR / "exhibits" / "v1_route_case_deck_values.tex"
-CODE_SOURCES = ["scripts/process/build_v1_route_case.py"]
+CODE_SOURCES = [
+    "scripts/process/build_v1_route_case.py",
+    "scripts/process/build_v1_exchange_token_crosswalk.py",
+]
 
 # The V1 mandate ends the day Uniswap v2 went live: from that day a
 # token-to-token trade could have a direct pool, so a routed trade is no
@@ -64,7 +68,7 @@ MANDATE_END = "20200505"
 # float rounding is a different object (two unrelated bundled swaps).
 EXACT_TOL = 1e-9
 
-SCHEMA_VERSION = "dvc-v1-route-case-v1"
+SCHEMA_VERSION = "dvc-v1-route-case-v2"
 SELECTION_RULE = (
     "largest routed ETH among mandate-era transactions with exactly two "
     "exchange rows, one single-event leg in each direction, positive ETH "
@@ -194,6 +198,34 @@ def select_case(day_results: list[dict]) -> tuple[dict, dict]:
     return case, counts
 
 
+def attach_token_identities(case: dict, crosswalk: pd.DataFrame) -> dict:
+    """Resolve both exchange contracts through the exact V1 registry."""
+
+    required = {"exchange", "token", "symbol", "resolved"}
+    if not required.issubset(crosswalk.columns):
+        raise ValueError(f"V1 crosswalk lacks columns: {sorted(required - set(crosswalk.columns))}")
+    resolved = crosswalk.loc[crosswalk["resolved"].astype(bool)].copy()
+    resolved["exchange"] = resolved["exchange"].astype(str).str.lower()
+    if resolved["exchange"].duplicated().any():
+        raise ValueError("V1 crosswalk contains duplicate resolved exchanges")
+    identities = resolved.set_index("exchange")[["token", "symbol"]].to_dict("index")
+    legs = []
+    for leg in case["legs"]:
+        exchange = str(leg["exchange"]).lower()
+        identity = identities.get(exchange)
+        if identity is None:
+            raise ValueError(f"V1 crosswalk does not resolve registered exchange: {exchange}")
+        legs.append(
+            {
+                **leg,
+                "exchange": exchange,
+                "token": str(identity["token"]).lower(),
+                "symbol": str(identity["symbol"]),
+            }
+        )
+    return {**case, "legs": legs}
+
+
 def verify_case(case: dict) -> dict:
     """Re-state the checks the registered case passed, as explicit fields."""
 
@@ -206,6 +238,9 @@ def verify_case(case: dict) -> dict:
         "one_event_per_leg": True,
         "eth_leg_relative_gap_below_tolerance": case["leg_relative_gap"] < EXACT_TOL,
         "eth_leg_strings_equal": bool(case["eth_leg_strings_equal"]),
+        "token_identities_from_exact_registry": all(
+            leg.get("token") and leg.get("symbol") for leg in legs
+        ),
     }
     if not all(checks.values()):
         failed = ", ".join(k for k, v in checks.items() if not v)
@@ -235,11 +270,10 @@ def build_manifest(case: dict, counts: dict) -> dict:
         "legs": case["legs"],
         "verification": verify_case(case),
         "token_identity_note": (
-            "V1 subgraph records identify exchange contracts, not tokens "
-            "(direct resolution rate 0%). The registered case's token "
-            "identities are externally verified against the public "
-            "transaction record in docs/findings/v1-forced-vehicle.md, "
-            "section 1."
+            "The exact V1 exchange registry maps both exchange contracts to "
+            "their ERC-20 tokens. The public transaction record cited in "
+            "docs/findings/v1-forced-vehicle.md independently cross-checks "
+            "the endpoint identities."
         ),
     }
 
@@ -272,6 +306,8 @@ def render_v1_route_case_deck_values(manifest: dict) -> str:
         f"\\newcommand{{\\VOneCaseEth}}{{{_group(float(sell['eth_amount']))}}}",
         f"\\newcommand{{\\VOneCaseTokenIn}}{{{_group(float(sell['token_amount']), 0)}}}",
         f"\\newcommand{{\\VOneCaseTokenOut}}{{{_group(float(buy['token_amount']))}}}",
+        f"\\newcommand{{\\VOneCaseTokenInSymbol}}{{{sell['symbol']}}}",
+        f"\\newcommand{{\\VOneCaseTokenOutSymbol}}{{{buy['symbol']}}}",
         f"\\newcommand{{\\VOneCaseSellExchange}}{{{_short(sell['exchange'])}}}",
         f"\\newcommand{{\\VOneCaseBuyExchange}}{{{_short(buy['exchange'])}}}",
         f"\\newcommand{{\\VOneCaseTx}}{{{manifest['tx_hash']}}}",
@@ -295,6 +331,9 @@ def run(*, workers: int) -> int:
     with ProcessPoolExecutor(workers) as pool:
         day_results = list(pool.map(scan_day, files, chunksize=8))
     case, counts = select_case(day_results)
+    if not V1_CROSSWALK.is_file():
+        raise FileNotFoundError(f"missing exact V1 exchange crosswalk: {V1_CROSSWALK}")
+    case = attach_token_identities(case, pd.read_parquet(V1_CROSSWALK))
     manifest = build_manifest(case, counts)
     rendered = render_v1_route_case_deck_values(manifest)
 

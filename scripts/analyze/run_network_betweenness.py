@@ -157,13 +157,23 @@ def annual_rows(
 def exhibit_rows(frame: pd.DataFrame) -> pd.DataFrame:
     """Keep the reader-facing rows after ranks are computed on the full graph."""
     selected = frame.loc[frame["symbol"].isin(EXHIBIT_SYMBOLS)].copy()
-    expected = len(EXHIBIT_SYMBOLS) * frame["year"].nunique()
-    if len(selected) != expected:
-        counts = selected.groupby(["year", "symbol"]).size().to_dict()
-        raise ValueError(
-            f"expected one row per year and named currency ({expected}); "
-            f"found {len(selected)}: {counts}"
+    counts = selected.groupby(["year", "symbol"]).size()
+    duplicates = counts[counts.ne(1)]
+    if not duplicates.empty:
+        raise ValueError(f"named currency is duplicated within a year: {duplicates.to_dict()}")
+    years = sorted(frame["year"].astype(int).unique())
+    for symbol in EXHIBIT_SYMBOLS:
+        symbol_years = sorted(
+            selected.loc[selected["symbol"].eq(symbol), "year"].astype(int).unique()
         )
+        if not symbol_years:
+            raise ValueError(f"named currency never enters the sampled graph: {symbol}")
+        expected_years = [year for year in years if year >= symbol_years[0]]
+        if symbol_years != expected_years:
+            raise ValueError(
+                f"named currency disappears after entering the sampled graph: "
+                f"{symbol} has {symbol_years}, expected {expected_years}"
+            )
     return selected.sort_values(["year", "symbol"]).reset_index(drop=True)
 
 

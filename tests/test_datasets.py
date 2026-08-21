@@ -5,7 +5,13 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from ddvc.datasets import DataPartition, PartitionedDataset, validate_before_install
+from ddvc.datasets import (
+    DataPartition,
+    PartitionedDataset,
+    expected_route_days,
+    validate_before_install,
+)
+from ddvc.reconstruct import ROUTE_SAMPLE_START
 
 
 def _dataset(tmp_path: Path) -> PartitionedDataset:
@@ -37,3 +43,9 @@ def test_install_validator_rechecks_direct_inputs(tmp_path: Path) -> None:
     dataset.partitions[0].path.unlink()
     with pytest.raises(RuntimeError, match="missing"):
         validate_before_install(dataset)(tmp_path / "staged")
+
+
+def test_route_calendar_starts_with_the_canonical_v1_panel() -> None:
+    days = expected_route_days()
+    assert days[0] == ROUTE_SAMPLE_START
+    assert days[0] == "20181102"

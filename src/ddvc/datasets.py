@@ -14,6 +14,7 @@ from ddvc.paths import DATA_DIR
 from ddvc.reconstruct import (
     DEX_FAMILY,
     RECONSTRUCTION_ENGINE,
+    ROUTE_SAMPLE_START,
     UNIFIED_COLUMNS,
     UNIFIED_QUALITY_PANEL,
     active_route_sources,
@@ -167,7 +168,7 @@ def validate_before_install(*datasets: PartitionedDataset) -> DatasetValidator:
 
 
 def expected_route_days() -> list[str]:
-    return calendar_days(RESEARCH_SAMPLE_START, RESEARCH_SAMPLE_END)
+    return calendar_days(ROUTE_SAMPLE_START, RESEARCH_SAMPLE_END)
 
 
 def expected_state_keys() -> list[tuple[str, str, str]]:

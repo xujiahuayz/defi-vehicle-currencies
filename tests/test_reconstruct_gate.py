@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from ddvc.endpoint_candidate_composition import endpoint_candidate_composition_for_day
 from ddvc.reconstruct import (
     DEX_FAMILY,
     RECONSTRUCT_CODE_SOURCES,
@@ -20,6 +21,7 @@ from ddvc.reconstruct import (
     route_input_paths,
     v1_registry_paths,
 )
+from scripts.process.build_intermediation_by_type import one_day
 
 
 USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
@@ -158,6 +160,20 @@ class ReconstructGateTests(unittest.TestCase):
             self.assertFalse(frame.ambiguous.any())
             self.assertEqual(frame.tin_role.tolist(), ["source", "intermediate"])
             self.assertEqual(frame.tout_role.tolist(), ["intermediate", "sink"])
+
+            choices = endpoint_candidate_composition_for_day(frame, "20200501").choices
+            native = choices.loc[choices["candidate_symbol"].eq("WETH")]
+            self.assertEqual(len(native), 1)
+            self.assertEqual(native.iloc[0]["integration_scope"], "single_venue")
+            self.assertEqual(native.iloc[0]["route_count"], 1)
+
+            unified = root / "unified" / "20200501.parquet"
+            unified.parent.mkdir(parents=True)
+            frame.to_parquet(unified, index=False)
+            intermediation = one_day(unified)
+            self.assertNotIn("error", intermediation)
+            self.assertEqual(intermediation["routes_intermediated"], 1)
+            self.assertEqual(intermediation["cnt_native"], 1)
 
     def test_v1_mismatched_eth_legs_are_ambiguous(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

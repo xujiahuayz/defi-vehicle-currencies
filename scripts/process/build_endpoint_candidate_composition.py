@@ -38,8 +38,8 @@ from ddvc.endpoint_candidate_composition_data import (
     ENDPOINT_CANDIDATE_COMPOSITION_PATHS,
     validate_endpoint_candidate_composition_paths,
 )
+from ddvc.datasets import PartitionedDataset, route_partitions
 from ddvc.paths import DATA_DIR, SHARED_RUNTIME_DIR
-from ddvc.route_data import RouteDataset, route_dataset
 from ddvc.runtime import atomic_output, bounded_workers, exclusive_job, interruptible_process_pool
 
 
@@ -127,7 +127,7 @@ def _write_frame(frame: pd.DataFrame, path: Path, *, table: str) -> None:
 
 
 def build_day_shard(
-    release: RouteDataset,
+    release: PartitionedDataset,
     day: str,
     scratch_root: str,
 ) -> DayShard:
@@ -151,7 +151,7 @@ def build_day_shard(
 
 
 def _reduce_days(
-    release: RouteDataset,
+    release: PartitionedDataset,
     *,
     workers: int,
     scratch_root: Path,
@@ -260,7 +260,7 @@ def _assemble_release(
 
 
 def build_endpoint_candidate_composition(
-    release: RouteDataset,
+    release: PartitionedDataset,
     *,
     workers: int,
     limit: int | None = None,
@@ -313,7 +313,7 @@ def main() -> int:
         help="diagnostic day limit; validates a temporary subset and cannot replace outputs",
     )
     args = parser.parse_args()
-    route_release = route_dataset(ROUTE_INPUT_COLUMNS, nonempty=False)
+    route_release = route_partitions(ROUTE_INPUT_COLUMNS, nonempty=False)
     print(
         f"reducing {len(route_release.days):,} released route days with "
         f"{bounded_workers(args.workers)} workers",

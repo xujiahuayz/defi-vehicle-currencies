@@ -5,6 +5,7 @@ import pytest
 
 from scripts.fetch.fetch_v1_exchange_registry import validate_rows
 from scripts.process.build_v1_exchange_token_crosswalk import build_crosswalk
+from scripts.process.build_v1_route_case import attach_token_identities
 
 
 EXCHANGE_A = "0x" + "1" * 40
@@ -64,3 +65,27 @@ def test_exact_crosswalk_refuses_partial_registry() -> None:
     )
     with pytest.raises(ValueError, match="registry misses 1/2 observed exchanges"):
         build_crosswalk(registry, exchange_day)
+
+
+def test_registered_v1_route_uses_exact_crosswalk_identities() -> None:
+    case = {
+        "legs": [
+            {"exchange": EXCHANGE_A, "role": "token_to_eth"},
+            {"exchange": EXCHANGE_B.upper(), "role": "eth_to_token"},
+        ]
+    }
+    crosswalk = pd.DataFrame(
+        {
+            "exchange": [EXCHANGE_A, EXCHANGE_B],
+            "token": [TOKEN_A, TOKEN_B],
+            "symbol": ["AAA", "BBB"],
+            "resolved": [True, True],
+        }
+    )
+
+    resolved = attach_token_identities(case, crosswalk)
+
+    assert [(leg["token"], leg["symbol"]) for leg in resolved["legs"]] == [
+        (TOKEN_A, "AAA"),
+        (TOKEN_B, "BBB"),
+    ]

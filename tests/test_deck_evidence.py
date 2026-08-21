@@ -317,11 +317,13 @@ def test_deck_states_units_scopes_and_primary_protocol_sources() -> None:
     assert "\\RoutePanelRawSwaps" in visible_identification
     assert "\\RoutePanelCalendarDates" in visible_identification
     assert "\\RoutePanelDeploymentCount" in visible_identification
-    assert "Uniswap v2, v3, and v4" in visible_identification
+    assert "Uniswap v1, v2, v3, and v4" in visible_identification
     assert "SushiSwap v2 and v3" in visible_identification
     assert "Curve; Balancer; and Fluid" in visible_identification
-    assert "Uniswap v1 enters the separate protocol-architecture analysis" in visible_identification
+    assert "maps every observed Uniswap v1 exchange to its token" in visible_identification
+    assert "separate protocol-architecture analysis" not in visible_identification
     assert "Main route sample" in objects
+    assert "Uniswap v1/v2/v3/v4" in objects
     assert "SushiSwap v2/v3" in objects
     assert "Fluid" in objects
 

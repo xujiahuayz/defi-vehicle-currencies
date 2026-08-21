@@ -40,6 +40,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[2]
 
 from ddvc.tables import write_exhibit  # noqa: E402
+from ddvc.datasets import route_partitions  # noqa: E402
 
 UNIFIED = ROOT / "data" / "unified"
 OUT = ROOT / "output" / "exhibits" / "round_trip_share_by_day.jsonl"
@@ -89,10 +90,8 @@ def main() -> int:
                     help="days to force into the sample regardless of the stride")
     args = ap.parse_args()
 
-    files = sorted(UNIFIED.glob("2*.parquet"))
-    if not files:
-        print(f"no unified days under {UNIFIED.relative_to(ROOT)}")
-        return 1
+    release = route_partitions(COLS, nonempty=False)
+    files = list(release.paths)
     step = max(1, len(files) // args.days)
     picked = files[::step][: args.days]
     for day in args.include:
@@ -122,6 +121,7 @@ def main() -> int:
     print("case that motivated the screen, and name the date when doing so.")
 
     write_exhibit(df, OUT)
+    release.assert_current()
     print(f"\nwrote {OUT.relative_to(ROOT)}")
     return 0
 
