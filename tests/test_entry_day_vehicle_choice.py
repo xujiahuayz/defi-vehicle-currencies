@@ -95,6 +95,9 @@ def test_material_entries_use_first_primary_day_and_exclude_vehicle_endpoints(
     assert row["day"] == "20240101"
     assert row["ordered_pair"] == "src-a>tgt-a"
     assert row["entry_stable_share"] == 0.0
+    assert row["entry_stable"] == 0.0
+    assert bool(row["entry_exclusive"])
+    assert not bool(row["entry_mixed"])
     assert row["entry_coherent_value_usd"] == pytest.approx(120_000.0)
 
 
