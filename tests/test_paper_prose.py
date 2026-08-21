@@ -211,7 +211,7 @@ class PaperProseTests(unittest.TestCase):
 
     def test_reader_facing_route_vocabulary_is_current(self) -> None:
         obsolete = re.compile(
-            r"\bultimate[- ]pairs?\b|\batomic[- ]pairs?\b|\batomic[- ]trades?\b|\bcorridor\b|\bendpoint[- ]pair market\b",
+            r"\bultimate[- ]pairs?\b|\batomic[- ]pairs?\b|\batomic[- ]trades?\b|\btoken[- ]pairs?\b|\bcorridor\b|\bendpoint[- ]pair market\b",
             re.IGNORECASE,
         )
         paths = source_files(ROOT / "paper") + source_files(DECK_DIR)

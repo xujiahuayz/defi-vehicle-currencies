@@ -104,7 +104,7 @@ The market does not arrive all at once.
 
 V1 begins in November 2018. ETH sits inside every token-to-token route because every pool pairs one token with ETH.
 
-V2 arrives in May 2020 and allows arbitrary token pairs. Vehicle choice becomes possible.
+V2 arrives in May 2020 and lets any two ERC-20 tokens form a pool. Vehicle choice becomes possible.
 
 V3 arrives a year later and lets liquidity providers concentrate capital around selected prices. Then v4, in January 2025, puts pools inside one singleton and settles balances after the route.
 
@@ -116,7 +116,7 @@ In Uniswap v1, token-to-token trading had to pass through ETH. We recover 217,00
 
 V2 removed that rule. Any two tokens could form a pool. Yet WETH pairing remained overwhelming: 95.5 percent of single-leg v2 trades use a WETH pool in 2026, and 97.9 percent of token combinations first traded in 2026 include WETH.
 
-So architecture opens a choice. The data show what followed: WETH pairing remained pervasive after arbitrary token pairs became possible. Now watch the stablecoins begin to challenge it.
+So architecture opens a choice. The data show what followed: WETH pairing remained pervasive after any two ERC-20 tokens could form a pool. Now watch the stablecoins begin to challenge it.
 
 ## Slide 9. Stablecoins regain the routed-value lead by 2026 H1
 
@@ -318,7 +318,7 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 ## A5.1. Pool formation determines available paths
 
 - V1 permits ETH-token pools, so ETH is built into the feasible route set.
-- V2 permits arbitrary token pairs, making direct paths and alternative vehicles possible.
+- V2 lets any two ERC-20 tokens form a pool, making direct paths and alternative vehicles possible.
 - Pool creation changes the opportunity set before any router chooses a path.
 
 ## A5.2. Executable depth is path-specific

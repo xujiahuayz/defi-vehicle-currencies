@@ -109,7 +109,7 @@ Pooled & 4{,}218 & $0$ & $1.15\times10^{-14}$ & $9.98\times10^{-4}$ & 100.0\% \\
 % output/exhibits/v4_quoter_validation.jsonl, all 4,218 validated v4 swaps
 \bottomrule
 \end{tabular}
-\exhibitnote{Absolute quote error in percent of realised output. The sample contains 4,218 realised Uniswap v4 swaps on three dates across 13 pools and nine token pairs, at static fee tiers 0, 7, 8, 100, 500, 10,000 and 20,000. Each quote uses liquidity events ordered strictly before the swap and the price state left by the preceding swap in the same pool.}
+\exhibitnote{Absolute quote error in percent of realised output. The sample contains 4,218 realised Uniswap v4 swaps on three dates across 13 pools and nine token combinations, at static fee tiers 0, 7, 8, 100, 500, 10,000 and 20,000. Each quote uses liquidity events ordered strictly before the swap and the price state left by the preceding swap in the same pool.}
 \end{table}
 
 Every direction and tick-crossing row of Table~\ref{tab:app:cl} reproduces realised output within 0.001\% in the Maximum column.
@@ -199,12 +199,12 @@ We therefore treat both as unknowns to be recovered from the trades a pool actua
 \]
 is the fitting error, defined only when at least nine tenths of $\mathcal{O}_p$ returns a quote at all and undefined otherwise. The upper tail does the gating for the reason it does at Curve, and the coverage condition stops a parameter that prices one corner of a pool's activity from standing for the pool.
 
-Each token pair's weight ratio is fitted on the trades crossing it in either direction, with a trade running from $b$ to $a$ scored at the reciprocal exponent, which is what the invariant implies and which doubles the trades available to pin one number,
+Each token combination's weight ratio is fitted on the trades crossing it in either direction, with a trade running from $b$ to $a$ scored at the reciprocal exponent, which is what the invariant implies and which doubles the trades available to pin one number,
 \[
 \widehat\theta_{ab,p}=\arg\min_{\theta}
 \mathcal{E}_p\bigl(\theta\ \text{on}\ \mathcal{O}^{a\to b}_p,\ \theta^{-1}\ \text{on}\ \mathcal{O}^{b\to a}_p\bigr),
 \]
-searched over a logarithmic grid spanning Balancer's own weight bounds and refined by ternary search in the log exponent, and attempted only for token pairs carrying at least four fitting trades, since one or two are fitted exactly by construction and then read as an exact fit. The fee $\widehat f_p$ is recovered the same way over the fee range the vault permits. Reading is tried before fitting and the fee before the weights, so each tier adds at most one free scalar and a pool that reproduces its trades on reported parameters is never handed a fitted one,
+searched over a logarithmic grid spanning Balancer's own weight bounds and refined by ternary search in the log exponent, and attempted only for token combinations carrying at least four fitting trades, since one or two are fitted exactly by construction and then read as an exact fit. The fee $\widehat f_p$ is recovered the same way over the fee range the vault permits. Reading is tried before fitting and the fee before the weights, so each tier adds at most one free scalar and a pool that reproduces its trades on reported parameters is never handed a fitted one,
 \begin{equation}
 \label{eq:weighted-fit}
 \widehat\vartheta_p=
@@ -216,12 +216,12 @@ searched over a logarithmic grid spanning Balancer's own weight bounds and refin
 \end{cases}
 \qquad\bar e=0.1\%.
 \end{equation}
-The label a pool carries in the source plays no part in this. A pool-day whose observed trades no tier reproduces is excluded whatever its \texttt{poolType} says, and the third tier further requires the fitted ratios to cover nine tenths of the fitting trades, so a pool-day is never accepted on the token pairs that happened to fit and then quoted on the rest.
+The label a pool carries in the source plays no part in this. A pool-day whose observed trades no tier reproduces is excluded whatever its \texttt{poolType} says, and the third tier further requires the fitted ratios to cover nine tenths of the fitting trades, so a pool-day is never accepted on the token combinations that happened to fit and then quoted on the rest.
 % src/ddvc/pricing/weighted.py, FIT_QUANTILE 0.90, MIN_QUOTED_SHARE 0.9, MIN_PAIR_OBSERVATIONS 4,
 % WEIGHT_RATIO_MIN/MAX and FEE_MIN/MAX; scripts/verify/validate_weighted_quoter.py, fit_pool_day tier order
 % and the alternate-trade fitting and evaluation split
 
-The frequency with which the parameter search binds measures the sufficiency of reported pool state. Of the 256 pool-days accepted across the twelve validation days, 209 satisfy the error threshold on reported parameters with nothing identified, 43 need the swap fee alone, and 4 need per-token-pair weight ratios. Four fifths of the priced sample therefore carries no fitted parameter, and identification repairs a stale field in a minority of pool-days instead of supplying the invariant.
+The frequency with which the parameter search binds measures the sufficiency of reported pool state. Of the 256 pool-days accepted across the twelve validation days, 209 satisfy the error threshold on reported parameters with nothing identified, 43 need the swap fee alone, and 4 need per-token-combination weight ratios. Four fifths of the priced sample therefore carries no fitted parameter, and identification repairs a stale field in a minority of pool-days instead of supplying the invariant.
 % output/exhibits/weighted_quoter_validation.jsonl, pools_by_fit_mode summed over the 12 validation
 % days: reported 209, fee_fitted 43, weight_fitted 4, against 256 pools_priced
 
@@ -440,7 +440,7 @@ Year & \multicolumn{2}{r}{Native leg} & \multicolumn{2}{r}{Stable leg} & Other v
 The exclusions are concentrated in routes involving the native asset. In Panel B of Table~\ref{tab:app:curveleg}, the excluded share of native-leg volume exceeds the stable-leg share by at least 33 pp in every sample year and by 54 pp in the 2023 row. Tricrypto pools pairing WBTC and WETH with a stablecoin account for \$818m, or 44.6\%, of the \$1.83bn excluded, including seven of the twelve largest excluded pool-days. These pools use CryptoSwap, so the missing coverage is concentrated where Curve supplies depth between ETH and stablecoins.
 % docs/findings/venue-coverage.md, curve_excluded_composition.jsonl, 28 measured pool-days
 
-SushiSwap v3 is omitted from the route-cost comparison because its historical records lack the pool's root price, in-range liquidity, and tick spacing. Its reserves are distributed across ticks, and the balance and weight fields exposed by the common schema do not describe that invariant. The exchange accounts for 0.016\% of volume among the seven exchanges used for route costs over the full sample and 0.176\% in 2026. Across fourteen sampled days, only 4.1\% of its volume occurs on token pairs unavailable on another included exchange, never more than \$37,609 on one day.
+SushiSwap v3 is omitted from the route-cost comparison because its historical records lack the pool's root price, in-range liquidity, and tick spacing. Its reserves are distributed across ticks, and the balance and weight fields exposed by the common schema do not describe that invariant. The exchange accounts for 0.016\% of volume among the seven exchanges used for route costs over the full sample and 0.176\% in 2026. Across fourteen sampled days, only 4.1\% of its volume occurs on token combinations unavailable on another included exchange, never more than \$37,609 on one day.
 % docs/findings/venue-coverage.md, sushiswap_v3_schema_probe.jsonl and sushiswap_v3_pair_overlap.jsonl, 14 sampled days
 
 Balancer accounts for 3.9\% of measured venue volume over the full sample and 8.8\% at its 2023 peak. Table~\ref{tab:app:weighted} validates selected weighted pools. Linear and boosted pools remain outside the quoter. Of 29 sampled composable-stable pools, 23 reduce to two external tokens after removing the pool's own share token, but pricing them also requires historical rate-provider states absent from the source. The priced Balancer sample is therefore confined to weighted pools whose historical state can be reconstructed and whose realised trades are reproduced at one of the tiers of Equation~\eqref{eq:weighted-fit}.
