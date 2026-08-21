@@ -349,6 +349,13 @@ def run(
     raw_frontier = pd.read_parquet(frontier_path)
     frontier, selection = prepare_frontier(raw_frontier)
     frontier = frontier[frontier["symmetric_common_support"]].copy()
+    path_venues = raw_frontier.loc[
+        :,
+        ["route_id", "stable_public_venues", "native_public_venues"],
+    ].drop_duplicates("route_id")
+    frontier = frontier.merge(
+        path_venues, on="route_id", how="left", validate="one_to_one"
+    )
     frontier["year"] = frontier["date"].dt.year.astype(int)
     frontier["tx_hash"] = frontier["route_id"].astype(str).str.split(":", n=1).str[0]
     prices = output_token_prices(frontier, unified)
