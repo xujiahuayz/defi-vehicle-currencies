@@ -561,6 +561,10 @@ def attach_v2_bridge_capital(
             data["incumbent_output_advantage_100bp"]
             * data["incumbent_v2_capital_advantage_10pp"]
         )
+        data["challenger_leader_x_incumbent_v2_capital"] = (
+            data["challenger_price_leader"]
+            * data["incumbent_v2_capital_advantage_10pp"]
+        )
     return data
 
 
@@ -735,6 +739,22 @@ def regression_results(panel: pd.DataFrame) -> pd.DataFrame:
                 "incumbent_output_advantage_100bp",
                 "incumbent_v2_capital_advantage_10pp",
                 "price_x_incumbent_v2_capital",
+                "log_input_usd",
+            ),
+            sample="mature_exclusive_entry_positive_v2_bridge_capital",
+        ),
+        _fit_model(
+            v2_capital,
+            model_id=(
+                "exclusive_retention_challenger_leader_"
+                "v2_capital_interaction"
+            ),
+            outcome="incumbent_retained",
+            predictors=(
+                "challenger_price_leader",
+                "challenger_price_leader_x_entry_stable",
+                "incumbent_v2_capital_advantage_10pp",
+                "challenger_leader_x_incumbent_v2_capital",
                 "log_input_usd",
             ),
             sample="mature_exclusive_entry_positive_v2_bridge_capital",

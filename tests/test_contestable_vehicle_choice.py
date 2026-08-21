@@ -240,6 +240,7 @@ def test_v2_capital_is_prior_day_bottleneck_and_excludes_other_venues(
                 "entry_stable": 1.0,
                 "incumbent_known_prior": True,
                 "incumbent_output_advantage_100bp": 0.5,
+                "challenger_price_leader": 1.0,
             }
         ]
     )
@@ -271,6 +272,10 @@ def test_v2_capital_is_prior_day_bottleneck_and_excludes_other_venues(
     attached = attach_v2_bridge_capital(frontier, capital)
     assert bool(attached["both_v2_bridge_capitals_positive"].item())
     assert attached["incumbent_v2_capital_share"].item() == pytest.approx(0.4)
+    assert attached["price_x_incumbent_v2_capital"].item() == pytest.approx(-0.5)
+    assert attached[
+        "challenger_leader_x_incumbent_v2_capital"
+    ].item() == pytest.approx(-1.0)
 
 
 def test_output_consequence_records_have_exhaustive_splits_and_support_guards(
