@@ -9,6 +9,7 @@ from scripts.analyze.run_exact_vehicle_frontier import (
     _clustered_mean,
     _holm,
     best_family_path,
+    four_per_month_days,
     monthly_days,
     summarize,
     summarize_support,
@@ -23,6 +24,15 @@ def test_monthly_calendar_is_bounded_and_complete() -> None:
     assert days[0] == "20200615"
     assert days[-1] == "20260615"
     assert all(day.endswith("15") for day in days)
+
+
+def test_four_per_month_calendar_nests_the_monthly_dates() -> None:
+    expanded = four_per_month_days()
+    monthly = monthly_days()
+    assert set(monthly).issubset(expanded)
+    assert expanded[:3] == ["20200615", "20200622", "20200701"]
+    assert expanded[-3:] == ["20260601", "20260608", "20260615"]
+    assert len(expanded) == 289
 
 
 def test_vehicle_classes_keep_direct_native_and_stable_distinct() -> None:

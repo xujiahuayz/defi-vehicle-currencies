@@ -154,6 +154,7 @@ def test_support_distinguishes_entry_from_first_contestability() -> None:
         entries,
         panel,
         entry_value_threshold_usd=5_000.0,
+        sampling_calendar="four_per_month",
     ).set_index("sample")
 
     cohort = support.loc["material_entry_cohort"]
@@ -161,8 +162,10 @@ def test_support_distinguishes_entry_from_first_contestability() -> None:
     assert cohort["pairs_reaching_sampled_contestability"] == 2
     assert cohort["contestability_coverage_share"] == pytest.approx(2 / 3)
     assert cohort["entry_value_threshold_usd"] == 5_000.0
+    assert cohort["sampling_calendar"] == "four_per_month"
     survival = support.loc["entry_vehicle_survival"]
     assert survival["route_weighted_retention_share"] == pytest.approx(2 / 3)
     assert survival["equal_pair_retention_share"] == pytest.approx(0.5)
     lag = support.loc["entry_to_first_sampled_contestability_lag"]
     assert lag["median_days"] == pytest.approx(90.0)
+    assert not bool(lag["monthly_sampling"])

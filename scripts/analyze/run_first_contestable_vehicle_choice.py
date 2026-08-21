@@ -228,6 +228,7 @@ def choice_results(
     panel: pd.DataFrame,
     *,
     entry_value_threshold_usd: float = DEFAULT_FIRST_CONTESTABLE_ENTRY_VALUE_USD,
+    sampling_calendar: str = "monthly_fifteenth",
 ) -> pd.DataFrame:
     """Estimate stable selection and entry-family retention on common samples."""
 
@@ -307,7 +308,9 @@ def choice_results(
             entry_value_threshold_usd=entry_value_threshold_usd,
         ),
     ]
-    return pd.concat(rows, ignore_index=True, sort=False)
+    result = pd.concat(rows, ignore_index=True, sort=False)
+    result["sampling_calendar"] = sampling_calendar
+    return result
 
 
 def support_results(
@@ -315,6 +318,7 @@ def support_results(
     panel: pd.DataFrame,
     *,
     entry_value_threshold_usd: float = DEFAULT_FIRST_CONTESTABLE_ENTRY_VALUE_USD,
+    sampling_calendar: str = "monthly_fifteenth",
 ) -> pd.DataFrame:
     """Report contestability coverage, lags, and entry-family survival."""
 
@@ -340,7 +344,7 @@ def support_results(
     clear_routes = panel[panel["entry_vehicle_retained"].notna()]
     complete = panel[panel["both_v2_bridge_capitals_positive"]]
     lag = pair["entry_to_contestability_days"]
-    return pd.DataFrame(
+    result = pd.DataFrame(
         [
             {
                 "record_type": "first_contestable_vehicle_choice_support",
@@ -374,7 +378,7 @@ def support_results(
                 "p75_days": float(lag.quantile(0.75)),
                 "p90_days": float(lag.quantile(0.90)),
                 "within_120_days_share": float(lag.le(120).mean()),
-                "monthly_sampling": True,
+                "monthly_sampling": sampling_calendar == "monthly_fifteenth",
             },
             {
                 "record_type": "first_contestable_vehicle_choice_support",
@@ -398,6 +402,8 @@ def support_results(
             },
         ]
     )
+    result["sampling_calendar"] = sampling_calendar
+    return result
 
 
 def run(
@@ -411,6 +417,7 @@ def run(
     start: str = START,
     end: str = END,
     support_only: bool = False,
+    sampling_calendar: str = "monthly_fifteenth",
 ) -> int:
     entries = load_material_entries(
         PRIMARY_DATA_DIR / "processed/endpoint_candidate_pair_support.parquet",
@@ -424,6 +431,7 @@ def run(
         entries,
         panel,
         entry_value_threshold_usd=minimum_entry_value_usd,
+        sampling_calendar=sampling_calendar,
     )
     write_panel(panel, panel_path, code_sources=CODE_SOURCES)
     write_exhibit(support, support_path, code_sources=CODE_SOURCES, inputs=INPUTS)
@@ -433,6 +441,7 @@ def run(
     results = choice_results(
         panel,
         entry_value_threshold_usd=minimum_entry_value_usd,
+        sampling_calendar=sampling_calendar,
     )
     write_exhibit(results, output_path, code_sources=CODE_SOURCES, inputs=INPUTS)
     print(results.to_string(index=False), flush=True)
@@ -454,6 +463,11 @@ def main() -> int:
     parser.add_argument("--start", default=START)
     parser.add_argument("--end", default=END)
     parser.add_argument("--support-only", action="store_true")
+    parser.add_argument(
+        "--sampling-calendar",
+        default="monthly_fifteenth",
+        help="identifier for the fixed exact-state sampling calendar",
+    )
     args = parser.parse_args()
     return run(
         frontier_path=args.frontier,
@@ -465,6 +479,7 @@ def main() -> int:
         start=args.start.replace("-", ""),
         end=args.end.replace("-", ""),
         support_only=args.support_only,
+        sampling_calendar=args.sampling_calendar,
     )
 
 

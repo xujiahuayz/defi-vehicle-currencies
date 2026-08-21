@@ -60,6 +60,15 @@ UNIFIED = DATA_DIR / "unified"
 PANEL = DATA_DIR / "processed" / "exact_vehicle_frontier_monthly.parquet"
 SUMMARY = OUTPUT_DIR / "exhibits" / "exact_vehicle_frontier_monthly.jsonl"
 SUPPORT = OUTPUT_DIR / "exhibits" / "exact_vehicle_frontier_monthly_support.jsonl"
+FOUR_PER_MONTH_PANEL = (
+    DATA_DIR / "processed" / "exact_vehicle_frontier_four_per_month.parquet"
+)
+FOUR_PER_MONTH_SUMMARY = (
+    OUTPUT_DIR / "exhibits" / "exact_vehicle_frontier_four_per_month.jsonl"
+)
+FOUR_PER_MONTH_SUPPORT = (
+    OUTPUT_DIR / "exhibits" / "exact_vehicle_frontier_four_per_month_support.jsonl"
+)
 START = "20200615"
 END = "20260615"
 TICK_START = "20210504"
@@ -117,6 +126,21 @@ def monthly_days(start: str = START, end: str = END) -> list[str]:
         date.replace(day=15).strftime("%Y%m%d")
         for date in dates
         if lo <= date.replace(day=15) <= hi
+    ]
+
+
+def four_per_month_days(start: str = START, end: str = END) -> list[str]:
+    """Return four fixed, ex-ante dates in every month."""
+
+    lo, hi = pd.to_datetime(start, format="%Y%m%d"), pd.to_datetime(
+        end, format="%Y%m%d"
+    )
+    months = pd.date_range(lo.replace(day=1), hi.replace(day=1), freq="MS")
+    return [
+        observed.strftime("%Y%m%d")
+        for month in months
+        for day in (1, 8, 15, 22)
+        if lo <= (observed := month.replace(day=day)) <= hi
     ]
 
 
@@ -719,6 +743,12 @@ def main() -> int:
     parser.add_argument("--start", default=START)
     parser.add_argument("--end", default=END)
     parser.add_argument(
+        "--calendar",
+        choices=("monthly-fifteenth", "four-per-month"),
+        default="monthly-fifteenth",
+        help="fixed ex-ante sampling calendar",
+    )
+    parser.add_argument(
         "--pilot-day",
         help="score one date and print only; canonical outputs are unchanged",
     )
@@ -728,11 +758,16 @@ def main() -> int:
         help="rebuild summaries from the existing canonical panel and support rows",
     )
     args = parser.parse_args()
+    panel_path, support_path, summary_path = (
+        (PANEL, SUPPORT, SUMMARY)
+        if args.calendar == "monthly-fifteenth"
+        else (FOUR_PER_MONTH_PANEL, FOUR_PER_MONTH_SUPPORT, FOUR_PER_MONTH_SUMMARY)
+    )
     if args.summarize_only:
-        if not PANEL.is_file() or not SUPPORT.is_file():
-            parser.error("--summarize-only requires the canonical panel and support rows")
-        panel = pd.read_parquet(PANEL)
-        support = pd.read_json(SUPPORT, lines=True)
+        if not panel_path.is_file() or not support_path.is_file():
+            parser.error("--summarize-only requires the selected panel and support rows")
+        panel = pd.read_parquet(panel_path)
+        support = pd.read_json(support_path, lines=True)
         summary = pd.concat(
             [summarize(panel), summarize_support(support)],
             ignore_index=True,
@@ -741,16 +776,21 @@ def main() -> int:
         print(summary.to_string(index=False), flush=True)
         write_exhibit(
             summary,
-            SUMMARY,
+            summary_path,
             code_sources=CODE_SOURCES,
-            inputs=[PANEL, SUPPORT],
+            inputs=[panel_path, support_path],
         )
         return 0
-    selected = (
-        [args.pilot_day.replace("-", "")]
-        if args.pilot_day
-        else monthly_days(args.start.replace("-", ""), args.end.replace("-", ""))
-    )
+    if args.pilot_day:
+        selected = [args.pilot_day.replace("-", "")]
+    elif args.calendar == "monthly-fifteenth":
+        selected = monthly_days(
+            args.start.replace("-", ""), args.end.replace("-", "")
+        )
+    else:
+        selected = four_per_month_days(
+            args.start.replace("-", ""), args.end.replace("-", "")
+        )
     route_release = route_partitions(LINEAR_ROUTE_COLUMNS, nonempty=False)
     panel, support = run(selected)
     if panel.empty:
@@ -767,16 +807,18 @@ def main() -> int:
         return 0
     write_panel(
         panel.sort_values(["day", "route_id"], kind="stable").reset_index(drop=True),
-        PANEL,
+        panel_path,
         code_sources=CODE_SOURCES,
         preinstall_validator=validate_before_install(route_release),
     )
-    write_exhibit(support, SUPPORT, code_sources=CODE_SOURCES, inputs=[PANEL])
+    write_exhibit(
+        support, support_path, code_sources=CODE_SOURCES, inputs=[panel_path]
+    )
     write_exhibit(
         summary,
-        SUMMARY,
+        summary_path,
         code_sources=CODE_SOURCES,
-        inputs=[PANEL, SUPPORT],
+        inputs=[panel_path, support_path],
     )
     return 0
 
