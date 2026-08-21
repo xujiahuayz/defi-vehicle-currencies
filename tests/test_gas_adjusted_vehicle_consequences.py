@@ -69,6 +69,26 @@ def test_consequence_rows_cover_sizes_and_bounds() -> None:
     assert "Unfavorable" not in rendered
 
 
+def test_gross_and_central_columns_use_the_same_positive_net_routes() -> None:
+    panel = _panel()
+    extra = panel.iloc[[0]].copy()
+    extra["route_id"] = "route-extra"
+    extra["ordered_pair"] = "pair-extra"
+    panel = pd.concat([panel, extra], ignore_index=True)
+    panel.loc[0, "effective_gas_price_wei"] = 1_000_000_000_000_000
+    rows = consequence_rows(panel)
+    for size_group in ("all", "usd_100_to_999"):
+        gross = rows[
+            rows["gas_scenario"].eq("gross")
+            & rows["size_group"].eq(size_group)
+        ].iloc[0]
+        central = rows[
+            rows["gas_scenario"].eq("central")
+            & rows["size_group"].eq(size_group)
+        ].iloc[0]
+        assert gross["routes"] == central["routes"]
+
+
 def test_appendix_separates_validation_and_bounds() -> None:
     rows = consequence_rows(_panel())
     support = pd.DataFrame(

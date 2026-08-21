@@ -48,3 +48,12 @@ belongs in `../plot/` or `../tabulate/`.
 
 The historical `e0` suffix denotes an analysis family, not a second output
 layer: all retained current results live directly under `output/exhibits/`.
+
+`run_gas_adjusted_vehicle_consequences.py` subtracts predicted total transaction
+gas from both exact two-leg paths on symmetric common support. It holds the
+observed transaction-callee class and effective gas price fixed, values gas at
+the same-day WETH price, and uses the common endpoint-token price for both
+paths. The central comparison uses cell medians; path-specific interquartile
+bounds and deterministic held-out prediction accuracy feed only the appendix.
+Gross and net-of-gas columns use the same routes, requiring positive predicted
+net output for both paths under the central gas estimate.
