@@ -207,12 +207,12 @@ def test_current_value_covariance_sensitivities_and_midpoint_identity_are_locked
     no_weth_endpoint = endpoint_year_calendar_comparison(
         no_weth, "strict_intermediation_value_share"
     )
-    assert np.isclose(full_paired["coefficient"], 0.2716630073441233)
-    assert np.isclose(full_paired["standard_error"], 0.0100291928267671)
-    assert np.isclose(full_endpoint["standard_error"], 0.0191261927779916)
-    assert np.isclose(no_weth_paired["coefficient"], 0.2148034489726663)
-    assert np.isclose(no_weth_paired["standard_error"], 0.0378514203450401)
-    assert np.isclose(no_weth_endpoint["standard_error"], 0.0490210507834651)
+    assert np.isclose(full_paired["coefficient"], 0.27196774895523634)
+    assert np.isclose(full_paired["standard_error"], 0.010077745023324846)
+    assert np.isclose(full_endpoint["standard_error"], 0.019115609378496257)
+    assert np.isclose(no_weth_paired["coefficient"], 0.21492301263750363)
+    assert np.isclose(no_weth_paired["standard_error"], 0.037879486776266104)
+    assert np.isclose(no_weth_endpoint["standard_error"], 0.0489968043345453)
 
     decomposition = strict_value_non_weth_composition(data)
     primary = decomposition[
@@ -221,14 +221,14 @@ def test_current_value_covariance_sensitivities_and_midpoint_identity_are_locked
         )
         & decomposition["hac_lag"].eq(30)
     ].set_index("level")
-    assert np.isclose(primary.loc["total_change", "coefficient"], 0.2148034489726663)
+    assert np.isclose(primary.loc["total_change", "coefficient"], 0.21492301263750313)
     assert np.isclose(
         primary.loc["activity_weight_reallocation", "coefficient"],
-        0.2352037668438225,
+        0.23519763598200283,
     )
     assert np.isclose(
         primary.loc["within_group_share_change", "coefficient"],
-        -0.0204003178711562,
+        -0.020274623344499365,
     )
     assert np.isclose(
         primary.loc["total_change", "coefficient"],

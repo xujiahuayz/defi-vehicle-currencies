@@ -54,15 +54,15 @@ def test_rotation_and_usdt_values_are_exact() -> None:
 
     usdt = (TABLES / "usdt_transition.tex").read_text(encoding="utf-8")
     assert (
-        "Count excess-use ratio (2024 full year; 2026 January--June) & 1.06 & 1.23"
+        "Count excess-use ratio (2024 full year; 2026 January--June) & 1.06 & 1.22"
         in usdt
     )
     assert (
-        "Value-weighted excess-use ratio (2024 full year; 2026 January--June) & 0.59 & 1.42"
+        "Value-weighted excess-use ratio (2024 full year; 2026 January--June) & 0.59 & 1.40"
         in usdt
     )
     assert "Paired January--June intermediary minus route-endpoint share [pp]" in usdt
-    assert "$-7.13$ & $+8.14$" in usdt
+    assert "$-7.13$ & $+7.95$" in usdt
 
 
 def test_pair_panel_d_contains_all_three_fixed_effect_rows() -> None:

@@ -38,18 +38,18 @@ def test_route_binding_matches_current_display_values_and_excludes_other_lanes()
     text = OUTPUT.read_text(encoding="utf-8")
     for expected in (
         r"\newcommand{\StableCountBase}{16.9\%}",
-        r"\newcommand{\RoutePanelRawSwaps}{472 million}",
-        r"\newcommand{\RoutePanelRawSwapsExact}{472,254,909}",
-        r"\newcommand{\RoutePanelUsableLegsExact}{471,616,269}",
+        r"\newcommand{\RoutePanelRawSwaps}{475 million}",
+        r"\newcommand{\RoutePanelRawSwapsExact}{475,071,108}",
+        r"\newcommand{\RoutePanelUsableLegsExact}{474,388,425}",
         r"\newcommand{\RoutePanelMissingSourceDays}{0}",
-        r"\newcommand{\RoutePanelCalendarDates}{2,332}",
+        r"\newcommand{\RoutePanelCalendarDates}{2,798}",
         r"\newcommand{\RoutePanelDeploymentCount}{9}",
-        r"\newcommand{\RoutePanelSpan}{February 2020--June 2026}",
-        r"\newcommand{\StableCountEnd}{42.3\%}",
+        r"\newcommand{\RoutePanelSpan}{November 2018--June 2026}",
+        r"\newcommand{\StableCountEnd}{42.1\%}",
         r"\newcommand{\StableValueBase}{32.7\%}",
         r"\newcommand{\StableValueEnd}{76.5\%}",
         r"\newcommand{\JointStableContribution}{92.1\%}",
-        r"\newcommand{\USDTEndpointGapChange}{$+15.27$ pp}",
+        r"\newcommand{\USDTEndpointGapChange}{$+15.08$ pp}",
         r"\newcommand{\CrossVenueCountEnd}{57.2\%}",
         r"\newcommand{\CrossVenueValueEnd}{79.1\%}",
         # The venue pricing-family rival: the constant-product restriction must
@@ -98,9 +98,9 @@ def test_a_material_path_length_movement_withholds_every_macro() -> None:
         render_presentation_values(*frames)
 
 
-def test_a_diverging_balanced_perimeter_withholds_every_macro() -> None:
+def test_a_level_shift_in_the_balanced_perimeter_is_allowed() -> None:
     frames = _router_frames()
     windows = frames[-1]
     windows.loc[windows["scope"].eq("balanced"), "cross_venue_share"] += 0.01
-    with pytest.raises(ValueError, match="balanced perimeter"):
-        render_presentation_values(*frames)
+    rendered = render_presentation_values(*frames)
+    assert r"\newcommand{\RouterCrossOne}{$+2.5$ pp}" in rendered

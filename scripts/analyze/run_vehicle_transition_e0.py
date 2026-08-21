@@ -130,6 +130,7 @@ BACKING_COMPONENT_FAMILY = "vehicle_transition_dated_backing_component"
 BACKING_ATTACK_ID = "dated_backing_regimes"
 BASELINE_YEAR = 2024
 COMPARISON_YEAR = 2026
+MINIMUM_ENDPOINT_DAYS = HAC_LAG + 1
 
 if tuple(SCOPE_FILTERS) != VEHICLE_TRANSITION_SCOPES:
     raise RuntimeError("dated-backing strata differ from the transition routing perimeter")
