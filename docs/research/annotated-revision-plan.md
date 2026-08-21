@@ -59,10 +59,17 @@ following document-wide changes, not isolated word replacements:
   Longer routes remain evidence through intermediary-position, participation,
   and network measures; they do not replace the exact decomposition because a
   longer route can contain both vehicle families.
+- Quantify how much intermediary activity lies outside the native and stable
+  families and show where the wider intermediary-type results appear. The main
+  comparison needs an empirical coverage reason, not “we begin with” language.
 - Separate coverage within the retained sources from representativeness of the
   wider Ethereum DEX market. The wider comparison should use historical market
   volume, including DeFiLlama, and must not relabel within-source shares as a
   market census.
+- Present Uniswap v1 in the institutional architecture section. The data section
+  should state the resulting coverage and reconstruction boundary without
+  narrating the re-fetch or other project operations. Label raw pool swaps,
+  usable directed legs, transactions, and routes as distinct units.
 - Prefer full-sample validation where computation is feasible. In particular,
   replace the 79-day round-trip estimate with the all-day result and remove
   arbitrary router snapshots unless the dates answer an economic question.
@@ -70,6 +77,19 @@ following document-wide changes, not isolated word replacements:
   issuer-level stablecoin split and stable-to-stable endpoint analysis, and
   keep the distinction between the stablecoin family and individual dollar
   claims explicit.
+- Develop the stablecoin-supply mechanism instead of leaving issuance as a
+  passing limitation. Growth in stablecoin issuance may create demand for
+  stable-to-stable pools. Those pools may also attract capital because
+  relative-price variation, and hence impermanent-loss exposure, is smaller
+  while both pegs hold. Test issuer supply against stable-to-stable pool
+  formation, depth, and vehicle use; keep deposited capital, fee income,
+  loss-versus-rebalancing, impermanent loss, and provider profitability distinct.
+- Use the Bahamian-dollar/US-dollar comparison to discipline the traditional-FX
+  analogy. A fixed peg or common dollar numeraire does not erase issuer identity,
+  the redemption promise, the liquidity network, or the monetary institution;
+  conventional vehicle-currency work would not automatically pool the two
+  currencies. Report both the functional stablecoin family and issuer-specific
+  token results, and explain which economic question each aggregation answers.
 - Define indicators with conventional subscript notation, use that notation
   downstream, and give regression-table units and standard-error conventions
   once in the appropriate header or note.
@@ -78,6 +98,12 @@ following document-wide changes, not isolated word replacements:
   motivation belongs at the front of the paper and talk.
 - Replace appendix result dumps with grouped economic questions and connect
   each group to the main result it qualifies or extends.
+- Inspect the rendered manuscript globally for blank pages, stranded paragraphs,
+  float placement, and unused white space. Put sample and construction details
+  in table or figure notes when they do not belong in the visual field.
+- Treat two-leg depth as one competitive condition, not a sufficient explanation
+  for dominance. Route availability, relative all-in prices, pair formation,
+  demand, and initial vehicle use remain distinct margins in the interpretation.
 
 Draft source changes on the M3 already cover the numerical route example,
 two-leg rationale, decomposition walkthrough, half-year plotting input,
@@ -90,7 +116,9 @@ terminology, evidence, and emphasis agree.
 
 Two points remain deliberate boundaries. Dollar-pegged tokens stay distinct at
 the token level because issuer, redemption, and pool-liquidity differences are
-economically meaningful, while family-level results remain the headline.
+economically meaningful. Family-level results summarize a shared vehicle
+function; issuer-level results preserve the conventional currency analogy and
+reveal competition among distinct dollar claims.
 Multi-leg routes broaden the network evidence but cannot be assigned a single
 native-versus-stable vehicle when both families appear in the same route.
 
@@ -200,9 +228,12 @@ such as “card.”
   precedes stable-vehicle use, event-day depth predicts whether adoption follows,
   and the matched event path shows bridge capital accumulating before first use
   of the supported stablecoin. Pool-level decomposition shows both activation
-  and continuing-pool scaling before first use. Stablecoin issuance timing
-  remains unmeasured because no verified issuance series is in the local data
-  perimeter.
+  and continuing-pool scaling before first use. The next Studio cycle should
+  source verified issuer-level supply or issuance data and test whether
+  stablecoin supply growth precedes stable-to-stable pool formation, depth, and
+  vehicle use. It should compare provider economics across stable-to-stable and
+  volatile pairs, treating peg breaks explicitly; deposited capital alone cannot
+  establish lower impermanent loss or higher LP profitability.
 - V4 flash-accounting intensity is linked to subsequent capital, range, and
   position-update outcomes, with same-candidate-date V3 comparisons retained as
   supporting evidence. A new timing split separates actions by transaction
