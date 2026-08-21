@@ -21,7 +21,6 @@ A transaction on January 10, 2026 illustrates both the information in the logs a
 
 The sequence directly identifies intermediary use. Conditional on reconstructed pool states immediately before execution, it also defines a same-size cost comparison between the observed route and feasible alternative paths. We introduce notation for the route here and develop the cost comparison in Section~\ref{sec:executability}.
 
-\newpage
 Write $\mathcal{A}_{t}$ for the assets tradable on day $t$ and $\mathcal{P}_{t}$ for the pools live on that day. For a route $r$, let $e(r)$ record its block, transaction position, and first pool-event position. The notation $e(r)^-$ refers to the state immediately before that transaction begins; a daily closing state generally occurs later. A route carries an ordered pool sequence $(p_{1},\ldots,p_{m(r)})$ and token sequence $(k_0,\ldots,k_{m(r)})$, where $k_0=i$ is the input and $k_{m(r)}=o$ is the output. Thus $(i,o)$ is the pair and each directed transition $k_{h-1}\rightarrow k_h$ is a leg. The dollar input notional $q$ corresponds to $\Delta_i(q,e)=q/P_{i,e}$ units of the input token. Let $\chi_{p,e^-}$ denote pool $p$'s state immediately before execution and let $Q_p(i\to j,\Delta_i;\chi_{p,e^-})$ denote the units of token $j$ returned for an exact input of $\Delta_i$ units of token $i$. Composing these pool quotes gives the route's token output and dollar value,
 \begin{equation}
 \label{eq:route}
