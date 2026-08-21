@@ -131,6 +131,17 @@ result look formal; choose the design that answers the economic question.
 
 ## Paper prose
 
+- Write author actions in the first person plural: ``we reconstruct,'' ``we
+  estimate,'' ``we find,'' and ``our measure.'' Reserve ``the paper'' for a rare
+  organizational pointer whose subject truly is the document. Never make the
+  manuscript, table, or research process the actor when the authors, data,
+  market, or estimate can carry the sentence. This matches the dominant
+  authorial construction in the local JFE comparison corpus.
+- A plausible economic channel can remain interpretation. Give its mechanism,
+  conditions, and observable implication, and distinguish it from quantities
+  already measured. Add an empirical exercise only when the available data
+  measure that implication directly; a mechanically anchored proxy or a formal
+  regression with the wrong economic object weakens the argument.
 - The paper is organized around one economic object: continuous vehicle
   dominance in routed decentralised exchange. Other objects earn space by
   testing or qualifying that central object.

@@ -77,12 +77,12 @@ following document-wide changes, not isolated word replacements:
   issuer-level stablecoin split and stable-to-stable endpoint analysis, and
   keep the distinction between the stablecoin family and individual dollar
   claims explicit.
-- Develop the stablecoin-supply mechanism instead of leaving issuance as a
-  passing limitation. Growth in stablecoin issuance may create demand for
+- Develop the stablecoin-supply interpretation without forcing a mechanism
+  regression. Growth in stablecoin issuance may create demand for
   stable-to-stable pools. Those pools may also attract capital because
   relative-price variation, and hence impermanent-loss exposure, is smaller
-  while both pegs hold. Test issuer supply against stable-to-stable pool
-  formation, depth, and vehicle use; keep deposited capital, fee income,
+  while both pegs hold. An empirical extension enters only with independent,
+  validated issuer-supply and price data. Keep deposited capital, fee income,
   loss-versus-rebalancing, impermanent loss, and provider profitability distinct.
 - Use the Bahamian-dollar/US-dollar comparison to discipline the traditional-FX
   analogy. A fixed peg or common dollar numeraire does not erase issuer identity,
@@ -224,12 +224,14 @@ such as “card.”
   precedes stable-vehicle use, event-day depth predicts whether adoption follows,
   and the matched event path shows bridge capital accumulating before first use
   of the supported stablecoin. Pool-level decomposition shows both activation
-  and continuing-pool scaling before first use. The next Studio cycle should
-  source verified issuer-level supply or issuance data and test whether
-  stablecoin supply growth precedes stable-to-stable pool formation, depth, and
-  vehicle use. It should compare provider economics across stable-to-stable and
-  volatile pairs, treating peg breaks explicitly; deposited capital alone cannot
-  establish lower impermanent loss or higher LP profitability.
+  and continuing-pool scaling before first use. The discussion now treats
+  stablecoin issuance and lower stable--stable divergence exposure while pegs
+  hold as economic interpretations. The current route-valuation price panel is
+  unsuitable for testing that exposure because stablecoin valuation can be
+  anchored and historical decimal errors contaminate unfiltered price records.
+  A future test requires independent prices, verified issuer supply, provider
+  entry dates, fee income, and explicit peg-stress treatment; deposited capital
+  alone measures the supplied stock.
 - V4 flash-accounting intensity is linked to subsequent capital, range, and
   position-update outcomes, with same-candidate-date V3 comparisons retained as
   supporting evidence. A new timing split separates actions by transaction

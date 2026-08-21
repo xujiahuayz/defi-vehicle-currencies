@@ -2,7 +2,7 @@
 
 These notes follow the current core deck. The tone is spoken on purpose. Short bridges, fragments, a little repetition. The backup section covers every appendix slide.
 
-Timing target: cover and slides 1--3, 5 minutes; slides 4--8, 7 minutes; slides 9--11, 7 minutes; slides 12--15, 9 minutes; slide 16, 2 minutes. The 18-second film and normal slide transitions are included in those blocks.
+Timing target: cover and slides 1--3, 5 minutes; slides 4--8, 7 minutes; slides 9--11, 7 minutes; slides 12--16, 9 minutes; slide 17, 2 minutes. The 18-second film and normal slide transitions are included in those blocks.
 
 ## Cover. The Making of Dominant Vehicle Currencies
 
@@ -106,7 +106,7 @@ V2 arrives in May 2020 and allows arbitrary token pairs. Vehicle choice becomes 
 
 V3 arrives a year later and lets liquidity providers concentrate capital around selected prices. Then v4, in January 2025, puts pools inside one singleton and settles balances after the route.
 
-The key break for this paper is v1 to v2. The rule forcing ETH disappears. The inherited market structure does not.
+The key break for us is v1 to v2. The rule forcing ETH disappears. The inherited market structure remains.
 
 ## Slide 8. Native-asset pairing persists after it becomes optional
 
@@ -122,9 +122,9 @@ This uses every complete route length.
 
 Native assets lead early. Stablecoins gain in 2022. Native assets come back in 2023 and 2024. Then stablecoins take the routed-value lead again in 2025 and remain ahead in 2026 H1.
 
-So this is no smooth, one-way technology trend. The leadership actually turns over.
+So the path is uneven. The leadership actually turns over.
 
-Among all intermediary positions, the stablecoin share rises from 17.2 percent in 2024 to 41.8 percent in 2026 H1. Route participation tells the same story: 17.6 to 46.0 percent. Longer routes are part of the result, not discarded observations.
+Among all intermediary positions, the stablecoin share rises from 17.2 percent in 2024 to 41.8 percent in 2026 H1. Route participation tells the same story: 17.6 to 46.0 percent. Longer routes stay in this measure and carry part of the result.
 
 The value shift is even larger. The short film makes the turnover easier to see because frequency, value, and pair breadth move at the same time.
 
@@ -136,7 +136,7 @@ Horizontal position is route-count share. Vertical position is supported-value s
 
 Watch WETH first. Large, high, far to the right. Then USDC gains value weight. Later USDT rises sharply. By the end, the stablecoin family carries most supported value even while WETH remains broad across pairs.
 
-No final frame tells that whole story. The movement is the object here.
+The transition lives in the movement across frames.
 
 Now the central question: did existing pairs switch, or did trading form around different pairs?
 
@@ -152,7 +152,7 @@ Trading reallocation across continuing pairs adds 8.4 points.
 
 Pairs present in only one period add 17.8 points. The largest component. That number is net of both entry and exit: new pairs bring their 2026 vehicle into the comparison, while disappearing pairs remove their 2024 vehicle.
 
-This does not say every continuing pair is frozen. Many move toward stablecoins and many move back toward WETH. The net is near zero. The aggregate rise comes from where trading grows and which relationships appear or disappear.
+Gross switching is active in both directions. Many continuing pairs move toward stablecoins and many move back toward WETH. Those movements nearly cancel. The aggregate rise comes from where trading grows and which relationships appear or disappear.
 
 That changes the economic story. Dominance can move because the network grows around a vehicle, even when established relationships show little net replacement.
 
@@ -170,7 +170,7 @@ Large persistence. Same pair, long after the first routes. In ordinary language:
 
 “Initial” simply means the first observed routes of that new pair. The pair is new to the data; its first vehicle identity is still well defined.
 
-The estimates control for entry size, cohort, endpoint type, direct routing, and route complexity. I use sticky as shorthand for predictive persistence in the observed routes. It does not mean I have isolated trader habit or inertia. The first vehicle is still an equilibrium outcome.
+The estimates control for entry size, cohort, endpoint type, direct routing, and route complexity. I use sticky as shorthand for predictive persistence in the observed routes. Trader habit is one possible force. Persistent depth, prices, and venue access are others. The first vehicle is an equilibrium outcome.
 
 Entry predicts later use, but the same pattern can contain deep and shallow challenges. So next we measure the two legs behind the challenger.
 
@@ -184,13 +184,25 @@ At least as deep as WETH: 53 percent.
 
 Twice as deep: almost 70 percent.
 
-The first-use result says the same thing in ordinary language. Among shallow bridges, only 42.6 percent are used within 30 days. Once depth reaches one tenth of WETH, 84.1 percent are used.
-
 Useful bridge support rises continuously with depth. A pool can carry positive capital and still be far shallower than the incumbent. Depth makes the contest meaningful.
 
-So the measurable part of the persistence story is depth. A challenger can have positive capital and still sit near zero on the competitive spectrum. Next: does that depth arrive before or after first use?
+So the measurable part of the persistence story is depth. A challenger can have positive capital and still sit near zero on the competitive spectrum.
 
-## Slide 14. Bridge capital builds before first use
+## Slide 14. Usable depth turns support into route use
+
+Now take the same point in event time.
+
+Among bridges below one tenth of WETH depth, 42.6 percent carry their first stablecoin route within 30 days. Once the bridge reaches that threshold, 84.1 percent do.
+
+That is a big gap between technical support and economically usable support. Both legs have to become deep enough.
+
+There is also a plausible supply-side reason stablecoin links can form. While both pegs hold, a stablecoin--stablecoin pool has much less relative-price movement than a stablecoin--WETH pool. For a constant-product LP, that means less loss versus holding, usually called impermanent or divergence loss. Lower risk may make those links attractive to supply. A peg break can reverse the comparison.
+
+That last part is interpretation. Deposited capital tells us how much was supplied. Provider entry prices, fees, hedges, and expectations would be needed to measure profitability.
+
+Next: does depth arrive before or after first use?
+
+## Slide 15. Bridge capital builds before first use
 
 Day zero is the first observed use of a supported stablecoin. The pool bridge already exists before then.
 
@@ -202,12 +214,12 @@ After first use, stablecoin bridge capital falls by 0.44 log points over the nex
 
 The appendix split tells us where that capital comes from. About 92.5 percent is in pools already active one week earlier. So this is mainly an existing bridge getting deeper, with a smaller contribution from newly active pools.
 
-What it does not tell us is why. Providers may anticipate demand; traders may wait for depth. And first use is an endogenous date, so it can line up with a local peak. We observe the timing and the pool margin. We do not observe provider motives.
+The timing is suggestive. Providers may anticipate route demand. Traders may wait until the bridge is usable. Both can happen together. First use and capital are jointly determined, so I read the figure as formation around a route, with the two forces still combined.
 
-The useful takeaway is narrower. Vehicle competition moves continuously with depth, and capital is concentrated around the moment the new route first carries flow.
+The useful takeaway: vehicle competition moves continuously with depth, and capital is concentrated around the moment the new route first carries flow.
 One last rival: perhaps the observed vehicle survives only because the router missed a better price.
 
-## Slide 15. Price competition usually changes the venue
+## Slide 16. Price competition usually changes the venue
 
 Here we reconstruct the exact state immediately before each transaction and reprice the same input. Then we widen the set of alternatives one step at a time.
 
@@ -221,21 +233,21 @@ If every route takes its best quoted path, stablecoin vehicle share moves by min
 
 So the big jump comes from searching more venues with the same vehicle: 6.6 to 44.5 percent. Letting the route change its vehicle, or go direct, adds only 2 more points. And even if every route takes its best quoted path, aggregate stablecoin vehicle share moves by only 1.2 points.
 
-Now connect this price panel back to pair entry. At least 120 days after a pair appears, the first vehicle is retained 99.5 percent of the time when it remains the exact price leader. When the challenger price-leads, retention falls to 12.0 percent, across 15,308 routes and 1,886 pairs.
+Every observation has its own exact counterfactual quote. The three steps show how often each wider opportunity set beats the executed route by more than one basis point.
 
-That is not an inertia result. The first vehicle predicts later use because its executable advantage often persists. When a cheaper public challenger appears, most routes change vehicle. Private flow, omitted venues, gas, and provider expectations remain outside this comparison.
+The next price test is narrower and harder: quote the best stablecoin route and the best WETH route independently, and keep only trades where both are executable. That is the comparison needed to connect current prices to the first vehicle without letting the executed route define its own benchmark.
 
-Every observation therefore has its own exact counterfactual quote. The three cards report how often each wider opportunity set beats the executed route by more than one basis point.
-
-## Slide 16. New relationships can reorder currency dominance
+## Slide 17. New relationships can reorder currency dominance
 
 Let me leave you with the bigger point.
 
-Why does dominance matter? Because the vehicle sits in the middle of many unrelated exchanges. That concentrates turnover and liquidity in its markets. It also links many trading relationships to the same liquidity and issuer conditions.
+Three findings.
 
-What changes dominance? New relationships and trading reallocation. The first vehicle is sticky inside a new pair, so competition inside an established relationship moves less than the aggregate market.
+First, pair formation and trading reallocation carry most of the aggregate rotation. Net switching inside continuing pairs is tiny.
 
-Inside a new pair, the first vehicle predicts later use. Route share also rises sharply with two-leg depth. And the exact-price comparison says most public price competition is across venues using the same vehicle.
+Second, the first vehicle of a new pair predicts later use. New relationships inherit the markets available when they form.
+
+Third, two-leg depth makes a bridge competitive. Stablecoin route use rises sharply as the weaker leg approaches WETH depth, and capital builds into first use.
 
 That is what I would carry back to traditional currency competition. Aggregate dominance reflects the vehicle used inside established relationships and the one chosen when new relationships form. Early presence and deep two-sided markets matter alongside quoted prices.
 
@@ -282,6 +294,12 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 - All route lengths describe participation across the whole network.
 - Exact two-leg routes isolate one vehicle choice.
 - Both come from the same reconstructed routes; the denominator changes with the question.
+
+## Peg parity keeps currency identity separate
+
+- The Bahamian dollar trades at one-for-one parity with the U.S. dollar and remains a separately issued currency.
+- Likewise, USDC, USDT, and DAI share a unit of account while retaining issuer, redemption, and liquidity differences.
+- While pegs hold, stable--stable pools may offer LPs lower divergence loss; profitability also depends on fees, entry prices, hedges, and peg stress.
 
 ## A4. State is reconstructed immediately before execution
 

@@ -521,16 +521,6 @@ At the median, round trips account for 12.8\% of multi-leg routes by count and 2
 \exhibitnote{Both panels apply the exact decomposition in Equation~\eqref{eq:pair-decomposition}; endpoint-year shares are percentages, and all changes and components are in pp. Panel A uses equal-weight matched January--June dates in each adjacent pair of years. Panel B compares matched January--June dates in 2024 and 2026 after removing every pair with WETH or a stablecoin at either endpoint. Supported value requires source, intermediary, and destination values to agree within 20\%. Trading reallocation changes weights across continuing pairs, support shift changes the aggregate weight on continuing pairs, and pair entry/exit is net of pairs present in only one endpoint year. Components use unrounded values and sum to the total change.}
 \end{table}
 
-\begin{table}[tbp]
-\centering
-\caption{Vehicle at pair entry and the exact pretrade price leader}
-\label{tab:app:entry-price-alignment}
-{\small
-\input{../output/tables/entry_vehicle_price_alignment.tex}
-}
-\exhibitnote{Each cell reports the share of current routes that retain the majority native-or-stable vehicle observed on the pair's first day; bracketed values are route or pair-day observations. Pairs are at least 120 days old. The price leader is the best admissible public path for the observed source, destination, input amount, and pre-transaction state. A challenger leads only when another native-or-stable vehicle improves gross output by more than one basis point; otherwise the chosen vehicle remains the leader. Route weighting gives each observed route one unit. Pair-day weighting first averages within pair and date. The exact venue set is Uniswap v2, SushiSwap v2, and Uniswap v3; inputs are at least \$100, and every leg satisfies the 5\% own-price-impact bound. Private order flow, omitted venues, and gas remain outside the comparison.}
-\end{table}
-
 The full route panel supports two complementary measures. Intermediary-position share allocates all observed intermediary work across currencies. Route-participation share records the fraction of routes containing a currency and can sum above one across currencies because a longer route may contain several intermediaries. Panel A of Table~\ref{tab:network-position} reports both measures for the native and stablecoin families. Panel B compares realised use with each named currency's position in the trading graph.
 
 \begin{table}[tbp]

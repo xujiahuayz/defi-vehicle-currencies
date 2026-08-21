@@ -41,7 +41,7 @@
 
 % EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_decomposition.jsonl
 % EVIDENCE-STATUS: central exact decomposition.
-% VISUAL-FUNCTION: sources of aggregate rotation | three contribution cards and share arrow | make pair formation and near-zero net switching memorable
+% VISUAL-FUNCTION: sources of aggregate rotation | three contribution blocks and share arrow | make pair formation and near-zero net switching memorable
 \begin{frame}{Pair formation supplies most of the rotation}
 \evidencekicker{Exact decomposition in percentage points (pp): 2024 H1 to 2026 H1}
 \vspace{0.06cm}
@@ -103,7 +103,7 @@
 
 % EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl
 % EVIDENCE-STATUS: main descriptive depth association.
-% VISUAL-FUNCTION: bridge depth and route use | ordered depth cards | show how a technically available route becomes competitive
+% VISUAL-FUNCTION: bridge depth and route use | ordered depth blocks | show how a technically available route becomes competitive
 \begin{frame}{A shallow stablecoin bridge attracts little route flow}
 \evidencekicker{First 30 days after persistent stablecoin support}
 \vspace{0.05cm}
@@ -120,8 +120,36 @@
 \end{tikzpicture}
 \end{center}
 \vspace{0.28cm}
-{\large\bfseries First-month use rises from \BridgeTimingShallowMonthShare{} below $0.1\times$ WETH depth to \BridgeTimingCompetitiveMonthShare{} above it.\par}
-\decknote{Depth is prior-calendar deposited capital on the weaker leg. The route-share comparison uses \BridgeDepthDoseFirstRows{} pair-days across \BridgeDepthDoseFirstEvents{} bridge events. Support, depth, and first use refer to the same stablecoin set. Capital and route demand are jointly determined.}
+{\large\bfseries Vehicle competition turns on relative depth.\par}
+\decknote{Depth is prior-calendar deposited capital on the weaker leg. The route-share comparison uses \BridgeDepthDoseFirstRows{} pair-days across \BridgeDepthDoseFirstEvents{} bridge events. Support and depth refer to the same stablecoin set. Capital and route demand are jointly determined.}
+\end{frame}
+
+% EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl; Milionis et al. (2022)
+% EVIDENCE-STATUS: descriptive first-use comparison plus economic interpretation of LP risk.
+% VISUAL-FUNCTION: support to first use | two uncluttered probability blocks | separate binary support from usable depth
+\begin{frame}{Usable depth turns support into route use}
+\evidencekicker{Probability of first stablecoin use within 30 days}
+\vspace{0.34cm}
+\begin{columns}[T,totalwidth=0.86\textwidth]
+\begin{column}{0.38\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.40cm,wd=\textwidth]{block body}
+{\small\color{muted} BELOW $0.1\times$ WETH DEPTH\par}\vspace{0.12cm}
+{\fontsize{30}{32}\selectfont\bfseries\color{accent}\BridgeTimingShallowMonthShare\par}
+\end{beamercolorbox}
+\end{column}
+\begin{column}{0.10\textwidth}\centering\vspace{0.70cm}{\Large$\rightarrow$}\end{column}
+\begin{column}{0.38\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.40cm,wd=\textwidth]{block body}
+{\small\color{muted} AT LEAST $0.1\times$ WETH DEPTH\par}\vspace{0.12cm}
+{\fontsize{30}{32}\selectfont\bfseries\color{stable}\BridgeTimingCompetitiveMonthShare\par}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\vspace{0.48cm}
+{\large Positive pool capital becomes economically useful as both route legs deepen.\par}
+\vspace{0.18cm}
+{\small\color{muted} While pegs hold, lower stable--stable divergence risk may also make these links attractive to liquidity providers.\par}
+\decknote{The sample follows \BridgeTimingEvents{} pair events after persistent support appears. The estimates compare first use within 30 days. The LP-risk sentence is an economic interpretation: smaller relative-price movements imply smaller constant-product loss versus holding. Provider profitability additionally depends on entry prices, fee income, hedges, and expectations.}
 \end{frame}
 
 % EVIDENCE-SOURCES: output/figures/experiments/bridge_adoption_capital_path.pdf
@@ -152,7 +180,7 @@
 
 % EVIDENCE-SOURCES: output/exhibits/exact_vehicle_frontier_monthly.jsonl
 % EVIDENCE-STATUS: main exact pre-transaction price comparison.
-% VISUAL-FUNCTION: venue and vehicle price competition | nested opportunity-set cards | separate venue improvement from vehicle replacement
+% VISUAL-FUNCTION: venue and vehicle price competition | nested opportunity-set blocks | separate venue improvement from vehicle replacement
 \begin{frame}{Price competition usually changes the venue}
 \evidencekicker{Share of routes with a quote more than 1 bp better than execution}
 \vspace{0.08cm}
@@ -184,8 +212,8 @@
 \vspace{0.44cm}
 \begin{columns}[T,totalwidth=0.90\textwidth]
 \begin{column}{0.42\textwidth}
-{\fontsize{23}{25}\selectfont\bfseries\color{ucldark}\PriceChallengerIncumbentRetention}\par
-{\small entry vehicle retained when the challenger price-leads\par}
+{\fontsize{23}{25}\selectfont\bfseries\color{ucldark}\ExactFrontierVehicleAddition}\par
+{\small added by opening other vehicles and the direct path\par}
 \end{column}
 \hfill
 \begin{column}{0.42\textwidth}
@@ -193,5 +221,5 @@
 {\small change in stablecoin vehicle share\par}
 \end{column}
 \end{columns}
-\decknote{Routes are repriced for the same pair and input immediately before execution. The sample contains \ExactFrontierRoutes{} routes on \ExactFrontierDates{} monthly dates across exact Uniswap v2, SushiSwap v2, and Uniswap v3 states; minimum input is \ExactFrontierMinimumInput{} and the impact limit is \ExactFrontierImpactLimit{}. At least 120 days after entry, the vehicle is retained on \PriceIncumbentLeaderRetention{} of routes when it price-leads and \PriceChallengerIncumbentRetention{} when a challenger leads. Quotes are gross of gas.}
+\decknote{Routes are repriced for the same pair and input immediately before execution. The sample contains \ExactFrontierRoutes{} routes on \ExactFrontierDates{} monthly dates across exact Uniswap v2, SushiSwap v2, and Uniswap v3 states; minimum input is \ExactFrontierMinimumInput{} and the impact limit is \ExactFrontierImpactLimit{}. Quotes are gross of gas. A separate contestable-price comparison independently quotes feasible stablecoin and WETH routes.}
 \end{frame}

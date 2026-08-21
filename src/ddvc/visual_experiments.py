@@ -410,17 +410,18 @@ def render_annual_composition_bands(
                         run for run in _leader_runs(pivot) if run[0] != "tie"
                     ][-3:]
                     labels = (
-                        "Earlier stable\nlead",
-                        "Native retakes\nlead",
-                        "Stable regains\nlead",
+                        "Earlier stable",
+                        "Native retakes",
+                        "Stable regains",
                     )
+                    label_heights = (0.875, 0.815, 0.875)
                     if [leader for leader, _, _ in runs] == [
                         "stable",
                         "native",
                         "stable",
                     ]:
-                        for (leader, start, end), label in zip(
-                            runs, labels, strict=True
+                        for (leader, start, end), label, label_height in zip(
+                            runs, labels, label_heights, strict=True
                         ):
                             colour = PALETTE[leader]
                             axis.axvspan(
@@ -432,11 +433,11 @@ def render_annual_composition_bands(
                             )
                             axis.text(
                                 (start + end) / 2,
-                                0.875,
+                                label_height,
                                 label,
                                 ha="center",
                                 va="top",
-                                fontsize=8.2,
+                                fontsize=7.2,
                                 fontweight="bold",
                                 color=colour,
                             )
