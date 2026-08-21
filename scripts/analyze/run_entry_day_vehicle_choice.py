@@ -726,22 +726,22 @@ def run(
         day_support = pd.DataFrame()
     else:
         exact_panel, day_support = run_exact_entry_days(entries)
-        if exact_panel.empty:
-            raise ValueError("material entry cohort has no exact contestable routes")
-        exact_panel = exact_panel.sort_values(
-            ["day", "ordered_pair", "route_id"], kind="stable"
-        ).reset_index(drop=True)
         if score_only:
             elapsed = perf_counter() - started
             print(
                 f"score-only result: {len(exact_panel):,} routes, "
-                f"{exact_panel['ordered_pair'].nunique():,} pairs, "
-                f"{exact_panel['day'].nunique():,} dates, "
+                f"{exact_panel.get('ordered_pair', pd.Series(dtype=str)).nunique():,} pairs, "
+                f"{exact_panel.get('day', pd.Series(dtype=str)).nunique():,} dates, "
                 f"{elapsed:.1f} seconds",
                 flush=True,
             )
             print(day_support.to_string(index=False), flush=True)
             return 0
+        if exact_panel.empty:
+            raise ValueError("material entry cohort has no exact contestable routes")
+        exact_panel = exact_panel.sort_values(
+            ["day", "ordered_pair", "route_id"], kind="stable"
+        ).reset_index(drop=True)
     panel = attach_entry_capital(exact_panel, pool_capital_path)
     results = regression_results(panel)
     elapsed = perf_counter() - started
