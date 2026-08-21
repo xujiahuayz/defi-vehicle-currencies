@@ -266,6 +266,33 @@ class PaperProseTests(unittest.TestCase):
         assert first_compact_use is not None
         self.assertLess(definition, first_compact_use.start())
 
+    def test_transcript_covers_every_deck_frame_in_order(self) -> None:
+        frame_pattern = re.compile(r"\\begin\{frame\}(?:\[[^]]*\])?\{([^}]+)\}")
+        frames: list[str] = []
+        for path in source_files(DECK_DIR / "sections"):
+            frames.extend(frame_pattern.findall(path.read_text(encoding="utf-8")))
+
+        headings = re.findall(
+            r"^##\s+(.+)$",
+            (DECK_DIR / "script.md").read_text(encoding="utf-8"),
+            flags=re.MULTILINE,
+        )
+        headings = [heading for heading in headings if not heading.startswith("Cover.")]
+
+        def title_key(value: str) -> str:
+            value = re.sub(
+                r"^(?:Slide \d+\.|A\d+(?:\.\d+|[a-z])?\.)\s*",
+                "",
+                value,
+            )
+            return value.casefold().strip()
+
+        self.assertEqual(
+            [title_key(heading) for heading in headings],
+            [title_key(frame) for frame in frames],
+            "deck/script.md must cover every frame once and in presentation order",
+        )
+
     def test_abstract_respects_jfe_submission_ceiling(self) -> None:
         abstract = PAPER_DIR / "abstract.tex"
         visible = strip_latex_markup(abstract.read_text(encoding="utf-8"))

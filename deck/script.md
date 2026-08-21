@@ -291,17 +291,17 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 - Classification follows the backing regime at the time, so a token can change category.
 - The headline family result is followed by issuer-level splits where they matter.
 
-## A3. One route universe supports two measurements
-
-- All route lengths describe participation across the whole network.
-- Exact two-leg routes isolate one vehicle choice.
-- Both come from the same reconstructed routes; the denominator changes with the question.
-
 ## A2.1. Peg parity preserves currency identity
 
 - The Bahamian dollar trades at one-for-one parity with the U.S. dollar and remains a separately issued currency.
 - Likewise, USDC, USDT, and DAI share a unit of account while retaining issuer, redemption, and liquidity differences.
 - While pegs hold, stable--stable pools may offer LPs lower divergence loss; profitability also depends on fees, entry prices, hedges, and peg stress.
+
+## A3. One route universe supports two measurements
+
+- All route lengths describe participation across the whole network.
+- Exact two-leg routes isolate one vehicle choice.
+- Both come from the same reconstructed routes; the denominator changes with the question.
 
 ## A4. State is reconstructed immediately before execution
 
@@ -321,7 +321,7 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 - V2 permits arbitrary token pairs, making direct paths and alternative vehicles possible.
 - Pool creation changes the opportunity set before any router chooses a path.
 
-## A5.2. Executable depth comes from active liquidity
+## A5.2. Executable depth is path-specific
 
 - V3 liquidity can sit outside the current price range.
 - Total deposits and executable depth can therefore differ sharply.
@@ -346,7 +346,7 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 - Complete weeks give balanced weekly aggregates.
 - Exact future dates keep the stated 30- or 120-day horizon; they do not substitute a convenient nearby date.
 
-## A7b. Stablecoin use rises within every venue scope
+## A7b. Stablecoin share rises within each venue scope
 
 - Stablecoin shares rise within single-exchange and cross-exchange routes.
 - So exchange integration alone does not generate the rotation.
@@ -382,7 +382,7 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 - They can also add a different vehicle path or a direct route.
 - The exact-price exercise opens those sets step by step.
 
-## A11b. Venue scope and vehicle type differ in 2026
+## A11b. Venue scope and vehicle type in 2026
 
 - Cross-exchange routing and stablecoin routing are related but distinct.
 - Both single- and cross-exchange routes contain native and stable vehicles.
@@ -394,7 +394,7 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 - Somogyi is the closest empirical FX comparison; it infers connected vehicle use from separate market records.
 - Our route data observe the connection directly.
 
-## A13. References: decentralised exchange design
+## A13. References: exchange design
 
 - These papers provide the AMM pricing, routing, and liquidity-provision foundations.
 - The route-cost exercise sits closest to the optimal-routing literature.
@@ -406,7 +406,7 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 - Its realised intermediary-position share still falls from 76.2 to 42.4 percent; USDC and USDT together rise from 14.9 to 37.2.
 - An unweighted edge records an available connection. It does not record route depth or execution cost, so graph position alone cannot explain realised use.
 
-## A15. Endpoint demand and intermediary use move together
+## A15. Endpoint demand predicts intermediary use
 
 - (I_{a,t}) is currency (a)'s intermediary share on date (t); (D_{a,t}) is its endpoint-demand share.
 - With date and currency effects, one extra percentage point of endpoint demand maps into 0.98 points of intermediary use.
@@ -418,7 +418,7 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 - Removing those pairs reduces the count rotation sharply.
 - Fixed pairs still show only small net stablecoin movement, so the central composition result survives the eligibility issue.
 
-## A17. Endpoint direction separates count and value channels
+## A17. Endpoint direction splits count and value
 
 - Other pairs supply the largest count and value contribution.
 - Pairs with two stablecoin endpoints are small by count and large by value.
@@ -436,7 +436,7 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 - Local weak-leg capital and broader same-day reach both predict route share.
 - Betweenness asks a related graph-position question; this regression uses observed reach outside the local pair.
 
-## A19. Most first-use capital sits in pools already active
+## A19. First-use capital lies in active pools
 
 - 92.5 percent of capital at first use sits in pools that were already active a week earlier.
 - Providers mainly deepen existing pools; newly active pools add a smaller route-formation channel.
