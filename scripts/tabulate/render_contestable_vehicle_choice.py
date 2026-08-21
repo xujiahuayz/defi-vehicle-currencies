@@ -36,6 +36,12 @@ SPECIFICATIONS: tuple[Specification, ...] = (
         heading=r"Incumbent retained",
     ),
     Specification(
+        model_id="exclusive_retention_price_only_positive_v2_capital",
+        sample="mature_exclusive_entry_positive_v2_bridge_capital",
+        outcome="incumbent_retained",
+        heading=r"Incumbent retained",
+    ),
+    Specification(
         model_id="exclusive_retention_price_v2_capital",
         sample="mature_exclusive_entry_positive_v2_bridge_capital",
         outcome="incumbent_retained",
@@ -63,7 +69,7 @@ REGRESSORS: tuple[tuple[str, str], ...] = (
     ),
     (
         "incumbent_v2_capital_advantage_10pp",
-        r"Incumbent lagged V2 capital-share advantage [10 pp]",
+        r"Incumbent lagged full-range capital-share advantage [10 pp]",
     ),
     (
         "log_input_usd",
@@ -155,7 +161,7 @@ def _validate_model_metadata(model: pd.DataFrame, specification: Specification) 
 
 
 def render_contestable_vehicle_choice(results: pd.DataFrame) -> str:
-    """Return a compact three-column regression table."""
+    """Return a compact four-column regression table."""
 
     required = {
         "record_type",
@@ -195,6 +201,10 @@ def render_contestable_vehicle_choice(results: pd.DataFrame) -> str:
         ),
         (
             "incumbent_output_advantage_100bp",
+            "log_input_usd",
+        ),
+        (
+            "incumbent_output_advantage_100bp",
             "incumbent_v2_capital_advantage_10pp",
             "log_input_usd",
         ),
@@ -206,12 +216,22 @@ def render_contestable_vehicle_choice(results: pd.DataFrame) -> str:
             _require_regressor(model, regressor, specification.model_id)
 
     anchors = [_anchor(model) for model in models]
+    for field in (
+        "observations",
+        "ordered_pair_clusters",
+        "date_clusters",
+        "dependent_mean",
+    ):
+        if anchors[2][field] != anchors[3][field]:
+            raise ValueError(
+                "price-only and price-capital columns use different samples"
+            )
     lines = [
         r"\begin{tabularx}{\linewidth}{@{}"
         r">{\hsize=1.55\hsize\raggedright\arraybackslash}X"
-        r"*{3}{>{\hsize=0.82\hsize\centering\arraybackslash}X}@{}}",
+        r"*{4}{>{\hsize=0.8625\hsize\centering\arraybackslash}X}@{}}",
         r"\toprule",
-        r" & (1) & (2) & (3) \\",
+        r" & (1) & (2) & (3) & (4) \\",
         "Outcome; estimates [pp] & "
         + " & ".join(spec.heading for spec in SPECIFICATIONS)
         + r" \\",
@@ -239,11 +259,11 @@ def render_contestable_vehicle_choice(results: pd.DataFrame) -> str:
             "Date clusters & "
             + " & ".join(_integer(row["date_clusters"]) for row in anchors)
             + r" \\",
-            r"Pair fixed effects & Yes & Yes & Yes \\",
-            r"Date fixed effects & Yes & Yes & Yes \\",
-            r"Two-way clustered s.e. & Pair, date & Pair, date & Pair, date \\",
-            r"Exclusive entry, age $\geq 30$ days & No & Yes & Yes \\",
-            r"Prior-day V2 bridge capital positive, both vehicles & No & No & Yes \\",
+            r"Pair fixed effects & Yes & Yes & Yes & Yes \\",
+            r"Date fixed effects & Yes & Yes & Yes & Yes \\",
+            r"Two-way clustered s.e. & Pair, date & Pair, date & Pair, date & Pair, date \\",
+            r"Exclusive entry, age $\geq 30$ days & No & Yes & Yes & Yes \\",
+            r"Prior-day full-range capital positive, both vehicles & No & No & Yes & Yes \\",
             "Minimum absolute output difference [bp] & "
             + " & ".join(
                 f"{float(row['price_lead_threshold_bps']):.0f}" for row in anchors
@@ -251,6 +271,8 @@ def render_contestable_vehicle_choice(results: pd.DataFrame) -> str:
             + r" \\",
             "Continuous output gap cap [bp] &  &  & "
             + f"{float(anchors[2]['linear_price_advantage_cap_bps']):,.0f}"
+            + " & "
+            + f"{float(anchors[3]['linear_price_advantage_cap_bps']):,.0f}"
             + r" \\",
             r"\bottomrule",
             r"\end{tabularx}",

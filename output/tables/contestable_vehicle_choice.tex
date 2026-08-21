@@ -1,26 +1,26 @@
-\begin{tabularx}{\linewidth}{@{}>{\hsize=1.55\hsize\raggedright\arraybackslash}X*{3}{>{\hsize=0.82\hsize\centering\arraybackslash}X}@{}}
+\begin{tabularx}{\linewidth}{@{}>{\hsize=1.55\hsize\raggedright\arraybackslash}X*{4}{>{\hsize=0.8625\hsize\centering\arraybackslash}X}@{}}
 \toprule
- & (1) & (2) & (3) \\
-Outcome; estimates [pp] & Stablecoin chosen & Incumbent retained & Incumbent retained \\
+ & (1) & (2) & (3) & (4) \\
+Outcome; estimates [pp] & Stablecoin chosen & Incumbent retained & Incumbent retained & Incumbent retained \\
 \midrule
-Stablecoin route has higher exact output & \begin{tabular}{@{}c@{}}$+57.59^{***}$\\$(2.84)$\end{tabular} &  &  \\
-Challenger route has higher exact output &  & \begin{tabular}{@{}c@{}}$-58.08^{***}$\\$(2.82)$\end{tabular} &  \\
-Challenger output lead $\times$ stable incumbent &  & \begin{tabular}{@{}c@{}}$+4.47$\\$(7.82)$\end{tabular} &  \\
-Incumbent exact-output advantage [100 bp] &  &  & \begin{tabular}{@{}c@{}}$+10.13^{***}$\\$(0.77)$\end{tabular} \\
-Incumbent lagged V2 capital-share advantage [10 pp] &  &  & \begin{tabular}{@{}c@{}}$+2.77^{***}$\\$(0.61)$\end{tabular} \\
-Log input value [USD] & \begin{tabular}{@{}c@{}}$+0.32$\\$(0.43)$\end{tabular} & \begin{tabular}{@{}c@{}}$-0.66$\\$(0.46)$\end{tabular} & \begin{tabular}{@{}c@{}}$-1.32^{*}$\\$(0.78)$\end{tabular} \\
+Stablecoin route has higher exact output & \begin{tabular}{@{}c@{}}$+57.59^{***}$\\$(2.84)$\end{tabular} &  &  &  \\
+Challenger route has higher exact output &  & \begin{tabular}{@{}c@{}}$-58.08^{***}$\\$(2.82)$\end{tabular} &  &  \\
+Challenger output lead $\times$ stable incumbent &  & \begin{tabular}{@{}c@{}}$+4.47$\\$(7.82)$\end{tabular} &  &  \\
+Incumbent exact-output advantage [100 bp] &  &  & \begin{tabular}{@{}c@{}}$+10.56^{***}$\\$(0.83)$\end{tabular} & \begin{tabular}{@{}c@{}}$+10.13^{***}$\\$(0.77)$\end{tabular} \\
+Incumbent lagged full-range capital-share advantage [10 pp] &  &  &  & \begin{tabular}{@{}c@{}}$+2.77^{***}$\\$(0.61)$\end{tabular} \\
+Log input value [USD] & \begin{tabular}{@{}c@{}}$+0.32$\\$(0.43)$\end{tabular} & \begin{tabular}{@{}c@{}}$-0.66$\\$(0.46)$\end{tabular} & \begin{tabular}{@{}c@{}}$-1.56^{*}$\\$(0.87)$\end{tabular} & \begin{tabular}{@{}c@{}}$-1.32^{*}$\\$(0.78)$\end{tabular} \\
 \midrule
-Dependent mean [\%] & 26.5 & 73.7 & 69.7 \\
-Within $R^2$ & 0.372 & 0.382 & 0.153 \\
-Observations & 49,212 & 34,439 & 17,778 \\
-Pair clusters & 2,596 & 1,981 & 678 \\
-Date clusters & 73 & 73 & 73 \\
-Pair fixed effects & Yes & Yes & Yes \\
-Date fixed effects & Yes & Yes & Yes \\
-Two-way clustered s.e. & Pair, date & Pair, date & Pair, date \\
-Exclusive entry, age $\geq 30$ days & No & Yes & Yes \\
-Prior-day V2 bridge capital positive, both vehicles & No & No & Yes \\
-Minimum absolute output difference [bp] & 1 & 1 & 1 \\
-Continuous output gap cap [bp] &  &  & 1,000 \\
+Dependent mean [\%] & 26.5 & 73.7 & 69.7 & 69.7 \\
+Within $R^2$ & 0.372 & 0.382 & 0.145 & 0.153 \\
+Observations & 49,212 & 34,439 & 17,778 & 17,778 \\
+Pair clusters & 2,596 & 1,981 & 678 & 678 \\
+Date clusters & 73 & 73 & 73 & 73 \\
+Pair fixed effects & Yes & Yes & Yes & Yes \\
+Date fixed effects & Yes & Yes & Yes & Yes \\
+Two-way clustered s.e. & Pair, date & Pair, date & Pair, date & Pair, date \\
+Exclusive entry, age $\geq 30$ days & No & Yes & Yes & Yes \\
+Prior-day full-range capital positive, both vehicles & No & No & Yes & Yes \\
+Minimum absolute output difference [bp] & 1 & 1 & 1 & 1 \\
+Continuous output gap cap [bp] &  &  & 1,000 & 1,000 \\
 \bottomrule
 \end{tabularx}
