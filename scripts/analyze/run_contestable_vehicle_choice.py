@@ -61,6 +61,9 @@ QUOTED_LEG_MAX_PRICE_IMPACT = 0.05
 MIN_PRICE_LEAD_BPS = 1.0
 MIN_INCUMBENT_AGE_DAYS = 30
 MAX_LINEAR_ADVANTAGE_BPS = 1_000.0
+MIN_CONSEQUENCE_CELL_ROUTES = 100
+MIN_CONSEQUENCE_CELL_PAIRS = 20
+MIN_CONSEQUENCE_LOSS_ROUTES = 20
 V2_VENUES = frozenset(("uniswap_v2", "sushiswap_v2"))
 CAPITAL_STATUS = "exact_state_prior_calendar"
 WETH = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
@@ -297,6 +300,13 @@ def attach_incumbency(frontier: pd.DataFrame, roles: pd.DataFrame) -> pd.DataFra
     data["vehicle_age_days"] = (
         data["date"] - data["first_vehicle_date"]
     ).dt.days
+    if "first_market_date" in data:
+        data["first_market_date"] = pd.to_datetime(
+            data["first_market_date"], errors="raise"
+        ).dt.normalize()
+    else:
+        data["first_market_date"] = pd.NaT
+    data["pair_age_days"] = (data["date"] - data["first_market_date"]).dt.days
     data["entry_day_observation"] = data["vehicle_age_days"].eq(0)
     data["pre_entry_observation"] = data["vehicle_age_days"].lt(0)
     data["incumbent_known_prior"] = (
@@ -733,6 +743,322 @@ def regression_results(panel: pd.DataFrame) -> pd.DataFrame:
     return pd.concat(rows, ignore_index=True, sort=False)
 
 
+def _output_consequence_summary(
+    frame: pd.DataFrame,
+    *,
+    sample: str,
+    split_dimension: str,
+    split_category: str,
+    split_definition: str,
+    parent_sample: str,
+    parent_routes: int,
+) -> dict[str, object]:
+    """Summarize exact output left on the table, subject to support guards."""
+
+    loss_bps = pd.to_numeric(
+        frame["foregone_family_output_bps"], errors="coerce"
+    )
+    input_value = pd.to_numeric(frame["input_usd"], errors="coerce")
+    valid = (
+        loss_bps.notna()
+        & input_value.notna()
+        & pd.Series(np.isfinite(loss_bps), index=frame.index)
+        & pd.Series(np.isfinite(input_value), index=frame.index)
+        & loss_bps.ge(0)
+        & input_value.gt(0)
+    )
+    if not bool(valid.all()):
+        raise ValueError("output-consequence rows require positive input values")
+    lower_output = loss_bps.gt(MIN_PRICE_LEAD_BPS)
+    routes = int(len(frame))
+    ordered_pairs = int(frame["ordered_pair"].nunique())
+    dates = int(frame["day"].nunique())
+    lower_output_routes = int(lower_output.sum())
+    cell_supported = (
+        routes >= MIN_CONSEQUENCE_CELL_ROUTES
+        and ordered_pairs >= MIN_CONSEQUENCE_CELL_PAIRS
+    )
+    conditional_supported = (
+        cell_supported
+        and lower_output_routes >= MIN_CONSEQUENCE_LOSS_ROUTES
+    )
+    thresholded_loss_bps = loss_bps.where(lower_output, 0.0)
+    weighted_loss_bps = (
+        float(np.average(thresholded_loss_bps, weights=input_value))
+        if cell_supported and input_value.sum() > 0
+        else np.nan
+    )
+    conditional_loss = loss_bps[lower_output]
+    return {
+        "record_type": (
+            "family_output_consequence"
+            if split_dimension == "all"
+            else "family_output_consequence_split"
+        ),
+        "sample": sample,
+        "split_dimension": split_dimension,
+        "split_category": split_category,
+        "split_definition": split_definition,
+        "parent_sample": parent_sample,
+        "routes": routes,
+        "ordered_pairs": ordered_pairs,
+        "dates": dates,
+        "parent_routes": int(parent_routes),
+        "cell_route_share": (
+            float(routes / parent_routes) if parent_routes else np.nan
+        ),
+        "lower_output_family_routes": lower_output_routes,
+        "lower_output_family_share": (
+            float(lower_output_routes / routes)
+            if cell_supported and routes
+            else np.nan
+        ),
+        "lower_output_route_share_of_parent": (
+            float(lower_output_routes / parent_routes)
+            if parent_routes
+            else np.nan
+        ),
+        "input_value_weighted_foregone_bps": weighted_loss_bps,
+        "median_foregone_output_bps_if_over_1bp": (
+            float(conditional_loss.median())
+            if conditional_supported
+            else np.nan
+        ),
+        "p90_foregone_output_bps_if_over_1bp": (
+            float(conditional_loss.quantile(0.9))
+            if conditional_supported
+            else np.nan
+        ),
+        "minimum_cell_routes": MIN_CONSEQUENCE_CELL_ROUTES,
+        "minimum_cell_ordered_pairs": MIN_CONSEQUENCE_CELL_PAIRS,
+        "minimum_conditional_loss_routes": MIN_CONSEQUENCE_LOSS_ROUTES,
+        "cell_meets_minimum_support": bool(cell_supported),
+        "conditional_loss_meets_minimum_support": bool(
+            conditional_supported
+        ),
+        "split_categories_mutually_exclusive": True,
+        "split_categories_exhaustive_within_parent_sample": True,
+        "minimum_output_difference_bps": MIN_PRICE_LEAD_BPS,
+        "output_difference_rule": "strictly_greater_than_threshold",
+        "weighted_loss_below_threshold_bps": 0.0,
+        "comparison": (
+            "best exact public route in the observed vehicle family versus "
+            "the best exact public route in the rival vehicle family"
+        ),
+        "loss_bps_denominator": "exact output from observed vehicle family",
+        "weighting": "observed_route_input_value_usd",
+        "dollar_consequence_reported": False,
+        "gas_consequence_reported": False,
+        "causal_interpretation": False,
+    }
+
+
+def output_consequence_rows(panel: pd.DataFrame) -> pd.DataFrame:
+    """Return the overall output comparison and prespecified economic splits."""
+
+    consequence = panel[panel["symmetric_common_support"]].copy()
+    parent_sample = "contestable_symmetric_common_support"
+    rows: list[dict[str, object]] = [
+        _output_consequence_summary(
+            consequence,
+            sample=parent_sample,
+            split_dimension="all",
+            split_category="all",
+            split_definition="full common-support sample",
+            parent_sample=parent_sample,
+            parent_routes=len(consequence),
+        )
+    ]
+
+    def add_split(
+        frame: pd.DataFrame,
+        *,
+        dimension: str,
+        categories: pd.Series,
+        ordered_categories: tuple[str, ...],
+        split_parent_sample: str,
+        split_definition: str,
+    ) -> None:
+        if len(categories) != len(frame) or not categories.index.equals(frame.index):
+            raise ValueError(f"{dimension} categories do not align with split rows")
+        if categories.isna().any():
+            raise ValueError(f"{dimension} leaves routes without a category")
+        unknown = sorted(set(categories.astype(str)) - set(ordered_categories))
+        if unknown:
+            raise ValueError(f"{dimension} has undeclared categories: {unknown}")
+        for category in ordered_categories:
+            cell = frame[categories.eq(category)]
+            rows.append(
+                _output_consequence_summary(
+                    cell,
+                    sample=f"{split_parent_sample}:{category}",
+                    split_dimension=dimension,
+                    split_category=category,
+                    split_definition=split_definition,
+                    parent_sample=split_parent_sample,
+                    parent_routes=len(frame),
+                )
+            )
+
+    incumbency_status = pd.Series(
+        np.select(
+            [
+                consequence["mature_exclusive_incumbent"],
+                ~consequence["incumbent_known_prior"],
+            ],
+            ["mature_exclusive_incumbent", "no_known_incumbent"],
+            default="known_prior_other_entry_or_age",
+        ),
+        index=consequence.index,
+        dtype="string",
+    )
+    add_split(
+        consequence,
+        dimension="incumbency_status",
+        categories=incumbency_status,
+        ordered_categories=(
+            "mature_exclusive_incumbent",
+            "no_known_incumbent",
+            "known_prior_other_entry_or_age",
+        ),
+        split_parent_sample=parent_sample,
+        split_definition=(
+            "strictly prior vehicle-family entry; mature exclusive entry is "
+            "at least 30 days old"
+        ),
+    )
+
+    mature_exclusive = consequence[
+        consequence["mature_exclusive_incumbent"]
+    ].copy()
+    if mature_exclusive["incumbent_retained"].isna().any():
+        raise ValueError("mature exclusive incumbency leaves route choice undefined")
+    incumbent_choice = pd.Series(
+        np.where(
+            mature_exclusive["incumbent_retained"].eq(1.0),
+            "incumbent_retained",
+            "challenger_used",
+        ),
+        index=mature_exclusive.index,
+        dtype="string",
+    )
+    add_split(
+        mature_exclusive,
+        dimension="mature_exclusive_route_choice",
+        categories=incumbent_choice,
+        ordered_categories=("incumbent_retained", "challenger_used"),
+        split_parent_sample=(
+            "mature_exclusive_entry_symmetric_common_support"
+        ),
+        split_definition=(
+            "observed family equals the exclusive first family or uses its rival"
+        ),
+    )
+
+    pair_age = pd.to_numeric(consequence["pair_age_days"], errors="coerce")
+    pair_age_category = pd.Series(
+        np.select(
+            [
+                pair_age.between(0, 89, inclusive="both"),
+                pair_age.between(90, 364, inclusive="both"),
+                pair_age.ge(365),
+                pair_age.lt(0),
+            ],
+            [
+                "0_to_89_days",
+                "90_to_364_days",
+                "365_plus_days",
+                "before_recorded_pair_entry",
+            ],
+            default="pair_entry_date_unavailable",
+        ),
+        index=consequence.index,
+        dtype="string",
+    )
+    add_split(
+        consequence,
+        dimension="pair_age",
+        categories=pair_age_category,
+        ordered_categories=(
+            "0_to_89_days",
+            "90_to_364_days",
+            "365_plus_days",
+            "before_recorded_pair_entry",
+            "pair_entry_date_unavailable",
+        ),
+        split_parent_sample=parent_sample,
+        split_definition="days since pair_first_supported_date",
+    )
+
+    input_value = pd.to_numeric(consequence["input_usd"], errors="coerce")
+    input_size_category = pd.Series(
+        np.select(
+            [
+                input_value.lt(1_000),
+                input_value.lt(10_000),
+                input_value.lt(100_000),
+            ],
+            ["100_to_999_usd", "1k_to_9_999_usd", "10k_to_99_999_usd"],
+            default="100k_plus_usd",
+        ),
+        index=consequence.index,
+        dtype="string",
+    )
+    add_split(
+        consequence,
+        dimension="input_size",
+        categories=input_size_category,
+        ordered_categories=(
+            "100_to_999_usd",
+            "1k_to_9_999_usd",
+            "10k_to_99_999_usd",
+            "100k_plus_usd",
+        ),
+        split_parent_sample=parent_sample,
+        split_definition="observed route input value in US dollars",
+    )
+
+    positive_capital = consequence[
+        consequence["both_v2_bridge_capitals_positive"]
+    ].copy()
+    if (
+        positive_capital["stable_v2_bridge_capital_usd"].le(0).any()
+        or positive_capital["native_v2_bridge_capital_usd"].le(0).any()
+    ):
+        raise ValueError("positive-capital split contains a zero family capital")
+    relative_capital = np.divide(
+        positive_capital["stable_v2_bridge_capital_usd"],
+        positive_capital["native_v2_bridge_capital_usd"],
+    )
+    relative_capital_category = pd.Series(
+        np.select(
+            [relative_capital.lt(0.5), relative_capital.le(2.0)],
+            ["native_over_2x_stable", "within_2x"],
+            default="stable_over_2x_native",
+        ),
+        index=positive_capital.index,
+        dtype="string",
+    )
+    add_split(
+        positive_capital,
+        dimension="relative_v2_bridge_capital",
+        categories=relative_capital_category,
+        ordered_categories=(
+            "native_over_2x_stable",
+            "within_2x",
+            "stable_over_2x_native",
+        ),
+        split_parent_sample=(
+            "contestable_symmetric_common_support_positive_v2_bridge_capital"
+        ),
+        split_definition=(
+            "stablecoin-to-WETH ratio of prior-day V2 bottleneck capital; "
+            "both family capitals are positive"
+        ),
+    )
+    return pd.DataFrame(rows)
+
+
 def support_rows(
     panel: pd.DataFrame,
     *,
@@ -897,45 +1223,9 @@ def support_rows(
                 **scope,
             }
         )
-    consequence = panel[panel["symmetric_common_support"]].copy()
-    lower_output = consequence[
-        consequence["foregone_family_output_bps"].gt(MIN_PRICE_LEAD_BPS)
-    ].copy()
-    weights = consequence["output_usd"].to_numpy(dtype=float)
-    weighted_bps = (
-        float(np.average(consequence["foregone_family_output_bps"], weights=weights))
-        if len(consequence) and weights.sum() > 0
-        else np.nan
-    )
-    rows.append(
-        {
-            "record_type": "family_output_consequence",
-            "sample": "contestable_symmetric_common_support",
-            "routes": int(len(consequence)),
-            "lower_output_family_routes": int(len(lower_output)),
-            "lower_output_family_share": float(
-                len(lower_output) / len(consequence)
-            ),
-            "median_foregone_output_bps_if_positive": (
-                float(lower_output["foregone_family_output_bps"].median())
-                if len(lower_output)
-                else np.nan
-            ),
-            "p90_foregone_output_bps_if_positive": (
-                float(lower_output["foregone_family_output_bps"].quantile(0.9))
-                if len(lower_output)
-                else np.nan
-            ),
-            "output_value_weighted_foregone_bps": weighted_bps,
-            "comparison": (
-                "best exact public route in the chosen vehicle family versus "
-                "the alternative vehicle family"
-            ),
-            "minimum_output_difference_bps": MIN_PRICE_LEAD_BPS,
-            "dollar_consequence_reported": False,
-            **scope,
-        }
-    )
+    consequence = output_consequence_rows(panel)
+    for record in consequence.to_dict(orient="records"):
+        rows.append({**record, **scope})
     return pd.DataFrame(rows)
 
 

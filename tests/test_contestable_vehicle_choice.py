@@ -5,12 +5,16 @@ import pandas as pd
 import pytest
 
 from scripts.analyze.run_contestable_vehicle_choice import (
+    MIN_CONSEQUENCE_CELL_PAIRS,
+    MIN_CONSEQUENCE_CELL_ROUTES,
+    MIN_CONSEQUENCE_LOSS_ROUTES,
     WETH,
     _fit_model,
     attach_v2_bridge_capital,
     attach_incumbency,
     load_lagged_v2_bridge_capital,
     load_first_vehicle_roles,
+    output_consequence_rows,
     prepare_frontier,
 )
 
@@ -200,6 +204,7 @@ def test_incumbency_is_strictly_prior_and_maturity_is_separate() -> None:
                 "token_in": "src-a",
                 "token_out": "tgt-a",
                 "first_vehicle_date": pd.Timestamp("2024-01-15"),
+                "first_market_date": pd.Timestamp("2024-01-01"),
                 "entry_stable": 1.0,
                 "entry_exclusive": True,
                 "entry_mixed": False,
@@ -215,6 +220,7 @@ def test_incumbency_is_strictly_prior_and_maturity_is_separate() -> None:
     assert not bool(result.loc["early", "mature_incumbent"])
     assert bool(result.loc["mature", "mature_incumbent"])
     assert bool(result.loc["mature", "mature_exclusive_incumbent"])
+    assert result.loc["mature", "pair_age_days"] == 45
     assert result.loc["mature", "incumbent_retained"] == 0.0
     assert result.loc["mature", "challenger_price_leader"] == 1.0
     assert pd.isna(result.loc["unmatched", "incumbent_retained"])
@@ -265,6 +271,107 @@ def test_v2_capital_is_prior_day_bottleneck_and_excludes_other_venues(
     attached = attach_v2_bridge_capital(frontier, capital)
     assert bool(attached["both_v2_bridge_capitals_positive"].item())
     assert attached["incumbent_v2_capital_share"].item() == pytest.approx(0.4)
+
+
+def test_output_consequence_records_have_exhaustive_splits_and_support_guards(
+) -> None:
+    rows = []
+    for position in range(400):
+        block = position // 100
+        input_usd = (500.0, 5_000.0, 50_000.0, 500_000.0)[block]
+        loss_bps = 10.0 if position % 100 < 50 else 0.0
+        if position == 50:
+            loss_bps = 1.0
+        mature_exclusive = position < 200
+        incumbent_known = position < 200 or position >= 300
+        pair_age = (
+            30.0
+            if position < 100
+            else 200.0
+            if position < 200
+            else 500.0
+            if position < 300
+            else -1.0
+            if position < 350
+            else np.nan
+        )
+        both_capitals = position < 300
+        stable_capital = (25.0, 100.0, 400.0, 0.0)[block]
+        native_capital = 100.0 if both_capitals else 0.0
+        rows.append(
+            {
+                "symmetric_common_support": True,
+                "ordered_pair": f"pair-{position % 100}",
+                "day": f"2024{position % 12 + 1:02d}15",
+                "foregone_family_output_bps": loss_bps,
+                "input_usd": input_usd,
+                "mature_exclusive_incumbent": mature_exclusive,
+                "incumbent_known_prior": incumbent_known,
+                "incumbent_retained": (
+                    1.0 if position < 100 else 0.0 if position < 200 else np.nan
+                ),
+                "pair_age_days": pair_age,
+                "both_v2_bridge_capitals_positive": both_capitals,
+                "stable_v2_bridge_capital_usd": stable_capital,
+                "native_v2_bridge_capital_usd": native_capital,
+            }
+        )
+
+    result = output_consequence_rows(pd.DataFrame(rows))
+    overall = result[result["record_type"].eq("family_output_consequence")].iloc[0]
+    assert overall["routes"] == 400
+    assert overall["lower_output_family_routes"] == 200
+    assert overall["lower_output_family_share"] == pytest.approx(0.5)
+    assert overall["input_value_weighted_foregone_bps"] == pytest.approx(5.0)
+    assert overall["median_foregone_output_bps_if_over_1bp"] == pytest.approx(10.0)
+    assert overall["p90_foregone_output_bps_if_over_1bp"] == pytest.approx(10.0)
+    assert overall["weighting"] == "observed_route_input_value_usd"
+    assert overall["output_difference_rule"] == "strictly_greater_than_threshold"
+    assert not bool(overall["dollar_consequence_reported"])
+    assert not bool(overall["gas_consequence_reported"])
+    assert not bool(overall["causal_interpretation"])
+
+    split = result[result["record_type"].eq("family_output_consequence_split")]
+    expected_counts = {
+        "incumbency_status": 400,
+        "mature_exclusive_route_choice": 200,
+        "pair_age": 400,
+        "input_size": 400,
+        "relative_v2_bridge_capital": 300,
+    }
+    for dimension, expected in expected_counts.items():
+        cells = split[split["split_dimension"].eq(dimension)]
+        assert cells["routes"].sum() == expected
+        assert cells["cell_route_share"].sum() == pytest.approx(1.0)
+
+    capital = split[
+        split["split_dimension"].eq("relative_v2_bridge_capital")
+    ].set_index("split_category")
+    assert set(capital.index) == {
+        "native_over_2x_stable",
+        "within_2x",
+        "stable_over_2x_native",
+    }
+    assert (capital["routes"] == 100).all()
+
+    pair_age = split[split["split_dimension"].eq("pair_age")].set_index(
+        "split_category"
+    )
+    thin = pair_age.loc[
+        ["before_recorded_pair_entry", "pair_entry_date_unavailable"]
+    ]
+    assert (thin["routes"] == 50).all()
+    assert not thin["cell_meets_minimum_support"].any()
+    assert thin["input_value_weighted_foregone_bps"].isna().all()
+    assert (result["minimum_cell_routes"] == MIN_CONSEQUENCE_CELL_ROUTES).all()
+    assert (
+        result["minimum_cell_ordered_pairs"]
+        == MIN_CONSEQUENCE_CELL_PAIRS
+    ).all()
+    assert (
+        result["minimum_conditional_loss_routes"]
+        == MIN_CONSEQUENCE_LOSS_ROUTES
+    ).all()
 
 
 def test_fixed_effect_model_has_declared_two_way_inference() -> None:
