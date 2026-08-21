@@ -6,39 +6,39 @@
 \footnotesize
 \begin{columns}[T,totalwidth=0.96\textwidth]
 \begin{column}{0.30\textwidth}
-\textbf{Definitions and data}
+\textbf{Definitions}
 \par\vspace{0.10cm}
-A1 Route units and vehicle status\par
-A2 Asset types, pegs, and backing\par
-A3 Sample construction and exclusions\par
+A1 Routes and vehicles\par
+A2 Assets and pegs\par
+A3 Sample exclusions\par
 \vspace{0.24cm}
-\textbf{Reconstruction and validation}
+\textbf{Validation}
 \par\vspace{0.10cm}
-A4 Exact transaction state\par
-A5 Protocol-specific state\par
-A6 Forced routes in V1\par
+A4 Pretrade state\par
+A5 Pool pricing state\par
+A6 Uniswap v1\par
 \end{column}
 \begin{column}{0.30\textwidth}
 \textbf{Robustness}
 \par\vspace{0.10cm}
-A7 Timing and venue scope\par
-A8 Count and value weighting\par
-A9 Observed route endpoints\par
+A7 Timing and venue\par
+A8 Count and value\par
+A9 Route endpoints\par
 \vspace{0.24cm}
-\textbf{Market structure}
+\textbf{Markets}
 \par\vspace{0.10cm}
-A10 Capital, inventory, and depth\par
-A11 Coordination and integration\par
+A10 Capital and depth\par
+A11 Coordination\par
 A12--A13 References\par
 \end{column}
 \begin{column}{0.30\textwidth}
 \textbf{Further results}
 \par\vspace{0.10cm}
-A14 Graph position and realised use\par
+A14 Network position\par
 A15 Endpoint demand\par
 A16--A17b Pair composition\par
-A18 Local and network depth\par
-A19 Pool activation and growth\par
+A18 Depth and reach\par
+A19 Pool formation\par
 A20 V4 participation\par
 \end{column}
 \end{columns}
@@ -186,8 +186,6 @@ A20 V4 participation\par
 \begin{frame}{A3. One route universe supports two measurements}
 \centering
 \resizebox{0.92\textwidth}{!}{\input{assets/sample-measurement-funnel.tex}}\par
-\vspace{0.05cm}
-{\fontsize{8.0}{8.8}\selectfont Token combinations inside multi-asset pools can supply route legs. The V1/V2 architecture comparison isolates the venue rule within the shared route panel; dollar support changes value weighting.\par}
 \end{frame}
 
 % VISUAL-FUNCTION: causal event ordering | numbered replay sequence | explain same-state counterfactual timing
