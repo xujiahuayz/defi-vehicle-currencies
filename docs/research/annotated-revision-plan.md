@@ -94,6 +94,27 @@ economically meaningful, while family-level results remain the headline.
 Multi-leg routes broaden the network evidence but cannot be assigned a single
 native-versus-stable vehicle when both families appear in the same route.
 
+### Studio resume point
+
+Studio is the sole owner of the next compute-and-revision cycle. Its checkout
+was fast-forwarded to `6429062` after preserving the newer generated exhibits.
+No project computation was running at handoff. Stage 1 stopped in
+`scripts/process/build_vehicle_excess_use.py` after writing the daily and
+transition outputs because the final status message references undefined
+`OUT_QUARTERLY`. The dependent Stage 2, Stage 3, and Stage 4 watchers therefore
+exited with their preceding-stage completion marker absent. Repair that name,
+rerun the excess-use step, and resume the remaining Stage 1 sequence: token
+prices, the all-day round-trip measure, network betweenness, the venue-technology
+comparison, and the exact vehicle frontier. Then relaunch Stages 2 through 4.
+
+The early adjacent-year run also stopped when the cross-venue subsample lacked
+positive support in an endpoint year. Treat that as a support rule to handle
+explicitly, not as a zero. After computation, rebuild every dependent table,
+figure, paper value, slide, and transcript number on the unified V1-inclusive
+panel. The next writing pass begins with the interpretation and closing-slide
+rules in `writing-and-rhetoric.md`; it must also replace visible layout language
+such as “card.”
+
 ## Economic motivation and contribution
 
 - Open with the foreign-exchange problem faced by a payment provider that does
