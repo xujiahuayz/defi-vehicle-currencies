@@ -112,7 +112,7 @@ Take every entering pair, drop the entry day itself, and look at two later windo
 
 The two lower rows are the same regression on pairs with busier entry days, where the initial mix is measured more precisely. If anything the estimates get stronger.
 
-Now, only a fifth of entrants trade again in the first month, so there is a survival margin. We measure it, and entry mix barely moves it. The persistence is in how the survivors trade.
+Now, only a fifth of entrants trade again in the first month, so survival itself could drive the result. We measure that too: entry mix barely changes who trades again. The persistence is in how the survivors trade.
 
 So the first vehicle sticks. The next three slides ask what builds it, and then what can break it.
 
@@ -178,33 +178,45 @@ Across all trade sizes, the value-weighted shortfall is around seven and a half 
 
 Age matters more. Pairs under three months old leave seventeen basis points; mature pairs, past a year, leave two. Old routes track the price frontier closely.
 
-I read this as the boundary of the friction: vehicle inertia is mostly a phenomenon of young, thin markets, exactly where the formation margin lives, and it fades as the market matures.
+I read this as the boundary of the friction: vehicle inertia is mostly a phenomenon of young, thin markets, exactly where formation happens, and it fades as the market matures.
 
 Let me pull the threads together.
 
-## Slide 16. The making of a dominant vehicle currency
+## Slide 16. Key takeaways
 
 Here is the whole talk in one chain, left to right.
 
 The rotation came in through the door: new pairs supply four fifths of the rise, and switching inside old pairs nets to zero. The vehicle chosen at entry persists, close to one for one over the following four months. Liquidity decides how the contest goes: match the incumbent's depth and you carry half the flow. Prices are what break incumbency, a sixty-point retention swing when the challenger leads. And the cost of loyalty fades as pairs mature, down to two basis points after a year.
 
-So currency competition operates on two margins: which vehicle a new relationship builds around, and which vehicle survives later price and depth changes. The first margin is where the action was.
+So currency competition acts at two stages: which vehicle a new relationship builds around, and which vehicle survives later price and depth changes. The first stage is where the action was.
 
 And the middle asset is not a private matter. Every pair routed through it inherits its liquidity and its risks. Which brings me to the part I suspect this audience cares most about.
 
-## Slide 17. Dominance is decided where new markets form
+## Slide 17. Implications for market design and oversight
 
-If dominance is made at formation, then the levers sit at formation too. Three readings.
+Now the implications, and I will take them in two slides: first market design and oversight, then monetary policy. If dominance is made at formation, the levers sit at formation too.
 
 For payment systems, and Nexus is the natural example in this room: whoever is allowed to make markets inside the rail decides which currency's markets new corridors inherit. Access policy looks like plumbing and acts like currency policy.
 
-For stablecoin oversight: what we watched on-chain is re-dollarisation through private issuers. Remember the value chart at the start: stablecoins now sit in the middle of roughly seventy percent of routed value. That middle position is the systemic footprint. When the middle asset wobbles, the shock does not stay in one market; it reaches every pair routed through it. So watch bridge exposure, not only issuance size. The little buttons on these rows jump back to the slide each claim rests on.
+For stablecoin oversight: what we watched on-chain is re-dollarisation through private issuers. Remember the value chart at the start: stablecoins now sit in the middle of roughly seventy percent of routed value. That is the finding, and it says the exposure to measure is the bridge role, not just how many tokens an issuer has outstanding. What a stress event would do to all the pairs routed through that middle asset is the natural worry, but I want to be upfront that we interpret there; we have not tested a stress episode in this paper. The little buttons on these rows jump back to the slide each claim rests on.
 
-And for anyone hoping to promote an alternative currency, public or private: undercutting prices in existing corridors dethrones nobody. Remember the decomposition: switching inside old pairs netted to zero. Challengers win by being liquid where new corridors form. Early liquidity is cheap; late price wars are not.
+And for anyone promoting an alternative instrument, a non-dollar stablecoin, a tokenised deposit: undercutting prices in existing corridors dethrones nobody. Remember the decomposition: switching inside old pairs netted to zero. Challengers win by being liquid where new trading relationships form. Early liquidity is cheap; late price wars are not.
 
-One line, if you keep only one: liquidity at formation beats price competition later.
+One line, if you keep only one: liquidity at formation beats price competition later. And that line matters most for the actors on the next slide.
 
-## Slide 18. What we are asking next
+## Slide 18. Implications for sovereign monetary policy
+
+Suppose you are a monetary authority and you want your currency to play an international role. This is the live conversation around the renminbi, around multi-CBDC platforms, around every regional payment initiative. Our findings say the levers are timed, and the window is when new corridors form.
+
+Before anything else, monitor formation. Aggregate dominance follows entry, so the vehicle that newly forming corridors choose is your leading indicator. Aggregate turnover tells you what already happened.
+
+The window itself is when new corridors are born. Swap lines, designated market makers, seeded liquidity on both legs of newly forming corridors: that spending buys a position that persists, because the entry choice sticks near one for one.
+
+After lock-in it gets expensive. Price cuts move flow only where you have already built depth, and the new price lead survives only on top of prior capital.
+
+And one lesson from the very beginning of our sample. Uniswap v1 forced every route through ETH. The mandate ended in 2020; the network it seeded is still steering choices in 2026. Design rules leave liquidity legacies. For a sovereign, that is both the opportunity and the warning.
+
+## Slide 19. What we are asking next
 
 This is very much a living project, so let me end with what we are working on now.
 
@@ -214,7 +226,7 @@ Architecture: Uniswap v4 moves settlement into one shared accounting layer. We w
 
 Incidence: who earns the rents of dominance. Traders, providers, or issuers.
 
-And the one I would most like your reactions to: taking this entry-margin account back to conventional FX, where the corridors are currencies and the formation events are trade relationships.
+And the one I would most like your reactions to: taking this entry-first account back to conventional FX, where the corridors are currencies and the formation events are trade relationships.
 
 Comments on any of these are very welcome. Thank you.
 

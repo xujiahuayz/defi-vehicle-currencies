@@ -4,7 +4,7 @@
   "budget_words": 55,
   "hard_ceiling_words": 70,
   "core_frame_limit": 24,
-  "appendix_first_page": 20,
+  "appendix_first_page": 21,
   "appendix_title": "Appendix map",
   "page_allowances": [
     {
@@ -45,90 +45,96 @@
     },
     {
       "page": 17,
-      "title": "The making of a dominant vehicle currency",
-      "words": 62,
+      "title": "Key takeaways",
+      "words": 64,
       "note_words": 0
     },
     {
       "page": 18,
-      "title": "Dominance is decided where new markets form",
-      "words": 66,
+      "title": "Implications for market design and oversight",
+      "words": 64,
       "note_words": 0
     },
     {
       "page": 19,
-      "title": "What we are asking next",
-      "words": 60,
+      "title": "Implications for sovereign monetary policy",
+      "words": 67,
       "note_words": 0
     },
     {
       "page": 20,
+      "title": "What we are asking next",
+      "words": 61,
+      "note_words": 0
+    },
+    {
+      "page": 21,
       "title": "Appendix map",
       "words": 62,
       "note_words": 0
     },
     {
-      "page": 23,
+      "page": 24,
       "title": "How we reconstruct a route from one transaction",
       "words": 56,
       "note_words": 0
     },
     {
-      "page": 27,
+      "page": 28,
       "title": "A4. State is reconstructed immediately before execution",
       "words": 60,
       "note_words": 0
     },
     {
-      "page": 28,
+      "page": 29,
       "title": "A5. Each AMM family has a different state vector",
       "words": 59,
       "note_words": 0
     },
     {
-      "page": 30,
+      "page": 31,
       "title": "A5.2. Executable depth is path-specific",
       "words": 59,
       "note_words": 0
     },
     {
-      "page": 31,
+      "page": 32,
       "title": "A5.3. Shared accounting moves route settlement",
       "words": 62,
       "note_words": 0
     },
     {
-      "page": 33,
+      "page": 34,
       "title": "A7. Daily and weekly frequencies answer different questions",
       "words": 62,
       "note_words": 0
     },
     {
-      "page": 36,
+      "page": 37,
       "title": "Vehicle dominance aggregates realised intermediary choices",
       "words": 69,
       "note_words": 0
     },
     {
-      "page": 37,
+      "page": 38,
       "title": "A9. Intermediary and route-endpoint use are separate",
       "words": 66,
       "note_words": 0
     },
     {
-      "page": 38,
+      "page": 39,
       "title": "A10. Capital, inventory, and depth differ",
       "words": 59,
       "note_words": 0
     },
     {
-      "page": 42,
+      "page": 43,
       "title": "A13. References: exchange design",
       "words": 58,
       "note_words": 0
     },
     {
-      "page": 52,
+      "page": 53,
       "title": "A22. Bridge capital builds before first use",
       "words": 58,
       "note_words": 0

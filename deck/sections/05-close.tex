@@ -3,9 +3,10 @@
 
 % EVIDENCE-STATUS: synthesis of the exact decomposition, corrected persistence, depth association, joint price regression, and output consequence.
 % EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_lifecycle.jsonl; output/exhibits/entry_vehicle_persistence_models.jsonl; output/exhibits/bridge_liquidity_dominance.jsonl; output/exhibits/contestable_vehicle_choice.jsonl; output/exhibits/gas_adjusted_vehicle_consequences.jsonl.
-% VISUAL-FUNCTION: findings summary | five-step result chain | compress the whole arc from formation to consequence on one page
-\begin{frame}{The making of a dominant vehicle currency}
-\vspace{0.34cm}
+% VISUAL-FUNCTION: findings summary | five-step result chain with slide anchors | compress the whole arc from formation to consequence on one page
+\begin{frame}{Key takeaways}
+\evidencekicker{The making of a dominant vehicle currency}
+\vspace{0.30cm}
 \begin{center}
 \begin{tikzpicture}[x=1cm,y=1cm]
 \node[softbox,text width=1.92cm,minimum height=1.72cm,align=center,fill=stable!8] (f1) at (-5.16,0)
@@ -30,17 +31,17 @@
 \node at (5.16,-1.34) {\tiny\hyperlink{shortfall}{\beamergotobutton{15}}};
 \end{tikzpicture}
 \end{center}
-\vspace{0.44cm}
+\vspace{0.40cm}
 \begin{beamercolorbox}[rounded=true,sep=0.24cm,wd=\textwidth]{block body}
-{\large\bfseries\color{ucldark}Two margins of currency competition\par}
+{\large\bfseries\color{ucldark}Two stages of currency competition\par}
 {\small Which vehicle a new pair builds around; which survives later price and depth changes.\par}
 \end{beamercolorbox}
 \end{frame}
 
 % EVIDENCE-STATUS: qualitative market-design interpretation of the admitted formation and contest results; no empirical estimate is displayed.
 % EVIDENCE-SOURCES: paper/sections/07-conclusion.tex; https://docs.bis.org/nexus/fx-provision/key-points; https://www.bis.org/about/bisih/topics/cbdc/rialto.htm; https://www.bis.org/about/bisih/topics/fmis/mcbdc_bridge.htm.
-% VISUAL-FUNCTION: policy interpretation | three stakeholder rows | translate the entry-margin evidence into design and oversight choices
-\begin{frame}{Dominance is decided where new markets form}
+% VISUAL-FUNCTION: market-design implications | three stakeholder rows with slide anchors | translate the entry-margin evidence into design and oversight choices
+\begin{frame}{Implications for market design and oversight}
 \vspace{0.22cm}
 \begin{center}
 \begin{tikzpicture}[x=1cm,y=1cm]
@@ -48,9 +49,9 @@
 \node[softbox,text width=10.8cm,minimum height=1.18cm,align=left] (r1) at (0,2.90)
 {{\normalsize\bfseries\color{ucldark}Payment rails}\quad{\small Nexus, Rialto, mBridge: access rules pick the currency that new corridors inherit.}};
 \node[softbox,text width=10.8cm,minimum height=1.18cm,align=left] (r2) at (0,1.45)
-{{\normalsize\bfseries\color{accent}Stablecoin oversight}\quad{\small Most routed value now crosses a stablecoin in the middle; stress there reaches every pair routed through it.}};
+{{\normalsize\bfseries\color{accent}Stablecoin oversight}\quad{\small Watch the bridge role, beyond issuance size: most routed value now crosses a stablecoin in the middle.}};
 \node[softbox,text width=10.8cm,minimum height=1.18cm,align=left,fill=stable!7] (r3) at (0,0)
-{{\normalsize\bfseries\color{stable}Challenger currencies}\quad{\small Cheaper quotes in existing corridors dethrone nobody; challengers win by being liquid at formation.}};
+{{\normalsize\bfseries\color{stable}Challenger instruments}\quad{\small Cheaper quotes in existing corridors dethrone nobody; challengers win by being liquid at formation.}};
 \node[anchor=south east,inner sep=0pt] at ([xshift=-7pt,yshift=6pt]r1.south east)
 {\tiny\hyperlink{decomposition}{\beamergotobutton{8}}\,\hyperlink{persistence}{\beamergotobutton{9}}};
 \node[anchor=south east,inner sep=0pt] at ([xshift=-7pt,yshift=6pt]r2.south east)
@@ -61,7 +62,34 @@
 \end{center}
 \vspace{0.30cm}
 {\large\bfseries\color{ucldark}\centering Liquidity at formation beats price competition later.\par}
-% \decknote{Qualitative reading of the admitted results. Project Nexus assigns conversion to an FX provider and Project Rialto uses a vehicle when direct exchange is unavailable; both choose who may make the market inside the rail. The oversight point is a network form of commonality in liquidity; welfare statements would need user surplus, provider returns, and risk incidence.}
+\end{frame}
+
+% EVIDENCE-STATUS: qualitative policy interpretation for monetary authorities; no empirical estimate is displayed.
+% EVIDENCE-SOURCES: paper/sections/07-conclusion.tex; output/exhibits/vehicle_transition_pair_lifecycle.jsonl; output/exhibits/entry_vehicle_persistence_models.jsonl; output/exhibits/bridge_liquidity_dominance.jsonl; docs/findings/v1-forced-vehicle.md.
+% VISUAL-FUNCTION: sovereign policy implications | three-stage policy-window timeline with slide anchors | time the levers of currency internationalisation to the formation of new corridors
+\begin{frame}{Implications for sovereign monetary policy}
+\evidencekicker{The policy window opens when new corridors form}
+\vspace{0.30cm}
+\begin{center}
+\begin{tikzpicture}[x=1cm,y=1cm]
+\node[softbox,text width=3.30cm,minimum height=2.00cm,align=left] (w1) at (-4.30,0)
+{{\scriptsize\bfseries\color{muted}BEFORE: MONITOR}\\[0.10cm]{\small Track which vehicle new corridors choose; aggregate dominance follows entry.}};
+\node[softbox,text width=3.30cm,minimum height=2.00cm,align=left,fill=stable!8] (w2) at (0,0)
+{{\scriptsize\bfseries\color{stable}AT FORMATION: ACT}\\[0.10cm]{\small Be the liquid bridge on both legs at birth; the entry choice persists.}};
+\node[softbox,text width=3.30cm,minimum height=2.00cm,align=left] (w3) at (4.30,0)
+{{\scriptsize\bfseries\color{accent}AFTER: LOCKED IN}\\[0.10cm]{\small Late price cuts move flow only where challenger depth already exists.}};
+\draw[-{Stealth[length=7pt]},draw=stable,line width=1.6pt] (w1)--(w2);
+\draw[-{Stealth[length=7pt]},draw=accent,line width=1.6pt] (w2)--(w3);
+% Jump buttons carry printed frame numbers; keep them in sync with frame order.
+\node at (-4.30,-1.52) {\tiny\hyperlink{decomposition}{\beamergotobutton{8}}};
+\node at (0,-1.52) {\tiny\hyperlink{persistence}{\beamergotobutton{9}}\,\hyperlink{depthdose}{\beamergotobutton{12}}};
+\node at (4.30,-1.52) {\tiny\hyperlink{decomposition}{\beamergotobutton{8}}\,\hyperlink{crossing}{\beamergotobutton{14}}};
+\end{tikzpicture}
+\end{center}
+\vspace{0.34cm}
+{\large\bfseries\color{ucldark}\centering Design rules leave liquidity legacies: the V1 mandate outlived itself.\par}
+\vspace{0.05cm}
+{\centering\tiny\hyperlink{mandate}{\beamergotobutton{4}}\par}
 \end{frame}
 
 % EVIDENCE-STATUS: research outlook on active margins; no empirical estimate is displayed.
@@ -73,7 +101,7 @@
 \item Who supplies the bridge? Provider networks across pairs; issuer circulation into bridge capital; fee and incentive events.
 \item Does settlement architecture move liquidity? Uniswap V4 flash accounting against V3.
 \item Who earns the rents of dominance: traders, providers, or issuers?
-\item The same entry-margin account, taken back to conventional FX.
+\item The same entry-first account of dominance, taken to conventional FX.
 \end{itemize}
 \vspace{0.34cm}
 {\large\bfseries\color{ucldark}\centering Comments on any of these are very welcome.\par}
