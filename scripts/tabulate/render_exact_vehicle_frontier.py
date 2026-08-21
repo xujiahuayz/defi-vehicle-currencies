@@ -149,7 +149,7 @@ def render_exact_vehicle_frontier(results: pd.DataFrame) -> str:
     chosen_stable = float(main["chosen_stable_share"])
     public_stable = float(main["public_stable_share"])
     lines = [
-        r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}X*{4}{>{\centering\arraybackslash}X}@{}}",
+        r"\begin{tabularx}{\linewidth}{@{}>{\hsize=1.6\hsize\raggedright\arraybackslash}X*{4}{>{\hsize=.85\hsize\centering\arraybackslash}X}@{}}",
         r"\toprule",
         r"\multicolumn{5}{l}{\textit{Panel A. Coverage and quote validation}} \\",
         "Linear routes in the exact venue set [\\%] & "
