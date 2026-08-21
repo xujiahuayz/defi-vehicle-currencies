@@ -16,6 +16,7 @@ Captions, labels, placement, and interpretation stay in the paper/deck source.
 | `render_first_contestable_vehicle_choice.py` | `first_contestable_vehicle_choice.tex/.pdf` and generated values | `tab:first-contestable-choice` |
 | `render_price_rank_crossing.py` | `price_rank_crossing.tex/.pdf` and generated values | `tab:price-rank-crossing` |
 | `render_contestable_vehicle_consequences.py` | `contestable_vehicle_consequences.tex/.pdf` | `tab:contestable-vehicle-consequences` |
+| `render_gas_adjusted_vehicle_consequences.py` | `gas_adjusted_vehicle_consequences.tex` | economic-consequence extension |
 | `render_usdt_transition.py` | `usdt_transition.tex/.pdf` | `tab:usdt-transition` |
 | `render_within_day_ladder.py` | `within_day_ladder.tex/.pdf` | `tab:within-day-ladder` |
 | `render_vehicle_mechanism_regressions.py` | `vehicle_mechanism_regressions.tex/.pdf` | `tab:vehicle-mechanism-regressions` |
