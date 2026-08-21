@@ -28,11 +28,13 @@ The revision follows one connected graph and convergence loop:
 ```text
 compact route measurement and exact-chain validation
   -> aggregate rotation and exact pair lifecycle decomposition
-  -> first vehicle at pair entry and later vehicle use
+  -> pre-entry price and depth select the first vehicle
+  -> first vehicle at pair entry predicts later vehicle use
   -> prior-information bridge formation and relative two-leg depth
   -> stablecoin and WETH paths feasible at the same pretrade state
-  -> current output x prior weak-leg depth x incumbency
-  -> execution-cost and network-risk consequences
+  -> price-rank crossings reveal when incumbents yield
+  -> current output and prior weak-leg depth jointly divide route flow
+  -> all-in execution cost and network-risk consequences
   -> rival explanation or unresolved implication
        -> directly observable: test it and rebuild the chain
        -> unobservable or disproportionate: state the remaining boundary
@@ -64,16 +66,17 @@ available for a later paper.
    pair- and activity-weighted estimates. Entry identity is descriptive state
    dependence until prices and challenger depth enter the comparison.
 4. **Liquidity formation.** Date usable bridge formation only with information
-   available before the event. Retain continuous relative weak-leg depth and the
-   capital path around first use. Future-persistence definitions may remain as a
-   robustness construction, not as the sole main-text event date.
+   available before the event. Retain adoption at 30 and 120 days, continuous
+   relative weak-leg depth, and later route allocation. The capital path around
+   first use and future-persistence definitions belong in the appendix as timing
+   and robustness evidence.
 5. **Contestable vehicle choice.** On routes for which stablecoin and WETH paths
    are both feasible at the same input, state, and public venue set, estimate
-   retention as a function of current exact-output advantage, prior weak-leg
-   capital, and their interaction. Use a conventional column ladder with pair
-   and date effects and pair/date clustered inference. This comparison separates
-   a shallow or expensive challenger from residual incumbent retention after the
-   challenger offers more output.
+   retention first as a function of current exact-output advantage and then add
+   prior weak-leg capital on the identical sample. Use a conventional column
+   ladder with pair and date effects and pair/date clustered inference. Add
+   price-rank crossings to show how retention changes when a challenger becomes
+   both cheaper and deep enough to carry the observed trade.
 6. **Financial consequence.** For each contestable route, measure gross output
    relative to the feasible rival family. Report route and input-value weights,
    pair age, conditional shortfall quantiles, and transparent gas and venue
@@ -84,10 +87,13 @@ available for a later paper.
    aggregate USDC episode does not clear that bar by itself.
 
 The current bridge-choice estimates and exact-price comparison already warrant
-the fifth step. A vehicle with the deepest weak leg carries most route mass,
-and incumbent retention changes sharply with contemporaneous price leadership.
-The joint price--depth--incumbency model is therefore a central estimate; it
-does not require another raw-data fetch.
+the fifth step. The prior-information event contains 1,618 bridges; adoption
+reaches 38.3% within 30 days and 47.0% within 120 days, and relative depth
+predicts subsequent allocation. On the same 17,778 contestable routes, the
+price coefficient changes from 10.56 pp to 10.13 pp when capital enters, while
+a 10 pp lagged capital-share advantage adds 2.77 pp. These are central
+estimates. The missing economic link is dynamic: how quickly an incumbent yields
+after the challenger crosses the exact-output ranking at different depth levels.
 
 ### Experiment order and promotion gates
 
@@ -96,12 +102,15 @@ does not require another raw-data fetch.
 | 1 | Exact-chain route sensitivity | Existing reconciliation ledgers and reconstructed audited dates | Report how chain corrections change pair, vehicle, topology, and headline shares | Running on Studio; technical appendix unless conclusions move |
 | 2 | Pair lifecycle accounting | Existing all-history pair support and 2024/2026 decomposition | Entry, reactivation, role turnover, and exit add exactly to the period-specific term | Passed; gross first-observed entry belongs in the central decomposition |
 | 3 | Correct post-entry persistence | Existing entry and route panels | Entry day excluded; later trading explicit; stable across pair and activity weights | Passed; main text |
-| 4 | Prior-information bridge formation | Existing route-share and capital panels | Event date uses only lagged information; adoption timing and continuous depth reported | Running on Studio; replaces future-persistence dating if support is adequate |
-| 5 | Joint price, depth, and incumbency choice | Existing exact-price, bridge-depth, and entry panels on Studio | Same opportunity and pre-trade state; interpretable magnitudes; pair/date effects | Passed; main text |
-| 6 | Dynamic route-use and bridge-depth relation | Existing route-share and capital panels | No mechanical coupling; initial states, time-reversed benchmarks, and alternative horizons pass | Corrected; appendix boundary because time reversal also predicts outcomes |
-| 7 | Cost of retaining the incumbent | Existing exact-price panel | Same-size rival path; route- and value-weighted economic magnitude; gas bounds | Passed gross-of-gas comparison; main text with gas boundary |
-| 8 | USDC shock exposure | Existing routes, prices, and capital; targeted refetch only if a field is missing | Pair-level exposure, pretrends, comparison group, and flow restrictions | Gated; run only if the comparison design clears the stated bar |
-| 9 | LP risk and supply | Existing prices, volumes, fees, and capital if coverage aligns | Within-opportunity divergence-risk or volatility measure adds information beyond demand and fees | Completed; appendix because risk locates depth but does not explain the aggregate rotation |
+| 4 | Prior-information bridge formation | Existing route-share and capital panels | Event date uses only lagged information; adoption timing and continuous depth reported | Passed; main text |
+| 5 | Exact first-vehicle choice | Exact pretrade prices, prior weak-leg capital, and material entrants | Both paths feasible at entry; price and depth estimated separately and together | Next Studio build; closes the entry-selection gap |
+| 6 | Price-rank crossings and incumbent response | Existing monthly exact-price and capital panels | Event dated without future information; challenger depth stratified; reverse crossings and placebo dates | Next Studio estimate; highest return per unit of compute |
+| 7 | Same-sample price and capital choice | Existing exact-price, bridge-depth, and entry panels | Identical opportunity sample; interpretable magnitudes; pair/date effects | Passed; main text |
+| 8 | Dynamic route-use and bridge-depth relation | Existing route-share and capital panels | No mechanical coupling; initial states, time-reversed benchmarks, and alternative horizons pass | Appendix boundary because time reversal also predicts outcomes |
+| 9 | Cost of retaining the incumbent | Exact-price panel and a reproducible receipt-gas panel | Same-size rival path; route- and value-weighted magnitude; gas bounds | Gross comparison passed; build the missing gas producer before the final consequence table |
+| 10 | LP returns and bridge formation | Prior fees, relative-price risk, capital, and material-token prices | Net-return proxy predicts later capital beyond initial depth and demand | Gated Studio extension; otherwise divergence loss remains an interpretation |
+| 11 | USDC shock exposure | Existing routes, prices, and capital; targeted refetch only if a field is missing | Pair-level exposure, pretrends, comparison group, and flow restrictions | Gated; run only if the comparison design clears the stated bar |
+| 12 | Executable network centrality | Exact-state monthly graph, price/depth/gas edge costs, material tokens | Predicts first vehicle or later route use beyond degree and unweighted betweenness | Gated extension; raw betweenness alone stays supporting evidence |
 
 The first LP-risk pass finds that lower prior endpoint--vehicle relative-price
 risk predicts deeper full-range constant-product bridge capital. It does not

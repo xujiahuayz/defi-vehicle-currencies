@@ -36,13 +36,13 @@ SPECIFICATIONS: tuple[Specification, ...] = (
         heading=r"Incumbent retained",
     ),
     Specification(
-        model_id="exclusive_retention_price_v2_capital",
+        model_id="exclusive_retention_price_only_positive_v2_capital",
         sample="mature_exclusive_entry_positive_v2_bridge_capital",
         outcome="incumbent_retained",
         heading=r"Incumbent retained",
     ),
     Specification(
-        model_id="exclusive_retention_price_v2_capital_interaction",
+        model_id="exclusive_retention_price_v2_capital",
         sample="mature_exclusive_entry_positive_v2_bridge_capital",
         outcome="incumbent_retained",
         heading=r"Incumbent retained",
@@ -70,10 +70,6 @@ REGRESSORS: tuple[tuple[str, str], ...] = (
     (
         "incumbent_v2_capital_advantage_10pp",
         r"Incumbent lagged full-range capital-share advantage [10 pp]",
-    ),
-    (
-        "price_x_incumbent_v2_capital",
-        r"Output advantage $\times$ capital-share advantage [100 bp $\times$ 10 pp]",
     ),
     (
         "log_input_usd",
@@ -205,13 +201,11 @@ def render_contestable_vehicle_choice(results: pd.DataFrame) -> str:
         ),
         (
             "incumbent_output_advantage_100bp",
-            "incumbent_v2_capital_advantage_10pp",
             "log_input_usd",
         ),
         (
             "incumbent_output_advantage_100bp",
             "incumbent_v2_capital_advantage_10pp",
-            "price_x_incumbent_v2_capital",
             "log_input_usd",
         ),
     )
@@ -222,6 +216,11 @@ def render_contestable_vehicle_choice(results: pd.DataFrame) -> str:
             _require_regressor(model, regressor, specification.model_id)
 
     anchors = [_anchor(model) for model in models]
+    for field in ("observations", "ordered_pair_clusters", "date_clusters"):
+        if anchors[2][field] != anchors[3][field]:
+            raise ValueError(
+                "nested price-only and price-capital models use different samples"
+            )
     lines = [
         r"\begin{tabularx}{\linewidth}{@{}"
         r">{\hsize=1.64\hsize\raggedright\arraybackslash}X"

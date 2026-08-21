@@ -722,6 +722,16 @@ def regression_results(panel: pd.DataFrame) -> pd.DataFrame:
         ),
         _fit_model(
             v2_capital,
+            model_id="exclusive_retention_price_only_positive_v2_capital",
+            outcome="incumbent_retained",
+            predictors=(
+                "incumbent_output_advantage_100bp",
+                "log_input_usd",
+            ),
+            sample="mature_exclusive_entry_positive_v2_bridge_capital",
+        ),
+        _fit_model(
+            v2_capital,
             model_id="exclusive_retention_price_v2_capital",
             outcome="incumbent_retained",
             predictors=(

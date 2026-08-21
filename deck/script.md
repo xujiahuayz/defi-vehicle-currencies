@@ -168,21 +168,35 @@ What does sticky mean economically? Prices and depth may themselves persist. So 
 
 First, though, one step between technical availability and an actual route.
 
-## Slide 10. A supported bridge becomes usable as both legs deepen
+## Slide 10. Two-leg capital opens the stablecoin contest
 
-A stablecoin bridge can have capital on both legs for 30 days and still be tiny. The pools exist. The route is technically possible. Economically, it may still be a weak alternative.
+Here the clock starts from information available the day before. No looking forward to decide when the bridge began.
 
-We follow 865 pairs from the point when persistent stablecoin support first appears.
+Take a pair that used WETH earlier and has never used a stablecoin route. The event date is the first day when DAI, USDC, or USDT has at least ten thousand dollars on each required leg, using yesterday's pool state.
 
-When the weaker leg has less than one tenth of the comparable WETH depth, 42.6 percent carry their first stablecoin route within 30 days. Once it reaches at least that threshold, 84.1 percent do.
+There are 1,618 such events.
 
-Now look backward from first use. Among 246 later users, weak-leg stablecoin capital rises by 0.86 log points over the preceding week. Relative to WETH, the rise is 0.78.
+Within 30 days, 38.3 percent use one of those supported stablecoins. By 120 days, 47.0 percent do.
 
-So support is the first step. Usable depth on both legs is the next one. The timing is endogenous, of course. Providers may be building ahead of demand; traders may be waiting for enough depth. Either way, capital gathers before the route is used.
+So enough capital to open both legs comes first. Adoption is gradual.
+
+And first use is not the same as taking over the pair. Among the first-month adopters, 62.4 percent use a supported stablecoin again in days 30 to 119. But stablecoins carry only 8.2 percent of their routes in that later window.
+
+Now use the amount of capital, not just the threshold.
+
+## Slide 11. Relative depth divides trading after the bridge forms
+
+Stablecoin route share rises by 5.60 points in the first 30 days after the event and stays 5.49 points above the prior period during days 30 to 119.
+
+Then compare the two bridges inside the same event. A 10-point increase in the stablecoin share of weak-leg depth predicts 6.90 points more stablecoin route activity in the first month. The later estimate is 8.35 points.
+
+Weak-leg depth is the bottleneck across the two required pools. One deep leg cannot rescue one shallow leg.
+
+This gives us a useful separation. Capital on both legs permits entry. Relative depth helps decide how much flow the new route wins. Neither number needs the later route outcome to date the event.
 
 Once both alternatives are usable, current output gives us a sharper contest.
 
-## Slide 11. Current prices can overturn incumbency
+## Slide 12. Current prices can overturn incumbency
 
 For each trade, we quote the best stablecoin route and the best WETH route. Same pair. Same input. Same pool state immediately before execution. Both routes have to be feasible, and every leg stays below 5 percent own-price impact.
 
@@ -198,11 +212,11 @@ So the incumbent is sticky. Current price leadership can overturn it.
 
 Then one level deeper. Does earlier bridge capital still matter once current output enters the same regression?
 
-## Slide 12. Bridge capital predicts retention beyond current output
+## Slide 13. Bridge capital predicts retention beyond current output
 
-This is Table 5, column 3.
+Now compare columns 3 and 4 of Table 5. Same 17,778 routes in both.
 
-A 100-basis-point incumbent output advantage adds 10.13 points to retention.
+A 100-basis-point incumbent output advantage adds 10.56 points to retention when it enters alone. After prior capital enters, the estimate is 10.13. Almost unchanged.
 
 A 10-point prior-day advantage in the incumbent's weak-leg capital share adds another 2.77 points.
 
@@ -218,7 +232,7 @@ That is a local allocation result. Stablecoin bridges actually have higher media
 
 Now, does choosing the lower-output vehicle cost anything economically meaningful?
 
-## Slide 13. Output shortfalls concentrate in younger pairs
+## Slide 14. Output shortfalls concentrate in younger pairs
 
 Use the same contestable routes behind Table 5.
 
@@ -234,7 +248,7 @@ I read this as an economically useful boundary on stickiness. The first vehicle 
 
 That brings me back to the larger point.
 
-## Slide 14. Dominance grows when new pairs choose a vehicle
+## Slide 15. Dominance grows when new pairs choose a vehicle
 
 Let me leave you with three things.
 

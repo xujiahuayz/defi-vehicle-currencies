@@ -4,6 +4,7 @@
 \input{../output/exhibits/vehicle_transition_pair_lifecycle_values.tex}
 \input{../output/exhibits/entry_vehicle_persistence_values.tex}
 \input{../output/exhibits/bridge_liquidity_deck_values.tex}
+\input{../output/exhibits/bridge_exante_values.tex}
 \input{../output/exhibits/contestable_vehicle_choice_values.tex}
 
 % EVIDENCE-SOURCES: output/figures/experiments/annual_vehicle_composition_bands_deck.pdf; output/exhibits/intermediation_by_type.jsonl.
@@ -75,7 +76,7 @@
 % VISUAL-FUNCTION: post-entry persistence | two follow-up estimates on a timeline | show strong vehicle continuity among pairs that trade again
 \begin{frame}{A pair carries its first vehicle into later trading}
 \evidencekicker{Effect of 10 pp more stablecoin use on the entry day}
-\vspace{0.16cm}
+\vspace{0.08cm}
 \begin{center}
 \begin{tikzpicture}[x=1cm,y=1cm]
 \node[softbox,text width=2.70cm,minimum height=1.50cm,align=center,fill=stable!8] (entry) at (-4.25,1.45)
@@ -104,40 +105,65 @@
 \decknote{The sample contains \EntryPersistenceEntrants{} pairs entering by March 2 in 2024 or 2026. The entry day is excluded; follow-up windows do not overlap. The share regressions condition on trading again and control for cohort year, stablecoin endpoints, entry activity, direct-route share, and route complexity. Standard errors cluster by entry date: \EntryPersistenceEarlyPairSEPerTen{} and \EntryPersistenceLatePairSEPerTen{}, respectively.}
 \end{frame}
 
-% EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl; output/figures/experiments/bridge_adoption_capital_path.pdf.
-% EVIDENCE-STATUS: descriptive formation evidence connecting persistent technical support, relative weak-leg depth, and first use.
-% VISUAL-FUNCTION: support to first use | depth-conditioned first-use contrast plus event-time arrow | connect technical availability to usable bridge formation
-\begin{frame}{A supported bridge becomes usable as both legs deepen}
-\evidencekicker{Persistent support, relative weak-leg depth, and first use}
-\vspace{0.14cm}
-\begin{columns}[T,totalwidth=0.92\textwidth]
-\begin{column}{0.57\textwidth}
-{\color{muted}\scriptsize FIRST STABLECOIN USE WITHIN 30 DAYS\par}
-\vspace{0.13cm}
+% EVIDENCE-SOURCES: output/exhibits/bridge_exante.jsonl.
+% EVIDENCE-STATUS: bridge formation dated entirely from prior-calendar two-leg capital.
+% VISUAL-FUNCTION: bridge formation | prior-day threshold and two adoption horizons | show that viable capital precedes gradual adoption
+\begin{frame}{Two-leg capital opens the stablecoin contest}
+\evidencekicker{The event date uses prior-day capital only}
+\vspace{0.12cm}
+\begin{center}
 \begin{tikzpicture}[x=1cm,y=1cm]
-\node[softbox,text width=2.75cm,minimum height=1.72cm,align=center] (shallow) at (0,0)
-{{\scriptsize BELOW $0.1\times$ WETH DEPTH}\par\vspace{0.10cm}{\fontsize{26}{28}\selectfont\bfseries\color{accent}\BridgeTimingShallowMonthShare}};
-\node[softbox,text width=2.75cm,minimum height=1.72cm,align=center,fill=stable!9] (usable) at (4.15,0)
-{{\scriptsize AT LEAST $0.1\times$ WETH DEPTH}\par\vspace{0.10cm}{\fontsize{26}{28}\selectfont\bfseries\color{stable}\BridgeTimingCompetitiveMonthShare}};
-\draw[-{Stealth[length=7pt]},draw=stable,line width=1.6pt] (shallow)--(usable);
+\node[softbox,text width=3.25cm,minimum height=1.58cm,align=center,fill=panel] (event) at (-4.35,1.25)
+{{\scriptsize BRIDGE BECOMES VIABLE}\par\vspace{0.10cm}{\large\bfseries\color{ucldark}\$10k on each leg}\par{\scriptsize after earlier WETH use}};
+\node[softbox,text width=2.75cm,minimum height=1.58cm,align=center,fill=stable!8] (month) at (0,1.25)
+{{\scriptsize ADOPT WITHIN 30 DAYS}\par\vspace{0.10cm}{\fontsize{25}{27}\selectfont\bfseries\color{stable}\BridgeExanteAdoptionThirty}};
+\node[softbox,text width=2.75cm,minimum height=1.58cm,align=center,fill=stable!8] (later) at (4.05,1.25)
+{{\scriptsize ADOPT WITHIN 120 DAYS}\par\vspace{0.10cm}{\fontsize{25}{27}\selectfont\bfseries\color{stable}\BridgeExanteAdoptionOneTwenty}};
+\draw[-{Stealth[length=7pt]},draw=stable,line width=1.5pt] (event)--(month);
+\draw[-{Stealth[length=7pt]},draw=stable,line width=1.5pt] (month)--(later);
 \end{tikzpicture}
+\end{center}
+\vspace{0.18cm}
+\begin{beamercolorbox}[rounded=true,sep=0.24cm,wd=0.88\textwidth]{block body}
+\centering
+{\small Among first-month adopters, \textbf{\BridgeExanteLaterUse} use a supported stablecoin again in days 30--119;\\
+stablecoins carry \textbf{\BridgeExanteLaterShare} of their routes in that window.\par}
+\end{beamercolorbox}
+\vspace{0.22cm}
+{\large\bfseries\color{ucldark}\centering Viability comes first. Dominance develops more slowly.\par}
+\decknote{The sample contains \BridgeExanteEvents{} pair events. The event is the first date on which DAI, USDC, or USDT has at least \$10,000 of prior-calendar deposited capital on both required legs. Every pair used WETH earlier and has no earlier observed stablecoin route.}
+\end{frame}
+
+% EVIDENCE-SOURCES: output/exhibits/bridge_exante.jsonl.
+% EVIDENCE-STATUS: paired post-event changes and within-event relative-depth estimates.
+% VISUAL-FUNCTION: bridge depth | post-event shift and continuous depth estimates | connect two-leg capacity to route allocation
+\begin{frame}{Relative depth divides trading after the bridge forms}
+\evidencekicker{Stablecoin route share; percentage-point estimates}
+\vspace{0.12cm}
+\begin{columns}[T,totalwidth=0.91\textwidth]
+\begin{column}{0.42\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.28cm,wd=\textwidth]{block body}
+{\small\color{muted} CHANGE FROM THE PRIOR 30 DAYS\par}\vspace{0.13cm}
+{\fontsize{27}{29}\selectfont\bfseries\color{stable}\BridgeExanteChangeThirty\par}
+{\small during days 0--29\par}\vspace{0.12cm}
+{\large\bfseries\color{ucldark}\BridgeExanteChangeOneTwenty\par}
+{\small during days 30--119\par}
+\end{beamercolorbox}
 \end{column}
 \hfill
-\begin{column}{0.29\textwidth}
-{\color{muted}\scriptsize WEEK BEFORE FIRST USE\par}
-\vspace{0.22cm}
-\begin{tikzpicture}[x=0.95cm,y=1cm]
-\node[font=\scriptsize,text=muted] (dminus) at (0,0) {day $-7$};
-\node[font=\scriptsize\bfseries,text=stable,align=center] (first) at (3.15,0) {first\\use};
-\draw[-{Stealth[length=7pt]},draw=stable,line width=1.7pt] (dminus)--(first);
-\node[font=\fontsize{23}{25}\selectfont\bfseries,text=stable] at (1.58,0.72) {\BridgeAdoptionCapitalPreCoef};
-\node[font=\scriptsize,text=ink,align=center] at (1.58,-0.72) {log weak-leg\\capital};
-\end{tikzpicture}
+\begin{column}{0.42\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.28cm,wd=\textwidth]{block body}
+{\small\color{muted} +10 PP STABLE SHARE OF WEAK-LEG DEPTH\par}\vspace{0.13cm}
+{\fontsize{27}{29}\selectfont\bfseries\color{stable}\BridgeExanteDepthThirty\par}
+{\small route share, days 0--29\par}\vspace{0.12cm}
+{\large\bfseries\color{ucldark}\BridgeExanteDepthOneTwenty\par}
+{\small route share, days 30--119\par}
+\end{beamercolorbox}
 \end{column}
 \end{columns}
-\vspace{0.42cm}
-{\large\bfseries\color{ucldark}\centering Pool existence opens a route; two-leg depth makes it usable.\par}
-\decknote{Persistent support means positive prior-calendar capital on both legs on at least 24 of the next 30 days. First-use rates follow \BridgeTimingEvents{} pair events. The capital path uses \BridgeAdoptionCapitalEvents{} later users from day -7 to day zero; the matched change relative to WETH is \BridgeAdoptionCapitalMatchedPreCoef{} log points. First-use timing is endogenous.}
+\vspace{0.28cm}
+{\large\bfseries\color{ucldark}\centering Opening two legs permits entry; deeper relative capacity wins more flow.\par}
+\decknote{The post-event changes compare each pair with its prior 30 calendar days. Relative-depth estimates include bridge-event effects, calendar-month effects, and seven-day event-age controls. Standard errors cluster by pair and date: \BridgeExanteDepthThirtySE{} and \BridgeExanteDepthOneTwentySE{}. Deposited capital is an equilibrium pool stock.}
 \end{frame}
 
 % EVIDENCE-SOURCES: output/exhibits/contestable_vehicle_choice.jsonl; output/exhibits/contestable_vehicle_choice_support.jsonl.
@@ -176,14 +202,14 @@
 % EVIDENCE-STATUS: joint exact-output and prior weak-leg-capital regression.
 % VISUAL-FUNCTION: joint determinants of retention | two coefficient blocks with shared conditioning set | show that depth adds information beyond current output
 \begin{frame}{Bridge capital predicts retention beyond current output}
-\evidencekicker{Joint regression with pair and date fixed effects}
+\evidencekicker{Same sample; pair and date fixed effects}
 \vspace{0.16cm}
 \begin{columns}[T,totalwidth=0.90\textwidth]
 \begin{column}{0.41\textwidth}
 \begin{beamercolorbox}[rounded=true,sep=0.30cm,wd=\textwidth]{block body}
 {\small\color{muted} +100 BP INCUMBENT OUTPUT ADVANTAGE\par}\vspace{0.12cm}
 {\fontsize{28}{30}\selectfont\bfseries\color{ucldark}\ContestOutputAdvantageHundredBpEffect\par}
-{\small incumbent retention}
+{\small with capital; price-only: \ContestSameSampleOutputAdvantageHundredBpEffect}
 \end{beamercolorbox}
 \end{column}
 \hfill
@@ -195,15 +221,15 @@
 \end{beamercolorbox}
 \end{column}
 \end{columns}
-\vspace{0.26cm}
+\vspace{0.14cm}
 \begin{center}
 \begin{tikzpicture}[x=1cm,y=1cm]
-\node[softbox,text width=9.8cm,align=center,inner sep=5pt] {
-\small Current exact output and prior deposited capital enter together.\\[-0.02cm]
-\scriptsize Pair effects absorb persistent pair differences; date effects absorb market-wide conditions.};
+\node[softbox,text width=9.8cm,align=center,inner sep=4pt] {
+\small Current exact output and prior deposited capital enter together.\\[-0.03cm]
+\scriptsize Pair and date effects absorb persistent pair differences and market-wide conditions.};
 \end{tikzpicture}
 \end{center}
-\decknote{The outcome is incumbent retention for mature pairs with one exclusive entry vehicle family. Weak-leg capital is the smaller prior-day deposited-capital stock across the two required legs, aggregated over Uniswap v2 and SushiSwap v2. Both vehicle families have positive capital. The model contains \ContestOutputAdvantageHundredBpN{} routes; two-way clustered standard errors are \ContestOutputAdvantageHundredBpSE{} and \ContestCapitalAdvantageTenPpSE{}.}
+\decknote{Table 5, columns 3 and 4 use the same \ContestOutputAdvantageHundredBpN{} routes. Weak-leg capital is the smaller prior-day stock across the two required legs, aggregated over Uniswap v2 and SushiSwap v2; both vehicle families have positive capital. Column 4 standard errors are \ContestOutputAdvantageHundredBpSE{} and \ContestCapitalAdvantageTenPpSE{}, clustered by pair and date.}
 \end{frame}
 
 % EVIDENCE-SOURCES: output/exhibits/contestable_vehicle_choice_support.jsonl.

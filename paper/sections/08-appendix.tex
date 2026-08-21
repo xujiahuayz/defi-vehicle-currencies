@@ -567,6 +567,27 @@ At the median, round trips account for 12.8\% of multi-leg routes by count and 2
 \section{Additional composition and network results}
 \label{app:additional-composition}
 
+Let $W_y$ be the share of native-plus-stable activity in continuing pairs, $\omega_{p,y}$ pair $p$'s weight within that activity, and $s_{p,y}$ its stablecoin share. Continuing pairs have stablecoin share $S_{C,y}=\sum_p\omega_{p,y}s_{p,y}$, while period-specific pairs have share $S_{E,y}$. Total stablecoin share is $S_y=W_yS_{C,y}+(1-W_y)S_{E,y}$. Writing $\Delta x=x_{2026}-x_{2024}$ and $\bar{x}=(x_{2024}+x_{2026})/2$ gives
+\begin{equation}
+\label{eq:pair-decomposition}
+\begin{aligned}
+\Delta S={}&
+\underbrace{\bar{W}\sum_p\bar{\omega}_p\Delta s_p}_{\text{switching within continuing pairs}}
++\underbrace{\bar{W}\sum_p\bar{s}_p\Delta\omega_p}_{\text{activity shifting across pairs}}\\
+&+\underbrace{(\bar{S}_C-\bar{S}_E)\Delta W}_{\text{continuing-pair weight}}
++\underbrace{(1-\bar{W})\Delta S_E}_{\text{period-specific pairs}}.
+\end{aligned}
+\end{equation}
+The midpoint averages hold the companion quantity fixed while each component changes; the four terms add exactly to the aggregate change.
+
+For route-count or routed-value stablecoin share $S^{(m)}_{pds,y}$, the matched comparison is
+\begin{equation}
+\label{eq:pair-fe}
+S^{(m)}_{pds,y}=\alpha^{(m)}_{pds}+\beta^{(m)}\mathbf{1}_{\{y=2026\}}+\varepsilon^{(m)}_{pds,y},
+\qquad m\in\{N,V\},
+\end{equation}
+where $d$ is the month-day and $s$ the realised route class. Observations are weighted by native-plus-stable route count or supported routed value, and standard errors cluster by pair and date.
+
 \begin{table}[tbp]
 \centering
 \caption{Stablecoin share among native and stable intermediaries}
@@ -661,6 +682,28 @@ Table~\ref{tab:venue-technology} divides routes by the pricing family used on ev
 
 \subsection{Capital composition and later adjustment}
 
+The main bridge event uses only prior-calendar capital. Table~\ref{tab:app:bridge-persistent-support} gives the complementary event dated by subsequent persistence: positive prior-calendar capital on both legs during at least 24 of the next 30 days. It reproduces the increase in stablecoin use after support, the relation with continuous relative depth, and the difference in first-month adoption between shallow and more competitive stablecoin bridges. Because the persistence condition uses later capital, this event serves as a robustness and timing exercise.
+
+\begin{table}[htbp]
+\caption{Persistent stable-bridge support and route allocation}
+\label{tab:app:bridge-persistent-support}
+\centering
+\small
+\renewcommand{\arraystretch}{1.08}
+\input{../output/tables/bridge_establishment_regressions.tex}
+\exhibitnote{The unit is a pair by route scope around the first persistent DAI, USDC, or USDT bridge. Support requires positive prior-calendar deposited capital on both legs in Uniswap v2 or SushiSwap v2 on at least 24 of the next 30 calendar days. Every pair has earlier WETH-mediated routes and no earlier observed stablecoin route. Panel A reports changes from the prior 30 days. Panel B compares the best stablecoin weak-leg capital with WETH weak-leg capital. Panel C records use of a stablecoin in the event's support set within 30 or 120 days. Standard errors are two-way clustered by pair and date. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively. Deposited capital is an equilibrium pool stock.}
+\end{table}
+
+Figure~\ref{fig:app:bridge-adoption-capital-path} follows events whose supported stablecoin is first used 7 to 119 days after persistent support. Stablecoin weak-leg capital rises during the week before first use, including relative to the matched WETH bridge. The timing is consistent with providers deepening a bridge in anticipation of route demand, traders waiting for usable depth, or both.
+
+\begin{figure}[htbp]
+\centering
+\caption{Bridge capital around first use of the supported stablecoin}
+\label{fig:app:bridge-adoption-capital-path}
+\includegraphics[width=0.91\linewidth]{../output/figures/experiments/bridge_adoption_capital_path.pdf}
+\exhibitnote{The sample contains \BridgeAdoptionCapitalEvents{} pair-by-route-scope events whose first use of a stablecoin in the event's support set occurs 7 to 119 calendar days after persistent support. Each line is the equal-event mean change from day -7 in \(\log(1+\text{deposited capital in USD})\) on the weaker leg. Stablecoin depth is the largest bottleneck among the supported stablecoins; WETH depth is the matched incumbent bottleneck. Capital is lagged to the prior calendar day. Shading gives 95\% confidence intervals from standard errors two-way clustered by pair and adoption date.}
+\end{figure}
+
 Table~\ref{tab:bridge-pool-margins} separates newly active pools from capital growth in pools already supporting the route. Newly active pools hold \BridgePoolMarginNewCapitalShare{} of stablecoin weak-leg capital on the first-use day; \BridgePoolMarginContinuingCapitalShare{} lies in pools active one week earlier. Table~\ref{tab:bridge-feedback} follows the same local bridge across exact 30-, 60-, and 120-day horizons. Under route-activity weights, current depth is positively associated with later route share. Equal pair-date-scope weights yield smaller forward estimates. The time-reversed benchmarks are also positive in some specifications, especially under equal weights. The table therefore records persistent comovement; provider response to route use remains unresolved.
 
 \begin{table}[htbp]
@@ -670,7 +713,7 @@ Table~\ref{tab:bridge-pool-margins} separates newly active pools from capital gr
 \small
 \renewcommand{\arraystretch}{1.08}
 \input{../output/tables/bridge_adoption_pool_margins.tex}
-\exhibitnote{The sample contains the bridge events in Figure~\ref{fig:bridge-adoption-capital-path}. Stablecoin and WETH outcomes use each vehicle's weaker leg. A newly active pool has positive prior-calendar deposited capital on day zero and none on day -7; a continuing pool has positive capital on both dates. Each cell is an equal-event mean. Parentheses contain standard errors two-way clustered by pair and adoption date. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
+\exhibitnote{The sample contains the bridge events in Figure~\ref{fig:app:bridge-adoption-capital-path}. Stablecoin and WETH outcomes use each vehicle's weaker leg. A newly active pool has positive prior-calendar deposited capital on day zero and none on day -7; a continuing pool has positive capital on both dates. Each cell is an equal-event mean. Parentheses contain standard errors two-way clustered by pair and adoption date. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
 \end{table}
 
 \begin{table}[tbp]

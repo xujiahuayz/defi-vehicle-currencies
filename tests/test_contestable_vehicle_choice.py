@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from scripts.analyze import run_contestable_vehicle_choice as contestable
 from scripts.analyze.run_contestable_vehicle_choice import (
     MIN_CONSEQUENCE_CELL_PAIRS,
     MIN_CONSEQUENCE_CELL_ROUTES,
@@ -422,4 +423,42 @@ def test_fixed_effect_model_has_declared_two_way_inference() -> None:
     assert result.loc["x", "singleton_pair_rows_dropped"] == 1
     assert result.loc["x", "covariance"] == (
         "two_way_ordered_pair_calendar_date_cr1"
+    )
+
+
+def test_price_only_and_price_capital_models_use_identical_rows(monkeypatch) -> None:
+    panel = pd.DataFrame(
+        {
+            "price_tie": [False, False, False],
+            "symmetric_common_support": [True, True, False],
+            "mature_exclusive_incumbent": [True, True, True],
+            "mature_mixed_entry_majority": [False, False, False],
+            "both_v2_bridge_capitals_positive": [True, False, True],
+        },
+        index=[10, 20, 30],
+    )
+    calls: dict[str, tuple[list[int], tuple[str, ...], str]] = {}
+
+    def fake_fit_model(
+        data: pd.DataFrame,
+        *,
+        model_id: str,
+        outcome: str,
+        predictors: tuple[str, ...],
+        sample: str,
+    ) -> pd.DataFrame:
+        del outcome
+        calls[model_id] = (data.index.tolist(), predictors, sample)
+        return pd.DataFrame({"model_id": [model_id]})
+
+    monkeypatch.setattr(contestable, "_fit_model", fake_fit_model)
+    contestable.regression_results(panel)
+
+    price_only = calls["exclusive_retention_price_only_positive_v2_capital"]
+    price_capital = calls["exclusive_retention_price_v2_capital"]
+    assert price_only[0] == price_capital[0] == [10]
+    assert price_only[2] == price_capital[2]
+    assert price_only[1] == (
+        "incumbent_output_advantage_100bp",
+        "log_input_usd",
     )
