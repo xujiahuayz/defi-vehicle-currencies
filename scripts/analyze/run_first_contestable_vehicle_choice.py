@@ -386,6 +386,7 @@ def run(
     minimum_entry_value_usd: float = DEFAULT_MIN_ENTRY_VALUE_USD,
     start: str = START,
     end: str = END,
+    support_only: bool = False,
 ) -> int:
     entries = load_material_entries(
         PRIMARY_DATA_DIR / "processed/endpoint_candidate_pair_support.parquet",
@@ -395,13 +396,15 @@ def run(
     )
     exact = first_contestable_routes(frontier_path, entries)
     panel = attach_oriented_variables(exact, capital_path)
-    results = choice_results(panel)
     support = support_results(entries, panel)
     write_panel(panel, panel_path, code_sources=CODE_SOURCES)
-    write_exhibit(results, output_path, code_sources=CODE_SOURCES, inputs=INPUTS)
     write_exhibit(support, support_path, code_sources=CODE_SOURCES, inputs=INPUTS)
-    print(results.to_string(index=False), flush=True)
     print(support.to_string(index=False), flush=True)
+    if support_only:
+        return 0
+    results = choice_results(panel)
+    write_exhibit(results, output_path, code_sources=CODE_SOURCES, inputs=INPUTS)
+    print(results.to_string(index=False), flush=True)
     return 0
 
 
@@ -419,6 +422,7 @@ def main() -> int:
     )
     parser.add_argument("--start", default=START)
     parser.add_argument("--end", default=END)
+    parser.add_argument("--support-only", action="store_true")
     args = parser.parse_args()
     return run(
         frontier_path=args.frontier,
@@ -429,6 +433,7 @@ def main() -> int:
         minimum_entry_value_usd=args.minimum_entry_value_usd,
         start=args.start.replace("-", ""),
         end=args.end.replace("-", ""),
+        support_only=args.support_only,
     )
 
 
