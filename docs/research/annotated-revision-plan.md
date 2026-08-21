@@ -127,9 +127,9 @@ native-versus-stable vehicle when both families appear in the same route.
 Studio is the sole owner of the current compute-and-revision cycle. Commit
 `9c067cd` repaired the retired `OUT_QUARTERLY` completion-message reference.
 The V1-inclusive excess-use, half-year, token-price, all-day round-trip,
-network-betweenness, and cross-venue computations are complete. The exact
-vehicle frontier is the remaining long-running Stage 1 calculation; downstream
-tables, figures, manuscript, deck, and transcript rebuilds follow its output.
+network-betweenness, cross-venue computations, and the exact vehicle frontier
+are complete. Downstream tables, figures, manuscript, deck, and transcript
+rebuilds incorporate their outputs.
 
 The early adjacent-year run also stopped when the cross-venue subsample lacked
 positive support in an endpoint year. Treat that as a support rule to handle

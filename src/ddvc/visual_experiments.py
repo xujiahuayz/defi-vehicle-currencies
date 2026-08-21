@@ -246,7 +246,12 @@ def _ribbon(axis: plt.Axes, left: tuple[float, float], right: tuple[float, float
 
 
 
-def render_annual_composition_bands(frame: pd.DataFrame, output: Path) -> None:
+def render_annual_composition_bands(
+    frame: pd.DataFrame,
+    output: Path,
+    *,
+    deck: bool = False,
+) -> None:
     """Render the annual or half-year native-versus-stable path."""
 
     halfyear = "period" in frame.columns
@@ -263,6 +268,16 @@ def render_annual_composition_bands(frame: pd.DataFrame, output: Path) -> None:
         if halfyear
         else [str(point) for point in points]
     )
+    display_points = points
+    display_tick_labels = tick_labels
+    if deck and halfyear:
+        display_indices = [0]
+        display_indices.extend(
+            i for i, label in enumerate(tick_labels) if str(label).endswith("H1")
+        )
+        display_indices = sorted(set(display_indices))
+        display_points = [points[i] for i in display_indices]
+        display_tick_labels = [tick_labels[i] for i in display_indices]
     panels = (
         ("episode_share", "Intermediary episodes"),
         ("usd_share_within_20pct", "Routed value"),
@@ -346,10 +361,10 @@ def render_annual_composition_bands(frame: pd.DataFrame, output: Path) -> None:
                 )
                 axis.set_title(title, loc="left", fontsize=12, fontweight="bold")
                 axis.set_xticks(
-                    points,
-                    tick_labels,
-                    rotation=45 if halfyear else 0,
-                    ha="right" if halfyear else "center",
+                    display_points,
+                    display_tick_labels,
+                    rotation=0 if deck else (45 if halfyear else 0),
+                    ha="center" if deck else ("right" if halfyear else "center"),
                 )
                 axis.set_xlim(min(points) - 0.25, max(points) + 0.25)
                 axis.set_ylim(0, 0.9)
@@ -427,27 +442,39 @@ def render_annual_composition_bands(frame: pd.DataFrame, output: Path) -> None:
                             )
             axes[0].set_ylabel("Share of intermediation")
             axes[1].tick_params(axis="y", labelleft=False, labelright=True, right=True)
-            handles, labels = axes[0].get_legend_handles_labels()
-            figure.legend(
-                handles,
-                labels,
-                frameon=False,
-                ncol=3,
-                loc="lower center",
-                bbox_to_anchor=(0.5, 0.02),
-            )
-            figure.text(
-                0.995,
-                0.012,
-                "For value-weighted shares, source, intermediary, and destination dollar amounts must agree within 20%.",
-                ha="right",
-                fontsize=8,
-                color="#4B5563",
-            )
-            figure.tight_layout(rect=(0, 0.14, 1, 0.99))
+            if deck:
+                figure.tight_layout(rect=(0, 0.02, 1, 0.99))
+            else:
+                handles, labels = axes[0].get_legend_handles_labels()
+                figure.legend(
+                    handles,
+                    labels,
+                    frameon=False,
+                    ncol=3,
+                    loc="lower center",
+                    bbox_to_anchor=(0.5, 0.02),
+                )
+                figure.text(
+                    0.995,
+                    0.012,
+                    "For value-weighted shares, source, intermediary, and destination dollar amounts must agree within 20%.",
+                    ha="right",
+                    fontsize=8,
+                    color="#4B5563",
+                )
+                figure.tight_layout(rect=(0, 0.14, 1, 0.99))
             _save(figure, output)
         finally:
             plt.close(figure)
+
+
+def render_deck_annual_composition_bands(
+    frame: pd.DataFrame,
+    output: Path,
+) -> None:
+    """Render the half-year composition path with deck-scale annotations."""
+
+    render_annual_composition_bands(frame, output, deck=True)
 
 def render_annual_integration_alluvial(frame: pd.DataFrame, output: Path) -> None:
     """Render latest-year integration scope by intermediary type."""

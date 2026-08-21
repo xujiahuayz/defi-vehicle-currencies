@@ -10,6 +10,7 @@ from ddvc.paths import OUTPUT_DIR, REPO_ROOT
 from ddvc.visual_experiments import (
     render_annual_composition_bands,
     render_annual_integration_alluvial,
+    render_deck_annual_composition_bands,
     render_integration_change_forest,
 )
 
@@ -34,6 +35,7 @@ def main() -> int:
     rival, rival_identity = load_current_jsonl(RIVAL_INPUT, consumer="visual experiment lane")
     type_outputs = (
         ("annual_vehicle_composition_bands.pdf", render_annual_composition_bands, by_halfyear, HALFYEAR_INPUT, halfyear_identity, "half-year native-versus-stable leadership path separated by intermediary episodes and routed value; routed value requires source, intermediary, and destination dollar amounts to agree within 20 percent; other intermediary types remain visible as one exhaustive residual"),
+        ("annual_vehicle_composition_bands_deck.pdf", render_deck_annual_composition_bands, by_halfyear, HALFYEAR_INPUT, halfyear_identity, "deck-scale half-year native-versus-stable leadership path with annual tick labels; values and scope match the paper figure, while its legend and value-support note are supplied by the slide"),
         ("integration_vehicle_alluvial.pdf", render_annual_integration_alluvial, by_type, TYPE_INPUT, type_identity, "latest-year joint composition by integration scope and intermediary type; selected realised routes, not an integration effect"),
     )
     for filename, renderer, frame, input_path, input_identity, notes in type_outputs:

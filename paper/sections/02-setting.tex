@@ -34,6 +34,7 @@ Q_r(q,e(r))&=\Delta_o,
 The venue-specific forms of $Q_p$ appear in Appendix~\ref{app:quoters}. Pool invariants take token quantities as arguments, which is why the dollar notional $q$ and the token input $\Delta_i$ remain distinct. Equation~\eqref{eq:route} describes an executed route and, once market state has been reconstructed, prices a counterfactual path.
 
 A hypothetical AAVE--WETH--USDC--UNI route makes the units concrete. Suppose one AAVE is worth \$100, one WETH \$2,500, one USDC \$1, and one UNI \$10. If one AAVE returns 0.04 WETH, the second leg returns 100 USDC, and the third returns 10 UNI, then $q=\$100$, $Q_r=10$ UNI, and $O_r=\$100$. Each leg carries \$100 on both sides. The route value $\nu_r$ below is also \$100 because it averages the \$100 source and destination values. In the data, the same calculation uses prices at the transaction time and the value-agreement rule allows limited measurement error along the route.
+% src/ddvc/route_roles.py; pedagogical unit calculation, not an empirical estimate
 
 Intermediary use is one of several currency roles. Invoicing concerns the currency named in trade contracts \citep{GopinathEtAl2020DCP,AmitiItskhokiKonings2022Dominant,Mukhin2022InternationalPriceSystem}; funding concerns the denomination of liabilities \citep{GopinathStein2021Making,ErenMalamud2022DominantDebt}; and dealer turnover records trading activity \citep{Somogyi2026DollarDominanceFX}. These roles can reinforce one another. The route in Equation~\eqref{eq:route} identifies the asset used between the currency sold and the currency bought.
 
@@ -108,6 +109,8 @@ Every token sequence retained by the connected-transaction rule enters the count
 Transactions and contract-state changes are publicly observable \citep{Schar2021DeFi}. Reconstructing a route still requires matching pool events, venues, and token units. This procedure identifies the executed route and its calling contract, while the executor address does not establish which frontend or software formed the quote \citep{XiMoallemi2026Routing}. The results are therefore attributed to executed routes, not to a particular routing service.
 % docs/research/router-identification.md
 
+Table~\ref{tab:panel} reports the resulting panel coverage and route-level validation rates.
+
 \begin{table}[htbp]
 \centering
 \small
@@ -137,5 +140,5 @@ Round trips, median share of multi-leg routes by value & 21.0\% \\
 % output/exhibits/round_trip_share_by_day.jsonl, 2,449 eligible days
 \bottomrule
 \end{tabular}
-\exhibitnote{The full \RoutePanelDeploymentCount-deployment panel contains UTC dates from \RoutePanelSpan{}. Uniswap v1 enters these totals through the exact exchange-to-token registry; its protocol-architecture comparison is venue-specific. Daily route statistics and round-trip shares are validation quantities computed on 79 dates sampled across 1 June 2020 through 27 April 2026; this computational sample is not the support of the main dominance estimates. A multi-trade route traverses more than one pool; a round trip ends in the token with which it began. Round-trip shares are formed among multi-trade routes.}
+\exhibitnote{The full \RoutePanelDeploymentCount-deployment panel contains UTC dates from \RoutePanelSpan{}. Uniswap v1 enters these totals through the exact exchange-to-token registry; its protocol-architecture comparison is venue-specific. Daily route statistics and round-trip shares use all 2,449 eligible dates from 15 May 2019 through 30 June 2026. A multi-leg route traverses more than one pool; a round trip ends in the token with which it began. Round-trip shares are formed among multi-leg routes.}
 \end{table}

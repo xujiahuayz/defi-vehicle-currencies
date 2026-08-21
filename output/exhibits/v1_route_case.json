@@ -10,6 +10,8 @@
    "fee_eth": "0.752256770310932798",
    "role": "token_to_eth",
    "step": 1,
+   "symbol": "MKR",
+   "token": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
    "token_amount": "250"
   },
   {
@@ -18,10 +20,12 @@
    "fee_eth": "1.321353121300080853",
    "role": "eth_to_token",
    "step": 2,
+   "symbol": "DAI",
+   "token": "0x6b175474e89094c44da98b954eedeac495271d0f",
    "token_amount": "49892.398432534066569119"
   }
  ],
- "schema_version": "dvc-v1-route-case-v1",
+ "schema_version": "dvc-v1-route-case-v2",
  "selection": {
   "clean_two_row_candidates": 144442,
   "exact_leg_candidates": 129810,
@@ -32,7 +36,7 @@
  },
  "timestamp_iso": "2020-03-15T07:38:26+00:00",
  "timestamp_utc": 1584257906,
- "token_identity_note": "V1 subgraph records identify exchange contracts, not tokens (direct resolution rate 0%). The registered case's token identities are externally verified against the public transaction record in docs/findings/v1-forced-vehicle.md, section 1.",
+ "token_identity_note": "The exact V1 exchange registry maps both exchange contracts to their ERC-20 tokens. The public transaction record cited in docs/findings/v1-forced-vehicle.md independently cross-checks the endpoint identities.",
  "tx_hash": "0x4dca160d762184835f34925a8cc556d7283a7642c88d1bef3382a73596a0ca16",
  "verification": {
   "distinct_exchanges": true,
@@ -40,6 +44,7 @@
   "eth_leg_strings_equal": true,
   "one_event_per_leg": true,
   "opposite_directions": true,
+  "token_identities_from_exact_registry": true,
   "two_rows_one_transaction": true
  }
 }

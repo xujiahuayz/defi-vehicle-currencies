@@ -2,6 +2,8 @@
 
 These notes follow the current core deck. The tone is spoken on purpose. Short bridges, fragments, a little repetition. The backup section covers every appendix slide.
 
+Timing target: cover and slides 1--3, 5 minutes; slides 4--8, 7 minutes; slides 9--11, 7 minutes; slides 12--15, 9 minutes; slide 16, 2 minutes. The 18-second film and normal slide transitions are included in those blocks.
+
 ## Cover. The Making of Dominant Vehicle Currencies
 
 Hi everyone. Great pleasure to be here.
@@ -122,7 +124,7 @@ Native assets lead early. Stablecoins gain in 2022. Native assets come back in 2
 
 So this is no smooth, one-way technology trend. The leadership actually turns over.
 
-Among all intermediary positions, the stablecoin share rises from 17.2 percent in 2024 to 41.9 percent in 2026 H1. Route participation tells the same story: 17.6 to 46.1 percent. Longer routes are part of the result, not discarded observations.
+Among all intermediary positions, the stablecoin share rises from 17.2 percent in 2024 to 41.8 percent in 2026 H1. Route participation tells the same story: 17.6 to 46.0 percent. Longer routes are part of the result, not discarded observations.
 
 The value shift is even larger. The short film makes the turnover easier to see because frequency, value, and pair breadth move at the same time.
 
@@ -142,11 +144,11 @@ Now the central question: did existing pairs switch, or did trading form around 
 
 This is the central decomposition. Same January-to-June dates in 2024 and 2026.
 
-Stablecoin share rises from 16.9 to 42.5 percent. A 25.7 percentage-point rotation.
+Pooling route activity over these matched dates, stablecoin share rises from 16.9 to 42.4 percent. A 25.5 percentage-point rotation. If I instead give each day equal weight, the endpoint is 42.1 percent and the change is 25.2 points. The conclusion is the same; pooling is what lets the components add exactly.
 
 Inside continuing pairs, positive and negative switches almost exactly offset: minus 0.1 point net.
 
-Trading reallocation across continuing pairs adds 8.6 points.
+Trading reallocation across continuing pairs adds 8.4 points.
 
 Pairs present in only one period add 17.8 points. The largest component. That number is net of both entry and exit: new pairs bring their 2026 vehicle into the comparison, while disappearing pairs remove their 2024 vehicle.
 
@@ -211,13 +213,17 @@ Here we reconstruct the exact state immediately before each transaction and repr
 
 Among venues already used by the route, 6.6 percent have a same-vehicle quote at least one basis point better.
 
-Open all exact venues: 44.4 percent. Lots of venue competition.
+Open all exact venues: 44.5 percent. Lots of venue competition.
 
 Then open every named vehicle and the direct route: 46.4 percent. Only another 2 points.
 
 If every route takes its best quoted path, stablecoin vehicle share moves by minus 1.2 percentage points.
 
-So the big jump comes from searching more venues with the same vehicle: 6.6 to 44.4 percent. Letting the route change its vehicle, or go direct, adds only 2 more points. And even if every route takes its best quoted path, aggregate stablecoin vehicle share moves by only 1.2 points.
+So the big jump comes from searching more venues with the same vehicle: 6.6 to 44.5 percent. Letting the route change its vehicle, or go direct, adds only 2 more points. And even if every route takes its best quoted path, aggregate stablecoin vehicle share moves by only 1.2 points.
+
+Now connect this price panel back to pair entry. At least 120 days after a pair appears, the first vehicle is retained 99.5 percent of the time when it remains the exact price leader. When the challenger price-leads, retention falls to 12.0 percent, across 15,308 routes and 1,886 pairs.
+
+That is not an inertia result. The first vehicle predicts later use because its executable advantage often persists. When a cheaper public challenger appears, most routes change vehicle. Private flow, omitted venues, gas, and provider expectations remain outside this comparison.
 
 Every observation therefore has its own exact counterfactual quote. The three cards report how often each wider opportunity set beats the executed route by more than one basis point.
 
@@ -376,8 +382,8 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 
 ## A14. WETH stays the graph hub as realised use shifts
 
-- WETH ranks first in betweenness in every annual leg graph and remains at 0.927 in 2026 H1.
-- Its realised intermediary-position share still falls from 76.2 to 42.3 percent; USDC and USDT together rise from 14.9 to 37.4.
+- WETH ranks first in betweenness in all eight annual leg graphs and remains at 0.925 in 2026 H1.
+- Its realised intermediary-position share still falls from 76.2 to 42.4 percent; USDC and USDT together rise from 14.9 to 37.2.
 - An unweighted edge records an available connection. It does not record route depth or execution cost, so graph position alone cannot explain realised use.
 
 ## A15. Endpoint demand and intermediary use move together
