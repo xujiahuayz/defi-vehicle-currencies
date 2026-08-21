@@ -2,7 +2,7 @@
 
 These notes follow the current core deck. The tone is spoken on purpose. Short bridges, fragments, a little repetition. The backup section covers every appendix slide.
 
-Timing target: cover and slides 1--3, 5 minutes; slides 4--8, 7 minutes; slides 9--11, 7 minutes; slides 12--16, 9 minutes; slide 17, 2 minutes. The 18-second film and normal slide transitions are included in those blocks.
+Timing target: cover and slides 1--3, 5 minutes; slides 4--8, 7 minutes; slides 9--11, 7 minutes; slides 12--17, 9 minutes; slide 18, 2 minutes. The 18-second film and normal slide transitions are included in those blocks.
 
 ## Cover. The Making of Dominant Vehicle Currencies
 
@@ -237,9 +237,21 @@ So the big jump comes from searching more venues with the same vehicle: 6.6 to 4
 
 Every observation has its own exact counterfactual quote. The three steps show how often each wider opportunity set beats the executed route by more than one basis point.
 
-The next price test is narrower and harder: quote the best stablecoin route and the best WETH route independently, and keep only trades where both are executable. That is the comparison needed to connect current prices to the first vehicle without letting the executed route define its own benchmark.
+Now narrow the price comparison to the two vehicle families. Same pair, same input, same pretrade state. Best stablecoin path against best WETH path. Both have to be executable.
 
-## Slide 17. New relationships reshape currency dominance
+## Slide 17. Current prices discipline persistence
+
+This is the direct comparison.
+
+When the entry vehicle still gives more output, it carries 93.4 percent of routes.
+
+When the other vehicle gives more than one basis point more output, entry-vehicle use falls to 22.4 percent. Pair-day weighting gives almost the same split: 94.6 against 24.5.
+
+So the first vehicle is sticky in the reduced-form sense. It predicts later use. Current price leadership disciplines that persistence. Depth and price make an established vehicle contestable.
+
+That brings the pieces together. New relationships inherit a vehicle. Two-leg depth makes the alternative usable. And current prices determine whether the first vehicle keeps the route.
+
+## Slide 18. New relationships reshape currency dominance
 
 Let me leave you with the bigger point.
 
@@ -247,7 +259,7 @@ Three findings.
 
 First, pair formation and trading reallocation carry most of the aggregate rotation. Net switching inside continuing pairs is tiny.
 
-Second, the first vehicle of a new pair predicts later use. New relationships inherit the markets available when they form.
+Second, the first vehicle predicts later use while its path remains competitive. Current prices discipline persistence.
 
 Third, two-leg depth makes a bridge competitive. Stablecoin route use rises sharply as the weaker leg approaches WETH depth, and capital builds into first use.
 

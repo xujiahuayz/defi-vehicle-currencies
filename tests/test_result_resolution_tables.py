@@ -88,11 +88,14 @@ def test_result_resolution_tables_render_direct_checks() -> None:
         "All pairs & 90.0 [1{,}234] & 40.0 [1{,}234] & "
         "90.0 [1{,}234] & 40.0 [1{,}234]" in price_tex
     )
+    assert "Entry vehicle leads & Other vehicle leads" in price_tex
     assert r"\newcommand{\AdjacentLargestDeclineYears}{2019--2020}" in values
     assert r"\newcommand{\AdjacentWithinMin}{$+1.0$ pp}" in values
     assert r"\newcommand{\NonvehicleEndpointValueEnd}{60.0\%}" in values
     assert r"\newcommand{\NonvehicleEndpointValueExclusive}{$+36.0$ pp}" in values
     assert r"\newcommand{\PriceChallengerIncumbentRetention}{40.0\%}" in values
+    assert r"\newcommand{\PriceIncumbentLeaderPairDayRetention}{90.0\%}" in values
+    assert r"\newcommand{\PriceChallengerPairDayRetention}{40.0\%}" in values
 
 
 def test_entry_price_table_rejects_obsolete_or_subthreshold_results() -> None:

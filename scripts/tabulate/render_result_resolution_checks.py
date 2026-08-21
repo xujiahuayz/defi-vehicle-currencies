@@ -161,7 +161,7 @@ def render_entry_price_alignment(results: pd.DataFrame) -> str:
         r"\toprule",
         r" & \multicolumn{2}{c}{Route weighted} & \multicolumn{2}{c}{Pair-day weighted} \\",
         r"\cmidrule(lr){2-3}\cmidrule(l){4-5}",
-        r"Vehicle at pair entry & Incumbent leads & Challenger leads & Incumbent leads & Challenger leads \\",
+        r"Vehicle at pair entry & Entry vehicle leads & Other vehicle leads & Entry vehicle leads & Other vehicle leads \\",
         r"\midrule",
     ]
     labels = (("All pairs", "pooled"), ("Native", "native"), ("Stablecoin", "stable"))
@@ -249,12 +249,30 @@ def render_values(
         entry_vehicle_type="pooled",
         price_leader_relation="incumbent",
     )
+    challenger_pair_day = _single(
+        price,
+        record_type="entry_price_leader_alignment",
+        horizon_days=120,
+        weighting="pair_day",
+        entry_vehicle_type="pooled",
+        price_leader_relation="challenger",
+    )
+    incumbent_pair_day = _single(
+        price,
+        record_type="entry_price_leader_alignment",
+        horizon_days=120,
+        weighting="pair_day",
+        entry_vehicle_type="pooled",
+        price_leader_relation="incumbent",
+    )
     lines = render_rotation_values(adjacent, endpoint)
     lines.extend([
         f"\\newcommand{{\\PriceChallengerIncumbentRetention}}{{{_pct(challenger['incumbent_vehicle_share'])}\\%}}",
         f"\\newcommand{{\\PriceChallengerRoutes}}{{{_integer(challenger['observations'])}}}",
         f"\\newcommand{{\\PriceChallengerPairs}}{{{_integer(challenger['pairs'])}}}",
         f"\\newcommand{{\\PriceIncumbentLeaderRetention}}{{{_pct(incumbent['incumbent_vehicle_share'])}\\%}}",
+        f"\\newcommand{{\\PriceChallengerPairDayRetention}}{{{_pct(challenger_pair_day['incumbent_vehicle_share'])}\\%}}",
+        f"\\newcommand{{\\PriceIncumbentLeaderPairDayRetention}}{{{_pct(incumbent_pair_day['incumbent_vehicle_share'])}\\%}}",
     ])
     return "\n".join(lines) + "\n"
 

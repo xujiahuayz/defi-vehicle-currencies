@@ -125,113 +125,114 @@
 {"corpus_max": 2.183528357874699, "corpus_median": 0.3296884444200231, "draft_count": 7, "draft_rate": 2.460456942003515, "expression": "\u00b7 \u00b7 across \u00b7", "field_max": 0.0, "kind": "style", "n": 4, "segment": "template"}
 {"corpus_max": 27.556557896962435, "corpus_median": 16.074970928244067, "draft_count": 79, "draft_rate": 27.768014059753956, "expression": "\u00b7 the \u00b7 \u00b7", "field_max": 0.0, "kind": "style", "n": 4, "segment": "template"}
 {"corpus_max": 3.4617286664102425, "corpus_median": 2.0538941833716726, "draft_count": 10, "draft_rate": 3.51493848857645, "expression": "\u00b7 by \u00b7 \u00b7", "field_max": 0.0, "kind": "style", "n": 4, "segment": "template"}
-{"corpus_max": 28.818443804034583, "corpus_median": 28.818443804034583, "draft_count": 42, "draft_rate": 103.19410319410319, "expression": "and", "field_max": 48.18181818181818, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 15, "draft_rate": 36.85503685503686, "expression": "stablecoin", "field_max": 17.77059773828756, "kind": "topic", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 9, "draft_rate": 22.11302211302211, "expression": "vehicle", "field_max": 8.810572687224669, "kind": "topic", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 8, "draft_rate": 19.656019656019655, "expression": "route", "field_max": 1.6675004168751042, "kind": "topic", "n": 1, "segment": "heading"}
-{"corpus_max": 1.8011527377521614, "corpus_median": 1.8011527377521614, "draft_count": 6, "draft_rate": 14.742014742014742, "expression": "use", "field_max": 8.623922009748782, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 5, "draft_rate": 12.285012285012286, "expression": "relative", "field_max": 0.0, "kind": "topic", "n": 1, "segment": "heading"}
-{"corpus_max": 0.36023054755043227, "corpus_median": 0.36023054755043227, "draft_count": 5, "draft_rate": 12.285012285012286, "expression": "role", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 0.36023054755043227, "corpus_median": 0.36023054755043227, "draft_count": 5, "draft_rate": 12.285012285012286, "expression": "intermediary", "field_max": 10.807565295706995, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 4, "draft_rate": 9.828009828009828, "expression": "rotation", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 4, "draft_rate": 9.828009828009828, "expression": "depth", "field_max": 5.796150481189851, "kind": "topic", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 4, "draft_rate": 9.828009828009828, "expression": "endpoint", "field_max": 0.5117707267144319, "kind": "undefined", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 4, "draft_rate": 9.828009828009828, "expression": "participation", "field_max": 0.0, "kind": "topic", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 4, "draft_rate": 9.828009828009828, "expression": "shortfalls", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
-{"corpus_max": 0.36023054755043227, "corpus_median": 0.36023054755043227, "draft_count": 4, "draft_rate": 9.828009828009828, "expression": "routes", "field_max": 3.8352509588127397, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 0.36023054755043227, "corpus_median": 0.36023054755043227, "draft_count": 4, "draft_rate": 9.828009828009828, "expression": "share", "field_max": 7.049345417925478, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 1.080691642651297, "corpus_median": 1.080691642651297, "draft_count": 4, "draft_rate": 9.828009828009828, "expression": "settlement", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.371007371007371, "expression": "activity", "field_max": 1.8948964123294594, "kind": "topic", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.371007371007371, "expression": "bridge", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.371007371007371, "expression": "before", "field_max": 2.4433946896888745, "kind": "topic", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.371007371007371, "expression": "pools", "field_max": 10.338502584625646, "kind": "topic", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.371007371007371, "expression": "stableswap", "field_max": 0.0, "kind": "topic", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.371007371007371, "expression": "route--capital", "field_max": 0.0, "kind": "undefined", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.371007371007371, "expression": "gaps", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.371007371007371, "expression": "uniswap", "field_max": 10.576595018764927, "kind": "topic", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.371007371007371, "expression": "minus-v", "field_max": 0.0, "kind": "undefined", "n": 1, "segment": "heading"}
-{"corpus_max": 0.36023054755043227, "corpus_median": 0.36023054755043227, "draft_count": 3, "draft_rate": 7.371007371007371, "expression": "observed", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 0.36023054755043227, "corpus_median": 0.36023054755043227, "draft_count": 3, "draft_rate": 7.371007371007371, "expression": "subsequent", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 0.36023054755043227, "corpus_median": 0.36023054755043227, "draft_count": 3, "draft_rate": 7.371007371007371, "expression": "internal", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 1.080691642651297, "corpus_median": 1.080691642651297, "draft_count": 3, "draft_rate": 7.371007371007371, "expression": "pricing", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 1.080691642651297, "corpus_median": 1.080691642651297, "draft_count": 3, "draft_rate": 7.371007371007371, "expression": "validation", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 3.602305475504323, "corpus_median": 3.602305475504323, "draft_count": 4, "draft_rate": 9.828009828009828, "expression": "by", "field_max": 12.50303471716436, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 3.962536023054755, "corpus_median": 3.962536023054755, "draft_count": 4, "draft_rate": 9.828009828009828, "expression": "liquidity", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 1.8011527377521614, "corpus_median": 1.8011527377521614, "draft_count": 3, "draft_rate": 7.371007371007371, "expression": "capital", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "dominance", "field_max": 0.0, "kind": "topic", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "how", "field_max": 0.0, "kind": "topic", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "stablecoins", "field_max": 0.0, "kind": "topic", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "native", "field_max": 2.727272727272727, "kind": "sense", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "pair", "field_max": 5.574684374487621, "kind": "topic", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "later", "field_max": 2.0399242313856916, "kind": "sense", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "allocation", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "identity", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "constant-product", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "quoter", "field_max": 0.0, "kind": "undefined", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "direction", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "day", "field_max": 5.154639175257732, "kind": "topic", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "pool", "field_max": 11.48395504153771, "kind": "topic", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "coverage", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "round-trip", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "composition", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "specialisation", "field_max": 0.0, "kind": "undefined", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "router", "field_max": 0.0, "kind": "topic", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "releases", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "venue", "field_max": 0.5002501250625313, "kind": "sense", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "provider", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "lp-flow", "field_max": 0.0, "kind": "undefined", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "response", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
-{"corpus_max": 0.36023054755043227, "corpus_median": 0.36023054755043227, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "local", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 0.36023054755043227, "corpus_median": 0.36023054755043227, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "comparison", "field_max": 0.8012820512820513, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 0.36023054755043227, "corpus_median": 0.36023054755043227, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "volume", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 0.36023054755043227, "corpus_median": 0.36023054755043227, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "within", "field_max": 4.264756055953599, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 0.7204610951008645, "corpus_median": 0.7204610951008645, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "size", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 0.7204610951008645, "corpus_median": 0.7204610951008645, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "demand", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 0.7204610951008645, "corpus_median": 0.7204610951008645, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "provision", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 1.080691642651297, "corpus_median": 1.080691642651297, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "trade", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 1.080691642651297, "corpus_median": 1.080691642651297, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "additional", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 1.080691642651297, "corpus_median": 1.080691642651297, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "network", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 1.440922190201729, "corpus_median": 1.440922190201729, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "routing", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 2.161383285302594, "corpus_median": 2.161383285302594, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "panel", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 4, "draft_rate": 9.828009828009828, "expression": "relative to", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 4, "draft_rate": 9.828009828009828, "expression": "settlement and", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 4, "draft_rate": 9.828009828009828, "expression": "stablecoin shortfalls", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.371007371007371, "expression": "vehicle use", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.371007371007371, "expression": "and vehicle", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.371007371007371, "expression": "stablecoin route--capital", "field_max": 0.0, "kind": "undefined", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.371007371007371, "expression": "route--capital gaps", "field_max": 0.0, "kind": "undefined", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.371007371007371, "expression": "shortfalls and", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.371007371007371, "expression": "the minus-v", "field_max": 0.0, "kind": "undefined", "n": 2, "segment": "heading"}
-{"corpus_max": 0.36023054755043227, "corpus_median": 0.36023054755043227, "draft_count": 3, "draft_rate": 7.371007371007371, "expression": "and subsequent", "field_max": 0.0, "kind": "style", "n": 2, "segment": "heading"}
-{"corpus_max": 1.440922190201729, "corpus_median": 1.440922190201729, "draft_count": 3, "draft_rate": 7.371007371007371, "expression": "and the", "field_max": 0.0, "kind": "style", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "vehicle dominance", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "the route", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "route panel", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "vehicle role", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "the stablecoin", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "stablecoin rotation", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "and later", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "local bridge", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "bridge depth", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "depth and", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "and route", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "route allocation", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "direction and", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "to observed", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "size relative", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "share of", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "composition and", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "and stablecoin", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "stablecoin intermediary", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "role specialisation", "field_max": 0.0, "kind": "undefined", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "endpoint demand", "field_max": 0.0, "kind": "undefined", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "intermediary role", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "router releases", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "venue pricing", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "route use", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "provider activity", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "internal settlement", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
-{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "response stablecoin", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
-{"corpus_max": 0.36023054755043227, "corpus_median": 0.36023054755043227, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "and liquidity", "field_max": 0.0, "kind": "style", "n": 2, "segment": "heading"}
-{"corpus_max": 0.7204610951008645, "corpus_median": 0.7204610951008645, "draft_count": 2, "draft_rate": 4.914004914004914, "expression": "liquidity provision", "field_max": 0.0, "kind": "style", "n": 2, "segment": "heading"}
-{"corpus_max": 5.763688760806916, "corpus_median": 5.763688760806916, "draft_count": 3, "draft_rate": 7.371007371007371, "expression": "of the", "field_max": 0.0, "kind": "style", "n": 2, "segment": "heading"}
+{"corpus_max": 28.818443804034583, "corpus_median": 28.818443804034583, "draft_count": 43, "draft_rate": 104.11622276029055, "expression": "and", "field_max": 48.18181818181818, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 15, "draft_rate": 36.31961259079903, "expression": "stablecoin", "field_max": 17.77059773828756, "kind": "topic", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 9, "draft_rate": 21.791767554479417, "expression": "vehicle", "field_max": 8.810572687224669, "kind": "topic", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 8, "draft_rate": 19.37046004842615, "expression": "route", "field_max": 1.6675004168751042, "kind": "topic", "n": 1, "segment": "heading"}
+{"corpus_max": 1.8011527377521614, "corpus_median": 1.8011527377521614, "draft_count": 7, "draft_rate": 16.949152542372882, "expression": "use", "field_max": 8.623922009748782, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 5, "draft_rate": 12.106537530266344, "expression": "relative", "field_max": 0.0, "kind": "topic", "n": 1, "segment": "heading"}
+{"corpus_max": 0.36023054755043227, "corpus_median": 0.36023054755043227, "draft_count": 5, "draft_rate": 12.106537530266344, "expression": "role", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 0.36023054755043227, "corpus_median": 0.36023054755043227, "draft_count": 5, "draft_rate": 12.106537530266344, "expression": "intermediary", "field_max": 10.807565295706995, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 4, "draft_rate": 9.685230024213075, "expression": "rotation", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 4, "draft_rate": 9.685230024213075, "expression": "depth", "field_max": 5.796150481189851, "kind": "topic", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 4, "draft_rate": 9.685230024213075, "expression": "endpoint", "field_max": 0.5117707267144319, "kind": "undefined", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 4, "draft_rate": 9.685230024213075, "expression": "participation", "field_max": 0.0, "kind": "topic", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 4, "draft_rate": 9.685230024213075, "expression": "shortfalls", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
+{"corpus_max": 0.36023054755043227, "corpus_median": 0.36023054755043227, "draft_count": 4, "draft_rate": 9.685230024213075, "expression": "routes", "field_max": 3.8352509588127397, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 0.36023054755043227, "corpus_median": 0.36023054755043227, "draft_count": 4, "draft_rate": 9.685230024213075, "expression": "share", "field_max": 7.049345417925478, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 1.080691642651297, "corpus_median": 1.080691642651297, "draft_count": 4, "draft_rate": 9.685230024213075, "expression": "settlement", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.263922518159807, "expression": "activity", "field_max": 1.8948964123294594, "kind": "topic", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.263922518159807, "expression": "bridge", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.263922518159807, "expression": "before", "field_max": 2.4433946896888745, "kind": "topic", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.263922518159807, "expression": "pools", "field_max": 10.338502584625646, "kind": "topic", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.263922518159807, "expression": "stableswap", "field_max": 0.0, "kind": "topic", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.263922518159807, "expression": "route--capital", "field_max": 0.0, "kind": "undefined", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.263922518159807, "expression": "gaps", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.263922518159807, "expression": "uniswap", "field_max": 10.576595018764927, "kind": "topic", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.263922518159807, "expression": "minus-v", "field_max": 0.0, "kind": "undefined", "n": 1, "segment": "heading"}
+{"corpus_max": 0.36023054755043227, "corpus_median": 0.36023054755043227, "draft_count": 3, "draft_rate": 7.263922518159807, "expression": "observed", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 0.36023054755043227, "corpus_median": 0.36023054755043227, "draft_count": 3, "draft_rate": 7.263922518159807, "expression": "subsequent", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 0.36023054755043227, "corpus_median": 0.36023054755043227, "draft_count": 3, "draft_rate": 7.263922518159807, "expression": "internal", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 1.080691642651297, "corpus_median": 1.080691642651297, "draft_count": 3, "draft_rate": 7.263922518159807, "expression": "pricing", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 1.080691642651297, "corpus_median": 1.080691642651297, "draft_count": 3, "draft_rate": 7.263922518159807, "expression": "validation", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 3.602305475504323, "corpus_median": 3.602305475504323, "draft_count": 4, "draft_rate": 9.685230024213075, "expression": "by", "field_max": 12.50303471716436, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 3.962536023054755, "corpus_median": 3.962536023054755, "draft_count": 4, "draft_rate": 9.685230024213075, "expression": "liquidity", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 1.8011527377521614, "corpus_median": 1.8011527377521614, "draft_count": 3, "draft_rate": 7.263922518159807, "expression": "capital", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "dominance", "field_max": 0.0, "kind": "topic", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "how", "field_max": 0.0, "kind": "topic", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "stablecoins", "field_max": 0.0, "kind": "topic", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "native", "field_max": 2.727272727272727, "kind": "sense", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "pair", "field_max": 5.574684374487621, "kind": "topic", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "later", "field_max": 2.0399242313856916, "kind": "sense", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "allocation", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "identity", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "constant-product", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "quoter", "field_max": 0.0, "kind": "undefined", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "direction", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "day", "field_max": 5.154639175257732, "kind": "topic", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "pool", "field_max": 11.48395504153771, "kind": "topic", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "coverage", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "round-trip", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "composition", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "specialisation", "field_max": 0.0, "kind": "undefined", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "router", "field_max": 0.0, "kind": "topic", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "releases", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "venue", "field_max": 0.5002501250625313, "kind": "sense", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "provider", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "lp-flow", "field_max": 0.0, "kind": "undefined", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "response", "field_max": 0.0, "kind": "sense", "n": 1, "segment": "heading"}
+{"corpus_max": 0.36023054755043227, "corpus_median": 0.36023054755043227, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "local", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 0.36023054755043227, "corpus_median": 0.36023054755043227, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "comparison", "field_max": 0.8012820512820513, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 0.36023054755043227, "corpus_median": 0.36023054755043227, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "volume", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 0.36023054755043227, "corpus_median": 0.36023054755043227, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "within", "field_max": 4.264756055953599, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 0.7204610951008645, "corpus_median": 0.7204610951008645, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "size", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 0.7204610951008645, "corpus_median": 0.7204610951008645, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "demand", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 0.7204610951008645, "corpus_median": 0.7204610951008645, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "provision", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 1.080691642651297, "corpus_median": 1.080691642651297, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "trade", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 1.080691642651297, "corpus_median": 1.080691642651297, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "additional", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 1.080691642651297, "corpus_median": 1.080691642651297, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "network", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 1.440922190201729, "corpus_median": 1.440922190201729, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "routing", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 2.161383285302594, "corpus_median": 2.161383285302594, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "panel", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 3.962536023054755, "corpus_median": 3.962536023054755, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "price", "field_max": 0.0, "kind": "style", "n": 1, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 4, "draft_rate": 9.685230024213075, "expression": "relative to", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 4, "draft_rate": 9.685230024213075, "expression": "settlement and", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 4, "draft_rate": 9.685230024213075, "expression": "stablecoin shortfalls", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.263922518159807, "expression": "vehicle use", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.263922518159807, "expression": "and vehicle", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.263922518159807, "expression": "stablecoin route--capital", "field_max": 0.0, "kind": "undefined", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.263922518159807, "expression": "route--capital gaps", "field_max": 0.0, "kind": "undefined", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.263922518159807, "expression": "shortfalls and", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 3, "draft_rate": 7.263922518159807, "expression": "the minus-v", "field_max": 0.0, "kind": "undefined", "n": 2, "segment": "heading"}
+{"corpus_max": 0.36023054755043227, "corpus_median": 0.36023054755043227, "draft_count": 3, "draft_rate": 7.263922518159807, "expression": "and subsequent", "field_max": 0.0, "kind": "style", "n": 2, "segment": "heading"}
+{"corpus_max": 1.440922190201729, "corpus_median": 1.440922190201729, "draft_count": 3, "draft_rate": 7.263922518159807, "expression": "and the", "field_max": 0.0, "kind": "style", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "vehicle dominance", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "the route", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "route panel", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "vehicle role", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "the stablecoin", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "stablecoin rotation", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "and later", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "local bridge", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "bridge depth", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "depth and", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "and route", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "route allocation", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "direction and", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "to observed", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "size relative", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "share of", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "composition and", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "and stablecoin", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "stablecoin intermediary", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "role specialisation", "field_max": 0.0, "kind": "undefined", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "endpoint demand", "field_max": 0.0, "kind": "undefined", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "intermediary role", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "router releases", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "venue pricing", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "route use", "field_max": 0.0, "kind": "topic", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "provider activity", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "internal settlement", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
+{"corpus_max": 0.0, "corpus_median": 0.0, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "response stablecoin", "field_max": 0.0, "kind": "sense", "n": 2, "segment": "heading"}
+{"corpus_max": 0.36023054755043227, "corpus_median": 0.36023054755043227, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "and liquidity", "field_max": 0.0, "kind": "style", "n": 2, "segment": "heading"}
+{"corpus_max": 0.7204610951008645, "corpus_median": 0.7204610951008645, "draft_count": 2, "draft_rate": 4.842615012106537, "expression": "liquidity provision", "field_max": 0.0, "kind": "style", "n": 2, "segment": "heading"}
+{"corpus_max": 5.763688760806916, "corpus_median": 5.763688760806916, "draft_count": 3, "draft_rate": 7.263922518159807, "expression": "of the", "field_max": 0.0, "kind": "style", "n": 2, "segment": "heading"}

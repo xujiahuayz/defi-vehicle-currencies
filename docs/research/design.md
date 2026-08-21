@@ -52,9 +52,9 @@ is closed.
 | Exact route prices | Would the realised route change after opening more venues, another vehicle, or the direct path? | Reprice the same input at pretrade state through nested opportunity sets and report route-level transitions. | Candidate-specific gas, private order flow, and venues without reconstructable historical state remain outside the exact all-in comparison. |
 
 The adjacent-year decomposition is part of the vehicle-transition rebuild. The
-entry-price comparison runs only after the V1-inclusive exact-price and entry
-panels have both been rebuilt; it is omitted rather than filled with stale
-numbers before that join exists.
+entry-price comparison runs after the V1-inclusive exact-price and entry panels
+have both been rebuilt; stale outputs fail the renderer's independent-price
+schema and minimum-gain checks.
 
 Priority experiments:
 
@@ -244,6 +244,14 @@ other venue families, and does not identify why an available pool was omitted.
 Ninety-eight standard-invariant quotes imply more than twice realised output;
 they are excluded from magnitude summaries, and removing them leaves the
 reported shares unchanged at one decimal place.
+
+The direct stablecoin-versus-WETH comparison quotes the best path in each family
+independently. At least 120 days after pair entry, the entry vehicle carries
+93.4% of routes when its path leads by more than one basis point and 22.4% across
+8,807 routes in 1,311 pairs when the other family leads. Pair-day weighting gives
+94.6% and 24.5%. This split shows that current public price leadership strongly
+conditions persistence associated with the first vehicle. Gas, private order
+flow, omitted venues, and behavior remain possible sources of the residual.
 
 ## Boundaries
 

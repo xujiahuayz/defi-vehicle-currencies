@@ -381,6 +381,17 @@ Equation~\eqref{eq:support} applies the same 5\% own-price-impact ceiling to eve
 \section{Coverage of the price comparison}
 \label{app:coverage}
 
+Table~\ref{tab:app:entry-price-alignment} compares later route use with the independently quoted price leader.
+
+\begin{table}[tbp]
+\centering
+\caption{Current price leadership and entry-vehicle use}
+\label{tab:app:entry-price-alignment}
+\small
+\input{../output/tables/entry_vehicle_price_alignment.tex}
+\exhibitnote{Each cell reports the percentage of observations that use the vehicle recorded at pair entry; brackets give the number of routes or pair-days. Observations are at least 120 days after entry. For the same pair, input amount, and pre-transaction state, we independently quote the best path through WETH and the best path through DAI, USDC, or USDT. Both paths must be feasible, every leg must remain below 5\% own-price impact, input must be at least \$100, and the leading path must give more than one basis point of additional gross output. The comparison uses the fifteenth day of each month from June 2020 through June 2026 across exact Uniswap v2, SushiSwap v2, and Uniswap v3 states. It is gross of gas and excludes private order flow and other venues.}
+\end{table}
+
 \subsection{Realised gas burden}
 
 Receipt gas measures the fixed execution toll attached to adding a vehicle leg. In the executed-route sample, a stable-vehicle route in 2024 uses \GasStableExtraGasUnitsBase{} more gas than the median direct route, \GasStableExtraGasPctBase{} of the direct-route median. Evaluated at that year's median gas price and WETH price, the extra toll is \GasStableExtraCostBase{}, so a trade needs about \GasStableOneBpNotionalBase{} of notional before the extra gas is below one basis point. In 2026 the median stable-vehicle route uses \GasStableExtraGasUnitsEnd{} more gas than the direct-route median, while the dollar toll falls to \GasStableExtraCostEnd{} and the one-basis-point notional falls to \GasStableOneBpNotionalEnd{}. At each stable-vehicle route's own gas price, median stable-vehicle notional falls from \GasStableRouteMedianNotionalBase{} to \GasStableRouteMedianNotionalEnd{}, the median fixed toll falls from \GasStableRouteMedianTollBpsBase{} to \GasStableRouteMedianTollBpsEnd{}, and the share of routes with a toll below 25 basis points rises from \GasStableRouteTwentyFiveBpShareBase{} to \GasStableRouteTwentyFiveBpShareEnd{}. The extra leg remains visible in gas units and becomes small relative to most observed stable-vehicle notionals. Because hypothetical route gas is unavailable, these estimates describe the realised fixed toll and leave the same-state price comparison gross of gas.

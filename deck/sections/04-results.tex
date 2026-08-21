@@ -221,5 +221,33 @@
 {\small change in stablecoin vehicle share\par}
 \end{column}
 \end{columns}
-\decknote{Routes are repriced for the same pair and input immediately before execution. The sample contains \ExactFrontierRoutes{} routes on \ExactFrontierDates{} monthly dates across exact Uniswap v2, SushiSwap v2, and Uniswap v3 states; minimum input is \ExactFrontierMinimumInput{} and the impact limit is \ExactFrontierImpactLimit{}. Quotes are gross of gas. A separate contestable-price comparison independently quotes feasible stablecoin and WETH routes.}
+\decknote{Routes are repriced for the same pair and input immediately before execution. The sample contains \ExactFrontierRoutes{} routes on \ExactFrontierDates{} monthly dates across exact Uniswap v2, SushiSwap v2, and Uniswap v3 states; minimum input is \ExactFrontierMinimumInput{} and the impact limit is \ExactFrontierImpactLimit{}. Quotes are gross of gas. The next slide independently quotes feasible stablecoin and WETH paths.}
+\end{frame}
+
+% EVIDENCE-SOURCES: output/exhibits/entry_vehicle_exact_price_alignment.jsonl
+% EVIDENCE-STATUS: descriptive exact-price comparison at least 120 days after pair entry.
+% VISUAL-FUNCTION: current price and persistence | two large conditional shares | distinguish reduced-form persistence from current competitiveness
+\begin{frame}{Current prices discipline persistence}
+\evidencekicker{At least 120 days after pair entry; both vehicle paths feasible}
+\vspace{0.32cm}
+\begin{columns}[T,totalwidth=0.88\textwidth]
+\begin{column}{0.39\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.40cm,wd=\textwidth]{block body}
+{\small\color{muted} ENTRY VEHICLE GIVES MORE OUTPUT\par}\vspace{0.12cm}
+{\fontsize{30}{32}\selectfont\bfseries\color{ucldark}\PriceIncumbentLeaderRetention\par}
+{\small of routes keep the entry vehicle\par}
+\end{beamercolorbox}
+\end{column}
+\begin{column}{0.10\textwidth}\centering\vspace{0.82cm}{\Large$\longleftrightarrow$}\end{column}
+\begin{column}{0.39\textwidth}
+\begin{beamercolorbox}[rounded=true,sep=0.40cm,wd=\textwidth]{block body}
+{\small\color{muted} OTHER VEHICLE GIVES MORE OUTPUT\par}\vspace{0.12cm}
+{\fontsize{30}{32}\selectfont\bfseries\color{accent}\PriceChallengerIncumbentRetention\par}
+{\small of routes keep the entry vehicle\par}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\vspace{0.48cm}
+{\large\bfseries The first vehicle survives primarily while its path remains price competitive.\par}
+\decknote{For the same pair, input, and pretrade state, we independently quote the best feasible stablecoin and WETH paths. The leader improves gross output by more than 1 bp; every leg remains below 5\% own-price impact. The other-vehicle group contains \PriceChallengerRoutes{} routes in \PriceChallengerPairs{} pairs. Pair-day weighting gives \PriceIncumbentLeaderPairDayRetention{} when the entry vehicle leads and \PriceChallengerPairDayRetention{} when the other vehicle leads. The comparison is descriptive, gross of gas, and limited to exact venues.}
 \end{frame}
