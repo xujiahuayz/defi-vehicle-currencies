@@ -97,6 +97,7 @@ def test_adjacent_h1_decomposition_uses_every_consecutive_complete_year() -> Non
         (2020, 2021),
     )
     result = summarize_adjacent_years(choices)
+    assert set(result["reporting_scope"]) == {"pooled"}
     observed_pairs = set(
         result[["baseline_year", "comparison_year"]].itertuples(
             index=False, name=None

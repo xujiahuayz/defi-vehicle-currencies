@@ -1048,6 +1048,7 @@ def vehicle_rotation_composition(
     *,
     baseline_year: int = BASELINE_YEAR,
     comparison_year: int = COMPARISON_YEAR,
+    reporting_scopes: tuple[str, ...] = REPORTING_SCOPES,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Return the pair panel, decomposition, support, and ranked pair ledger.
 
@@ -1055,6 +1056,12 @@ def vehicle_rotation_composition(
     does not identify adoption, preference, or an exogenous opportunity change;
     notional and exact search-efficiency state remain outside this input.
     """
+
+    unknown_scopes = sorted(set(reporting_scopes) - set(REPORTING_SCOPES))
+    if unknown_scopes:
+        raise ValueError(f"unknown vehicle-rotation reporting scopes: {unknown_scopes}")
+    if not reporting_scopes:
+        raise ValueError("vehicle-rotation reporting scopes are empty")
 
     data, common_month_days = _common_calendar_choices(
         choices,
@@ -1075,7 +1082,7 @@ def vehicle_rotation_composition(
         )
         panels.append(panel)
         support_frames.append(panel_support)
-        for reporting_scope in REPORTING_SCOPES:
+        for reporting_scope in reporting_scopes:
             annual = _annual_pair_mass(
                 data,
                 metric_column=metric_column,

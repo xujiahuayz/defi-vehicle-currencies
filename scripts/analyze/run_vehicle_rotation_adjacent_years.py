@@ -73,6 +73,7 @@ def summarize_adjacent_years(choices: pd.DataFrame) -> pd.DataFrame:
             selected,
             baseline_year=baseline_year,
             comparison_year=comparison_year,
+            reporting_scopes=("pooled",),
         )
         decomposition.insert(0, "window", "january_june")
         decomposition.insert(1, "comparison_horizon_years", 1)
@@ -114,6 +115,7 @@ def summarize_nonvehicle_endpoints(choices: pd.DataFrame) -> pd.DataFrame:
         selected,
         baseline_year=2024,
         comparison_year=2026,
+        reporting_scopes=("pooled",),
     )
     decomposition.insert(0, "endpoint_sample", "neither_weth_nor_stable")
     decomposition["spec_id"] = (
