@@ -24,12 +24,16 @@ belongs in `../plot/` or `../tabulate/`.
 | `run_liquidity_provision_behavior_exploration.py` | exploratory V2 capital-allocation and vehicle-use behavior |
 | `run_bridge_liquidity_feedback.py` | conditional future levels and time-reversed benchmarks for continuing positive-depth bridges |
 | `run_bridge_lp_divergence_risk.py` | prior endpoint--vehicle relative-price risk and exact V2/Sushi V2 bridge depth; appendix evidence on LP risk |
+| `run_lp_supply_returns.py` | Uniswap V2 next-week LP additions, withdrawals, and net supply related to prior fee opportunity and relative-price risk; $50k main capital threshold with $10k and $100k sensitivities |
+| `run_v3_lp_supply_returns.py` | pre-protocol-fee Uniswap v3 add-only/remove-only candidate-side flow and transaction responses to prior gross fee yield and pair-specific relative-price risk; balanced pool weeks, pool and endpoint-week fixed effects, and transparent TVL screens |
+| `run_v2_protocol_fee_switch.py` | matched Uniswap V2--SushiSwap V2 token-pair LP-flow event study around the Dec. 27, 2025 protocol-fee activation; drops the partial week and reports pretrends and placebo dates with conservative venue-wide inference |
 | `run_uni_liquidity_mining_expiry.py` | exploratory LP-liquidity response around the fixed 2020 UNI reward start and expiry, including the WBTC-WETH pool-specific first stage; no trade-routing response and no paper or deck consumer unless the stated pool support, balance, and timing checks pass |
 | `run_mechanism_expansion_exploration.py` | provisional JFE-expansion mechanism regressions and formation summaries |
 | `run_route_gas_economics.py` | exploratory receipt-gas hurdle for direct and extra-hop vehicle routes |
 | `run_gas_adjusted_vehicle_consequences.py` | gross and receipt-gas-adjusted output comparison for exact stablecoin-versus-WETH paths |
 | `run_network_betweenness.py` | all-route intermediary participation and approximate betweenness in annual atomic-pair graphs; paper/deck |
 | `run_v3_v4_internal_routing_participation.py` | same-candidate-day V3/V4 internal-routing, origin-participation, and persistent-volatility contrasts |
+| `run_v4_lp_net_settlement.py` | lagged within-origin-pool relation between observed V4 net settlement and subsequent LP add/remove flow, persistence, repositioning, and range width; exploratory only |
 | `run_stable_stress_event.py` | exploratory USDC/SVB stable-vehicle identity stress screen |
 | `run_route_heterogeneity.py` | WETH-eligibility and route-scope results plus deck values |
 | `run_usdt_integration_decomposition_e0.py` | USDT transition decomposition; pair-decomposition values |

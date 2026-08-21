@@ -14,10 +14,14 @@ data and analysis-ready panels. Each current panel has one owner.
 | `build_market_state.py` | reusable market-state quality panel |
 | `build_token_price_panel.py` | daily route-token prices |
 | `build_pool_capital_panel.py` | pool and candidate deposited-capital panels, rejection ledger, and coverage summary |
+| `build_v2_lp_flow_pool_daily.py` | Uniswap v2 pool-day Mint/Burn flows, raw-liquidity quantities, volume, fee opportunity, and exact capital state; retains eventless pool-days |
+| `build_sushiswap_v2_lp_flow_pool_daily.py` | matching SushiSwap v2 Mint/Burn, raw-liquidity, volume, 25-bp LP-fee opportunity, and capital panel used as the fee-switch comparison |
 | `build_liquidity_capital_flow_panels.py` | V2 candidate-day and exact-horizon mechanism panels |
-| `build_v3_pool_day_fees.py` | processed Uniswap v3 pool-day fee and volume panel for bounded LP rent-incidence screens |
+| `build_v3_pool_day_fees.py` | full-history Uniswap v3 pool update-day volume, gross fee opportunity, and last-reported TVL from retained daily records plus the static pool registry |
+| `build_v3_lp_flow_pool_daily.py` | pool-retaining Uniswap v3 candidate-side mint/burn value, positive-liquidity actions, same-transaction repositioning, and zero-liquidity diagnostics |
 | `build_v3_internal_routing_candidate_daily.py` | V3 candidate-day internal same-asset routing measured like the V4 routing proxy |
 | `build_v3_v4_lp_origin_candidate_daily.py` | comparable nonzero V3/V4 LP actions by vehicle, day, and transaction origin |
+| `build_v4_lp_net_settlement_weekly.py` | V4 vehicle-linked provider-pool transactions and weeks, retaining LP actions, settlement-count compression, amount netting, value coverage, repositioning, and range width |
 | `build_endpoint_candidate_composition.py` | choice, audit, exclusion, and pair-support panels |
 | `build_intermediation_by_type.py` | daily intermediary-type panel and its descriptive exhibits |
 | `build_intermediation_halfyear.py` | half-year composition from the admitted daily intermediary panel |

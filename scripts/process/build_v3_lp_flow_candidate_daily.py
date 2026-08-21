@@ -229,12 +229,18 @@ def load_raw_uniswap_v3_lp_flows(
     pool_candidate_sides: pd.DataFrame | None = None,
     price_path: Path = TOKEN_PRICE_DAILY_PANEL,
     max_candidate_side_event_usd: float = MAX_CANDIDATE_SIDE_EVENT_USD,
+    retain_pool: bool = False,
 ) -> tuple[pd.DataFrame, dict[str, object]]:
-    """Value candidate-token sides of V3 mint/burn events by day."""
+    """Value candidate-token sides of V3 mint/burn events by day.
+
+    ``retain_pool`` keeps the pool address in the aggregation key for analyses
+    of provider supply.  The default preserves the historical candidate-day
+    output consumed by the protocol-comparison analyses.
+    """
 
     prices = _price_lookup(price_path)
     pool_sides = _pool_side_map(pool_candidate_sides)
-    counts: dict[tuple[pd.Timestamp, str, str], dict[str, object]] = defaultdict(
+    counts: dict[tuple[object, ...], dict[str, object]] = defaultdict(
         lambda: {
             "candidate_side_assignments": 0,
             "priced_candidate_side_assignments": 0,
@@ -253,6 +259,14 @@ def load_raw_uniswap_v3_lp_flows(
             "unknown_flow_usd": 0.0,
             "add_events": 0,
             "remove_events": 0,
+            "add_actions": 0,
+            "remove_actions": 0,
+            "zero_liquidity_add_actions": 0,
+            "zero_liquidity_remove_actions": 0,
+            "negative_liquidity_add_actions": 0,
+            "negative_liquidity_remove_actions": 0,
+            "nonfinite_liquidity_add_actions": 0,
+            "nonfinite_liquidity_remove_actions": 0,
             "narrow_events": 0,
             "medium_events": 0,
             "wide_events": 0,
@@ -261,6 +275,10 @@ def load_raw_uniswap_v3_lp_flows(
             "unknown_events": 0,
             "origins": set(),
             "senders": set(),
+            "add_transactions": set(),
+            "remove_transactions": set(),
+            "add_transaction_flow_usd": defaultdict(float),
+            "remove_transaction_flow_usd": defaultdict(float),
         }
     )
     event_files = 0
@@ -298,17 +316,86 @@ def load_raw_uniswap_v3_lp_flows(
                         or event.get("origin")
                         or ""
                     ).lower()
+                    transaction_id = str(
+                        (event.get("transaction") or {}).get("id")
+                        or ""
+                    ).lower()
                     range_bucket = _range_bucket(event)
                     range_key = _range_counter_key(range_bucket)
-                    for side_index, candidate_address, candidate_symbol, price_address in candidate_sides:
-                        key = (origin_date, candidate_address, candidate_symbol)
+                    liquidity_amount = float(_decimal(event.get("amount")))
+                    positive_liquidity_action = (
+                        np.isfinite(liquidity_amount) and liquidity_amount > 0
+                    )
+                    negative_liquidity_action = (
+                        np.isfinite(liquidity_amount) and liquidity_amount < 0
+                    )
+                    nonfinite_liquidity_action = not np.isfinite(liquidity_amount)
+                    for (
+                        side_index,
+                        candidate_address,
+                        candidate_symbol,
+                        price_address,
+                    ) in candidate_sides:
+                        pool_id = str((event.get("pool") or {}).get("id") or "").lower()
+                        if retain_pool and not pool_id:
+                            global_counts["missing_pool_assignments"] += 1
+                            continue
+                        key = (
+                            (origin_date, pool_id, candidate_address, candidate_symbol)
+                            if retain_pool
+                            else (origin_date, candidate_address, candidate_symbol)
+                        )
                         bucket = counts[key]
                         bucket["candidate_side_assignments"] = (
                             int(bucket["candidate_side_assignments"]) + 1
                         )
+                        if positive_liquidity_action:
+                            bucket[f"{event_type}_actions"] = (
+                                int(bucket[f"{event_type}_actions"]) + 1
+                            )
+                            global_counts[f"positive_liquidity_{event_type}_actions"] += 1
+                            if transaction_id:
+                                bucket[f"{event_type}_transactions"].add(
+                                    transaction_id
+                                )
+                            else:
+                                global_counts[
+                                    "positive_liquidity_missing_transaction_assignments"
+                                ] += 1
+                        elif nonfinite_liquidity_action:
+                            bucket[f"nonfinite_liquidity_{event_type}_actions"] = (
+                                int(
+                                    bucket[
+                                        f"nonfinite_liquidity_{event_type}_actions"
+                                    ]
+                                )
+                                + 1
+                            )
+                            global_counts[
+                                f"nonfinite_liquidity_{event_type}_actions"
+                            ] += 1
+                        elif negative_liquidity_action:
+                            bucket[f"negative_liquidity_{event_type}_actions"] = (
+                                int(
+                                    bucket[
+                                        f"negative_liquidity_{event_type}_actions"
+                                    ]
+                                )
+                                + 1
+                            )
+                            global_counts[
+                                f"negative_liquidity_{event_type}_actions"
+                            ] += 1
+                        else:
+                            bucket[f"zero_liquidity_{event_type}_actions"] = (
+                                int(bucket[f"zero_liquidity_{event_type}_actions"]) + 1
+                            )
+                            global_counts[f"zero_liquidity_{event_type}_actions"] += 1
                         global_counts["candidate_side_assignments"] += 1
                         bucket["origins"].add(origin)
                         bucket["senders"].add(sender)
+                        if not positive_liquidity_action:
+                            continue
 
                         price = prices.get((day, price_address))
                         if price is None:
@@ -344,6 +431,10 @@ def load_raw_uniswap_v3_lp_flows(
                         bucket[f"{event_type}_lp_flow_usd"] = (
                             float(bucket[f"{event_type}_lp_flow_usd"]) + value
                         )
+                        if positive_liquidity_action and transaction_id:
+                            bucket[f"{event_type}_transaction_flow_usd"][
+                                transaction_id
+                            ] += value
                         bucket[f"{range_key}_flow_usd"] = (
                             float(bucket[f"{range_key}_flow_usd"]) + value
                         )
@@ -352,7 +443,12 @@ def load_raw_uniswap_v3_lp_flows(
                         global_counts["screened_candidate_side_assignments"] += 1
 
     rows: list[dict[str, object]] = []
-    for (origin_date, candidate_address, candidate_symbol), bucket in counts.items():
+    for key, bucket in counts.items():
+        if retain_pool:
+            origin_date, pool_id, candidate_address, candidate_symbol = key
+        else:
+            origin_date, candidate_address, candidate_symbol = key
+            pool_id = None
         gross = float(bucket["gross_lp_flow_usd"])
         add = float(bucket["add_lp_flow_usd"])
         remove = float(bucket["remove_lp_flow_usd"])
@@ -362,8 +458,30 @@ def load_raw_uniswap_v3_lp_flows(
             + float(bucket["very_wide_flow_usd"])
             + float(bucket["full_range_flow_usd"])
         )
-        rows.append(
-            {
+        add_transactions = set(bucket["add_transactions"])
+        remove_transactions = set(bucket["remove_transactions"])
+        reposition_transactions = add_transactions & remove_transactions
+        add_transaction_flow = dict(bucket["add_transaction_flow_usd"])
+        remove_transaction_flow = dict(bucket["remove_transaction_flow_usd"])
+        add_only_flow = sum(
+            value
+            for transaction, value in add_transaction_flow.items()
+            if transaction not in remove_transactions
+        )
+        remove_only_flow = sum(
+            value
+            for transaction, value in remove_transaction_flow.items()
+            if transaction not in add_transactions
+        )
+        reposition_add_flow = sum(
+            add_transaction_flow.get(transaction, 0.0)
+            for transaction in reposition_transactions
+        )
+        reposition_remove_flow = sum(
+            remove_transaction_flow.get(transaction, 0.0)
+            for transaction in reposition_transactions
+        )
+        row = {
                 "origin_date": origin_date,
                 "candidate_address": candidate_address,
                 "candidate_symbol": candidate_symbol,
@@ -389,6 +507,15 @@ def load_raw_uniswap_v3_lp_flows(
                 "v3_add_lp_flow_usd_screened": add,
                 "v3_remove_lp_flow_usd_screened": remove,
                 "v3_net_add_lp_flow_usd_screened": add - remove,
+                "v3_add_only_lp_flow_usd_screened": add_only_flow,
+                "v3_remove_only_lp_flow_usd_screened": remove_only_flow,
+                "v3_net_add_remove_only_lp_flow_usd_screened": (
+                    add_only_flow - remove_only_flow
+                ),
+                "v3_reposition_add_lp_flow_usd_screened": reposition_add_flow,
+                "v3_reposition_remove_lp_flow_usd_screened": (
+                    reposition_remove_flow
+                ),
                 "v3_narrow_flow_usd_screened": float(bucket["narrow_flow_usd"]),
                 "v3_medium_flow_usd_screened": float(bucket["medium_flow_usd"]),
                 "v3_wide_flow_usd_screened": float(bucket["wide_flow_usd"]),
@@ -405,6 +532,39 @@ def load_raw_uniswap_v3_lp_flows(
                 "v3_remove_flow_value_share": remove / gross if gross > 0 else np.nan,
                 "v3_add_flow_events_screened": int(bucket["add_events"]),
                 "v3_remove_flow_events_screened": int(bucket["remove_events"]),
+                "v3_add_action_events": int(bucket["add_actions"]),
+                "v3_remove_action_events": int(bucket["remove_actions"]),
+                "v3_gross_action_events": int(bucket["add_actions"])
+                + int(bucket["remove_actions"]),
+                "v3_net_add_action_events": int(bucket["add_actions"])
+                - int(bucket["remove_actions"]),
+                "v3_add_action_transactions": len(add_transactions),
+                "v3_remove_action_transactions": len(remove_transactions),
+                "v3_reposition_action_transactions": len(reposition_transactions),
+                "v3_add_only_action_transactions": len(
+                    add_transactions - remove_transactions
+                ),
+                "v3_remove_only_action_transactions": len(
+                    remove_transactions - add_transactions
+                ),
+                "v3_zero_liquidity_add_events": int(
+                    bucket["zero_liquidity_add_actions"]
+                ),
+                "v3_zero_liquidity_remove_events": int(
+                    bucket["zero_liquidity_remove_actions"]
+                ),
+                "v3_negative_liquidity_add_events": int(
+                    bucket["negative_liquidity_add_actions"]
+                ),
+                "v3_negative_liquidity_remove_events": int(
+                    bucket["negative_liquidity_remove_actions"]
+                ),
+                "v3_nonfinite_liquidity_add_events": int(
+                    bucket["nonfinite_liquidity_add_actions"]
+                ),
+                "v3_nonfinite_liquidity_remove_events": int(
+                    bucket["nonfinite_liquidity_remove_actions"]
+                ),
                 "v3_narrow_flow_events_screened": int(bucket["narrow_events"]),
                 "v3_medium_flow_events_screened": int(bucket["medium_events"]),
                 "v3_wide_flow_events_screened": int(bucket["wide_events"]),
@@ -414,11 +574,31 @@ def load_raw_uniswap_v3_lp_flows(
                 "v3_lp_flow_origin_count": len(bucket["origins"]),
                 "v3_lp_flow_sender_count": len(bucket["senders"]),
             }
-        )
+        if retain_pool:
+            row["pool"] = pool_id
+        else:
+            for pool_only_column in (
+                "v3_add_only_lp_flow_usd_screened",
+                "v3_remove_only_lp_flow_usd_screened",
+                "v3_net_add_remove_only_lp_flow_usd_screened",
+                "v3_reposition_add_lp_flow_usd_screened",
+                "v3_reposition_remove_lp_flow_usd_screened",
+                "v3_add_action_transactions",
+                "v3_remove_action_transactions",
+                "v3_reposition_action_transactions",
+                "v3_add_only_action_transactions",
+                "v3_remove_only_action_transactions",
+            ):
+                row.pop(pool_only_column)
+        rows.append(row)
     flows = pd.DataFrame(rows)
     if not flows.empty:
+        sort_columns = ["origin_date"]
+        if retain_pool:
+            sort_columns.append("pool")
+        sort_columns.extend(["candidate_symbol", "candidate_address"])
         flows = flows.sort_values(
-            ["origin_date", "candidate_symbol", "candidate_address"]
+            sort_columns
         ).reset_index(drop=True)
     support = {
         "record_type": "v3_lp_flow_support",
@@ -451,6 +631,35 @@ def load_raw_uniswap_v3_lp_flows(
         ),
         "pool_candidate_sides": int(
             len(pool_candidate_sides) if pool_candidate_sides is not None else 0
+        ),
+        "aggregation_unit": "pool_candidate_day" if retain_pool else "candidate_day",
+        "missing_pool_assignments": int(global_counts["missing_pool_assignments"]),
+        "positive_liquidity_add_actions": int(
+            global_counts["positive_liquidity_add_actions"]
+        ),
+        "positive_liquidity_remove_actions": int(
+            global_counts["positive_liquidity_remove_actions"]
+        ),
+        "zero_liquidity_add_events": int(
+            global_counts["zero_liquidity_add_actions"]
+        ),
+        "zero_liquidity_remove_events": int(
+            global_counts["zero_liquidity_remove_actions"]
+        ),
+        "negative_liquidity_add_events": int(
+            global_counts["negative_liquidity_add_actions"]
+        ),
+        "negative_liquidity_remove_events": int(
+            global_counts["negative_liquidity_remove_actions"]
+        ),
+        "nonfinite_liquidity_add_events": int(
+            global_counts["nonfinite_liquidity_add_actions"]
+        ),
+        "nonfinite_liquidity_remove_events": int(
+            global_counts["nonfinite_liquidity_remove_actions"]
+        ),
+        "positive_liquidity_missing_transaction_assignments": int(
+            global_counts["positive_liquidity_missing_transaction_assignments"]
         ),
         "first_origin_date": (
             str(flows["origin_date"].min().date()) if not flows.empty else None
