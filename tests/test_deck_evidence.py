@@ -383,7 +383,7 @@ def test_deck_mechanism_sequence_separates_route_settlement_and_capital() -> Non
     assert "vehicle_dominance_timelapse.mp4" in results
     assert "vehicle_dominance_timelapse_poster.pdf" in results
     assert "run:../output/figures/vehicle_dominance_timelapse.mp4" in results
-    assert "Click the film to play in Adobe Acrobat" in results
+    assert "Play 18-second film" in results
     assert "\\movie" not in results
 
 

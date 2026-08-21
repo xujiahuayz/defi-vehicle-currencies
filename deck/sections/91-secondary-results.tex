@@ -43,7 +43,7 @@
 \end{columns}
 \vspace{0.48cm}
 {\large Binary network position changes much less than actual intermediary use.\par}
-\decknote{Betweenness is approximate and unweighted in annual trading graphs built from trades on the fifteenth day of each month, using 256 source nodes and a fixed seed. Realised shares use all intermediary positions on the same dates. A graph edge records an observed leg, not its depth or execution cost.}
+\decknote{Betweenness is approximate and unweighted in annual trading graphs built from trades on the fifteenth day of each month, using 256 source nodes and a fixed seed. Realised shares use all intermediary positions on the same dates. A graph edge records leg presence; realised routes add depth and execution cost.}
 \end{frame}
 
 % VISUAL-FUNCTION: endpoint demand and intermediary use | four-model regression table | show within-date demand pass-through and fixed-effect progression
@@ -84,7 +84,7 @@ Currency fixed effects & No & No & No & Yes \\
 \end{center}
 \vspace{-0.08cm}
 {\large Changes within fixed pairs are \WethCountWithinFullChange{} overall and \WethCountWithinNoEndpointChange{} after removing WETH endpoints.\par}
-\decknote{WETH cannot be both a pair endpoint and the intermediary. Exact two-leg native-WETH-versus-stablecoin routes on common month-days; fixed-pair estimates also absorb month-day and route scope.}
+\decknote{A WETH endpoint mechanically excludes WETH as the intermediary. Exact two-leg native-WETH-versus-stablecoin routes on common month-days; fixed-pair estimates also absorb month-day and route scope.}
 \end{frame}
 
 % VISUAL-FUNCTION: endpoint direction and rotation | paired count-value contribution bars | distinguish broad count growth from stable-to-stable value concentration
@@ -301,7 +301,7 @@ At least 10 entry routes & \textbf{\color{stable}\EntryPersistenceEarlyMinTenEff
 \end{center}
 \vspace{0.48cm}
 {\large\bfseries\color{ucldark}\centering Stronger entry measurement leaves the persistence estimate intact.\par}
-\decknote{The entry day is excluded and the follow-up windows do not overlap. The 5-route samples contain \EntryPersistenceEarlyMinFivePairs{} and \EntryPersistenceLateMinFivePairs{} pairs; the 10-route samples contain \EntryPersistenceEarlyMinTenPairs{} and \EntryPersistenceLateMinTenPairs{}. Controls match the main pair-weighted specification, and standard errors cluster by entry date.}
+\decknote{The entry day is excluded and the follow-up windows are disjoint. The 5-route samples contain \EntryPersistenceEarlyMinFivePairs{} and \EntryPersistenceLateMinFivePairs{} pairs; the 10-route samples contain \EntryPersistenceEarlyMinTenPairs{} and \EntryPersistenceLateMinTenPairs{}. Controls match the main pair-weighted specification, and standard errors cluster by entry date.}
 \end{frame}
 
 % EVIDENCE-STATUS: boundary test relating prior relative-price risk to constant-product bridge capital.
@@ -337,5 +337,5 @@ At least 10 entry routes & \textbf{\color{stable}\EntryPersistenceEarlyMinTenEff
 \end{columns}
 \vspace{0.36cm}
 {\large\bfseries\color{stable}\centering Risk shapes local capital; the rotation extends beyond it.\par}
-\decknote{The panel contains \BridgeRiskObservations{} constant-product WETH and stablecoin bridge observations with positive capital on both legs. Models absorb pair-by-date and vehicle effects, control for prior route activity, and cluster by \BridgeRiskPairClusters{} pairs and \BridgeRiskDateClusters{} dates. Daily divergence loss gives the same directional result. The comparison describes deposited capital, not provider returns.}
+\decknote{The panel contains \BridgeRiskObservations{} constant-product WETH and stablecoin bridge observations with positive capital on both legs. Models absorb pair-by-date and vehicle effects, control for prior route activity, and cluster by \BridgeRiskPairClusters{} pairs and \BridgeRiskDateClusters{} dates. Daily divergence loss gives the same directional result. The outcome is deposited capital; provider returns remain outside measurement.}
 \end{frame}

@@ -10,7 +10,7 @@ I have worked with quite a few people at NTU, mainly in computer science. My own
 
 Today: dominant vehicle currencies. Evidence from DeFi.
 
-The question is old. If two currencies do not trade easily with each other, what sits in the middle?
+The question is old. When the direct market between two currencies is thin, what sits in the middle?
 
 The useful thing about DeFi is that we can see that middle asset, route by route. Then a harder question. How does one asset get that role and keep it?
 
@@ -164,15 +164,13 @@ There is a selection issue we can measure directly. Of 157,262 entrants, 19.4 pe
 
 The controls include cohort, endpoint type, entry activity, direct-route share, and route complexity. The activity-weighted estimates are 8.55 and 9.00 points. Same message.
 
-What does sticky mean economically? Prices and depth may themselves persist. So now put both vehicle routes side by side, with the same pair, input, and pretrade pool state.
-
-First, though, one step between technical availability and an actual route.
+What sits behind that persistence? First, when does an alternative vehicle become viable? Then, once both routes are usable, what keeps the first vehicle in place?
 
 ## Slide 10. Two-leg capital opens the stablecoin contest
 
-Here the clock starts from information available the day before. No looking forward to decide when the bridge began.
+The event date is built entirely from yesterday's pool state.
 
-Take a pair that used WETH earlier and has never used a stablecoin route. The event date is the first day when DAI, USDC, or USDT has at least ten thousand dollars on each required leg, using yesterday's pool state.
+Take a pair with earlier WETH use. The event comes before its first stablecoin route. It is the first day when DAI, USDC, or USDT has at least ten thousand dollars on each required leg.
 
 There are 1,618 such events.
 
@@ -180,9 +178,9 @@ Within 30 days, 38.3 percent use one of those supported stablecoins. By 120 days
 
 So enough capital to open both legs comes first. Adoption is gradual.
 
-And first use is not the same as taking over the pair. Among the first-month adopters, 62.4 percent use a supported stablecoin again in days 30 to 119. But stablecoins carry only 8.2 percent of their routes in that later window.
+First use still falls far short of taking over the pair. Among the first-month adopters, 62.4 percent use a supported stablecoin again in days 30 to 119. Stablecoins carry 8.2 percent of their routes in that later window.
 
-Now use the amount of capital, not just the threshold.
+The threshold dates formation. The amount of capital tells us how flow divides.
 
 ## Slide 11. Relative depth divides trading after the bridge forms
 
@@ -190,13 +188,27 @@ Stablecoin route share rises by 5.60 points in the first 30 days after the event
 
 Then compare the two bridges inside the same event. A 10-point increase in the stablecoin share of weak-leg depth predicts 6.90 points more stablecoin route activity in the first month. The later estimate is 8.35 points.
 
-Weak-leg depth is the bottleneck across the two required pools. One deep leg cannot rescue one shallow leg.
+Weak-leg depth is the bottleneck across the two required pools. The shallow leg sets usable depth.
 
-This gives us a useful separation. Capital on both legs permits entry. Relative depth helps decide how much flow the new route wins. Neither number needs the later route outcome to date the event.
+Capital on both legs permits entry. Relative depth helps decide how much flow the new route wins. Both measures are dated entirely from earlier pool capital.
 
-Once both alternatives are usable, current output gives us a sharper contest.
+Now go to the first sampled date when both alternatives are usable.
 
-## Slide 12. Current prices can overturn incumbency
+## Slide 12. The entry vehicle survives the first feasible contest
+
+What happens at the first sampled monthly date when the same trade can use either vehicle family?
+
+The entry family still carries 83.1 percent of routes. Give each pair equal weight, and it is 84.4 percent. Table 5, panel A.
+
+A quick limit on this number. The sampled set contains 580 of 118,447 material entrants. Monthly state sampling and the common quote rules determine those 580. The estimates apply to them.
+
+Now panel B. On the common V2-capital sample, a 100-basis-point exact-output advantage for the entry family adds 10.31 points to retention. Add prior capital, and it is 10.20. Basically the same.
+
+The prior-capital estimate is 1.85 points with a 4.58-point standard error, so it is imprecise. Current output predicts who survives this first comparison.
+
+Now widen from the first comparison to every established pair where both vehicle families are feasible.
+
+## Slide 13. Current prices can overturn incumbency
 
 For each trade, we quote the best stablecoin route and the best WETH route. Same pair. Same input. Same pool state immediately before execution. Both routes have to be feasible, and every leg stays below 5 percent own-price impact.
 
@@ -210,21 +222,7 @@ Column 2: challenger price leadership lowers incumbent retention by 58.08 points
 
 So the incumbent is sticky. Current price leadership can overturn it.
 
-That is the broad contest. Now go back to the first time both vehicle families can compete after pair entry.
-
-## Slide 13. The entry vehicle carries 83.1% of first-contest routes
-
-This is a narrower and cleaner question. What happens at the first sampled monthly date when the same trade can use either vehicle family?
-
-The entry family still carries 83.1 percent of routes. Give each pair equal weight, and it is 84.4 percent. Table 5, panel A.
-
-There is an important scope point. We begin with 118,447 material entrants. Only 580 reach this strict sampled exact contest. Exact pool states are sampled monthly, and both paths must pass the same quote rules. So this result belongs to that observed opportunity set.
-
-Now panel B. On the common V2-capital sample, a 100-basis-point exact-output advantage for the entry family adds 10.31 points to retention. Add prior capital, and it is 10.20. Basically the same.
-
-The capital coefficient itself is 1.85 points for a 10-point shift, with a standard error of 4.58. Here, current output explains survival. Earlier V2 capital adds little once output is in the same model.
-
-That is one contest date. We can also watch the same pair when the price lead actually changes hands.
+We can also watch the same pair when the price lead actually changes hands.
 
 ## Slide 14. When the price lead flips, route share follows
 
@@ -240,17 +238,19 @@ So prices move the flow now. Earlier depth helps the new lead stick.
 
 Then the consequence. What does using the lower-output vehicle cost?
 
-## Slide 15. Output shortfalls concentrate in younger pairs
+## Slide 15. Shortfalls cluster in young pairs and small trades
 
-Use the same contestable routes behind Table 6.
+Same exact stablecoin-versus-WETH comparisons behind Table 6. Now ask how much output is left on the table.
 
-12.9 percent use a vehicle family that returns at least one basis point less than the other family.
+Start with gas. We match 52,207 routes to transaction receipts and use the same routes on both sides of the comparison.
 
-Conditional on that choice, the median shortfall is 27.2 basis points. The 90th percentile is 171.5. Across all contestable routes, weighting by input value, the shortfall is 7.4 basis points.
+Across all input sizes, the value-weighted shortfall moves from 7.46 basis points gross to 7.65 net of gas. Barely moves.
+
+For trades between 100 and 999 dollars, it moves from 16.02 to 22.01. The fixed toll matters when the trade is small.
 
 Age changes the magnitude. The value-weighted shortfall is 16.8 basis points for pairs under 90 days old, 19.0 for pairs aged 90 to 364 days, and 2.1 after one year.
 
-So younger relationships can leave meaningful output on the table. Among mature relationships, current prices still move route choice, and the average cost of retaining the incumbent is much smaller.
+So the economic consequence is concentrated in two places: younger relationships and small trades. Mature routes track executable prices more closely, and the gas effect fades as trade size grows.
 
 I read this as an economically useful boundary on stickiness. The first vehicle predicts later use. Current prices can overturn it. Earlier depth is especially informative about whether a new price lead lasts.
 
@@ -264,7 +264,7 @@ First, dominance moves through pair entry. Between 2024 H1 and 2026 H1, net swit
 
 Second, vehicle identity persists after pair entry. A 10-point higher entry share maps into roughly 8 to 9 points more use over the next four months.
 
-Third, persistence has structure. Current output explains survival at the first exact contest. When the price lead flips, route share follows, and earlier challenger depth predicts which lead lasts. The output shortfall is concentrated among younger pairs.
+Third, persistence has structure. Current output explains survival at the first exact contest. When the price lead flips, route share follows, and earlier challenger depth predicts which lead lasts. Output shortfalls concentrate in young pairs and small trades.
 
 Dominance carries the history of market formation. New trading relationships form, liquidity gathers on both legs, and later prices either reinforce or challenge that first vehicle.
 
@@ -396,7 +396,7 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 ## A11. Additional venues expand the feasible route set
 
 - More venues can add a better pool for the same vehicle.
-- They can also add a different vehicle path or a direct route.
+- They can also add an alternative vehicle path or a direct path.
 - The exact-price exercise opens those sets step by step.
 
 ## A11b. Venue scope and vehicle type in 2026
@@ -421,7 +421,7 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 
 - If someone asks about betweenness: WETH still ranks first in all eight annual leg graphs and is 0.925 in 2026 H1.
 - Realised use moves much more. WETH falls from 76.2 to 42.4 percent; USDC and USDT together rise from 14.9 to 37.2.
-- The graph is unweighted. One edge says a leg exists. It says little about depth, trade size, or price. So centrality is useful, then the realised routes take over.
+- The graph is unweighted. An edge records leg presence; depth, trade size, and price enter through realised routes.
 
 ## A15. Endpoint demand predicts intermediary use
 
@@ -481,7 +481,7 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 
 - Same pair, same input, pretrade state. We open the available quote set one step at a time.
 - A better quote appears for 6.6 percent within used venues, 44.5 percent across all exact venues with the same vehicle, and 46.4 percent after opening other vehicles and the direct route.
-- So most price improvement changes the venue. Opening the vehicle set adds 2.0 points, and aggregate stablecoin share moves by minus 1.2 points. Quotes are before gas and cover the declared exact venues.
+- So most price improvement changes the venue. Opening the vehicle set adds 2.0 points, and aggregate stablecoin share moves by minus 1.2 points. These are gross-output quotes over the declared exact venues.
 
 ## A24. Persistence is equally strong on busy entry days
 
@@ -493,4 +493,4 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 
 - This is the direct check of the LP-risk interpretation.
 - Ten points more prior relative volatility predicts 0.117 lower log bridge capital now and 0.093 lower capital 30 days later. See the divergence-risk appendix table, panel A, columns 1 and 3.
-- Stablecoin bridges have higher median volatility, 148.4 against 126.9 percent, and lower risk in 29.4 percent of pair-months. So risk helps allocate capital locally; it cannot carry the aggregate stablecoin rotation.
+- Stablecoin bridges have higher median volatility, 148.4 against 126.9 percent, and lower risk in 29.4 percent of pair-months. Risk helps allocate capital locally, while the aggregate rotation is much larger than this channel.

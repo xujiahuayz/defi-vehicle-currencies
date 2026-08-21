@@ -11,7 +11,7 @@
 \section{From contract events to economic routes}
 \label{app:route-construction}
 
-Route construction begins with the contract and event format of each exchange. We identify pools from the protocol's factory or registry, map contract addresses to tokens, and convert raw integer amounts using the token precision that applied at the time of the trade. Contract addresses define token identity because unrelated tokens can share a symbol and the same economic asset can appear in native and wrapped form. ETH and WETH are consolidated only after this address-level reconstruction; every other token remains distinct unless a stated economic classification combines it. Within each transaction, pool-swap legs are ordered by block, transaction, and log position. The resulting token flows reveal the exchange that occurred. A single connected chain gives one route and therefore one exchange between its pair endpoints; parallel chains identify an order split, and disconnected event groups remain separate. Because one transaction can contain unrelated calls as well as trades across several exchanges, this procedure also prevents two simultaneous routes from being mistaken for one longer route. Pool identities enter reconstruction; the unified route panel retains the ordered venue and token sequence together with the pair. It does not infer that sequence from the transaction sender or router label.
+Route construction begins with the contract and event format of each exchange. We identify pools from the protocol's factory or registry, map contract addresses to tokens, and convert raw integer amounts using the token precision that applied at the time of the trade. Contract addresses define token identity because unrelated tokens can share a symbol and the same economic asset can appear in native and wrapped form. ETH and WETH are consolidated only after this address-level reconstruction; every other token remains distinct unless a stated economic classification combines it. Within each transaction, pool-swap legs are ordered by block, transaction, and log position. The resulting token flows reveal the exchange that occurred. A single connected chain gives one route and therefore one exchange between its pair endpoints; parallel chains identify an order split, and disconnected event groups remain separate. Because one transaction can contain unrelated calls as well as trades across several exchanges, this procedure also prevents two simultaneous routes from being mistaken for one longer route. Pool identities enter reconstruction; the unified route panel retains the ordered venue and token sequence together with the pair. Sender and router labels are retained separately.
 
 Disconnected event groups become more common late in the sample. They comprise \DisconnectedShareBase{} of reconstructed components in 2024 and \DisconnectedShareEnd{} in 2026. In 2026 the rate is \DisconnectedVFourShareEnd{} among components touching Uniswap v4 and \DisconnectedOtherShareEnd{} among other components. Table~\ref{tab:app:disconnected} uses the internally connected token flow of each group as a separate route. This alternative preserves the principal economic result: the 2026 stablecoin share is \ComponentRouteCountEnd{} by count and \ComponentRouteValueEnd{} by value, both slightly above the connected-transaction estimates.
 % output/exhibits/disconnected_component_boundary.jsonl; output/exhibits/disconnected_component_boundary_values.tex
@@ -40,12 +40,12 @@ For three exchange families, full-day Ethereum-log reconciliations cover 206 ven
 % output/exhibits/route_reconstruction_exact_chain_validation.jsonl; scripts/analyze/run_route_reconstruction_validation.py
 \clearpage
 
-A complete token sequence is sufficient for the route-count sample. Value weighting additionally requires coherent amounts on every leg and a common dollar valuation. A failed valuation removes the observation from the value calculation while preserving the observed route. Appendix~\ref{app:roundtrip} gives the separate exclusion for self-returning routes.
+A complete token sequence is sufficient for the route-count sample. Value weighting additionally requires coherent amounts on every leg and a common dollar valuation. Routes without a coherent dollar valuation remain in counts and drop from value weighting. Appendix~\ref{app:roundtrip} gives the separate exclusion for self-returning routes.
 
 A hypothetical AAVE--WETH--USDC--UNI route makes the units concrete. Suppose one AAVE is worth \$100, one WETH \$2,500, one USDC \$1, and one UNI \$10. If one AAVE returns 0.04 WETH, the second leg returns 100 USDC, and the third returns 10 UNI, then $q=\$100$, $Q_r=10$ UNI, and $O_r=\$100$. Each leg carries \$100 on both sides. The route value $\nu_r$ is also \$100 because it averages the \$100 source and destination values. In the data, the same calculation uses transaction-time prices and allows limited measurement error under the value-agreement rule.
 % src/ddvc/route_roles.py; pedagogical unit calculation, not an empirical estimate
 
-Historical token precision cannot be verified for 13 tokens traded in 22 constant-product pools. Reserve-reconstruction analyses omit those pools. An upper-bound check removes every route involving any of the 13 tokens: the resulting bound is 5,950 routes and \$10.91 million of route value. Only 1,036 of those routes use one of the affected tokens as an intermediary, representing \$1.284 million, or 0.00043\% of value on routes whose legs can all be valued. All 13 tokens lie outside the native and stablecoin groups used in the main comparison. The exclusion affects exact reserve reconstruction; the route-composition result is unchanged.
+Historical precision is unverified for 13 tokens traded in 22 constant-product pools. Reserve-reconstruction analyses omit those pools. An upper-bound check removes every route involving any of the 13 tokens: the resulting bound is 5,950 routes and \$10.91 million of route value. Only 1,036 of those routes use one of the affected tokens as an intermediary, representing \$1.284 million, or 0.00043\% of value on routes whose legs can all be valued. All 13 tokens lie outside the native and stablecoin groups used in the main comparison. The exclusion affects exact reserve reconstruction; the route-composition result is unchanged.
 % docs/findings/README.md, 13 unresolved V2 token-precision records and worst-case route deletion bound
 
 \begin{table}[htbp]
@@ -303,7 +303,7 @@ Day & Held-out trades & Backward & Flat & Opening & Pools priced / excluded \\
 \exhibitnote{Median absolute quote error in percent of realised output, on trades no fit ever saw. \emph{Backward} reconstructs per-swap balances by rolling the day's event sequence back from the closing snapshot, \emph{Flat} keeps the snapshot balances constant across the day, and \emph{Opening} treats the snapshot as the day's opening state and rolls forward. The sample contains twelve days from 2021-04 to 2026-02.}
 \end{table}
 
-Across the twelve date rows of Table~\ref{tab:app:weighted}, the Backward column returns a median error of 0.0000\% and the Pools priced / excluded column identifies 256 of 473 testable pool-days as weighted pools. The other pool-days carry a median 91.8\% of tested swap volume and follow different Balancer pricing rules. The exercise therefore validates the model for identified weighted pools, not for Balancer as a whole.
+Across the twelve date rows of Table~\ref{tab:app:weighted}, the Backward column returns a median error of 0.0000\% and the Pools priced / excluded column identifies 256 of 473 testable pool-days as weighted pools. The other pool-days carry a median 91.8\% of tested swap volume and follow different Balancer pricing rules. This validates identified weighted pools; other Balancer families use different pricing rules.
 % output/exhibits/weighted_quoter_validation.jsonl, 12 days, 256 priced and 217 excluded pool-days
 
 \section{Reconstructing pool balances before each trade}
@@ -452,8 +452,23 @@ The opportunity set expands in three stages: alternative paths using the same ve
 
 \subsection{Realised gas burden}
 
-Receipt gas measures the fixed execution toll attached to adding a vehicle leg. In the executed-route sample, a stable-vehicle route in 2024 uses \GasStableExtraGasUnitsBase{} more gas than the median direct route, \GasStableExtraGasPctBase{} of the direct-route median. Evaluated at that year's median gas price and WETH price, the extra toll is \GasStableExtraCostBase{}, so a trade needs about \GasStableOneBpNotionalBase{} of notional before the extra gas is below one basis point. In 2026 the median stable-vehicle route uses \GasStableExtraGasUnitsEnd{} more gas than the direct-route median, while the dollar toll falls to \GasStableExtraCostEnd{} and the one-basis-point notional falls to \GasStableOneBpNotionalEnd{}. At each stable-vehicle route's own gas price, median stable-vehicle notional falls from \GasStableRouteMedianNotionalBase{} to \GasStableRouteMedianNotionalEnd{}, the median fixed toll falls from \GasStableRouteMedianTollBpsBase{} to \GasStableRouteMedianTollBpsEnd{}, and the share of routes with a toll below 25 basis points rises from \GasStableRouteTwentyFiveBpShareBase{} to \GasStableRouteTwentyFiveBpShareEnd{}. The extra leg adds gas units but becomes small relative to most observed stable-vehicle notionals. Because hypothetical route gas is unavailable, these estimates describe the realised fixed toll and leave the same-state price comparison gross of gas.
+Receipt gas measures the fixed execution toll attached to adding a vehicle leg. In the executed-route sample, a stable-vehicle route in 2024 uses \GasStableExtraGasUnitsBase{} more gas than the median direct route, \GasStableExtraGasPctBase{} of the direct-route median. Evaluated at that year's median gas price and WETH price, the extra toll is \GasStableExtraCostBase{}, so a trade needs about \GasStableOneBpNotionalBase{} of notional before the extra gas is below one basis point. In 2026 the median stable-vehicle route uses \GasStableExtraGasUnitsEnd{} more gas than the direct-route median, while the dollar toll falls to \GasStableExtraCostEnd{} and the one-basis-point notional falls to \GasStableOneBpNotionalEnd{}. At each stable-vehicle route's own gas price, median stable-vehicle notional falls from \GasStableRouteMedianNotionalBase{} to \GasStableRouteMedianNotionalEnd{}, the median fixed toll falls from \GasStableRouteMedianTollBpsBase{} to \GasStableRouteMedianTollBpsEnd{}, and the share of routes with a toll below 25 basis points rises from \GasStableRouteTwentyFiveBpShareBase{} to \GasStableRouteTwentyFiveBpShareEnd{}. The extra leg adds gas units but becomes small relative to most observed stable-vehicle notionals. These receipt summaries describe the realised fixed toll; the path-specific model below predicts the toll for both feasible vehicle paths.
 % output/exhibits/route_gas_economics.jsonl; output/exhibits/route_gas_economics_support.jsonl
+
+For the path-specific comparison, we fit transaction gas on 40,186 receipt-measured transactions spanning April 2019 through June 2026. Predictors are year, transaction-callee class, ordered venue sequence, route-leg count, and cross-venue status. A deterministic holdout contains 7,520 transactions. Median absolute percentage error is 17.4\%, compared with 34.5\% for a leg-count-only model (Table~\ref{tab:app:gas-adjusted-validation}, panel A). The central prediction matches 52,433 of 52,477 common-support routes to receipts and retains 52,207 with positive output net of predicted gas on both paths. Panel B applies the path-specific interquartile predictions in both directions. These bounds are wide for small trades, so the central adjustment enters the main comparison and the bounds remain here.
+% output/exhibits/gas_adjusted_vehicle_consequences_support.jsonl
+
+\FloatBarrier
+\begin{table}[tbp]
+\centering
+\scriptsize
+\caption{Gas prediction and path-specific output bounds}
+\label{tab:app:gas-adjusted-validation}
+\input{../output/tables/gas_adjusted_vehicle_consequences_appendix.tex}
+\exhibitnote{Panel A uses a deterministic transaction-hash holdout from the 40,186-transaction receipt panel. Actual gas, median absolute error (MAE), and prediction features refer to total successful-transaction gas units, including router transfers and bookkeeping. The legs-only benchmark uses route-leg count alone. Interquartile-range (IQR) coverage is the share of realised receipt gas between the cell-specific 25th and 75th percentiles. Panel B subtracts path-specific gas from the exact stablecoin and WETH outputs using the executed transaction's effective gas price and same-day WETH price. The central estimate uses cell medians. The favorable bound assigns the observed route its 25th-percentile gas and the rival path its 75th percentile; the unfavorable bound reverses them. The rival path retains the observed transaction-callee class. A shortfall starts above one basis point, and weighted means assign zero below that threshold.}
+\end{table}
+% output/tables/gas_adjusted_vehicle_consequences_appendix.tex
+\FloatBarrier
 
 \subsection{Exchange and pool-family coverage}
 
@@ -529,7 +544,7 @@ A route whose first input token equals its last output token,
 \[
 \mathbf{1}_{\{k_0 = k_{m(r)}\}},
 \]
-does not represent a conversion between distinct endpoint assets. We exclude these routes from the dominance measures. The excluded population can contain cyclic arbitrage and other self-returning activity; the endpoint rule does not classify every route as arbitrage or wash trading. Multi-trade arbitrage can be bundled atomically \citep{DaianEtAl2020FlashBoys}, but identifying trader intent would require additional evidence.
+returns to its starting asset. We exclude these routes from the dominance measures. They include cyclic arbitrage and other self-returning activity; the endpoint rule alone leaves trader intent unidentified. Multi-trade arbitrage can be bundled within one transaction \citep{DaianEtAl2020FlashBoys}.
 
 Table~\ref{tab:app:roundtrip} reports the distribution across every day with at least 200 multi-leg routes.
 
@@ -682,7 +697,7 @@ The issuer split in Appendix Table~\ref{tab:app:endpoint-direction}, panel B, ke
 \section{Secondary route and liquidity comparisons}
 \label{app:secondary-mechanisms}
 
-This section reports evidence used directly to interpret the main estimates: entry-activity restrictions, the future-persistence version of bridge support, the composition of capital growth before first use, and relative-price risk. Pool states and first-use dates are equilibrium outcomes; the estimates describe how route use and liquidity line up.
+We use the following estimates to interpret the main results: entry-activity restrictions, the future-persistence version of bridge support, the composition of capital growth before first use, and relative-price risk. Pool states and first-use dates are equilibrium outcomes; the estimates describe how route use and liquidity line up.
 
 \subsection{Persistence among pairs with greater entry activity}
 
@@ -707,7 +722,7 @@ The main bridge event uses only prior-calendar capital. Table~\ref{tab:app:bridg
 \small
 \renewcommand{\arraystretch}{1.08}
 \input{../output/tables/bridge_establishment_regressions.tex}
-\exhibitnote{The unit is a pair by route scope around the first persistent DAI, USDC, or USDT bridge. Support requires positive prior-calendar deposited capital on both legs in Uniswap v2 or SushiSwap v2 on at least 24 of the next 30 calendar days. Every pair has earlier WETH-mediated routes and no earlier observed stablecoin route. Panel A reports changes from the prior 30 days. Panel B compares the best stablecoin weak-leg capital with WETH weak-leg capital. Panel C records use of a stablecoin in the event's support set within 30 or 120 days. Standard errors are two-way clustered by pair and date. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively. Deposited capital is an equilibrium pool stock.}
+\exhibitnote{The unit is a pair by route scope around the first persistent DAI, USDC, or USDT bridge. Support requires positive prior-calendar deposited capital on both legs in Uniswap v2 or SushiSwap v2 on at least 24 of the next 30 calendar days. Every pair has earlier WETH-mediated routes, and the event precedes its first observed stablecoin route. Panel A reports changes from the prior 30 days. Panel B compares the best stablecoin weak-leg capital with WETH weak-leg capital. Panel C records use of a stablecoin in the event's support set within 30 or 120 days. Standard errors are two-way clustered by pair and date. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively. Deposited capital is an equilibrium pool stock.}
 \end{table}
 
 Figure~\ref{fig:app:bridge-adoption-capital-path} follows events whose supported stablecoin is first used 7 to 119 days after persistent support. Stablecoin weak-leg capital rises during the week before first use, including relative to the matched WETH bridge. The timing is consistent with providers deepening a bridge in anticipation of route demand, traders waiting for usable depth, or both.
@@ -734,7 +749,7 @@ Table~\ref{tab:bridge-pool-margins} separates newly active pools from capital gr
 
 \subsection{Relative-price risk and deposited bridge capital}
 
-Lower endpoint--vehicle relative-price risk is associated with deeper constant-product bridges at the measurement date and 30 days later. This relation is consistent with divergence risk influencing where liquidity providers place capital. Panel B of Table~\ref{tab:app:bridge-lp-risk} gives the corresponding vehicle comparison. Stablecoin bridges have higher median risk than WETH bridges and carry the lower relative volatility in fewer than one third of comparable pair-months. Divergence risk can therefore help locate bridge capital without accounting for the aggregate rise of stablecoin intermediation.
+Lower endpoint--vehicle relative-price risk is associated with deeper constant-product bridges at the measurement date and 30 days later. This relation is consistent with divergence risk influencing where liquidity providers place capital. Panel B of Table~\ref{tab:app:bridge-lp-risk} gives the corresponding vehicle comparison. Stablecoin bridges have higher median risk than WETH bridges and carry the lower relative volatility in fewer than one third of comparable pair-months. Divergence risk helps locate bridge capital but leaves the aggregate rise of stablecoin intermediation unexplained.
 
 \begin{table}[tbp]
 \centering

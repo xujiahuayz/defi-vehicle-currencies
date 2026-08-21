@@ -17,13 +17,25 @@
       "page": 3,
       "title": "Pool routes reveal the vehicle currency",
       "words": 66,
-      "note_words": 44
+      "note_words": 32
     },
     {
-      "page": 11,
-      "title": "Two-leg capital opens the stablecoin contest",
+      "page": 13,
+      "title": "The entry vehicle survives the first feasible contest",
       "words": 56,
-      "note_words": 41
+      "note_words": 37
+    },
+    {
+      "page": 15,
+      "title": "When the price lead flips, route share follows",
+      "words": 56,
+      "note_words": 27
+    },
+    {
+      "page": 17,
+      "title": "Dominance grows when new pairs choose a vehicle",
+      "words": 58,
+      "note_words": 22
     },
     {
       "page": 18,
@@ -52,7 +64,7 @@
     {
       "page": 28,
       "title": "A5.2. Executable depth is path-specific",
-      "words": 60,
+      "words": 59,
       "note_words": 0
     },
     {

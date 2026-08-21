@@ -51,6 +51,7 @@ def render(frame: pd.DataFrame) -> str:
     lines = [
         r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xrrrrr@{}}",
         r"\toprule",
+        r"\multicolumn{6}{@{}l}{\textit{Panel D. Receipt-matched routes, gross and gas-adjusted output}} \\",
         r" & Routes & \multicolumn{2}{c}{Lower-output route [\%]} & \multicolumn{2}{c}{Weighted shortfall [bp]} \\",
         r"\cmidrule(lr){3-4}\cmidrule(l){5-6}",
         r"Input value & & Gross & Net of gas & Gross & Net of gas \\",
@@ -126,7 +127,11 @@ def render_macros(frame: pd.DataFrame) -> str:
     overall_central = _row(frame, "central", "all")
     small_gross = _row(frame, "gross", "usd_100_to_999")
     small_central = _row(frame, "central", "usd_100_to_999")
+    large_gross = _row(frame, "gross", "usd_100k_plus")
+    large_central = _row(frame, "central", "usd_100k_plus")
     values = {
+        "GasConsequenceReceiptMatchedRoutes": f"{int(overall_central['routes']):,}",
+        "GasConsequenceSmallInputRange": r"\$100--999",
         "GasConsequenceOverallGrossLowerShare": (
             f"{100 * overall_gross['lower_output_route_share']:.1f}\\%"
         ),
@@ -150,6 +155,12 @@ def render_macros(frame: pd.DataFrame) -> str:
         ),
         "GasConsequenceSmallNetShortfallBp": (
             f"{small_central['input_value_weighted_shortfall_bps']:.2f}"
+        ),
+        "GasConsequenceLargeGrossShortfallBp": (
+            f"{large_gross['input_value_weighted_shortfall_bps']:.2f}"
+        ),
+        "GasConsequenceLargeNetShortfallBp": (
+            f"{large_central['input_value_weighted_shortfall_bps']:.2f}"
         ),
     }
     lines = [
