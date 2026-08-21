@@ -545,7 +545,13 @@ def attach_v2_bridge_capital(
     data["stable_v2_capital_advantage_10pp"] = (
         data["stable_v2_capital_share"] - 0.5
     ) / 0.10
-    if "entry_stable" in data:
+    incumbent_columns = {
+        "entry_stable",
+        "incumbent_known_prior",
+        "incumbent_output_advantage_100bp",
+        "challenger_price_leader",
+    }
+    if incumbent_columns.issubset(data.columns):
         data["incumbent_v2_capital_share"] = np.where(
             data["entry_stable"].eq(1.0),
             data["stable_v2_capital_share"],
