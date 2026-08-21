@@ -198,9 +198,9 @@ If dominance is made at formation, then the levers sit at formation too. Three r
 
 For payment systems, and Nexus is the natural example in this room: whoever is allowed to make markets inside the rail decides which currency's markets new corridors inherit. Access policy looks like plumbing and acts like currency policy.
 
-For stablecoin oversight: what we watched on-chain is re-dollarisation through private issuers, and the vehicle role is concentrating inside that family. When the middle asset wobbles, the shock does not stay in one market; it reaches every pair routed through it. So watch bridge exposure, not only issuance size.
+For stablecoin oversight: what we watched on-chain is re-dollarisation through private issuers. Remember the value chart at the start: stablecoins now sit in the middle of roughly seventy percent of routed value. That middle position is the systemic footprint. When the middle asset wobbles, the shock does not stay in one market; it reaches every pair routed through it. So watch bridge exposure, not only issuance size. The little buttons on these rows jump back to the slide each claim rests on.
 
-And for anyone hoping to promote an alternative currency, public or private: undercutting prices in existing corridors dethrones nobody, because incumbency there is defended by depth. Challengers win by being liquid where new corridors form. Early liquidity is cheap; late price wars are not.
+And for anyone hoping to promote an alternative currency, public or private: undercutting prices in existing corridors dethrones nobody. Remember the decomposition: switching inside old pairs netted to zero. Challengers win by being liquid where new corridors form. Early liquidity is cheap; late price wars are not.
 
 One line, if you keep only one: liquidity at formation beats price competition later.
 
