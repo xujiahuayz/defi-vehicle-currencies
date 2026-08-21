@@ -395,7 +395,7 @@ def main() -> int:
     )
     print(
         f"wrote {OUT_PANEL.relative_to(REPO_ROOT)}, {OUT_EXHIBIT.relative_to(REPO_ROOT)}, "
-        f"{OUT_QUARTERLY.relative_to(REPO_ROOT)}, and {OUT_TRANSITION.relative_to(REPO_ROOT)}"
+        f"and {OUT_TRANSITION.relative_to(REPO_ROOT)}"
     )
     return 0
 
