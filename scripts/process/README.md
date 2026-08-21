@@ -19,6 +19,7 @@ data and analysis-ready panels. Each current panel has one owner.
 | `build_liquidity_capital_flow_panels.py` | V2 candidate-day and exact-horizon mechanism panels |
 | `build_v3_pool_day_fees.py` | full-history Uniswap v3 pool update-day volume, gross fee opportunity, and last-reported TVL from retained daily records plus the static pool registry |
 | `build_v3_lp_flow_pool_daily.py` | pool-retaining Uniswap v3 candidate-side mint/burn value, positive-liquidity actions, same-transaction repositioning, and zero-liquidity diagnostics |
+| `build_v3_lp_add_origin_pool_daily.py` | positive-liquidity Uniswap v3 additions by pool, day, WETH/DAI/USDC/USDT side, and transaction-origin participation proxy; input to the four-vehicle provider-network specialization test |
 | `build_v3_internal_routing_candidate_daily.py` | V3 candidate-day internal same-asset routing measured like the V4 routing proxy |
 | `build_v3_v4_lp_origin_candidate_daily.py` | comparable nonzero V3/V4 LP actions by vehicle, day, and transaction origin |
 | `build_v4_lp_net_settlement_weekly.py` | V4 vehicle-linked provider-pool transactions and weeks, retaining LP actions, settlement-count compression, amount netting, value coverage, repositioning, and range width |
@@ -27,7 +28,7 @@ data and analysis-ready panels. Each current panel has one owner.
 | `build_intermediation_by_type.py` | daily intermediary-type panel and its descriptive exhibits |
 | `build_intermediation_halfyear.py` | half-year composition from the admitted daily intermediary panel |
 | `build_defillama_market_coverage.py` | annual selected-family share of total Ethereum DEX volume from the retained DeFiLlama breakdown |
-| `build_stablecoin_supply.py` | daily worldwide and Ethereum circulation for canonical USD-stable token contracts, matched by exact address |
+| `build_stablecoin_supply.py` | daily asset-wide and Ethereum-chain circulation for canonical USD-stable token contracts; a fetch manifest excludes stale detail files, and BSC-prefixed addresses require a separate Ethereum-specific contract match |
 | `build_vehicle_excess_use.py` | daily excess-use panel and transition exhibits |
 | `build_cross_venue_routing_series.py` | daily cross-venue panel, inference, and router windows |
 | `measure_quoter_support.py` | V2/V4 quote-support bounds used by validation and the appendix |
