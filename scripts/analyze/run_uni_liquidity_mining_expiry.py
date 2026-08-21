@@ -9,15 +9,12 @@ USD capital is a secondary measurement.  Matching uses only pre-event capital
 and liquidity trends.  Calendar-placebo and matched-label permutation results
 are written with the estimates.
 
-The secondary output follows WBTC endpoint pairs around the reward expiry.
-It retains pairs that used both WETH and a core stablecoin before expiry and
-whose WBTC--WETH leg predominantly used the rewarded Uniswap pool.  This is a
-narrow before/after reduced form, not an instrument or a general route-choice
-estimate: targeted pool selection and concurrent demand changes remain.
+The output is limited to LP-liquidity responses around the scheduled start and
+expiry.  It reports the four rewarded pools and a WBTC--WETH-specific expiry
+first stage; no trade-routing response is estimated.
 
 Reads
     data/processed/pool_capital_daily.parquet
-    data/processed/endpoint_candidate_choices.parquet
 Writes
     output/exhibits/uni_liquidity_mining_expiry.jsonl
     output/exhibits/uni_liquidity_mining_expiry_support.jsonl
@@ -36,13 +33,11 @@ import duckdb
 import numpy as np
 import pandas as pd
 
-from ddvc.asset_types import STABLE
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
 from ddvc.tables import write_exhibit
 
 
 POOL_CAPITAL = DATA_DIR / "processed/pool_capital_daily.parquet"
-ROUTE_CHOICES = DATA_DIR / "processed/endpoint_candidate_choices.parquet"
 OUTPUT = OUTPUT_DIR / "exhibits/uni_liquidity_mining_expiry.jsonl"
 SUPPORT = OUTPUT_DIR / "exhibits/uni_liquidity_mining_expiry_support.jsonl"
 
@@ -53,8 +48,6 @@ WBTC = "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"
 DAI = "0x6b175474e89094c44da98b954eedeac495271d0f"
 USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
 USDT = "0xdac17f958d2ee523a2206206994597c13d831ec7"
-CORE_STABLES = frozenset({DAI, USDC, USDT})
-ALL_STABLES = frozenset(STABLE)
 
 
 @dataclass(frozen=True)
@@ -79,6 +72,10 @@ REWARDED_POOLS = (
     RewardedPool("WBTC_WETH", "0xbb2b8038a1640196fbe3e38816f3e67cba72d940"),
 )
 REWARDED_POOL_ADDRESSES = tuple(pool.address for pool in REWARDED_POOLS)
+REWARDED_POOL_COMPANIONS = dict(
+    zip(REWARDED_POOL_ADDRESSES, (USDT, USDC, DAI, WBTC), strict=True)
+)
+WBTC_WETH_REWARDED_POOL = REWARDED_POOL_ADDRESSES[-1]
 EVENTS = (
     IncentiveEvent(
         event="reward_start",
@@ -104,7 +101,6 @@ MATCH_COVARIATES = ("pre_mean_log_capital", "pre_slope_log_sqrt_k")
 CODE_SOURCES = ["scripts/analyze/run_uni_liquidity_mining_expiry.py"]
 INPUTS = [
     "data/processed/pool_capital_daily.parquet",
-    "data/processed/endpoint_candidate_choices.parquet",
 ]
 
 
@@ -213,6 +209,12 @@ def prepare_pool_panel(frame: pd.DataFrame) -> pd.DataFrame:
         data["token1_address"],
         data["token0_address"],
     )
+    for pool, companion in REWARDED_POOL_COMPANIONS.items():
+        observed = set(data.loc[data["pool"].eq(pool), "other_address"])
+        if observed and observed != {companion}:
+            raise ValueError(
+                f"rewarded pool {pool} has companion {sorted(observed)}, expected {companion}"
+            )
     data["log_sqrt_k"] = 0.5 * (
         np.log(data["reserve0"].astype(float))
         + np.log(data["reserve1"].astype(float))
@@ -542,325 +544,6 @@ def matched_label_reference(
     }
 
 
-def load_wbtc_route_rows(
-    path: Path,
-    *,
-    expiry: IncentiveEvent,
-    window_days: int,
-    placebo_shift_days: int,
-) -> pd.DataFrame:
-    """Read the bounded WBTC endpoint route window needed by the reduced form."""
-
-    dates = [expiry.date, expiry.date + pd.Timedelta(days=placebo_shift_days)]
-    first = min(dates) - pd.Timedelta(days=window_days)
-    last = max(dates) + pd.Timedelta(days=window_days - 1)
-    connection = duckdb.connect()
-    connection.execute("SET threads=2")
-    connection.execute("SET memory_limit='1GB'")
-    try:
-        return connection.execute(
-            """
-            SELECT
-                CAST(date AS DATE) AS date,
-                lower(src) AS src,
-                lower(tgt) AS tgt,
-                lower(candidate_address) AS candidate_address,
-                candidate_type,
-                candidate_symbol,
-                integration_scope,
-                lower(hop1_venue) AS hop1_venue,
-                lower(hop2_venue) AS hop2_venue,
-                route_count
-            FROM read_parquet(?)
-            WHERE date BETWEEN ? AND ?
-              AND (lower(src) = ? OR lower(tgt) = ?)
-              AND candidate_type IN ('native', 'stable')
-            """,
-            [str(path), first.date(), last.date(), WBTC, WBTC],
-        ).fetchdf()
-    finally:
-        connection.close()
-
-
-def prepare_wbtc_routes(frame: pd.DataFrame) -> pd.DataFrame:
-    """Keep non-vehicle WBTC endpoint pairs and identify the adjacent V2 leg."""
-
-    required = {
-        "date",
-        "src",
-        "tgt",
-        "candidate_address",
-        "candidate_type",
-        "hop1_venue",
-        "hop2_venue",
-        "route_count",
-    }
-    missing = sorted(required - set(frame.columns))
-    if missing:
-        raise ValueError(f"UNI expiry WBTC route input lacks columns: {missing}")
-    data = frame.copy()
-    data["date"] = pd.to_datetime(data["date"]).dt.normalize()
-    for column in ("src", "tgt", "candidate_address"):
-        data[column] = _normalise_address(data[column])
-    for column in ("hop1_venue", "hop2_venue"):
-        data[column] = data[column].fillna("").astype(str).str.lower()
-    data["route_count"] = pd.to_numeric(data["route_count"], errors="coerce")
-    wbtc_endpoint = data["src"].eq(WBTC) ^ data["tgt"].eq(WBTC)
-    data = data[wbtc_endpoint & data["route_count"].gt(0)].copy()
-    data["other_endpoint"] = np.where(data["src"].eq(WBTC), data["tgt"], data["src"])
-    data = data[
-        ~data["other_endpoint"].isin(ALL_STABLES | {WETH, WBTC})
-        & data["candidate_address"].isin(CORE_STABLES | {WETH})
-    ].copy()
-    data["route_family"] = np.where(
-        data["candidate_address"].eq(WETH), "native", "stable"
-    )
-    wbtc_adjacent_venue = np.where(
-        data["src"].eq(WBTC), data["hop1_venue"], data["hop2_venue"]
-    )
-    data["treated_wbtc_weth_leg"] = (
-        data["candidate_address"].eq(WETH)
-        & pd.Series(wbtc_adjacent_venue, index=data.index).eq("uniswap_v2")
-    )
-    data["ordered_pair"] = data["src"] + ">" + data["tgt"]
-    if data.empty:
-        raise ValueError("UNI expiry clean WBTC endpoint route sample is empty")
-    return data.sort_values(["ordered_pair", "date"], kind="stable").reset_index(drop=True)
-
-
-def wbtc_pair_support(
-    routes: pd.DataFrame,
-    event_date: pd.Timestamp,
-    *,
-    window_days: int,
-    minimum_pre_routes: int,
-    minimum_pre_exposure: float,
-) -> pd.DataFrame:
-    """Select pairs using pre-expiry contestability and treated-leg exposure."""
-
-    data = routes[
-        routes["date"].between(
-            event_date - pd.Timedelta(days=window_days),
-            event_date + pd.Timedelta(days=window_days - 1),
-        )
-    ].copy()
-    data["period"] = np.where(data["date"].lt(event_date), "pre", "post")
-    rows: list[dict[str, object]] = []
-    for pair, group in data.groupby("ordered_pair", sort=True):
-        pre = group[group["period"].eq("pre")]
-        post = group[group["period"].eq("post")]
-        pre_native = float(
-            pre.loc[pre["route_family"].eq("native"), "route_count"].sum()
-        )
-        pre_stable = float(
-            pre.loc[pre["route_family"].eq("stable"), "route_count"].sum()
-        )
-        post_native = float(
-            post.loc[post["route_family"].eq("native"), "route_count"].sum()
-        )
-        post_stable = float(
-            post.loc[post["route_family"].eq("stable"), "route_count"].sum()
-        )
-        pre_exposed = float(pre.loc[pre["treated_wbtc_weth_leg"], "route_count"].sum())
-        post_exposed = float(post.loc[post["treated_wbtc_weth_leg"], "route_count"].sum())
-        exposure = pre_exposed / pre_native if pre_native > 0 else float("nan")
-        pre_total = pre_native + pre_stable
-        post_total = post_native + post_stable
-        rows.append(
-            {
-                "ordered_pair": pair,
-                "src": str(group["src"].iloc[0]),
-                "tgt": str(group["tgt"].iloc[0]),
-                "pre_native_routes": pre_native,
-                "pre_stable_routes": pre_stable,
-                "post_native_routes": post_native,
-                "post_stable_routes": post_stable,
-                "pre_total_routes": pre_total,
-                "post_total_routes": post_total,
-                "pre_treated_leg_routes": pre_exposed,
-                "post_treated_leg_routes": post_exposed,
-                "pre_treated_leg_exposure": exposure,
-                "pre_active_days": int(pre["date"].nunique()),
-                "post_active_days": int(post["date"].nunique()),
-                "pre_contestable": bool(
-                    pre_native > 0
-                    and pre_stable > 0
-                    and pre_total >= minimum_pre_routes
-                ),
-                "selected": bool(
-                    pre_native > 0
-                    and pre_stable > 0
-                    and pre_total >= minimum_pre_routes
-                    and np.isfinite(exposure)
-                    and exposure >= minimum_pre_exposure
-                ),
-            }
-        )
-    return pd.DataFrame(rows).sort_values("ordered_pair", kind="stable").reset_index(drop=True)
-
-
-def _sign_flip_p_value(changes: np.ndarray, *, draws: int, seed: int) -> float:
-    usable = np.asarray(changes, dtype=float)
-    usable = usable[np.isfinite(usable)]
-    if not len(usable):
-        return float("nan")
-    observed = abs(float(usable.mean()))
-    total = 2 ** len(usable)
-    if total <= draws:
-        statistics = [
-            abs(float(np.mean(usable * np.asarray(signs, dtype=float))))
-            for signs in itertools.product((-1.0, 1.0), repeat=len(usable))
-        ]
-    else:
-        rng = np.random.default_rng(seed)
-        signs = rng.choice((-1.0, 1.0), size=(draws, len(usable)))
-        statistics = np.abs((signs * usable).mean(axis=1)).tolist()
-    return (1.0 + float(np.sum(np.asarray(statistics) >= observed))) / (
-        1.0 + len(statistics)
-    )
-
-
-def wbtc_route_response(
-    pair_support: pd.DataFrame,
-    *,
-    sign_flip_draws: int,
-    seed: int,
-) -> tuple[pd.DataFrame, dict[str, object]]:
-    """Summarise stable-versus-native use in the fixed pre-selected pair set."""
-
-    selected = pair_support[pair_support["selected"].astype(bool)].copy()
-    if selected.empty:
-        raise ValueError("UNI expiry WBTC route sample has no pre-selected pairs")
-    pre_native = float(selected["pre_native_routes"].sum())
-    pre_stable = float(selected["pre_stable_routes"].sum())
-    post_native = float(selected["post_native_routes"].sum())
-    post_stable = float(selected["post_stable_routes"].sum())
-    if pre_native + pre_stable <= 0 or post_native + post_stable <= 0:
-        raise ValueError("UNI expiry WBTC route sample lacks pre- or post-expiry routes")
-    pre_share = pre_stable / (pre_native + pre_stable)
-    post_share = post_stable / (post_native + post_stable)
-    same_active = selected[selected["post_total_routes"].gt(0)].copy()
-    same_active["pre_stable_share"] = same_active["pre_stable_routes"] / same_active[
-        "pre_total_routes"
-    ]
-    same_active["post_stable_share"] = same_active["post_stable_routes"] / same_active[
-        "post_total_routes"
-    ]
-    same_active["stable_share_change"] = (
-        same_active["post_stable_share"] - same_active["pre_stable_share"]
-    )
-    post_exposed = float(selected["post_treated_leg_routes"].sum())
-    pre_exposed = float(selected["pre_treated_leg_routes"].sum())
-    pre_exposed_share = pre_exposed / pre_native if pre_native > 0 else float("nan")
-    post_exposed_share = post_exposed / post_native if post_native > 0 else float("nan")
-    rows = pd.DataFrame(
-        [
-            {
-                "analysis_status": ANALYSIS_STATUS,
-                "record_type": "wbtc_expiry_route_response",
-                "estimate": "route_weighted_stable_share_change",
-                "value": post_share - pre_share,
-                "pre_value": pre_share,
-                "post_value": post_share,
-                "unit": "share_point",
-                "ordered_pairs": int(len(selected)),
-                "scope": "fixed pre-expiry contestable and treated-leg-exposed WBTC endpoint pairs",
-            },
-            {
-                "analysis_status": ANALYSIS_STATUS,
-                "record_type": "wbtc_expiry_route_response",
-                "estimate": "equal_pair_stable_share_change",
-                "value": float(same_active["stable_share_change"].mean()),
-                "pre_value": float(same_active["pre_stable_share"].mean()),
-                "post_value": float(same_active["post_stable_share"].mean()),
-                "unit": "share_point",
-                "ordered_pairs": int(len(same_active)),
-                "scope": "pre-selected WBTC endpoint pairs active after expiry",
-            },
-            {
-                "analysis_status": ANALYSIS_STATUS,
-                "record_type": "wbtc_expiry_route_response",
-                "estimate": "native_route_treated_leg_share_change",
-                "value": post_exposed_share - pre_exposed_share,
-                "pre_value": pre_exposed_share,
-                "post_value": post_exposed_share,
-                "unit": "share_point",
-                "ordered_pairs": int(len(selected)),
-                "scope": "native routes in the fixed pre-selected WBTC endpoint-pair set",
-            },
-        ]
-    )
-    diagnostics = {
-        "selected_pairs": int(len(selected)),
-        "post_active_pairs": int(len(same_active)),
-        "pre_routes": int(pre_native + pre_stable),
-        "post_routes": int(post_native + post_stable),
-        "pre_native_routes": int(pre_native),
-        "pre_stable_routes": int(pre_stable),
-        "post_native_routes": int(post_native),
-        "post_stable_routes": int(post_stable),
-        "median_pre_treated_leg_exposure": float(
-            selected["pre_treated_leg_exposure"].median()
-        ),
-        "route_weighted_stable_share_change": post_share - pre_share,
-        "equal_pair_stable_share_change": float(
-            same_active["stable_share_change"].mean()
-        ),
-        "sign_flip_p_two_sided": _sign_flip_p_value(
-            same_active["stable_share_change"].to_numpy(),
-            draws=sign_flip_draws,
-            seed=seed,
-        ),
-        "post_treated_leg_routes_if_available": int(post_exposed),
-        "pre_treated_leg_share": pre_exposed_share,
-        "post_treated_leg_share": post_exposed_share,
-    }
-    return rows, diagnostics
-
-
-def wbtc_daily_path(
-    routes: pd.DataFrame,
-    selected_pairs: Sequence[str],
-    event_date: pd.Timestamp,
-    *,
-    window_days: int,
-) -> pd.DataFrame:
-    """Daily route-weighted stable share for a pre-selected pair set."""
-
-    data = routes[
-        routes["ordered_pair"].isin(selected_pairs)
-        & routes["date"].between(
-            event_date - pd.Timedelta(days=window_days),
-            event_date + pd.Timedelta(days=window_days - 1),
-        )
-    ].copy()
-    if data.empty:
-        return pd.DataFrame(
-            columns=[
-                "relative_day",
-                "native",
-                "stable",
-                "total_routes",
-                "stable_route_share",
-            ]
-        )
-    data["relative_day"] = (data["date"] - event_date).dt.days.astype(int)
-    grouped = (
-        data.groupby(["relative_day", "route_family"], as_index=False)["route_count"]
-        .sum()
-        .pivot(index="relative_day", columns="route_family", values="route_count")
-        .fillna(0.0)
-        .reset_index()
-    )
-    for family in ("native", "stable"):
-        if family not in grouped:
-            grouped[family] = 0.0
-    grouped["total_routes"] = grouped["native"] + grouped["stable"]
-    grouped = grouped[grouped["total_routes"].gt(0)].copy()
-    grouped["stable_route_share"] = grouped["stable"] / grouped["total_routes"]
-    return grouped.sort_values("relative_day", kind="stable").reset_index(drop=True)
-
-
 def _event_metadata_rows() -> pd.DataFrame:
     rows = []
     pool_list = ",".join(REWARDED_POOL_ADDRESSES)
@@ -1019,12 +702,96 @@ def analyse_pool_events(
             path.insert(3, "outcome", outcome)
             results.append(path)
             if outcome == "log_sqrt_k":
+                wbtc_effect = float("nan")
+                wbtc_timing_pass = event.event != "reward_expiry"
+                wbtc_relevance_pass = event.event != "reward_expiry"
+                wbtc_balance_pass = event.event != "reward_expiry"
+                wbtc_log_capital_gap = float("nan")
+                if event.event == "reward_expiry":
+                    wbtc_matches = matches[
+                        matches["treated_pool"].eq(WBTC_WETH_REWARDED_POOL)
+                    ]
+                    wbtc_row = summary.set_index("pool").loc[
+                        WBTC_WETH_REWARDED_POOL
+                    ]
+                    wbtc_controls = summary.set_index("pool").loc[
+                        wbtc_matches["control_pool"]
+                    ]
+                    wbtc_log_capital_gap = float(
+                        (
+                            wbtc_controls["pre_mean_log_capital"]
+                            - float(wbtc_row["pre_mean_log_capital"])
+                        )
+                        .abs()
+                        .min()
+                    )
+                    eligible_controls = summary[
+                        summary["eligible"].astype(bool)
+                        & ~summary["pool"].isin(REWARDED_POOL_ADDRESSES)
+                    ]["pre_mean_log_capital"]
+                    wbtc_balance_pass = bool(
+                        eligible_controls.min()
+                        <= float(wbtc_row["pre_mean_log_capital"])
+                        <= eligible_controls.max()
+                        and wbtc_log_capital_gap <= 1.0
+                    )
+                    wbtc_estimate = matched_change(
+                        summary, wbtc_matches, outcome=outcome
+                    )
+                    wbtc_effect = float(wbtc_estimate["matched_difference"])
+                    wbtc_path = matched_event_path(
+                        panel,
+                        event,
+                        wbtc_matches,
+                        outcome=outcome,
+                        window_days=window_days,
+                    )
+                    wbtc_pre = wbtc_path[wbtc_path["relative_day"].lt(0)]
+                    wbtc_pretrend = _slope(
+                        wbtc_pre["relative_day"], wbtc_pre["matched_difference"]
+                    )
+                    wbtc_placebo = matched_window_change(
+                        panel,
+                        event.date + pd.Timedelta(days=placebo_shift_days),
+                        wbtc_matches,
+                        outcome=outcome,
+                        window_days=window_days,
+                    )
+                    wbtc_relevance_pass = (
+                        event.expected_liquidity_direction * wbtc_effect >= 0.10
+                    )
+                    wbtc_timing_pass = bool(
+                        np.isfinite(wbtc_placebo["matched_difference"])
+                        and abs(float(wbtc_placebo["matched_difference"]))
+                        < abs(wbtc_effect)
+                        and np.isfinite(wbtc_pretrend)
+                        and abs(float(wbtc_pretrend) * window_days) < abs(wbtc_effect)
+                    )
+                    results.append(
+                        pd.DataFrame(
+                            [
+                                {
+                                    "analysis_status": ANALYSIS_STATUS,
+                                    "record_type": "wbtc_weth_pool_first_stage",
+                                    "event": event.event,
+                                    "treated_pool": WBTC_WETH_REWARDED_POOL,
+                                    "outcome": outcome,
+                                    "unit": "log_point",
+                                    **wbtc_estimate,
+                                    "pretrend_daily_slope": wbtc_pretrend,
+                                    "calendar_placebo_matched_difference": wbtc_placebo[
+                                        "matched_difference"
+                                    ],
+                                    "nearest_control_log_capital_gap": wbtc_log_capital_gap,
+                                    "match_balance_pass": wbtc_balance_pass,
+                                }
+                            ]
+                        )
+                    )
                 effect = float(estimate["matched_difference"])
                 signed_effect = event.expected_liquidity_direction * effect
                 coverage_pass = treated_supported == len(REWARDED_POOLS) and controls >= 20
-                relevance_pass = signed_effect >= 0.10 and float(
-                    reference["permutation_p_two_sided"]
-                ) <= 0.10
+                relevance_pass = signed_effect >= 0.10
                 timing_pass = (
                     np.isfinite(placebo["matched_difference"])
                     and abs(float(placebo["matched_difference"])) < abs(effect)
@@ -1037,14 +804,24 @@ def analyse_pool_events(
                     "event": event.event,
                     "decision": (
                         "go_quantity_liquidity_first_stage_for_further_design"
-                        if coverage_pass and relevance_pass and timing_pass
-                        else "stop_before_route_interpretation"
+                        if coverage_pass
+                        and relevance_pass
+                        and timing_pass
+                        and wbtc_relevance_pass
+                        and wbtc_timing_pass
+                        and wbtc_balance_pass
+                        else "stop_pool_first_stage"
                     ),
                     "coverage_pass": coverage_pass,
                     "signed_relevance_pass": relevance_pass,
                     "timing_placebo_pass": timing_pass,
+                    "wbtc_weth_matched_difference": wbtc_effect,
+                    "wbtc_weth_signed_relevance_pass": wbtc_relevance_pass,
+                    "wbtc_weth_timing_placebo_pass": wbtc_timing_pass,
+                    "wbtc_weth_match_balance_pass": wbtc_balance_pass,
+                    "wbtc_weth_nearest_control_log_capital_gap": wbtc_log_capital_gap,
+                    "maximum_wbtc_log_capital_gap": 1.0,
                     "minimum_abs_signed_effect_log_points": 0.10,
-                    "maximum_reference_p": 0.10,
                     "scope": (
                         "sqrt-k is a quantity-based pool stock rather than a decoded "
                         "provider-flow measure; a go decision warrants the narrow "
@@ -1059,140 +836,15 @@ def analyse_pool_events(
     return pd.concat(results, ignore_index=True, sort=False), pd.DataFrame(support_rows)
 
 
-def analyse_wbtc_expiry_routes(
-    routes: pd.DataFrame,
-    *,
-    window_days: int,
-    minimum_pre_routes: int,
-    minimum_pre_exposure: float,
-    placebo_shift_days: int,
-    sign_flip_draws: int,
-    seed: int,
-) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Run the narrow WBTC endpoint reduced form and its promotion gate."""
-
-    expiry = next(event for event in EVENTS if event.event == "reward_expiry")
-    support = wbtc_pair_support(
-        routes,
-        expiry.date,
-        window_days=window_days,
-        minimum_pre_routes=minimum_pre_routes,
-        minimum_pre_exposure=minimum_pre_exposure,
-    )
-    selected = support[support["selected"].astype(bool)]
-    route_rows, diagnostics = wbtc_route_response(
-        support,
-        sign_flip_draws=sign_flip_draws,
-        seed=seed,
-    )
-    selected_pairs = tuple(selected["ordered_pair"].astype(str))
-    path = wbtc_daily_path(
-        routes,
-        selected_pairs,
-        expiry.date,
-        window_days=window_days,
-    )
-    path.insert(0, "analysis_status", ANALYSIS_STATUS)
-    path.insert(1, "record_type", "wbtc_expiry_route_event_time")
-    placebo_date = expiry.date + pd.Timedelta(days=placebo_shift_days)
-    placebo_path = wbtc_daily_path(
-        routes,
-        selected_pairs,
-        placebo_date,
-        window_days=window_days,
-    )
-    placebo_pre = placebo_path[placebo_path["relative_day"].lt(0)]
-    placebo_post = placebo_path[placebo_path["relative_day"].ge(0)]
-    placebo_change = (
-        float(placebo_post["stable"].sum())
-        / float(placebo_post["total_routes"].sum())
-        - float(placebo_pre["stable"].sum())
-        / float(placebo_pre["total_routes"].sum())
-        if not placebo_pre.empty
-        and not placebo_post.empty
-        and placebo_pre["total_routes"].sum() > 0
-        and placebo_post["total_routes"].sum() > 0
-        else float("nan")
-    )
-    pre_path = path[path["relative_day"].lt(0)]
-    pretrend = _slope(pre_path["relative_day"], pre_path["stable_route_share"])
-    route_rows["calendar_placebo_date"] = placebo_date.date().isoformat()
-    route_rows["calendar_placebo_stable_share_change"] = placebo_change
-    route_rows["pretrend_daily_stable_share_slope"] = pretrend
-    route_rows["interpretation_scope"] = (
-        "narrow fixed-support before/after reduced form; no untreated route control, "
-        "and concurrent WBTC demand can affect the estimate"
-    )
-    support_pass = bool(
-        diagnostics["selected_pairs"] >= 20
-        and diagnostics["post_active_pairs"] >= 15
-        and diagnostics["pre_routes"] >= 250
-        and diagnostics["post_routes"] >= 250
-        and diagnostics["median_pre_treated_leg_exposure"] >= minimum_pre_exposure
-    )
-    timing_pass = bool(
-        np.isfinite(placebo_change)
-        and abs(float(diagnostics["route_weighted_stable_share_change"]))
-        > abs(placebo_change)
-    )
-    signal_pass = bool(
-        np.isfinite(diagnostics["sign_flip_p_two_sided"])
-        and float(diagnostics["sign_flip_p_two_sided"]) <= 0.10
-    )
-    support_rows = pd.DataFrame(
-        [
-            {
-                "analysis_status": ANALYSIS_STATUS,
-                "record_type": "wbtc_expiry_route_support",
-                "event": "reward_expiry",
-                "event_date": expiry.date.date().isoformat(),
-                "window_days_each_side": window_days,
-                "minimum_pre_routes": minimum_pre_routes,
-                "minimum_pre_treated_leg_exposure": minimum_pre_exposure,
-                "wbtc_endpoint_pairs_observed": int(len(support)),
-                "pre_contestable_pairs": int(support["pre_contestable"].sum()),
-                **diagnostics,
-                "pair_rule": (
-                    "ordered WBTC endpoint pair with a non-WETH/non-core-stable other "
-                    "endpoint, both vehicle families used pre-expiry, and the stated "
-                    "minimum pre-expiry route count and treated-leg exposure"
-                ),
-            },
-            {
-                "analysis_status": ANALYSIS_STATUS,
-                "record_type": "wbtc_expiry_route_stop_go",
-                "event": "reward_expiry",
-                "decision": (
-                    "go_report_narrow_reduced_form_only"
-                    if support_pass and timing_pass and signal_pass
-                    else "stop_no_distinct_narrow_route_response"
-                ),
-                "support_pass": support_pass,
-                "calendar_placebo_pass": timing_pass,
-                "pair_sign_flip_pass": signal_pass,
-                "maximum_sign_flip_p": 0.10,
-                "scope": (
-                    "even a go result remains a narrow reduced form and must not be "
-                    "described as general capital-to-routing causality"
-                ),
-            },
-        ]
-    )
-    return pd.concat([route_rows, path], ignore_index=True, sort=False), support_rows
-
-
 def run(
     *,
     pool_path: Path = POOL_CAPITAL,
-    route_path: Path = ROUTE_CHOICES,
     output_path: Path = OUTPUT,
     support_path: Path = SUPPORT,
     window_days: int = 14,
     minimum_support_share: float = 0.80,
     minimum_pre_capital_usd: float = 1_000_000.0,
     matches_per_treated: int = 5,
-    minimum_wbtc_pre_routes: int = 5,
-    minimum_wbtc_pre_exposure: float = 0.80,
     placebo_shift_days: int = -42,
     maximum_assignments: int = 1_999,
     seed: int = 20_201_117,
@@ -1207,10 +859,6 @@ def run(
         raise ValueError("matched-label reference requires at least 99 assignments")
     if abs(placebo_shift_days) < 2 * window_days:
         raise ValueError("calendar placebo window must not overlap the event window")
-    if minimum_wbtc_pre_routes < 1:
-        raise ValueError("minimum WBTC pre-expiry route count must be positive")
-    if not 0 < minimum_wbtc_pre_exposure <= 1:
-        raise ValueError("minimum WBTC treated-leg exposure must lie in (0, 1]")
     pool_raw = load_pool_rows(
         pool_path,
         window_days=window_days,
@@ -1227,30 +875,13 @@ def run(
         maximum_assignments=maximum_assignments,
         seed=seed,
     )
-    expiry = next(event for event in EVENTS if event.event == "reward_expiry")
-    route_raw = load_wbtc_route_rows(
-        route_path,
-        expiry=expiry,
-        window_days=window_days,
-        placebo_shift_days=placebo_shift_days,
-    )
-    routes = prepare_wbtc_routes(route_raw)
-    route_results, route_support = analyse_wbtc_expiry_routes(
-        routes,
-        window_days=window_days,
-        minimum_pre_routes=minimum_wbtc_pre_routes,
-        minimum_pre_exposure=minimum_wbtc_pre_exposure,
-        placebo_shift_days=placebo_shift_days,
-        sign_flip_draws=maximum_assignments,
-        seed=seed + 1_000,
-    )
-    result_frames = [_event_metadata_rows(), pool_results, route_results]
+    result_frames = [_event_metadata_rows(), pool_results]
     results = pd.concat(
         [frame for frame in result_frames if not frame.empty],
         ignore_index=True,
         sort=False,
     )
-    supports = pd.concat([pool_support, route_support], ignore_index=True, sort=False)
+    supports = pool_support
     write_exhibit(results, output_path, code_sources=CODE_SOURCES, inputs=INPUTS)
     write_exhibit(supports, support_path, code_sources=CODE_SOURCES, inputs=INPUTS)
     print(
@@ -1263,30 +894,24 @@ def run(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--pool-capital", type=Path, default=POOL_CAPITAL)
-    parser.add_argument("--route-choices", type=Path, default=ROUTE_CHOICES)
     parser.add_argument("--output", type=Path, default=OUTPUT)
     parser.add_argument("--support", type=Path, default=SUPPORT)
     parser.add_argument("--window-days", type=int, default=14)
     parser.add_argument("--minimum-support-share", type=float, default=0.80)
     parser.add_argument("--minimum-pre-capital-usd", type=float, default=1_000_000.0)
     parser.add_argument("--matches-per-treated", type=int, default=5)
-    parser.add_argument("--minimum-wbtc-pre-routes", type=int, default=5)
-    parser.add_argument("--minimum-wbtc-pre-exposure", type=float, default=0.80)
     parser.add_argument("--placebo-shift-days", type=int, default=-42)
     parser.add_argument("--maximum-assignments", type=int, default=1_999)
     parser.add_argument("--seed", type=int, default=20_201_117)
     args = parser.parse_args()
     return run(
         pool_path=args.pool_capital,
-        route_path=args.route_choices,
         output_path=args.output,
         support_path=args.support,
         window_days=args.window_days,
         minimum_support_share=args.minimum_support_share,
         minimum_pre_capital_usd=args.minimum_pre_capital_usd,
         matches_per_treated=args.matches_per_treated,
-        minimum_wbtc_pre_routes=args.minimum_wbtc_pre_routes,
-        minimum_wbtc_pre_exposure=args.minimum_wbtc_pre_exposure,
         placebo_shift_days=args.placebo_shift_days,
         maximum_assignments=args.maximum_assignments,
         seed=args.seed,

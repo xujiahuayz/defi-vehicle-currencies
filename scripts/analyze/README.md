@@ -24,7 +24,7 @@ belongs in `../plot/` or `../tabulate/`.
 | `run_liquidity_provision_behavior_exploration.py` | exploratory V2 capital-allocation and vehicle-use behavior |
 | `run_bridge_liquidity_feedback.py` | conditional future levels and time-reversed benchmarks for continuing positive-depth bridges |
 | `run_bridge_lp_divergence_risk.py` | prior endpoint--vehicle relative-price risk and exact V2/Sushi V2 bridge depth; appendix evidence on LP risk |
-| `run_uni_liquidity_mining_expiry.py` | exploratory matched liquidity response around the fixed 2020 UNI reward start and expiry, plus a narrowly preselected WBTC-endpoint route response; no paper or deck consumer unless the stated support and timing checks pass |
+| `run_uni_liquidity_mining_expiry.py` | exploratory LP-liquidity response around the fixed 2020 UNI reward start and expiry, including the WBTC-WETH pool-specific first stage; no trade-routing response and no paper or deck consumer unless the stated pool support, balance, and timing checks pass |
 | `run_mechanism_expansion_exploration.py` | provisional JFE-expansion mechanism regressions and formation summaries |
 | `run_route_gas_economics.py` | exploratory receipt-gas hurdle for direct and extra-hop vehicle routes |
 | `run_gas_adjusted_vehicle_consequences.py` | gross and receipt-gas-adjusted output comparison for exact stablecoin-versus-WETH paths |

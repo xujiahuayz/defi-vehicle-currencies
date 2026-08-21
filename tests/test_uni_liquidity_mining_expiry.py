@@ -5,22 +5,18 @@ import pandas as pd
 import pytest
 
 from scripts.analyze.run_uni_liquidity_mining_expiry import (
-    ALL_STABLES,
-    CORE_STABLES,
     EVENTS,
+    REWARDED_POOL_COMPANIONS,
     REWARDED_POOL_ADDRESSES,
-    WBTC,
     WETH,
     IncentiveEvent,
+    analyse_pool_events,
     event_pool_summary,
     match_pool_group,
     matched_change,
     matched_event_path,
     matched_label_reference,
     prepare_pool_panel,
-    prepare_wbtc_routes,
-    wbtc_pair_support,
-    wbtc_route_response,
 )
 
 
@@ -47,7 +43,9 @@ def _pool_rows(event_date: pd.Timestamp, window_days: int = 5) -> pd.DataFrame:
                     "pool": pool,
                     "token0_address": WETH,
                     "token0_symbol": "WETH",
-                    "token1_address": _address(20_000 + pool_index),
+                    "token1_address": REWARDED_POOL_COMPANIONS.get(
+                        pool, _address(20_000 + pool_index)
+                    ),
                     "token1_symbol": f"T{pool_index}",
                     "reserve0": float(np.exp(log_k)),
                     "reserve1": float(np.exp(log_k)),
@@ -108,6 +106,19 @@ def test_matched_pool_first_stage_recovers_quantity_withdrawal() -> None:
         -0.30,
         abs=1e-10,
     )
+    both_events = prepare_pool_panel(pd.concat([_pool_rows(item.date) for item in EVENTS]))
+    results, support_rows = analyse_pool_events(
+        both_events, window_days=5, minimum_support_share=1.0,
+        minimum_pre_capital_usd=100.0, matches_per_treated=2,
+        placebo_shift_days=-15, maximum_assignments=99, seed=17,
+    )
+    specific = results[results["record_type"].eq("wbtc_weth_pool_first_stage")]
+    assert len(specific[specific["event"].eq("reward_expiry")]) == 1
+    expiry_gate = support_rows[
+        support_rows["record_type"].eq("pool_stop_go")
+        & support_rows["event"].eq("reward_expiry")
+    ].iloc[0]
+    assert "wbtc_weth_signed_relevance_pass" in expiry_gate
 
 
 def test_matched_label_reference_is_seed_reproducible() -> None:
@@ -146,102 +157,3 @@ def test_matched_label_reference_is_seed_reproducible() -> None:
     assert first["reference_assignments"] == 200
     assert 0 < first["permutation_p_two_sided"] <= 1
     assert first["inference_scope"].startswith("matched-label diagnostic")
-
-
-def _route_rows(event_date: pd.Timestamp, pairs: int = 4) -> pd.DataFrame:
-    stable = sorted(CORE_STABLES)[0]
-    noncore_stable = sorted(ALL_STABLES - CORE_STABLES)[0]
-    rows: list[dict[str, object]] = []
-    for pair_index in range(pairs):
-        other = _address(30_000 + pair_index)
-        wbtc_first = pair_index % 2 == 0
-        src, tgt = (WBTC, other) if wbtc_first else (other, WBTC)
-        for relative_day in range(-5, 5):
-            date = event_date + pd.Timedelta(days=relative_day)
-            native_routes = 8 if relative_day < 0 else 4
-            stable_routes = 2 if relative_day < 0 else 6
-            rows.extend(
-                [
-                    {
-                        "date": date,
-                        "src": src,
-                        "tgt": tgt,
-                        "candidate_address": WETH,
-                        "candidate_type": "native",
-                        "candidate_symbol": "WETH",
-                        "integration_scope": "single_venue",
-                        "hop1_venue": "uniswap_v2",
-                        "hop2_venue": "uniswap_v2",
-                        "route_count": native_routes,
-                    },
-                    {
-                        "date": date,
-                        "src": src,
-                        "tgt": tgt,
-                        "candidate_address": stable,
-                        "candidate_type": "stable",
-                        "candidate_symbol": "stable",
-                        "integration_scope": "single_venue",
-                        "hop1_venue": "uniswap_v2",
-                        "hop2_venue": "uniswap_v2",
-                        "route_count": stable_routes,
-                    },
-                ]
-            )
-    rows.append(
-        {
-            "date": event_date,
-            "src": WBTC,
-            "tgt": stable,
-            "candidate_address": WETH,
-            "candidate_type": "native",
-            "candidate_symbol": "WETH",
-            "integration_scope": "single_venue",
-            "hop1_venue": "uniswap_v2",
-            "hop2_venue": "uniswap_v2",
-            "route_count": 1,
-        }
-    )
-    rows.append(
-        {
-            "date": event_date,
-            "src": WBTC,
-            "tgt": noncore_stable,
-            "candidate_address": WETH,
-            "candidate_type": "native",
-            "candidate_symbol": "WETH",
-            "integration_scope": "single_venue",
-            "hop1_venue": "uniswap_v2",
-            "hop2_venue": "uniswap_v2",
-            "route_count": 1,
-        }
-    )
-    return pd.DataFrame(rows)
-
-
-def test_wbtc_route_response_is_preselected_and_narrow() -> None:
-    event_date = pd.Timestamp("2020-11-17")
-    routes = prepare_wbtc_routes(_route_rows(event_date))
-    assert not routes["other_endpoint"].isin(ALL_STABLES | {WETH, WBTC}).any()
-    support = wbtc_pair_support(
-        routes,
-        event_date,
-        window_days=5,
-        minimum_pre_routes=5,
-        minimum_pre_exposure=0.80,
-    )
-    assert int(support["selected"].sum()) == 4
-    assert support.loc[support["selected"], "pre_treated_leg_exposure"].eq(1.0).all()
-    response, diagnostics = wbtc_route_response(
-        support,
-        sign_flip_draws=1_000,
-        seed=17,
-    )
-    aggregate = response[
-        response["estimate"].eq("route_weighted_stable_share_change")
-    ].iloc[0]
-    assert aggregate["pre_value"] == pytest.approx(0.20)
-    assert aggregate["post_value"] == pytest.approx(0.60)
-    assert aggregate["value"] == pytest.approx(0.40)
-    assert diagnostics["selected_pairs"] == 4
-    assert diagnostics["post_active_pairs"] == 4
