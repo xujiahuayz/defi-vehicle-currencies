@@ -26,6 +26,9 @@ data and analysis-ready panels. Each current panel has one owner.
 | `build_cross_venue_routing_series.py` | daily cross-venue panel, inference, and router windows |
 | `measure_quoter_support.py` | V2/V4 quote-support bounds used by validation and the appendix |
 | `reconcile_graph_event_order.py` | raw RPC order corrections for ambiguous indexed events |
+| `build_route_gas_sample.py` | deterministic single-component route transactions for receipt fetching |
+| `build_route_gas_units.py` | receipt-measured gas by ordered venue sequence, intermediary, and transaction callee |
+| `build_contestable_route_receipts.py` | receipt gas price and transaction callee for exact stablecoin-versus-WETH routes |
 
 Raw records remain under `data/raw/`; disposable worker shards belong under
 `data/interim/` or a temporary directory and are not downstream inputs.
