@@ -98,6 +98,35 @@ Currency fixed effects & No & No & No & Yes \\
 \decknote{Exact additive decomposition on 181 matched dates in 2024 and 2026. Endpoint direction describes the pair; the vehicle remains the intermediary token.}
 \end{frame}
 
+% VISUAL-FUNCTION: window and endpoint restrictions | three compact estimates | show that composition explains reversals and survives nonvehicle endpoints
+% EVIDENCE-STATUS: direct robustness decompositions.
+% EVIDENCE-SOURCES: output/exhibits/vehicle_transition_adjacent_year_decomposition.jsonl; output/exhibits/vehicle_transition_nonvehicle_endpoint_decomposition.jsonl; output/exhibits/result_resolution_values.tex
+\begin{frame}{A17b. Rotation survives time and endpoint restrictions}
+\vspace{0.18cm}
+\begin{columns}[T,totalwidth=0.92\textwidth]
+\begin{column}{0.29\textwidth}
+\centering
+{\fontsize{18}{20}\selectfont\bfseries\color{ucldark}\AdjacentWithinMin{} to\\[-0.03cm] \AdjacentWithinMax}\par
+{\small within-pair term across\\all adjacent H1 comparisons\par}
+\end{column}
+\hfill
+\begin{column}{0.29\textwidth}
+\centering
+{\fontsize{19}{21}\selectfont\bfseries\color{stable}\NonvehicleEndpointStableBase{} $\rightarrow$\\[-0.03cm] \NonvehicleEndpointStableEnd}\par
+{\small route-count share with\\nonvehicle endpoints\par}
+\end{column}
+\hfill
+\begin{column}{0.29\textwidth}
+\centering
+{\fontsize{19}{21}\selectfont\bfseries\color{stable}\NonvehicleEndpointValueBase{} $\rightarrow$\\[-0.03cm] \NonvehicleEndpointValueEnd}\par
+{\small supported-value share with\\nonvehicle endpoints\par}
+\end{column}
+\end{columns}
+\vspace{0.62cm}
+{\large Pair entry and exit contribute \NonvehicleEndpointCountExclusive{} by count and \NonvehicleEndpointValueExclusive{} by value.\par}
+\decknote{Adjacent comparisons use matched January--June dates from 2019 through 2026. The endpoint restriction removes every pair with WETH or a stablecoin at either endpoint. All changes and components are in pp; supported value applies the 20\% agreement rule.}
+\end{frame}
+
 % VISUAL-FUNCTION: local and network liquidity | three coefficient columns | compare bridge depth with broader network reach
 \begin{frame}{A18. Local depth remains informative alongside network reach}
 \vspace{0.18cm}

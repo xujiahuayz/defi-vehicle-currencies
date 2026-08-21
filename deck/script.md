@@ -156,6 +156,8 @@ This does not say every continuing pair is frozen. Many move toward stablecoins 
 
 That changes the economic story. Dominance can move because the network grows around a vehicle, even when established relationships show little net replacement.
 
+Two quick checks. Run the same decomposition for every adjacent first half from 2019 to 2026: the within-pair term stays between minus 0.4 and plus 1 point, including the years when stablecoins lose share. Then remove every pair with WETH or a stablecoin at either endpoint. Stablecoin share still rises from 1.1 to 9 percent by count and from 0.9 to 39.1 percent by value. So neither the chosen endpoints nor mechanical vehicle eligibility creates the composition result.
+
 The next question is whether the first vehicle of a new relationship lasts.
 
 ## Slide 12. The first vehicle is sticky
@@ -397,6 +399,12 @@ These are Q&A notes. Usually two or three bullets are enough; stop once the ques
 - Other pairs supply the largest count and value contribution.
 - Pairs with two stablecoin endpoints are small by count and large by value.
 - USDT supplies essentially that entire high-value two-stable-endpoint channel.
+
+## A17b. Rotation survives time and endpoint restrictions
+
+- Across all seven adjacent H1 comparisons, the within-pair term stays between minus 0.4 and plus 1.0 percentage points.
+- After removing every pair with WETH or a stablecoin endpoint, stablecoin share rises from 1.1 to 9.0 percent by count and from 0.9 to 39.1 percent by supported value.
+- Pair entry and exit contribute 7.2 points by count and 33.8 points by value in that restricted sample.
 
 ## A18. Local depth remains informative alongside network reach
 

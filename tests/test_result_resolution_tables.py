@@ -85,4 +85,7 @@ def test_result_resolution_tables_render_direct_checks() -> None:
         "90.0 [1{,}234] & 40.0 [1{,}234]" in price_tex
     )
     assert r"\newcommand{\AdjacentLargestDeclineYears}{2019--2020}" in values
+    assert r"\newcommand{\AdjacentWithinMin}{$+1.0$ pp}" in values
+    assert r"\newcommand{\NonvehicleEndpointValueEnd}{60.0\%}" in values
+    assert r"\newcommand{\NonvehicleEndpointValueExclusive}{$+36.0$ pp}" in values
     assert r"\newcommand{\PriceChallengerIncumbentRetention}{40.0\%}" in values

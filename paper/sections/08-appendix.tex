@@ -524,6 +524,22 @@ Across the quantile rows of Table~\ref{tab:app:roundtrip}, the Share by value co
 \section{Additional composition and network results}
 \label{app:additional-composition}
 
+\begin{table}[tbp]
+\centering
+\caption{Time-window and endpoint restrictions on the stablecoin rotation}
+\label{tab:app:rotation-boundaries}
+\textit{Panel A. Adjacent January--June comparisons, route count}\par\smallskip
+{\scriptsize
+\input{../output/tables/adjacent_year_vehicle_rotation.tex}
+}
+\vspace{8pt}
+\textit{Panel B. Neither endpoint is WETH or a stablecoin}\par\smallskip
+{\scriptsize
+\input{../output/tables/nonvehicle_endpoint_rotation.tex}
+}
+\exhibitnote{Both panels apply the exact decomposition in Equation~\eqref{eq:pair-decomposition}; endpoint-year shares are percentages, and all changes and components are in pp. Panel A uses equal-weight matched January--June dates in each adjacent pair of years. Panel B compares matched January--June dates in 2024 and 2026 after removing every pair with WETH or a stablecoin at either endpoint. Supported value requires source, intermediary, and destination values to agree within 20\%. Trading reallocation changes weights across continuing pairs, support shift changes the aggregate weight on continuing pairs, and pair entry/exit is net of pairs present in only one endpoint year. Components use unrounded values and sum to the total change.}
+\end{table}
+
 The full route panel supports two complementary measures. Intermediary-position share allocates all observed intermediary work across currencies. Route-participation share records the fraction of routes containing a currency and can sum above one across currencies because a longer route may contain several intermediaries. Panel A of Table~\ref{tab:network-position} reports both measures for the native and stablecoin families. Panel B compares realised use with each named currency's position in the trading graph.
 
 \begin{table}[tbp]
