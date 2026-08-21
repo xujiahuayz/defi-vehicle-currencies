@@ -22,6 +22,12 @@ TICK_VENUES = ("uniswap_v3",)
 INITIALIZATION_ROOT = RAW_ROOT.parent / "ethereum" / "tick_initializations" / "daily"
 
 
+def initialization_root(raw_root: Path) -> Path:
+    """Resolve certified initialization rows beside the selected raw-data root."""
+
+    return raw_root.parent / "ethereum" / "tick_initializations" / "daily"
+
+
 @dataclass(frozen=True)
 class TickReplayEvent:
     order: tuple[int, int]
@@ -54,7 +60,7 @@ def _jsonl_gz(path: Path) -> list[dict]:
 def _initializations(raw_root: Path, venue: str, day: str) -> list[dict]:
     """Read the already certified daily initialization set and verify its bytes."""
 
-    path = INITIALIZATION_ROOT / venue / f"{day}.jsonl.gz"
+    path = initialization_root(raw_root) / venue / f"{day}.jsonl.gz"
     marker = path.with_name(f"{day}.jsonl.meta.json")
     if not path.is_file() or not marker.is_file():
         raise FileNotFoundError(f"validated initialization day is missing: {venue}/{day}")
@@ -98,7 +104,7 @@ def load_tick_day_events(
     for venue in venues:
         if venue != "uniswap_v3":
             raise ValueError(f"monthly exact frontier has no admitted tick venue: {venue}")
-        init_path = INITIALIZATION_ROOT / venue / f"{day}.jsonl.gz"
+        init_path = initialization_root(raw_root) / venue / f"{day}.jsonl.gz"
         raw_paths = {
             stream: raw_root / venue / f"{venue}_{stream}_{day}.jsonl.gz"
             for stream in ("swaps", "mints", "burns")
