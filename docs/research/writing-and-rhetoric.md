@@ -49,6 +49,14 @@ economic spine, nearby limitations, exhibit order, terminology, prose register,
 and every slide boundary visually. Automated checks are alarms; they are not a
 substitute for this full-document review.
 
+Apply the repository's resolve-before-caveating rule before drafting a
+qualification or mechanism interpretation. A missing field or crosswalk triggers
+a fetch or reconstruction. An interpretation with an observable implication
+triggers the most direct focused test. Prose retains only the boundary left by
+that test: identification, unobserved intent, unavailable external data, or a
+genuinely disproportionate extension. Do not add a regression merely to make a
+result look formal; choose the design that answers the economic question.
+
 ## Shared claim language
 
 - Put the economic object first. The reader should see the actor, market,
@@ -97,6 +105,10 @@ substitute for this full-document review.
   pipeline, node, gate, freeze, claim family, evidence status, producer, generated
   data release, artifact, registry, ledger, or support contract. Replace the underlying thought
   with the market object, sample restriction, estimate, or economic comparison.
+- A coverage statement distinguishes a broad protocol-source panel from a
+  market census. Name the market designs and venues represented, state the
+  material perimeter outside the data, and never relabel shares within observed
+  sources as shares of the complete market.
 - Provisional, blocked, withheld, unsupported, or retired results may remain in
   source comments and review documents. A result enters reader-facing prose only
   in scientific language that states its design and limitation; workflow status is
@@ -156,6 +168,10 @@ substitute for this full-document review.
 - Main-text limitations must travel with the result they can change. Do not hide
   support loss, construct disagreement, the strongest falsifier, or a limitation
   that changes sign or interpretation in the appendix.
+- If first use or adoption dates an event study, describe both sides of the
+  event. A visible post-event reversal must be reported and interpreted with
+  the endogenous timing and selection rule before attaching provider or trader
+  motives to it.
 - The abstract contains no exhibit callouts or reported standard errors. The
   introduction normally previews magnitudes and inference in prose and leaves
   panel, column, and standard-error lookup to the results section. In the local
@@ -254,6 +270,13 @@ substitute for this full-document review.
 
 ## Slide language
 
+- Speaker-note headings map one-for-one to the visible slide number and title.
+  Timing belongs in rehearsal notes, not in the heading. Use subheadings only
+  inside the notes for the same slide.
+- Memorable spoken shorthand such as ``sticky'' is welcome when it is tied
+  immediately to the measured object. Here it means predictive persistence in
+  observed route use; it must not silently become trader inertia or another
+  behavioural mechanism the design does not identify.
 - The audience-facing unit is a complete claim, not an approved vocabulary item.
 - A strong finance slide normally makes the economic actor, quantity, or event
   the subject, uses an active verb, and places a substantive condition beside the

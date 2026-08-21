@@ -36,7 +36,7 @@ VIDEO_OUTPUT = OUTPUT_DIR / "figures/vehicle_dominance_timelapse.mp4"
 POSTER_PDF_OUTPUT = OUTPUT_DIR / "figures/vehicle_dominance_timelapse_poster.pdf"
 POSTER_PNG_OUTPUT = OUTPUT_DIR / "figures/vehicle_dominance_timelapse_poster.png"
 
-START = pd.Timestamp("2020-06-01")
+START = pd.Timestamp("2018-11-01")
 END = pd.Timestamp("2026-06-30")
 SYMBOLS = ("WETH", "USDC", "USDT", "DAI")
 COLORS = {
@@ -51,6 +51,12 @@ MUTED = "#626974"
 GRID = "#D9DDE3"
 ACCENT = "#7C3AED"
 TRAIL_DAYS = 183
+PROTOCOL_MILESTONES = (
+    (pd.Timestamp("2018-11-02"), "V1"),
+    (pd.Timestamp("2020-05-05"), "V2"),
+    (pd.Timestamp("2021-05-04"), "V3"),
+    (pd.Timestamp("2025-01-24"), "V4"),
+)
 
 
 def _monthly_state_from_aggregates(aggregates: pd.DataFrame) -> pd.DataFrame:
@@ -543,7 +549,7 @@ def _draw_frame(
 
     figure.text(
         0.065,
-        0.105,
+        0.130,
         "Exact two-leg routes. Value shares require source, intermediary, and destination values to agree within 20%.",
         fontsize=9.4,
         color=MUTED,
@@ -551,7 +557,7 @@ def _draw_frame(
     )
     figure.text(
         0.065,
-        0.073,
+        0.102,
         "Named bubbles remain inside the full native-plus-stable denominator; smaller stablecoins are included in the family bars.",
         fontsize=9.4,
         color=MUTED,
@@ -559,24 +565,51 @@ def _draw_frame(
     )
     figure.add_artist(
         plt.Line2D(
-            [0.065, 0.065 + 0.87 * progress],
-            [0.036, 0.036],
-            transform=figure.transFigure,
-            color=ACCENT,
-            linewidth=3.0,
-            solid_capstyle="round",
-        )
-    )
-    figure.add_artist(
-        plt.Line2D(
             [0.065, 0.935],
-            [0.036, 0.036],
+            [0.045, 0.045],
             transform=figure.transFigure,
             color=GRID,
             linewidth=1.0,
             zorder=0,
         )
     )
+    figure.add_artist(
+        plt.Line2D(
+            [0.065, 0.065 + 0.87 * progress],
+            [0.045, 0.045],
+            transform=figure.transFigure,
+            color=ACCENT,
+            linewidth=3.0,
+            solid_capstyle="round",
+        )
+    )
+    first_date = pd.Timestamp(timeline.iloc[0]["date"])
+    last_date = pd.Timestamp(timeline.iloc[-1]["date"])
+    span_days = max(1, (last_date - first_date).days)
+    for index, (event_date, label) in enumerate(PROTOCOL_MILESTONES):
+        if not first_date <= event_date <= last_date:
+            continue
+        event_progress = (event_date - first_date).days / span_days
+        x = 0.065 + 0.87 * event_progress
+        figure.add_artist(
+            plt.Line2D(
+                [x, x],
+                [0.033, 0.057],
+                transform=figure.transFigure,
+                color=INK,
+                linewidth=0.9,
+            )
+        )
+        figure.text(
+            x,
+            0.018 if index % 2 == 0 else 0.066,
+            label,
+            fontsize=8.2,
+            fontweight="bold",
+            color=INK,
+            ha="left" if index == 0 else "center",
+            va="center",
+        )
 
 
 def _draw_poster(

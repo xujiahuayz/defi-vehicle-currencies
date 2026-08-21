@@ -9,6 +9,8 @@ import pandas as pd
 from pypdf import PdfReader
 
 from scripts.plot.render_vehicle_dominance_timelapse import (
+    END,
+    START,
     SYMBOLS,
     bubble_area,
     interpolated_timeline,
@@ -20,7 +22,7 @@ from scripts.plot.render_vehicle_dominance_timelapse import (
 
 def choice_fixture() -> pd.DataFrame:
     rows = []
-    for date, scale in (("2020-06-15", 1), ("2026-06-15", 2)):
+    for date, scale in ((START + pd.Timedelta(days=14), 1), ("2026-06-15", 2)):
         for symbol, candidate_type, count in (
             ("WETH", "native", 60),
             ("USDC", "stable", 20),
@@ -43,7 +45,7 @@ def choice_fixture() -> pd.DataFrame:
     # guard remains active in this compact fixture.
     frame = pd.DataFrame(rows)
     monthly = []
-    for month in pd.date_range("2020-06-01", "2026-06-01", freq="MS"):
+    for month in pd.date_range(START, END, freq="MS"):
         clone = frame.iloc[:5].copy()
         clone["date"] = month + pd.Timedelta(days=14)
         monthly.append(clone)
@@ -60,7 +62,7 @@ class VehicleDominanceTimelapseTests(unittest.TestCase):
 
     def test_monthly_state_keeps_smaller_stables_in_the_denominator(self) -> None:
         state = monthly_vehicle_state(choice_fixture())
-        self.assertEqual(len(state), 73)
+        self.assertEqual(len(state), len(pd.date_range(START, END, freq="MS")))
         self.assertAlmostEqual(float(state.iloc[0]["WETH_count_share"]), 0.60)
         self.assertAlmostEqual(float(state.iloc[0]["DAI_value_share"]), 0.05)
         self.assertAlmostEqual(float(state.iloc[0]["stable_count_share"]), 0.40)

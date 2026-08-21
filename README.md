@@ -38,11 +38,13 @@ question and literature                    done
         ║ I1 mechanism search: dominance drivers, LP behavior     ║
         ║ I2 input build: make eligible panels/releases           ║
         ║ I3 experiments: run exploratory and robustness variants ║
-        ║ I4 triage: magnitude, rivals, literature, framing       ║
+        ║ I4 challenge: caveats, rivals, interpretations          ║
+        ║    directly testable ─→ fetch/reconstruct/test ─→ rerun ║
+        ║    unidentified or disproportionate ─→ state boundary   ║
         ║ I5 draft integration: show results; keep status in source║
         ║ I6 review loop: send snapshot, collect comments, revise ║
         ║ weak result/comment unresolved ────────────────↺ I1/I2  ║
-        ║ strong result/comment resolved ─→ upgrade claim status  ║
+        ║ strong result/comment resolved ─→ upgrade result status ║
         ╚══════════════════════════════════════════════════════════╝
 
   → convergence candidate                  when paper/deck and comments stabilize
@@ -100,6 +102,29 @@ scripts/analyze/ → output/exhibits/
 
 scripts/verify/ checks every stage but does not create a parallel data layer.
 ```
+
+### Resolve before caveating
+
+Every central result passes through the same research loop:
+
+```text
+result
+  → serious caveat, rival, or interpretation
+      → observable with retained or fetchable data?
+          → yes: fetch or reconstruct the missing input
+                 → use the design that directly answers the question
+                 → rerun every dependent exhibit and deliverable
+                 → replace speculation with the measured result
+          → no: identify the residual boundary precisely
+                 → retain it only when identification, unobserved intent,
+                   external data, or disproportionate scope prevents a test
+```
+
+A regression is used when its unit, variation, and conditioning set answer the
+question. Decompositions, route-level counterfactuals, transition matrices,
+event studies, and direct validation are often sharper. Easy missing-data
+problems are data tasks, not manuscript limitations. An interpretation with an
+observable implication becomes an analysis task before it becomes prose.
 
 The folder boundary is substantive:
 

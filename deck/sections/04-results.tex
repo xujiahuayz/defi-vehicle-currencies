@@ -69,8 +69,8 @@
 % EVIDENCE-SOURCES: output/exhibits/vehicle_formation_exploration.jsonl; output/tables/vehicle_formation_regressions.tex
 % EVIDENCE-STATUS: main predictive persistence result.
 % VISUAL-FUNCTION: persistence after pair entry | three-horizon coefficient sequence | connect first vehicle use to later allocation
-\begin{frame}{The vehicle chosen at pair entry predicts later use}
-\evidencekicker{Pairs with complete follow-up support}
+\begin{frame}{The first vehicle is sticky}
+\evidencekicker{Predictive persistence after pair entry}
 \vspace{0.15cm}
 \begin{columns}[T,totalwidth=0.92\textwidth]
 \begin{column}{0.25\textwidth}
@@ -96,8 +96,8 @@
 \end{column}
 \end{columns}
 \vspace{0.72cm}
-{\large The first vehicle becomes a durable focal point for the new trading relationship.\par}
-\decknote{\FormationPathDependenceRows{} non-WETH pairs observed by route scope. Regressions control for entry size, cohort year, endpoint class, direct-route share, and route complexity. Standard errors are clustered by entry date. Initial vehicle use is observed, not randomly assigned.}
+{\large The first vehicle remains a focal point for the new trading relationship.\par}
+\decknote{\FormationPathDependenceRows{} non-WETH pairs observed by route scope. Regressions control for entry size, cohort year, endpoint class, direct-route share, and route complexity. Standard errors are clustered by entry date. ``Sticky'' means predictive persistence in observed route use; it does not identify trader inertia.}
 \end{frame}
 
 % EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl
@@ -134,47 +134,49 @@
 \includegraphics[width=\textwidth,height=0.65\textheight,keepaspectratio]{../output/figures/experiments/bridge_adoption_capital_path.pdf}
 \end{column}
 \hfill
-\begin{column}{0.26\textwidth}
+\begin{column}{0.27\textwidth}
+{\color{muted}\scriptsize BEFORE FIRST USE\par}\vspace{0.05cm}
 {\fontsize{23}{25}\selectfont\bfseries\color{stable}\BridgeAdoptionCapitalPreCoef}\par
 {\small stablecoin bridge, day -7 to 0\par}
 \vspace{0.38cm}
-{\fontsize{23}{25}\selectfont\bfseries\color{ucldark}\BridgeAdoptionCapitalMatchedPreCoef}\par
-{\small relative to the matched WETH bridge\par}
+{\color{muted}\scriptsize AFTER FIRST USE\par}\vspace{0.05cm}
+{\fontsize{23}{25}\selectfont\bfseries\color{accent}\BridgeAdoptionCapitalPostCoef}\par
+{\small stablecoin bridge, day 0 to +7\par}
 \end{column}
 \end{columns}
 \vspace{0.02cm}
-{\large Capital on the weaker leg rises before the route appears.\par}
-\decknote{Equal-event series for \BridgeAdoptionCapitalEvents{} pair events whose supported stablecoin is first used 7 to 119 days after persistent support. Capital is lagged one calendar day; shading gives 95\% confidence intervals clustered by pair and adoption date. The sample conditions on eventual use.}
+{\large Capital builds into first use, then partly unwinds.\par}
+\decknote{Equal-event series for \BridgeAdoptionCapitalEvents{} pair events whose supported stablecoin is first used 7 to 119 days after persistent support. Relative to the matched WETH bridge, the changes are \BridgeAdoptionCapitalMatchedPreCoef{} before and \BridgeAdoptionCapitalMatchedPostCoef{} after first use. Capital is lagged one calendar day; shading gives 95\% confidence intervals clustered by pair and adoption date. First use is an endogenous event date, so the post-use decline need not be withdrawal caused by the trade.}
 \end{frame}
 
 % EVIDENCE-SOURCES: output/exhibits/exact_vehicle_frontier_monthly.jsonl
 % EVIDENCE-STATUS: main exact pre-transaction price comparison.
 % VISUAL-FUNCTION: venue and vehicle price competition | nested opportunity-set cards | separate venue improvement from vehicle replacement
 \begin{frame}{Price competition usually changes the venue}
-\evidencekicker{Same input and pre-transaction state}
+\evidencekicker{Share of routes with a quote more than 1 bp better than execution}
 \vspace{0.08cm}
-\begin{columns}[T,totalwidth=0.92\textwidth]
-\begin{column}{0.29\textwidth}
+\begin{columns}[T,totalwidth=0.94\textwidth]
+\begin{column}{0.26\textwidth}
 \begin{beamercolorbox}[rounded=true,sep=0.30cm,wd=\textwidth]{block body}
-{\color{muted}\scriptsize USED VENUES\par}\vspace{0.10cm}
+{\color{muted}\scriptsize 1. SAME VEHICLE, USED VENUES\par}\vspace{0.10cm}
 {\fontsize{25}{27}\selectfont\bfseries\color{ucldark}\ExactFrontierWithinShare\par}
-{\small better same-vehicle quote}
+{\small of observed routes}
 \end{beamercolorbox}
 \end{column}
-\hfill
-\begin{column}{0.29\textwidth}
+\begin{column}{0.05\textwidth}\centering\vspace{0.56cm}{\large$\rightarrow$}\end{column}
+\begin{column}{0.26\textwidth}
 \begin{beamercolorbox}[rounded=true,sep=0.30cm,wd=\textwidth]{block body}
-{\color{muted}\scriptsize ALL EXACT VENUES\par}\vspace{0.10cm}
+{\color{muted}\scriptsize 2. SAME VEHICLE,\\ALL EXACT VENUES\par}\vspace{0.10cm}
 {\fontsize{25}{27}\selectfont\bfseries\color{stable}\ExactFrontierSameVehicleShare\par}
-{\small better same-vehicle quote}
+{\small of observed routes}
 \end{beamercolorbox}
 \end{column}
-\hfill
-\begin{column}{0.29\textwidth}
+\begin{column}{0.05\textwidth}\centering\vspace{0.56cm}{\large$\rightarrow$}\end{column}
+\begin{column}{0.26\textwidth}
 \begin{beamercolorbox}[rounded=true,sep=0.30cm,wd=\textwidth]{block body}
-{\color{muted}\scriptsize ALL VEHICLES + DIRECT\par}\vspace{0.10cm}
+{\color{muted}\scriptsize 3. ANY VEHICLE\\OR DIRECT\par}\vspace{0.10cm}
 {\fontsize{25}{27}\selectfont\bfseries\color{stable}\ExactFrontierAllPathShare\par}
-{\small better route}
+{\small of observed routes}
 \end{beamercolorbox}
 \end{column}
 \end{columns}
@@ -190,5 +192,5 @@
 {\small change in stablecoin vehicle share\par}
 \end{column}
 \end{columns}
-\decknote{\ExactFrontierRoutes{} common-support routes on \ExactFrontierDates{} monthly dates. Exact Uniswap v2, SushiSwap v2, and Uniswap v3 states; at least \ExactFrontierMinimumInput{} input; \ExactFrontierImpactLimit{} own-price-impact limit. The median gain among improved routes is \ExactFrontierMedianGain{}. Improvements are gross of gas.}
+\decknote{Each observed route is repriced for the same input at the state immediately before execution. The route-level counterfactual holds the pair, input amount, and pretrade pool state fixed. The sample contains \ExactFrontierRoutes{} common-support routes on \ExactFrontierDates{} monthly dates. Exact Uniswap v2, SushiSwap v2, and Uniswap v3 states; at least \ExactFrontierMinimumInput{} input; \ExactFrontierImpactLimit{} own-price-impact limit. The median gain among improved routes is \ExactFrontierMedianGain{}. Improvements are gross of gas.}
 \end{frame}

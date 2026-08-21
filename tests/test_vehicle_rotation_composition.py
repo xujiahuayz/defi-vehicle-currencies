@@ -15,6 +15,10 @@ from ddvc.analysis.vehicle_rotation_composition import (
     vehicle_rotation_market_incidence_decomposition,
 )
 from scripts.analyze import run_vehicle_rotation_composition_e0 as runner
+from scripts.analyze.run_vehicle_rotation_adjacent_years import (
+    adjacent_year_pairs,
+    summarize_adjacent_years,
+)
 
 
 NATIVE = "0x0000000000000000000000000000000000000001"
@@ -72,6 +76,40 @@ def _four_term_choices() -> pd.DataFrame:
             *_cross_controls(),
         ]
     )
+
+
+def test_adjacent_h1_decomposition_uses_every_consecutive_complete_year() -> None:
+    choices = pd.DataFrame(
+        [
+            _choice("2018-01-01", "a", "b", "native", 10),
+            _choice("2019-01-01", "a", "b", "native", 10),
+            _choice("2019-01-01", "x", "y", "native", 10, scope="cross_venue"),
+            _choice("2020-01-01", "a", "b", "stable", 10),
+            _choice("2020-01-01", "x", "y", "native", 10, scope="cross_venue"),
+            _choice("2020-07-01", "a", "b", "native", 1_000),
+            _choice("2021-01-01", "a", "b", "stable", 10),
+            _choice("2021-01-01", "x", "y", "stable", 10, scope="cross_venue"),
+        ]
+    )
+    assert adjacent_year_pairs([2021, 2018, 2019, 2020]) == (
+        (2019, 2020),
+        (2020, 2021),
+    )
+    result = summarize_adjacent_years(choices)
+    observed_pairs = set(
+        result[["baseline_year", "comparison_year"]].itertuples(
+            index=False, name=None
+        )
+    )
+    assert observed_pairs == {(2019, 2020), (2020, 2021)}
+    assert set(result["window"]) == {"january_june"}
+    pooled_count = result[
+        result["metric"].eq("count_share")
+        & result["reporting_scope"].eq("pooled")
+    ].sort_values("baseline_year")
+    assert pooled_count["common_month_days"].tolist() == [1, 1]
+    assert pooled_count["total_change"].tolist() == pytest.approx([0.5, 0.5])
+    assert pooled_count["identity_error"].abs().max() < 1e-12
 
 
 def _summary(

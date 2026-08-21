@@ -13,6 +13,7 @@ belongs in `../plot/` or `../tabulate/`.
 | `run_bridge_liquidity_dominance.py` | local two-leg bridge depth plus first stable-bridge establishment, adoption, and displacement; paper/deck |
 | `run_disconnected_component_boundary.py` | connected-component prevalence and component-as-route rotation sensitivity; paper/deck |
 | `run_exact_vehicle_frontier.py` | monthly exact pre-transaction route frontier across V2, Sushi V2, and V3; route-cost evidence |
+| `run_entry_vehicle_price_alignment.py` | incumbent vehicle use conditional on the exact pretrade price leader at the observed notional; appendix persistence evidence |
 | `run_liquidity_provision_behavior_exploration.py` | exploratory V2 capital-allocation and vehicle-use behavior |
 | `run_bridge_liquidity_feedback.py` | exploratory dynamic feedback between local bridge depth and vehicle use |
 | `run_mechanism_expansion_exploration.py` | provisional JFE-expansion mechanism regressions and formation summaries |
@@ -25,8 +26,9 @@ belongs in `../plot/` or `../tabulate/`.
 | `run_v1_forced_vehicle_tests.py` | aggregate V1 mandate-removal exhibits and research report |
 | `run_v1_forced_vehicle_token_level.py` | token-level V1 checks and findings report |
 | `run_vehicle_rotation_composition_e0.py` | pair panel, contribution ledger, decomposition, support, and fixed effects |
+| `run_vehicle_rotation_adjacent_years.py` | the same decomposition for every adjacent January--June year pair; appendix time-window evidence |
 | `run_vehicle_transition_e0.py` | backing-regime and fixed-opportunity result/support families |
-| `run_vehicle_transition_exploration.py` | umbrella command for the two vehicle-transition owners above |
+| `run_vehicle_transition_exploration.py` | umbrella command for the three vehicle-transition analyses above |
 | `run_vehicle_dominance_mechanism_sweep.py` | provisional driver screen for stable-vehicle gains, turn-ons, and leader switches |
 | `run_vehicle_market_size_exploration.py` | exploratory realised-market-size screen for stable vehicle use |
 | `run_endpoint_direction_decomposition.py` | exploratory endpoint-direction decomposition of stable vehicle rotation |

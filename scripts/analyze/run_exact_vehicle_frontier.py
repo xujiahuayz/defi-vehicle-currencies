@@ -303,6 +303,8 @@ def score_target(
         "year": int(target.day[:4]),
         "route_id": target.route_id,
         "tx_hash": target.route_id.split(":", 1)[0],
+        "token_in": target.route.token_in,
+        "token_out": target.route.token_out,
         "chosen_vehicle": target.route.vehicle,
         "chosen_vehicle_type": vehicle_class(target.route.vehicle),
         "public_vehicle": public_vehicle,

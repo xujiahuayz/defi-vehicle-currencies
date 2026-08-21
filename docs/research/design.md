@@ -16,6 +16,46 @@ at the same time. A weak, merely measurable, or literature-incremental result
 loops back to more search; it does not stop the paper and slides from being
 rebuilt.
 
+## Resolve before caveating
+
+For every central result, list the serious alternative explanations, measurement
+limits, and interpretive steps. Then classify each one by whether the repository
+can observe its implication.
+
+1. A missing field, stale fetch, incomplete crosswalk, or rebuildable historical
+   input is a data task. Fetch or reconstruct it, rerun every dependent result,
+   and remove the obsolete caveat.
+2. A testable interpretation becomes a focused empirical design. Use the most
+   direct object available: exact route repricing for price alternatives,
+   decomposition for accounting margins, transition matrices for switching,
+   event time for sequencing, and regression only when conditioning or variation
+   is the question.
+3. A result replaces the interpretation when the test discriminates among the
+   alternatives. If the test leaves several explanations observationally
+   equivalent, state that remaining set precisely.
+4. Retain a limitation only when it concerns identification, user or provider
+   intent absent from the chain, unavailable external data, or an extension whose
+   cost and scope are disproportionate to the paper's contribution.
+
+This loop is recursive. A new result can expose another resolvable boundary; the
+paper, deck, tables, figures, and speaking notes are rebuilt after the boundary
+is closed.
+
+### Current result-resolution map
+
+| Main evidence | Question that can be settled with current or fetchable data | Direct check | Residual boundary |
+|---|---|---|---|
+| Executed pool routes | Did missing V1 token identities truncate the route panel, or do disconnected calls drive the rotation? | Re-fetch the exact V1 exchange registry, rebuild the common panel, and compare the principal connected-transaction rule with separately reconstructed components. | A pool-event component identifies the executed on-chain route. User instructions, executor inventory, and off-pool transfers remain unobserved. |
+| Aggregate stablecoin rotation | Is the endpoint comparison a selected window, and is the near-zero within-pair term hiding gross switching? | Report positive and negative pair contributions separately and apply the identical decomposition to every adjacent January--June year pair. | The accounting locates the margin of change; it does not assign an external cause to pair entry, exit, or trading reallocation. |
+| Vehicle use after pair entry | Does the first vehicle merely predict later use, or does persistence survive an observable challenger? | Report transition and majority-state persistence, condition on continuous stablecoin-versus-WETH depth, and compare the chosen vehicle with the exact pretrade price leader when the panels overlap. | Trader and liquidity-provider intent are absent from the chain, so behavior and expectations remain observationally equivalent after measured price and depth are held fixed. |
+| Persistent bridge support and first use | Is support only a binary availability indicator, and what happens to capital around first use? | Measure the continuous bottleneck-depth ratio, the adoption gradient, pre- and post-use capital paths, and new-pool versus continuing-pool capital. | First use and deposited capital are equilibrium outcomes; without external variation the sequence does not identify a liquidity-supply effect. |
+| Exact route prices | Would the realised route change after opening more venues, another vehicle, or the direct path? | Reprice the same input at pretrade state through nested opportunity sets and report route-level transitions. | Candidate-specific gas, private order flow, and venues without reconstructable historical state remain outside the exact all-in comparison. |
+
+The adjacent-year decomposition is part of the vehicle-transition rebuild. The
+entry-price comparison runs only after the V1-inclusive exact-price and entry
+panels have both been rebuilt; it is omitted rather than filled with stale
+numbers before that join exists.
+
 Priority experiments:
 
 1. Making of vehicle dominance: estimate which asset, market, and route features

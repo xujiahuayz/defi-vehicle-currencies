@@ -22,6 +22,37 @@
 \decknote{The decomposition is exact. The next step asks why a pair keeps its first vehicle and when a competing two-leg bridge becomes deep enough to attract routes.}
 \end{frame}
 
+% EVIDENCE-STATUS: institutional chronology from the canonical source registry and protocol deployments.
+% EVIDENCE-SOURCES: src/ddvc/fetch/sources.py; Uniswap protocol deployment records.
+% VISUAL-FUNCTION: protocol chronology | alternating V1--V4 timeline | show how the feasible route set changes before the persistence evidence
+\begin{frame}{Protocol design changes the route set in steps}
+\evidencekicker{Uniswap on Ethereum}
+\vspace{0.08cm}
+\begin{center}
+\begin{tikzpicture}[x=1cm,y=1cm]
+\draw[rule,line width=2pt] (-5.45,1.55)--(5.45,1.55);
+\foreach \x/\version in {-4.80/V1,-1.60/V2,1.60/V3,4.80/V4}{
+  \fill[ucldark] (\x,1.55) circle (4.5pt);
+}
+\draw[ucldark,line width=1.0pt] (-4.80,1.55)--(-4.80,1.95);
+\node[softbox,inner sep=4pt,text width=2.55cm,align=center,anchor=south] at (-4.80,1.95)
+{\footnotesize\bfseries V1: Nov. 2018\\[-0.03cm]\tiny ETH--token pools; ETH required};
+\draw[ucldark,line width=1.0pt] (-1.60,1.55)--(-1.60,1.15);
+\node[softbox,inner sep=4pt,text width=2.55cm,align=center,anchor=north] at (-1.60,1.15)
+{\footnotesize\bfseries V2: May 2020\\[-0.03cm]\tiny arbitrary token pairs};
+\draw[ucldark,line width=1.0pt] (1.60,1.55)--(1.60,1.95);
+\node[softbox,inner sep=4pt,text width=2.55cm,align=center,anchor=south] at (1.60,1.95)
+{\footnotesize\bfseries V3: May 2021\\[-0.03cm]\tiny concentrated liquidity};
+\draw[ucldark,line width=1.0pt] (4.80,1.55)--(4.80,1.15);
+\node[softbox,inner sep=4pt,text width=2.55cm,align=center,anchor=north] at (4.80,1.15)
+{\footnotesize\bfseries V4: Jan. 2025\\[-0.03cm]\tiny singleton; flash accounting};
+\end{tikzpicture}
+\end{center}
+\vspace{0.02cm}
+{\normalsize\bfseries\color{ucldark}\centering V2 opens vehicle choice; later versions change how liquidity is supplied.\par}
+\decknote{First-swap dates. The next slide isolates V1 to V2: compulsory ETH routing ends while the inherited market structure remains.}
+\end{frame}
+
 \IfFileExists{../output/exhibits/v1_architecture_deck_values.tex}{%
 \input{../output/exhibits/v1_architecture_deck_values.tex}%
 }{\PackageError{dvc-deck}{Missing generated V1/V2 architecture values}{Rebuild the admitted V1/V2 presentation binding.}}
