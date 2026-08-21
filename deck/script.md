@@ -172,7 +172,7 @@ So prices move flow today, and earlier capital decides whose price leadership la
 
 ## Slide 15. Shortfalls cluster in young pairs and small trades
 
-Same exact comparisons, now asking what retention leaves on the table.
+Same exact comparisons, now asking what retention leaves on the table. The shortfall is simply the output you give up: for the same trade, at the same moment, how much more the best route through the other vehicle family would have returned. Zero if your route was already best.
 
 Across all trade sizes, the value-weighted shortfall is around seven and a half basis points, and accounting for gas barely moves it. For trades under a thousand dollars, gas roughly doubles a shortfall that was already twice as large. The fixed toll bites the small trader.
 
@@ -186,7 +186,7 @@ Let me pull the threads together.
 
 Here is the whole talk in one chain, left to right.
 
-The rotation came in through the door: new pairs supply four fifths of the rise, and switching inside old pairs nets to zero. The vehicle chosen at entry persists, close to one for one over the following four months. Liquidity decides how the contest goes: match the incumbent's depth and you carry half the flow. Prices are what break incumbency, a sixty-point retention swing when the challenger leads. And the cost of loyalty fades as pairs mature, down to two basis points after a year.
+The rotation came in through the door: new pairs supply four fifths of the rise, and switching inside old pairs nets to zero. The vehicle chosen at entry persists, close to one for one over the following four months. Liquidity decides how the contest goes: match the incumbent's depth and you carry half the flow. Prices are what break incumbency, a sixty-point retention swing when the challenger leads. And the shortfall, the output cost of loyalty, fades as pairs mature, down to two basis points after a year.
 
 So currency competition acts at two stages: which vehicle a new relationship builds around, and which vehicle survives later price and depth changes. The first stage is where the action was.
 
