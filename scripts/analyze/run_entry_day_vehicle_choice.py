@@ -332,6 +332,14 @@ def score_entry_day(
             continue
         by_order[target.order].append(target)
     reasons["economic_targets"] = sum(map(len, by_order.values()))
+    reasons["economic_targets_stable_chosen"] = sum(
+        target.route.vehicle in QUOTED_STABLES
+        for targets_at_order in by_order.values()
+        for target in targets_at_order
+    )
+    reasons["economic_targets_weth_chosen"] = (
+        reasons["economic_targets"] - reasons["economic_targets_stable_chosen"]
+    )
     event_by_order = {event.order: event for event in tick_events}
     if len(event_by_order) != len(tick_events):
         raise ValueError(f"duplicated V3 chain order on {day}")
@@ -342,10 +350,34 @@ def score_entry_day(
             if result is None:
                 reasons["chosen_quote_not_reproduced"] += 1
                 continue
-            if (
-                not bool(result["vehicle_families_contestable"])
-                or float(result["chosen_max_price_impact"])
-                > QUOTED_LEG_MAX_PRICE_IMPACT
+            reasons["chosen_quote_reproduced"] += 1
+            native_available = bool(
+                pd.notna(result["native_public_out"])
+                and float(result["native_public_out"]) > 0
+            )
+            stable_available = bool(
+                pd.notna(result["stable_public_out"])
+                and float(result["stable_public_out"]) > 0
+            )
+            reasons["native_path_available"] += int(native_available)
+            reasons["stable_path_available"] += int(stable_available)
+            reasons["both_paths_available"] += int(
+                native_available and stable_available
+            )
+            chosen_impact_supported = (
+                float(result["chosen_max_price_impact"])
+                <= QUOTED_LEG_MAX_PRICE_IMPACT
+            )
+            reasons["chosen_impact_supported"] += int(chosen_impact_supported)
+            if not native_available:
+                reasons["native_path_unavailable"] += 1
+            if not stable_available:
+                reasons["stable_path_unavailable"] += 1
+            if native_available and stable_available and not chosen_impact_supported:
+                reasons["chosen_impact_above_five_percent"] += 1
+            if not (
+                bool(result["vehicle_families_contestable"])
+                and chosen_impact_supported
             ):
                 reasons["not_symmetric_common_support"] += 1
                 continue
