@@ -88,8 +88,9 @@ def prepare_alignment_panel(
         "within_20pct",
         "chosen_max_price_impact",
         "chosen_vehicle_type",
-        "public_vehicle_type",
-        "public_path_regret_bps",
+        "native_public_out",
+        "stable_public_out",
+        "stable_minus_native_bps",
     }
     missing = sorted(required - set(frontier.columns))
     if missing:
@@ -97,13 +98,21 @@ def prepare_alignment_panel(
     routes = frontier.copy()
     day_text = routes["day"].astype(str).str.replace(r"\.0$", "", regex=True)
     routes["date"] = pd.to_datetime(day_text, format="%Y%m%d", errors="raise")
-    for column in ("input_usd", "chosen_max_price_impact", "public_path_regret_bps"):
+    for column in (
+        "input_usd",
+        "chosen_max_price_impact",
+        "native_public_out",
+        "stable_public_out",
+        "stable_minus_native_bps",
+    ):
         routes[column] = pd.to_numeric(routes[column], errors="raise")
     routes = routes[
         routes["within_20pct"].astype(bool)
         & routes["input_usd"].ge(MIN_INPUT_USD)
         & routes["chosen_max_price_impact"].le(MAX_PRICE_IMPACT)
         & routes["chosen_vehicle_type"].isin(VEHICLE_TYPES)
+        & routes["native_public_out"].gt(0)
+        & routes["stable_public_out"].gt(0)
     ].copy()
     entries = entry_vehicle_panel(pair_support)
     panel = routes.merge(
@@ -119,12 +128,13 @@ def prepare_alignment_panel(
     panel = panel[panel["pair_age_days"].ge(min(HORIZONS))].copy()
     if panel.empty:
         raise ValueError("entry-price alignment has no mature pair observations")
-    improved = panel["public_path_regret_bps"].gt(MIN_GAIN_BPS)
-    binary_public = panel["public_vehicle_type"].isin(VEHICLE_TYPES)
-    panel["price_leader_type"] = panel["chosen_vehicle_type"].where(
-        ~(improved & binary_public), panel["public_vehicle_type"]
+    gap = panel["stable_minus_native_bps"]
+    panel["price_leader_type"] = np.select(
+        [gap.gt(MIN_GAIN_BPS), gap.lt(-MIN_GAIN_BPS)],
+        ["stable", "native"],
+        default="tie",
     )
-    panel.loc[improved & ~binary_public, "price_leader_type"] = pd.NA
+    panel["absolute_vehicle_advantage_bps"] = gap.abs()
     panel["chosen_matches_entry"] = panel["chosen_vehicle_type"].eq(
         panel["entry_vehicle_type"]
     )
@@ -135,9 +145,8 @@ def prepare_alignment_panel(
         panel["price_leader_matches_entry"], "incumbent", "challenger"
     )
     panel["exact_vehicle_challenge"] = (
-        improved
-        & binary_public
-        & panel["public_vehicle_type"].ne(panel["entry_vehicle_type"])
+        panel["price_leader_type"].isin(VEHICLE_TYPES)
+        & panel["price_leader_type"].ne(panel["entry_vehicle_type"])
         & panel["chosen_matches_entry"]
     )
     return panel
@@ -162,8 +171,10 @@ def summarize_alignment(panel: pd.DataFrame) -> pd.DataFrame:
                         "observations": int(len(group)),
                         "pairs": int(group[["src", "tgt"]].drop_duplicates().shape[0]),
                         "incumbent_vehicle_share": float(group["chosen_matches_entry"].mean()),
-                        "median_public_gain_bps": float(
-                            pd.to_numeric(group["public_path_regret_bps"]).median()
+                        "median_vehicle_advantage_bps": float(
+                            pd.to_numeric(
+                                group["absolute_vehicle_advantage_bps"]
+                            ).median()
                         ),
                     }
                 )
@@ -188,7 +199,10 @@ def summarize_alignment(panel: pd.DataFrame) -> pd.DataFrame:
             )
             .agg(
                 chosen_matches_entry=("chosen_matches_entry", "mean"),
-                public_path_regret_bps=("public_path_regret_bps", "median"),
+                absolute_vehicle_advantage_bps=(
+                    "absolute_vehicle_advantage_bps",
+                    "median",
+                ),
             )
         )
         append_groups(pair_day, horizon=horizon, weighting="pair_day")
@@ -205,8 +219,11 @@ def summarize_alignment(panel: pd.DataFrame) -> pd.DataFrame:
                     "observations": int(len(group)),
                     "pairs": int(group[["src", "tgt"]].drop_duplicates().shape[0]),
                     "incumbent_vehicle_share": float(group["exact_vehicle_challenge"].mean()),
-                    "median_public_gain_bps": float(
-                        group.loc[group["exact_vehicle_challenge"], "public_path_regret_bps"].median()
+                    "median_vehicle_advantage_bps": float(
+                        group.loc[
+                            group["exact_vehicle_challenge"],
+                            "absolute_vehicle_advantage_bps",
+                        ].median()
                     ),
                 }
             )

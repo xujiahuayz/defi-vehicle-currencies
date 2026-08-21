@@ -35,8 +35,7 @@ def _route(
     tgt: str,
     *,
     chosen: str,
-    public: str,
-    gain: float,
+    stable_minus_native_bps: float,
 ) -> dict[str, object]:
     return {
         "day": "20210115",
@@ -47,8 +46,9 @@ def _route(
         "within_20pct": True,
         "chosen_max_price_impact": 0.01,
         "chosen_vehicle_type": chosen,
-        "public_vehicle_type": public,
-        "public_path_regret_bps": gain,
+        "native_public_out": 100.0,
+        "stable_public_out": 100.0 * (1 + stable_minus_native_bps / 10_000),
+        "stable_minus_native_bps": stable_minus_native_bps,
     }
 
 
@@ -61,10 +61,10 @@ def test_alignment_conditions_incumbent_use_on_exact_price_leader() -> None:
     )
     frontier = pd.DataFrame(
         [
-            _route("r1", "a", "b", chosen="stable", public="native", gain=10),
-            _route("r2", "a", "b", chosen="native", public="native", gain=0),
-            _route("r3", "c", "d", chosen="native", public="native", gain=0),
-            _route("r4", "c", "d", chosen="native", public="direct", gain=20),
+            _route("r1", "a", "b", chosen="stable", stable_minus_native_bps=-10),
+            _route("r2", "a", "b", chosen="native", stable_minus_native_bps=-5),
+            _route("r3", "c", "d", chosen="native", stable_minus_native_bps=-4),
+            _route("r4", "c", "d", chosen="native", stable_minus_native_bps=20),
         ]
     )
     panel = prepare_alignment_panel(frontier, pair_support)
@@ -79,7 +79,7 @@ def test_alignment_conditions_incumbent_use_on_exact_price_leader() -> None:
         "r4": "challenger",
     }
     assert panel.set_index("route_id").loc["r1", "exact_vehicle_challenge"]
-    assert pd.isna(panel.set_index("route_id").loc["r4", "price_leader_type"])
+    assert panel.set_index("route_id").loc["r4", "price_leader_type"] == "stable"
 
     result = summarize_alignment(panel)
     challenger = result[
@@ -89,8 +89,8 @@ def test_alignment_conditions_incumbent_use_on_exact_price_leader() -> None:
         & result["entry_vehicle_type"].eq("pooled")
         & result["price_leader_relation"].eq("challenger")
     ].iloc[0]
-    assert challenger["observations"] == 2
-    assert challenger["incumbent_vehicle_share"] == pytest.approx(0.5)
+    assert challenger["observations"] == 3
+    assert challenger["incumbent_vehicle_share"] == pytest.approx(2 / 3)
     incumbent = result[
         result["record_type"].eq("entry_price_leader_alignment")
         & result["horizon_days"].eq(120)

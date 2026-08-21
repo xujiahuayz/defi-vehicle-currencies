@@ -7,11 +7,13 @@ import pandas as pd
 from scripts.analyze.run_exact_vehicle_frontier import (
     _clustered_mean,
     _holm,
+    best_family_path,
     monthly_days,
     summarize,
     summarize_support,
     vehicle_class,
 )
+from ddvc.pricing.path_frontier import LegQuote
 
 
 def test_monthly_calendar_is_bounded_and_complete() -> None:
@@ -26,6 +28,33 @@ def test_vehicle_classes_keep_direct_native_and_stable_distinct() -> None:
     assert vehicle_class(None) == "direct"
     assert vehicle_class("0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2") == "native"
     assert vehicle_class("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48") == "stable"
+
+
+def test_family_quote_is_independent_of_the_executed_vehicle() -> None:
+    outputs = {
+        ("a", "native"): 80.0,
+        ("native", "b"): 70.0,
+        ("a", "stable1"): 90.0,
+        ("stable1", "b"): 91.0,
+        ("a", "stable2"): 95.0,
+        ("stable2", "b"): 92.0,
+    }
+
+    def quote_legs(token_in: str, token_out: str, amount_in: float):
+        amount_out = outputs.get((token_in, token_out))
+        if amount_out is None:
+            return []
+        return [LegQuote(amount_out, "venue", "pool", 0.01)]
+
+    native = best_family_path(
+        "a", "b", ("native",), 100.0, quote_legs=quote_legs
+    )
+    stable = best_family_path(
+        "a", "b", ("stable1", "stable2"), 100.0, quote_legs=quote_legs
+    )
+    assert native is not None and native.vehicle == "native"
+    assert stable is not None and stable.vehicle == "stable2"
+    assert stable.amount_out == 92.0
 
 
 def test_holm_preserves_missing_inference_and_adjusts_finite_tests() -> None:

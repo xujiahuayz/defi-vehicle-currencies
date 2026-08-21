@@ -40,6 +40,7 @@ from ddvc.pricing.mixed_frontier import (
     mixed_leg_quotes,
     quote_mixed_path,
 )
+from ddvc.pricing.path_frontier import PathQuote, best_vehicle_path
 from ddvc.pricing.tick_replay import (
     TickReplayEvent,
     TickReplayState,
@@ -76,6 +77,8 @@ VEHICLES = tuple(
         "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",  # WBTC
     )
 )
+NATIVE_VEHICLES = VEHICLES[:1]
+STABLE_VEHICLES = VEHICLES[1:4]
 CODE_SOURCES = [
     "scripts/analyze/run_exact_vehicle_frontier.py",
     "src/ddvc/analysis/transaction_frontier.py",
@@ -253,6 +256,45 @@ def vehicle_class(token: str | None) -> str:
     return "native" if kind == "staked_native" else str(kind or "other")
 
 
+def best_family_path(
+    token_in: str,
+    token_out: str,
+    vehicles: tuple[str, ...],
+    amount_in: float,
+    *,
+    quote_legs,
+) -> PathQuote | None:
+    """Return the best feasible two-leg quote within one vehicle family."""
+
+    best: PathQuote | None = None
+    for vehicle in vehicles:
+        candidate = best_vehicle_path(
+            token_in,
+            token_out,
+            vehicle,
+            amount_in,
+            quote_legs=quote_legs,
+        )
+        if candidate is not None and (
+            best is None or candidate.amount_out > best.amount_out
+        ):
+            best = candidate
+    return best
+
+
+def _path_fields(prefix: str, quote: PathQuote | None) -> dict[str, object]:
+    return {
+        f"{prefix}_public_out": quote.amount_out if quote is not None else None,
+        f"{prefix}_public_vehicle": quote.vehicle if quote is not None else None,
+        f"{prefix}_public_venues": (
+            "|".join(quote.venues) if quote is not None else None
+        ),
+        f"{prefix}_public_pools": (
+            "|".join(quote.pools) if quote is not None else None
+        ),
+    }
+
+
 def score_target(
     target: RouteTarget,
     *,
@@ -296,6 +338,28 @@ def score_target(
     )
     if scored is None:
         return None
+    native_quote = best_family_path(
+        target.route.token_in,
+        target.route.token_out,
+        NATIVE_VEHICLES,
+        target.route.amount_in,
+        quote_legs=quote_legs,
+    )
+    stable_quote = best_family_path(
+        target.route.token_in,
+        target.route.token_out,
+        STABLE_VEHICLES,
+        target.route.amount_in,
+        quote_legs=quote_legs,
+    )
+    contestable = native_quote is not None and stable_quote is not None
+    stable_minus_native_bps = (
+        10_000.0
+        * (stable_quote.amount_out - native_quote.amount_out)
+        / native_quote.amount_out
+        if contestable and native_quote.amount_out > 0
+        else None
+    )
     public_vehicle = scored["public_path_vehicle"]
     gain_bps = float(scored["public_path_regret_bps"])
     return {
@@ -325,6 +389,10 @@ def score_target(
         "public_gain_usd": target.output_usd * gain_bps / 10_000.0,
         "public_path_venues": scored["public_path_venues"],
         "public_path_pools": scored["public_path_pools"],
+        "vehicle_families_contestable": contestable,
+        "stable_minus_native_bps": stable_minus_native_bps,
+        **_path_fields("native", native_quote),
+        **_path_fields("stable", stable_quote),
     }
 
 
