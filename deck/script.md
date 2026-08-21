@@ -186,7 +186,7 @@ The first-use result says the same thing in ordinary language. Among shallow bri
 
 Useful bridge support rises continuously with depth. A pool can carry positive capital and still be far shallower than the incumbent. Depth makes the contest meaningful.
 
-This also helps interpret persistence. Some challengers fail to attract flow because the alternative route never becomes deep enough. Next: when does that depth arrive?
+So the measurable part of the persistence story is depth. A challenger can have positive capital and still sit near zero on the competitive spectrum. Next: does that depth arrive before or after first use?
 
 ## Slide 14. Bridge capital builds before first use
 
