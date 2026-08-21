@@ -239,7 +239,7 @@ Every observation has its own exact counterfactual quote. The three steps show h
 
 The next price test is narrower and harder: quote the best stablecoin route and the best WETH route independently, and keep only trades where both are executable. That is the comparison needed to connect current prices to the first vehicle without letting the executed route define its own benchmark.
 
-## Slide 17. New relationships can reorder currency dominance
+## Slide 17. New relationships reshape currency dominance
 
 Let me leave you with the bigger point.
 
