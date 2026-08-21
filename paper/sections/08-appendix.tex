@@ -425,17 +425,6 @@ The opportunity set expands in three stages: alternative paths using the same ve
 \end{table}
 % output/exhibits/exact_vehicle_frontier_monthly.jsonl; output/exhibits/exact_vehicle_frontier_monthly_support.jsonl; output/tables/exact_vehicle_frontier.tex
 
-Table~\ref{tab:app:entry-price-alignment} compares later route use with the independently quoted price leader.
-
-\begin{table}[tbp]
-\centering
-\caption{Current price leadership and entry-vehicle use}
-\label{tab:app:entry-price-alignment}
-\small
-\input{../output/tables/entry_vehicle_price_alignment.tex}
-\exhibitnote{Each cell reports the percentage of observations that use the vehicle recorded at pair entry; brackets give the number of routes or pair-days. Observations are at least 120 days after entry. For the same pair, input amount, and pre-transaction state, we independently quote the best path through WETH and the best path through DAI, USDC, or USDT. Both paths must be feasible, every leg must remain below 5\% own-price impact, input must be at least \$100, and the leading path must give more than one basis point of additional gross output. The comparison uses the fifteenth day of each month from June 2020 through June 2026 across exact Uniswap v2, SushiSwap v2, and Uniswap v3 states. It is gross of gas and excludes private order flow and other venues.}
-\end{table}
-
 \subsection{Realised gas burden}
 
 Receipt gas measures the fixed execution toll attached to adding a vehicle leg. In the executed-route sample, a stable-vehicle route in 2024 uses \GasStableExtraGasUnitsBase{} more gas than the median direct route, \GasStableExtraGasPctBase{} of the direct-route median. Evaluated at that year's median gas price and WETH price, the extra toll is \GasStableExtraCostBase{}, so a trade needs about \GasStableOneBpNotionalBase{} of notional before the extra gas is below one basis point. In 2026 the median stable-vehicle route uses \GasStableExtraGasUnitsEnd{} more gas than the direct-route median, while the dollar toll falls to \GasStableExtraCostEnd{} and the one-basis-point notional falls to \GasStableOneBpNotionalEnd{}. At each stable-vehicle route's own gas price, median stable-vehicle notional falls from \GasStableRouteMedianNotionalBase{} to \GasStableRouteMedianNotionalEnd{}, the median fixed toll falls from \GasStableRouteMedianTollBpsBase{} to \GasStableRouteMedianTollBpsEnd{}, and the share of routes with a toll below 25 basis points rises from \GasStableRouteTwentyFiveBpShareBase{} to \GasStableRouteTwentyFiveBpShareEnd{}. The extra leg adds gas units but becomes small relative to most observed stable-vehicle notionals. Because hypothetical route gas is unavailable, these estimates describe the realised fixed toll and leave the same-state price comparison gross of gas.
@@ -653,7 +642,7 @@ The issuer split in Appendix Table~\ref{tab:app:endpoint-direction}, panel B, ke
 \section{Secondary route and liquidity comparisons}
 \label{app:secondary-mechanisms}
 
-This section reports evidence used directly to interpret the main estimates: entry-activity restrictions, differences across venue pricing families, the composition of capital growth before first use, and subsequent comovement between route use and capital. Pool states and first-use dates are equilibrium outcomes; the estimates describe how route use and liquidity line up.
+This section reports evidence used directly to interpret the main estimates: entry-activity restrictions, the future-persistence version of bridge support, the composition of capital growth before first use, and relative-price risk. Pool states and first-use dates are equilibrium outcomes; the estimates describe how route use and liquidity line up.
 
 \subsection{Persistence among pairs with greater entry activity}
 
@@ -665,19 +654,6 @@ Table~\ref{tab:app:entry-persistence-robustness} repeats the post-entry stableco
 \label{tab:app:entry-persistence-robustness}
 \input{../output/tables/entry_vehicle_persistence_robustness.tex}
 \exhibitnote{Each column regresses the stablecoin share in the stated later window on the stablecoin share observed on the entry day. The sample requires complete follow-up through day 120 and subsequent trading in the stated window; the entry day is excluded from every later outcome. All columns control for cohort year, endpoint class, log entry routes, direct-route share, and longer-route share and use equal-pair weights. Coefficients and entry-date-clustered CR1 standard errors in parentheses report the outcome change in pp for a 10 pp higher entry share. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
-\end{table}
-
-\subsection{Venue pricing families}
-
-Table~\ref{tab:venue-technology} divides routes by the pricing family used on every leg. The stablecoin rotation is present among routes priced entirely by the constant-product family, which carries \VenueCPEpisodeShare{} of vehicle-currency intermediary positions in 2026.
-
-\begin{table}[tbp]
-\centering
-\caption{Vehicle role specialisation by venue pricing family}
-\label{tab:venue-technology}
-\small
-\input{../output/tables/venue_technology_rival.tex}
-\exhibitnote{Role specialisation is an asset type's share of intermediary activity divided by its share of route-endpoint demand, formed within each venue family. A route enters a family only when every leg uses a venue in that family. The constant-product family contains Uniswap v2 through v4 and SushiSwap v2 and v3. Uniswap v1 remains in the full route panel but is reported separately in this venue-family architecture comparison. Balancer is listed separately because its pools use both weighted and stable invariants. Values use all routes with positive dollar support. The ratio measures vehicle use relative to endpoint use; it is distinct from aggregate vehicle share.}
 \end{table}
 
 \subsection{Capital composition and later adjustment}
@@ -704,7 +680,7 @@ Figure~\ref{fig:app:bridge-adoption-capital-path} follows events whose supported
 \exhibitnote{The sample contains \BridgeAdoptionCapitalEvents{} pair-by-route-scope events whose first use of a stablecoin in the event's support set occurs 7 to 119 calendar days after persistent support. Each line is the equal-event mean change from day -7 in \(\log(1+\text{deposited capital in USD})\) on the weaker leg. Stablecoin depth is the largest bottleneck among the supported stablecoins; WETH depth is the matched incumbent bottleneck. Capital is lagged to the prior calendar day. Shading gives 95\% confidence intervals from standard errors two-way clustered by pair and adoption date.}
 \end{figure}
 
-Table~\ref{tab:bridge-pool-margins} separates newly active pools from capital growth in pools already supporting the route. Newly active pools hold \BridgePoolMarginNewCapitalShare{} of stablecoin weak-leg capital on the first-use day; \BridgePoolMarginContinuingCapitalShare{} lies in pools active one week earlier. Table~\ref{tab:bridge-feedback} follows the same local bridge across exact 30-, 60-, and 120-day horizons. Under route-activity weights, current depth is positively associated with later route share. Equal pair-date-scope weights yield smaller forward estimates. The time-reversed benchmarks are also positive in some specifications, especially under equal weights. The table therefore records persistent comovement; provider response to route use remains unresolved.
+Table~\ref{tab:bridge-pool-margins} separates newly active pools from capital growth in pools already supporting the route. Newly active pools hold \BridgePoolMarginNewCapitalShare{} of stablecoin weak-leg capital on the first-use day; \BridgePoolMarginContinuingCapitalShare{} lies in pools active one week earlier. Most observed growth therefore comes from deepening pools that already exist, with a smaller pool-activation margin.
 
 \begin{table}[htbp]
 \caption{Pool activation and capital growth before stablecoin route use}
@@ -714,17 +690,6 @@ Table~\ref{tab:bridge-pool-margins} separates newly active pools from capital gr
 \renewcommand{\arraystretch}{1.08}
 \input{../output/tables/bridge_adoption_pool_margins.tex}
 \exhibitnote{The sample contains the bridge events in Figure~\ref{fig:app:bridge-adoption-capital-path}. Stablecoin and WETH outcomes use each vehicle's weaker leg. A newly active pool has positive prior-calendar deposited capital on day zero and none on day -7; a continuing pool has positive capital on both dates. Each cell is an equal-event mean. Parentheses contain standard errors two-way clustered by pair and adoption date. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
-\end{table}
-
-\begin{table}[tbp]
-\centering
-\caption{Route use and local bridge depth at later horizons}
-\label{tab:bridge-feedback}
-{\scriptsize
-\renewcommand{\arraystretch}{0.90}
-\input{../output/tables/bridge_liquidity_feedback.tex}
-}
-\exhibitnote{For source--vehicle--destination bridge \(b\), \(R_{b,t}\) is one vehicle's share of route activity among WETH, WBTC, DAI, USDC, and USDT, and \(B_{b,t}=\log(1+\min\{K_{iv,t},K_{vj,t}\})\) is weak-leg deposited capital. Stablecoin rows retain DAI, USDC, and USDT separately. The sample draws on January--June 2024 and January--June 2026 and retains continuing bridges with positive deposited capital and positive five-vehicle route activity at both exact dates. Forward panels regress the exact future level on the dated predictor, a cubic in the current outcome level, bridge effects, and date effects. Time-reversed panels use the end-of-window predictor for the earlier outcome and a cubic in the end-of-window outcome level. Route-activity weights are measured on the predictor date; equal weights make each pair-date-scope sum to one. Route-use rows report the coefficient for 10 pp more route share in natural-log points; bridge-depth rows report the coefficient for one natural-log point more depth in pp. Standard errors are two-way clustered by pair and date. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively. The p-values are unadjusted for the displayed family of horizons, samples, timings, and weights.}
 \end{table}
 
 \subsection{Relative-price risk and deposited bridge capital}

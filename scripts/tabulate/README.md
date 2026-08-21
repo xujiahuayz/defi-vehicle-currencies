@@ -15,16 +15,14 @@ Captions, labels, placement, and interpretation stay in the paper/deck source.
 | `render_contestable_vehicle_consequences.py` | `contestable_vehicle_consequences.tex/.pdf` | `tab:contestable-vehicle-consequences` |
 | `render_usdt_transition.py` | `usdt_transition.tex/.pdf` | `tab:usdt-transition` |
 | `render_within_day_ladder.py` | `within_day_ladder.tex/.pdf` | `tab:within-day-ladder` |
-| `render_venue_technology_rival.py` | `venue_technology_rival.tex/.pdf` | `tab:venue-technology` |
 | `render_vehicle_mechanism_regressions.py` | `vehicle_mechanism_regressions.tex/.pdf` | `tab:vehicle-mechanism-regressions` |
 | `render_network_position.py` | `network_position.tex/.pdf` and generated deck values | `tab:network-position` |
 | `render_endpoint_direction.py` | `endpoint_direction.tex/.pdf` | `tab:app:endpoint-direction` |
 | `build_bridge_liquidity_deck_values.py` | `bridge_establishment_regressions.tex`, `bridge_adoption_pool_margins.tex` | `tab:app:bridge-persistent-support`, `tab:bridge-pool-margins` |
 | `render_bridge_exante.py` | `bridge_exante.tex/.pdf` | `tab:bridge-establishment` |
-| `render_bridge_liquidity_feedback.py` | `bridge_liquidity_feedback.tex/.pdf` | `tab:bridge-feedback` |
 | `render_bridge_lp_divergence_risk.py` | `bridge_lp_divergence_risk.tex/.pdf` | `tab:app:bridge-lp-risk` |
 | `render_exact_vehicle_frontier.py` | `exact_vehicle_frontier.tex/.pdf` and generated values | `tab:app:exact-vehicle-frontier` |
-| `render_result_resolution_checks.py` | adjacent-year, nonvehicle-endpoint, and priced-challenger tables plus generated values | `tab:app:rotation-boundaries`, `tab:app:entry-price-alignment` |
+| `render_result_resolution_checks.py` | adjacent-year and nonvehicle-endpoint tables plus generated values | `tab:app:rotation-boundaries` |
 | `build_endpoint_direction_deck_values.py` | `endpoint_direction_deck_values.tex` | endpoint-direction paper/deck values |
 | `build_stable_stable_vehicle_values.py` | `stable_stable_vehicle_values.tex` | stable-to-stable intermediary-identity values |
 | `render_venue_coverage.py` | `venue_coverage.tex/.pdf` | `tab:app:venues` |
@@ -36,10 +34,12 @@ a short validation or sample-description display: `tab:panel`, `tab:app:cl`,
 `tab:app:roundtrip`. Their evidence-source comments name the machine-readable
 analysis exhibit that supplies each value.
 
-Renderers for router windows, exploratory formation models, liquidity-provider
-comparisons, and V3/V4 results remain available for later work but do not feed
-the current manuscript. They should return only when they answer the paper's
-economic question more directly than an exhibit already in the main sequence.
+Renderers for the superseded entry-price alignment, venue-family comparison,
+route-depth feedback, router windows, exploratory formation models,
+liquidity-provider comparisons, and V3/V4 results remain available for later
+work but do not feed the current manuscript. They should return only when they
+answer the economic question more directly than an exhibit already in the main
+sequence.
 
 ## Shared paper/deck values
 
