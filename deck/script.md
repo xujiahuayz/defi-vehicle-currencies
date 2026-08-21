@@ -170,7 +170,7 @@ Large persistence. Same pair, long after the first routes. In ordinary language:
 
 The estimates control for entry size, cohort, endpoint type, direct routing, and route complexity. I use sticky as shorthand for predictive persistence in the observed routes. It does not mean I have isolated trader habit or inertia. The first vehicle is still an equilibrium outcome.
 
-Once a route convention forms, challengers face a real hurdle. But persistence can reflect shallow competing routes. So next we measure the two legs behind the challenger.
+Entry predicts later use, but the same pattern can contain deep and shallow challenges. So next we measure the two legs behind the challenger.
 
 ## Slide 13. A shallow stablecoin bridge attracts little route flow
 
