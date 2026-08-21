@@ -18,6 +18,7 @@ from scripts.analyze import run_vehicle_rotation_composition_e0 as runner
 from scripts.analyze.run_vehicle_rotation_adjacent_years import (
     adjacent_year_pairs,
     summarize_adjacent_years,
+    summarize_nonvehicle_endpoints,
 )
 
 
@@ -110,6 +111,32 @@ def test_adjacent_h1_decomposition_uses_every_consecutive_complete_year() -> Non
     assert pooled_count["common_month_days"].tolist() == [1, 1]
     assert pooled_count["total_change"].tolist() == pytest.approx([0.5, 0.5])
     assert pooled_count["identity_error"].abs().max() < 1e-12
+
+
+def test_nonvehicle_endpoint_sample_excludes_weth_and_stable_endpoints() -> None:
+    weth = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+    usdc = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+    choices = pd.DataFrame(
+        [
+            _choice("2024-01-01", "a", "b", "native", 10),
+            _choice("2026-01-01", "a", "b", "stable", 10),
+            _choice("2024-01-01", "x", "y", "native", 10, scope="cross_venue"),
+            _choice("2026-01-01", "x", "y", "native", 10, scope="cross_venue"),
+            _choice("2024-01-01", usdc, "z", "native", 1_000),
+            _choice("2026-01-01", usdc, "z", "stable", 1_000),
+            _choice("2024-01-01", weth, "q", "stable", 1_000),
+            _choice("2026-01-01", weth, "q", "stable", 1_000),
+        ]
+    )
+    result = summarize_nonvehicle_endpoints(choices)
+    pooled = result[
+        result["metric"].eq("count_share")
+        & result["reporting_scope"].eq("pooled")
+    ].iloc[0]
+    assert pooled["endpoint_sample"] == "neither_weth_nor_stable"
+    assert pooled["baseline_stable_share"] == 0.0
+    assert pooled["comparison_stable_share"] == pytest.approx(0.5)
+    assert pooled["total_change"] == pytest.approx(0.5)
 
 
 def _summary(
