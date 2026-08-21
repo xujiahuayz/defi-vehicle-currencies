@@ -455,71 +455,45 @@ A route whose first input token equals its last output token,
 \]
 does not represent a conversion between distinct endpoint assets. We exclude these routes from the dominance measures. The excluded population can contain cyclic arbitrage and other self-returning activity; the endpoint rule does not classify every route as arbitrage or wash trading. Multi-trade arbitrage can be bundled atomically \citep{DaianEtAl2020FlashBoys}, but identifying trader intent would require additional evidence.
 
-Table~\ref{tab:app:roundtrip} reports the distribution across sampled days; Figure~\ref{fig:app:roundtrip} shows the day-level observations.
+Table~\ref{tab:app:roundtrip} reports the distribution across every day with at least 200 multi-leg routes.
 
 \begin{table}[t]
 \centering
-\caption{Round-trip share of multi-leg routing, across 79 sampled days}
+\caption{Round-trip share of multi-leg routing across all eligible days}
 \label{tab:app:roundtrip}
 \begin{tabular}{lrr}
 \toprule
 Quantile across days & Share by count & Share by value \\
 \midrule
-Minimum & 4.45\% & 7.40\% \\
-% output/exhibits/round_trip_share_by_day.jsonl, 79 sampled days, minima on 2020-06-01 and 2023-04-03
-25th percentile & 9.60\% & 17.73\% \\
-% output/exhibits/round_trip_share_by_day.jsonl, 79 sampled days
-Median & 12.70\% & 21.72\% \\
-% output/exhibits/round_trip_share_by_day.jsonl, 79 sampled days
-75th percentile & 17.04\% & 29.56\% \\
-% output/exhibits/round_trip_share_by_day.jsonl, 79 sampled days
-90th percentile & 20.03\% & 46.11\% \\
-% output/exhibits/round_trip_share_by_day.jsonl, 79 sampled days
-Maximum & 25.93\% & 91.31\% \\
-% output/exhibits/round_trip_share_by_day.jsonl, 79 sampled days, both maxima on 2025-12-06
+Minimum & 0.00\% & 0.00\% \\
+% output/exhibits/round_trip_share_by_day.jsonl, 2,449 eligible days
+25th percentile & 9.66\% & 15.44\% \\
+% output/exhibits/round_trip_share_by_day.jsonl, 2,449 eligible days
+Median & 12.82\% & 20.96\% \\
+% output/exhibits/round_trip_share_by_day.jsonl, 2,449 eligible days
+75th percentile & 16.28\% & 27.99\% \\
+% output/exhibits/round_trip_share_by_day.jsonl, 2,449 eligible days
+95th percentile & 22.97\% & 51.07\% \\
+% output/exhibits/round_trip_share_by_day.jsonl, 2,449 eligible days
+Maximum & 33.09\% & 97.73\% \\
+% output/exhibits/round_trip_share_by_day.jsonl, count maximum 2020-05-25 and value maximum 2023-10-13
 \midrule
-2020 median & 11.77\% & 14.08\% \\
-% output/exhibits/round_trip_share_by_day.jsonl, 8 sampled days in 2020
-2021 median & 13.21\% & 25.35\% \\
-% output/exhibits/round_trip_share_by_day.jsonl, 13 sampled days in 2021
-2022 median & 16.72\% & 21.89\% \\
-% output/exhibits/round_trip_share_by_day.jsonl, 13 sampled days in 2022
-2023 median & 8.51\% & 17.71\% \\
-% output/exhibits/round_trip_share_by_day.jsonl, 13 sampled days in 2023
-2024 median & 9.60\% & 21.13\% \\
-% output/exhibits/round_trip_share_by_day.jsonl, 13 sampled days in 2024
-2025 median & 16.75\% & 36.08\% \\
-% output/exhibits/round_trip_share_by_day.jsonl, 14 sampled days in 2025
-2026 median & 20.80\% & 20.32\% \\
-% output/exhibits/round_trip_share_by_day.jsonl, 5 sampled days in 2026
+2019 median & 0.00\% & 0.00\% \\
+2020 median & 12.85\% & 12.77\% \\
+2021 median & 13.39\% & 23.95\% \\
+2022 median & 14.17\% & 25.82\% \\
+2023 median & 9.18\% & 17.07\% \\
+2024 median & 10.38\% & 19.83\% \\
+2025 median & 16.21\% & 30.47\% \\
+2026 median & 21.21\% & 20.08\% \\
+% output/exhibits/round_trip_share_by_day.jsonl, annual medians over eligible days
 \bottomrule
 \end{tabular}
-\exhibitnote{Round trips as a share of multi-leg routes. The sample contains 79 dates from 1 June 2020 through 27 April 2026 and 13,160,047 routes, of which 2,488,399 are multi-leg and 351,553 are round trips. Dates with fewer than 200 multi-leg routes are omitted.}
+\exhibitnote{Round trips as a share of multi-leg routes. The sample contains all 2,449 eligible dates from 15 May 2019 through 30 June 2026 and 359,631,951 routes, of which 68,927,053 are multi-leg. Dates with fewer than 200 multi-leg routes are omitted.}
 \end{table}
 
-Across the quantile rows of Table~\ref{tab:app:roundtrip}, the Share by value column exceeds Share by count by a factor between 1.7 and 3.5, consistent with a population in which large self-returning routes carry disproportionate value. Round trips appear on every sampled day; their minimum count share is 4.45\%. Round trips are excluded before the count- and value-weighted dominance measures are formed. Figure~\ref{fig:app:roundtrip} plots their count and value shares among multi-leg routes and identifies the date of the maximum.
-% output/exhibits/round_trip_share_by_day.jsonl, 79 sampled days from 2020-06-01 to 2026-04-27
-
-\begin{figure}[tbp]
-\centering
-\caption{Round-trip contamination of multi-leg routing, day by day}
-\label{fig:app:roundtrip}
-\begin{tikzpicture}
-\begin{axis}[width=0.92\textwidth, height=7.2cm, xlabel={Sampled day}, ylabel={Share of multi-leg routes, percent}, xmin=2020.2, xmax=2027.4, ymin=0, ymax=98, xtick={2021,2022,2023,2024,2025,2026}, xticklabel style={/pgf/number format/1000 sep={}}, ytick={0,20,40,60,80}, tick align=outside, tick label style={font=\footnotesize}, label style={font=\footnotesize}, legend style={font=\footnotesize, draw=black!35, fill=white, at={(0.02,0.97)}, anchor=north west}, legend cell align=left, grid=major, grid style={black!10}, axis line style={black!70}]
-\addplot[only marks, black, mark=*, mark size=1.5pt] coordinates {(2020.416,11.54) (2020.493,11.17) (2020.569,10.12) (2020.646,12.63) (2020.723,19.62) (2020.799,15.52) (2020.876,20.01) (2020.953,22.80) (2021.027,34.15) (2021.104,27.91) (2021.181,26.67) (2021.257,27.94) (2021.334,20.43) (2021.411,18.29) (2021.487,71.24) (2021.564,46.11) (2021.641,21.64) (2021.717,25.35) (2021.794,20.09) (2021.871,19.68) (2021.947,25.18) (2022.025,28.33) (2022.101,17.92) (2022.178,21.79) (2022.255,18.23) (2022.331,32.62) (2022.408,25.40) (2022.485,17.46) (2022.561,17.57) (2022.638,26.10) (2022.715,23.11) (2022.791,21.72) (2022.868,28.88) (2022.945,21.89) (2023.022,24.93) (2023.099,32.43) (2023.175,29.56) (2023.252,7.40) (2023.329,15.30) (2023.405,18.70) (2023.482,16.53) (2023.559,14.40) (2023.635,16.37) (2023.712,13.02) (2023.789,41.78) (2023.865,20.14) (2023.942,17.71) (2024.019,17.73) (2024.096,18.82) (2024.172,18.63) (2024.249,13.20) (2024.326,28.25) (2024.402,41.03) (2024.479,18.05) (2024.556,48.16) (2024.632,30.62) (2024.709,19.25) (2024.786,21.13) (2024.862,26.10) (2024.939,25.16) (2025.014,17.86) (2025.090,29.68) (2025.167,16.14) (2025.244,10.08) (2025.320,13.06) (2025.397,40.91) (2025.474,37.54) (2025.550,26.28) (2025.627,64.39) (2025.704,35.52) (2025.780,81.75) (2025.857,61.61) (2025.928,91.31) (2025.934,36.64) (2026.011,28.65) (2026.088,20.32) (2026.164,20.06) (2026.241,15.06) (2026.318,63.70)};
-\addlegendentry{share by value}
-\addplot[only marks, black!60, mark=o, mark size=1.7pt] coordinates {(2020.416,4.45) (2020.493,8.49) (2020.569,9.83) (2020.646,9.41) (2020.723,13.70) (2020.799,14.72) (2020.876,16.42) (2020.953,15.81) (2021.027,17.48) (2021.104,11.64) (2021.181,11.77) (2021.257,10.76) (2021.334,11.07) (2021.411,13.21) (2021.487,15.79) (2021.564,16.84) (2021.641,14.08) (2021.717,16.98) (2021.794,11.57) (2021.871,11.19) (2021.947,16.75) (2022.025,17.82) (2022.101,10.33) (2022.178,15.72) (2022.255,10.13) (2022.331,12.96) (2022.408,18.46) (2022.485,19.69) (2022.561,17.53) (2022.638,16.72) (2022.715,18.80) (2022.791,9.71) (2022.868,19.18) (2022.945,11.17) (2023.022,8.89) (2023.099,8.82) (2023.175,6.60) (2023.252,8.18) (2023.329,8.09) (2023.405,13.02) (2023.482,11.40) (2023.559,6.94) (2023.635,5.88) (2023.712,8.51) (2023.789,12.33) (2023.865,11.64) (2023.942,7.70) (2024.019,8.89) (2024.096,9.00) (2024.172,5.47) (2024.249,6.44) (2024.326,9.60) (2024.402,8.45) (2024.479,11.29) (2024.556,11.53) (2024.632,18.46) (2024.709,19.17) (2024.786,12.70) (2024.862,9.58) (2024.939,9.92) (2025.014,8.85) (2025.090,16.50) (2025.167,17.04) (2025.244,17.00) (2025.320,16.29) (2025.397,14.59) (2025.474,12.06) (2025.550,11.94) (2025.627,16.09) (2025.704,18.79) (2025.780,21.91) (2025.857,22.56) (2025.928,25.93) (2025.934,23.44) (2026.011,19.58) (2026.088,23.65) (2026.164,25.55) (2026.241,20.03) (2026.318,20.80)};
-\addlegendentry{share by count}
-\addplot[black, dashed, thin, no marks, forget plot] coordinates {(2020.2,21.72) (2026.45,21.72)};
-\addplot[black!60, dotted, thin, no marks, forget plot] coordinates {(2020.2,12.70) (2026.45,12.70)};
-\node[anchor=west, font=\scriptsize] at (axis cs:2026.5,21.72) {median 21.7};
-\node[anchor=west, font=\scriptsize, black!60] at (axis cs:2026.5,12.70) {median 12.7};
-\node[anchor=east, font=\scriptsize] at (axis cs:2025.86,91.31) {2025-12-06};
-\end{axis}
-\end{tikzpicture}
-\exhibitnote{Each mark is one sampled date. \emph{Share by value} weights round-trip routes by their notional; \emph{share by count} gives each route equal weight. Both shares use multi-leg routes as the denominator. Dashed and dotted lines mark the respective medians, and the highest point is labelled. Dates with fewer than 200 multi-leg routes are omitted. The sample contains 79 dates from 1 June 2020 through 27 April 2026 and 2,488,399 multi-leg routes.}
-\end{figure}
-% output/exhibits/round_trip_share_by_day.jsonl, share_by_count and share_by_value on 79 sampled days from 2020-06-01 to 2026-04-27
+At the median, round trips account for 12.8\% of multi-leg routes by count and 21.0\% by value. At the 95th percentile the shares are 23.0\% and 51.1\%, and the value-share maximum reaches 97.7\% on 13 October 2023. The wider upper tail by value is consistent with large self-returning routes carrying disproportionate notional. Round trips are excluded before the count- and value-weighted dominance measures are formed.
+% output/exhibits/round_trip_share_by_day.jsonl, all 2,449 eligible days
 
 \section{Additional composition and network results}
 \label{app:additional-composition}

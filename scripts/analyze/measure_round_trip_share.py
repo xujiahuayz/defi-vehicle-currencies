@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """How much of multi-leg routing is self-returning, across days and not on one day?
 
-This exists because a number measured here drifted. A single day, 2025-12-06, was measured
-at 25.6% of multi-leg routes by count and 90.5% by value, and that pair then propagated
+This exists because a number measured here drifted. A single day was measured
+at unusually high round-trip shares, and that pair then propagated
 into eleven places across `docs/` and `scripts/`, including the justification for excluding
 round trips, the argument for count-weighting over value-weighting, and a retired
 fixed-clock diagnostic where it carried the claim that arbitrage capacity is present. Two
@@ -11,9 +11,9 @@ it, so a single-day extreme read as a corpus constant. Java caught it from her o
 of an early check.
 
 The figure was never wrong, which is what made it durable: anyone re-checking it against
-its stated source would reproduce it exactly. It was measured on the most extreme day in
-the sample. Across 79 sampled days the median is 12.7% by count and 21.7% by value, and no
-other day exceeds 81.8% by value.
+its stated source would reproduce it exactly. The full eligible panel now contains 2,449
+days. Its medians are 12.8% by count and 21.0% by value; the value-share extreme is 97.7%
+on 2023-10-13.
 
 So the fix is not a corrected constant, since a corrected constant drifts the same way. It
 is a script that reports the DISTRIBUTION across days and writes it as an exhibit, so any

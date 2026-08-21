@@ -70,9 +70,9 @@ following document-wide changes, not isolated word replacements:
   should state the resulting coverage and reconstruction boundary without
   narrating the re-fetch or other project operations. Label raw pool swaps,
   usable directed legs, transactions, and routes as distinct units.
-- Prefer full-sample validation where computation is feasible. In particular,
-  replace the 79-day round-trip estimate with the all-day result and remove
-  arbitrary router snapshots unless the dates answer an economic question.
+- Full-sample round-trip validation now covers all 2,449 eligible days. The
+  manuscript reports the all-day distribution and no longer relies on arbitrary
+  router snapshots.
 - Show half-year observations so 2024 H1 and 2026 H1 are visible, retain the
   issuer-level stablecoin split and stable-to-stable endpoint analysis, and
   keep the distinction between the stablecoin family and individual dollar
@@ -124,16 +124,12 @@ native-versus-stable vehicle when both families appear in the same route.
 
 ### Studio resume point
 
-Studio is the sole owner of the next compute-and-revision cycle. Its checkout
-was fast-forwarded to `6429062` after preserving the newer generated exhibits.
-No project computation was running at handoff. Stage 1 stopped in
-`scripts/process/build_vehicle_excess_use.py` after writing the daily and
-transition outputs because the final status message references undefined
-`OUT_QUARTERLY`. The dependent Stage 2, Stage 3, and Stage 4 watchers therefore
-exited with their preceding-stage completion marker absent. Repair that name,
-rerun the excess-use step, and resume the remaining Stage 1 sequence: token
-prices, the all-day round-trip measure, network betweenness, the venue-technology
-comparison, and the exact vehicle frontier. Then relaunch Stages 2 through 4.
+Studio is the sole owner of the current compute-and-revision cycle. Commit
+`9c067cd` repaired the retired `OUT_QUARTERLY` completion-message reference.
+The V1-inclusive excess-use, half-year, token-price, all-day round-trip,
+network-betweenness, and cross-venue computations are complete. The exact
+vehicle frontier is the remaining long-running Stage 1 calculation; downstream
+tables, figures, manuscript, deck, and transcript rebuilds follow its output.
 
 The early adjacent-year run also stopped when the cross-venue subsample lacked
 positive support in an endpoint year. Treat that as a support rule to handle
@@ -177,8 +173,8 @@ such as “card.”
 - Quantify the connected-pool-component limit where the data permit it. The
   PYUSD example must not imply that the broader user instruction is generally
   observed.
-- Explain that the 79-day sample validates route construction and round-trip
-  prevalence; it is not the support of the core route panel.
+- Explain that the all-day round-trip distribution validates the endpoint
+  exclusion; it is not the support of the core route panel.
 
 ## Empirical spine
 

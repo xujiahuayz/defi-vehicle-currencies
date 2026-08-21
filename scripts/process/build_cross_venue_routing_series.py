@@ -27,15 +27,11 @@ still-open vehicle-asset definitions:
 
 WHY THE ECONOMIC FILTER EXISTS. A route that starts and ends in the same token
 (A -> K -> A) is not an endpoint-to-endpoint conversion under this route unit.
-On 2025-12-06 such round trips were 25.6% of multi-leg routes by count
-and 90.5% by dollar value, which is the most extreme day of 79 sampled across the
-corpus, where the median day runs 12.7% by count and 21.7% by value and no other
-sampled day exceeds 81.8% by value. That single day drove the cross-venue
-value share to 9.6% while the count share sat at 60.6%. Excluding them puts the
-value share at 88.8%. So the entire apparent 2025-Q4 reversal in the
-value-weighted series was round-trip flow in the denominator. One contributing
-case: six separate transactions each running WETH -> (junk token) -> WETH on one
-venue, each repriced to exactly $9,113,892.
+Across all 2,449 eligible days, round trips have a median share of 12.8% by
+count and 21.0% by dollar value. The 95th percentiles are 23.0% and 51.1%,
+respectively, and the value-share extreme reaches 97.7% on 2023-10-13. The
+full distribution therefore confirms that value-weighted route measures are
+especially exposed to self-returning flow in the denominator.
 
 The excluded population can contain cyclic arbitrage, wash activity and other
 self-returning paths, but this endpoint rule does not classify each route. The reference
