@@ -128,27 +128,6 @@ def render_table(results: pd.DataFrame) -> str:
         [
             r"\bottomrule",
             r"\end{tabularx}",
-            r"\vspace{2pt}",
-            r"\begin{minipage}{\linewidth}",
-            r"\footnotesize\textit{Note:} "
-            + (
-                f"Panel A uses {int(support['audited_venue_days'])} release-bound full-day venue ledgers "
-                f"across {int(support['audited_union_days'])} dates. Provider-only events are "
-                "provider rows absent from the corresponding Ethereum logs; chain-only events "
-                "are Ethereum-log events absent from the provider rows. Panels B and C rerun "
-                f"the route engine on the {int(support['route_reconstruction_days'])} dates "
-                "with at least one swap action. Panel D is the same pair decomposition on the "
-                "six common January--June audit dates in each endpoint year. The current "
-                f"releases omit {int(boundary['auxiliary_full_scope_venue_days'])} historical "
-                "auxiliary venue-days. Auxiliary log-order corrections would collide with "
-                f"another provider-ordered leg in {int(boundary['auxiliary_key_conflict_transactions'])} "
-                "transactions; together they contain "
-                f"{int(boundary['auxiliary_key_conflict_route_legs'])} legs and "
-                f"{int(boundary['auxiliary_key_conflict_routes'])} reconstructed routes. The exercise "
-                "validates the release-bound dates; it does not measure transaction-trace recall "
-                "outside them."
-            ),
-            r"\end{minipage}",
         ]
     )
     return "\n".join(lines) + "\n"

@@ -31,10 +31,11 @@ For the three exchange families with full-day Ethereum-log reconciliations, we c
 
 \begin{table}[htbp]
 \centering
-\footnotesize
+\small
 \caption{Ethereum-log checks and route-construction consequences}
 \label{tab:app:route-validation}
 \input{../output/tables/route_reconstruction_exact_chain_validation.tex}
+\exhibitnote{Panel A uses 206 release-bound full-day venue ledgers across 74 dates. Provider-only events are provider rows absent from the corresponding Ethereum logs; chain-only events are Ethereum-log events absent from the provider rows. Panels B and C rerun the route construction on the 50 dates with at least one swap action. Panel D repeats the pair decomposition on the six common January--June audit dates in each endpoint year. The current releases omit 35 historical auxiliary venue-days. Auxiliary log-order corrections would collide with another provider-ordered leg in 2 transactions; together they contain 47 legs and 2 reconstructed routes. The comparison validates the release-bound dates; it does not measure transaction-trace recall outside them.}
 \end{table}
 % output/exhibits/route_reconstruction_exact_chain_validation.jsonl; scripts/analyze/run_route_reconstruction_validation.py
 \clearpage
