@@ -11,6 +11,7 @@ belongs in `../plot/` or `../tabulate/`.
 | `run_integration_date_fe_ladder.py` | integration ladder; paper/deck values |
 | `run_liquidity_capital_v2_predictability.py` | V2 predictability results, support, and table; paper/deck |
 | `run_bridge_liquidity_dominance.py` | local two-leg bridge depth plus first stable-bridge establishment, adoption, and displacement; paper/deck |
+| `run_bridge_exante.py` | stable-bridge formation dated only from prior-calendar weak-leg capital, followed by adoption, later use, and relative-depth estimates |
 | `run_disconnected_component_boundary.py` | connected-component prevalence and component-as-route rotation sensitivity; paper/deck |
 | `run_exact_vehicle_frontier.py` | monthly exact pre-transaction route frontier across V2, Sushi V2, and V3; route-cost evidence |
 | `run_contestable_vehicle_choice.py` | exact stable-versus-native route choice with prior incumbent identity and lagged V2 bridge depth |

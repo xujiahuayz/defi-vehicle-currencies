@@ -19,6 +19,7 @@ Captions, labels, placement, and interpretation stay in the paper/deck source.
 | `render_network_position.py` | `network_position.tex/.pdf` and generated deck values | `tab:network-position` |
 | `render_endpoint_direction.py` | `endpoint_direction.tex/.pdf` | `tab:app:endpoint-direction` |
 | `build_bridge_liquidity_deck_values.py` | `bridge_establishment_regressions.tex`, `bridge_adoption_pool_margins.tex` | `tab:bridge-establishment`, `tab:bridge-pool-margins` |
+| `render_bridge_exante.py` | `bridge_exante.tex/.pdf` | lagged-capital bridge formation table |
 | `render_bridge_liquidity_feedback.py` | `bridge_liquidity_feedback.tex/.pdf` | `tab:bridge-feedback` |
 | `render_bridge_lp_divergence_risk.py` | `bridge_lp_divergence_risk.tex/.pdf` | `tab:app:bridge-lp-risk` |
 | `render_exact_vehicle_frontier.py` | `exact_vehicle_frontier.tex/.pdf` and generated values | `tab:app:exact-vehicle-frontier` |
