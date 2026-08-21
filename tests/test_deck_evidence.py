@@ -307,7 +307,7 @@ def test_deck_states_units_scopes_and_primary_protocol_sources() -> None:
     ).read_text(encoding="utf-8")
 
     assert "Routed value requires source, intermediary, and destination values to agree" in results
-    assert "Endpoint demand and intermediary use move together" in secondary
+    assert "Endpoint demand predicts intermediary use" in secondary
     assert "native-WETH-versus-stablecoin routes" in secondary
     assert "common month-days" in secondary
     assert "Matched markets" not in decomposition
