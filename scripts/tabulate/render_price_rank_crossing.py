@@ -207,10 +207,10 @@ def render_price_rank_crossing(
         r"\multicolumn{5}{@{}l}{\textit{Panel B. Immediate response and next-month price-rank persistence}} \\",
         r" & \multicolumn{1}{c}{Incumbent-share change} & \multicolumn{2}{c}{Challenger leads next month} & \multicolumn{1}{c}{Actual vs. placebo} \\",
         r"\cmidrule(lr){2-2}\cmidrule(lr){3-4}\cmidrule(l){5-5}",
-        r" & Material & Material & All & Material \\",
+        r" & Activity floor & Activity floor & All crossings & Activity floor \\",
         r" & (1) & (2) & (3) & (4) \\",
         r"\midrule",
-        "Challenger weak-leg capital share [effect pp per 10 pp] & "
+        r"Challenger weak-leg capital share, $Q_{e,-1}$ [10 pp] & "
         + " & ".join([*(_estimate_cell(row) for row in capital_rows), _blank()])
         + r" \\",
         "Actual crossing [vs. months -3 to -2] & "

@@ -1,0 +1,39 @@
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xrr@{}}
+\toprule
+\multicolumn{3}{@{}l}{\textit{Panel A. From original pair entry to the first sampled exact contest}} \\
+Quantity & Primary value & Additional detail \\
+\midrule
+Original pair-entry cohort & 118,447 pairs & 2,090 entry dates; \$5,000 minimum \\
+First sampled exact contest & 580 pairs & 995 routes \\
+Entry pairs reaching a sampled contest & 0.5\% & \\
+Entry-to-contest lag [days] & 115.5 median & 21--318.5 interquartile range \\
+Contest reached within 120 days & 53.3\% & \\
+Entry family retained, clear comparisons & 83.1\% of routes & 84.4\% of pairs \\
+Positive prior-day V2 capital for both families & 220 routes & 115 pairs \\
+\bottomrule
+\end{tabularx}
+
+\vspace{0.65em}
+
+\begin{tabularx}{\linewidth}{@{}>{\hsize=1.55\hsize\raggedright\arraybackslash}X*{3}{>{\hsize=.82\hsize\centering\arraybackslash}X}@{}}
+\toprule
+\multicolumn{4}{@{}l}{\textit{Panel B. Route choice at the first sampled exact contest}} \\
+ & (1) & (2) & (3) \\
+Outcome; effects [pp] & \begin{tabular}{@{}c@{}}Stablecoin\\chosen\end{tabular} & \begin{tabular}{@{}c@{}}Entry family\\retained\end{tabular} & \begin{tabular}{@{}c@{}}Entry family\\retained\end{tabular} \\
+\midrule
+Stablecoin current exact-output advantage [per 100 bp] & \begin{tabular}{@{}c@{}}$+6.39^{***}$\\$(0.75)$\end{tabular} &  &  \\
+Entry-family current exact-output advantage [per 100 bp] &  & \begin{tabular}{@{}c@{}}$+10.31^{**}$\\$(3.93)$\end{tabular} & \begin{tabular}{@{}c@{}}$+10.20^{**}$\\$(4.16)$\end{tabular} \\
+Entry-family prior-day V2 weak-leg capital share [per 10 pp] &  &  & \begin{tabular}{@{}c@{}}$+1.85$\\$(4.58)$\end{tabular} \\
+Log route input value [per log point] & \begin{tabular}{@{}c@{}}$-2.51$\\$(1.61)$\end{tabular} & \begin{tabular}{@{}c@{}}$-4.01$\\$(4.90)$\end{tabular} & \begin{tabular}{@{}c@{}}$-3.91$\\$(5.01)$\end{tabular} \\
+\addlinespace
+Dependent mean [\%] & 22.1 & 84.9 & 84.9 \\
+Within $R^2$ & 0.162 & 0.152 & 0.152 \\
+Observations (routes) & 995 & 219 & 219 \\
+Ordered endpoint pairs & 580 & 114 & 114 \\
+Dates & 64 & 27 & 27 \\
+Prior-day V2 capital positive for both families & No & Yes & Yes \\
+Date, source, destination, and route-scope fixed effects & Yes & Yes & Yes \\
+Pair- and date-clustered s.e. & Yes & Yes & Yes \\
+\bottomrule
+\end{tabularx}
+% Paper note: Original pair entry is the first material observed activity for an ordered endpoint pair. The first sampled exact contest is the first monthly exact-state date after entry on which both a WETH path and a DAI, USDC, or USDT path are feasible for an observed route under common quote rules. Exact output is measured from the pre-transaction state and its advantage is capped at 1,000 bp in absolute value. Capital is prior-calendar-day V2 full-range deposited capital on the weaker route leg; the regressor is the entry family's share of the two families' capital, centered at 50 percent. All models include log input value and date, source-asset, destination-asset, and observed-route-scope fixed effects. Standard errors are clustered by ordered endpoint pair and date. Asterisks *, **, and *** denote statistical significance at the 10 percent, 5 percent, and 1 percent levels, respectively.

@@ -13,7 +13,8 @@ Captions, labels, placement, and interpretation stay in the paper/deck source.
 | `render_route_reconstruction_validation.py` | `route_reconstruction_exact_chain_validation.tex/.pdf` | `tab:app:route-validation` |
 | `render_entry_vehicle_persistence.py` | `entry_vehicle_persistence.tex/.pdf`, `entry_vehicle_persistence_robustness.tex/.pdf` | `tab:entry-persistence`, `tab:app:entry-persistence-robustness` |
 | `render_contestable_vehicle_choice.py` | `contestable_vehicle_choice.tex/.pdf` | `tab:contestable-vehicle-choice` |
-| `render_price_rank_crossing.py` | `price_rank_crossing.tex/.pdf` | available for the exact-price dynamics sequence |
+| `render_first_contestable_vehicle_choice.py` | `first_contestable_vehicle_choice.tex/.pdf` and generated values | `tab:first-contestable-choice` |
+| `render_price_rank_crossing.py` | `price_rank_crossing.tex/.pdf` and generated values | `tab:price-rank-crossing` |
 | `render_contestable_vehicle_consequences.py` | `contestable_vehicle_consequences.tex/.pdf` | `tab:contestable-vehicle-consequences` |
 | `render_usdt_transition.py` | `usdt_transition.tex/.pdf` | `tab:usdt-transition` |
 | `render_within_day_ladder.py` | `within_day_ladder.tex/.pdf` | `tab:within-day-ladder` |

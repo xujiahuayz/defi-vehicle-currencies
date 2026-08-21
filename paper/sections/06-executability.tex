@@ -4,6 +4,36 @@
 Executable price differences can persist when trading is segmented across cryptocurrency markets \citep{MakarovSchoar2020Arbitrage}. We therefore compare stablecoin and WETH routes at the same input and pretrade state. For each observed two-leg route on the fifteenth day of every month from June 2020 through June 2026, we quote the best WETH route and the best stablecoin route through DAI, USDC, or USDT across Uniswap v2, SushiSwap v2, and Uniswap v3. The observed quote must reproduce realised output within one basis point; both vehicle families must be feasible; every observed and hypothetical leg must remain below 5\% own-price impact; leg values must agree within 20\%; and input value must be at least \$100. Appendix~\ref{app:quoters} gives the pricing equations, Appendix~\ref{app:support} calibrates the common support rule, and Appendix Table~\ref{tab:app:exact-vehicle-frontier} reports the broader price frontier.
 % output/exhibits/exact_vehicle_frontier_monthly.jsonl; output/exhibits/contestable_vehicle_choice_support.jsonl
 
+\subsection{The first exact contest after pair entry}
+\label{sec:executability:first-contest}
+
+The entry-day estimates show persistence across later realised routes, including pairs for which only one vehicle family may be feasible. We now locate the first sampled monthly date after pair entry on which the same observed trade can use either WETH or a stablecoin path under the exact common-support rules. Pair entry requires at least \FirstContestEntryValueThreshold{} of coherent route value on its first active day. Among \FirstContestEntryPairs{} such entrants, \FirstContestPairs{} pairs reach a sampled exact contest. The median lag is \FirstContestMedianLagDays{} days, and \FirstContestWithinOneTwenty{} reach it within 120 days (Table~\ref{tab:first-contestable-choice}, panel A).
+% output/exhibits/first_contestable_vehicle_choice.jsonl; output/exhibits/first_contestable_vehicle_choice_support.jsonl
+
+For route $r$ on pair $p$'s first contestable date $t$, we estimate
+\begin{equation}
+\label{eq:first-contestable-choice}
+C_{rpt}=\alpha+\beta A^O_{rpt}+\gamma A^K_{pt-1}
+       +\beta_q\log q_r+\delta_t+\eta_i+\xi_j+\phi_s+\varepsilon_{rpt}.
+\end{equation}
+In column 1 of panel B, $C_{rpt}$ indicates stablecoin use and $A^O_{rpt}$ is the stablecoin's exact-output advantage. In columns 2 and 3, $C_{rpt}$ indicates retention of the entry family, while $A^O_{rpt}$ and $A^K_{pt-1}$ are oriented toward that family. The capital term is its share of prior-calendar full-range constant-product weak-leg capital. Date effects $\delta_t$, source effects $\eta_i$, destination effects $\xi_j$, and observed-route-scope effects $\phi_s$ compare routes inside the same dated opportunity structure.
+
+The entry family carries \FirstContestRouteRetention{} of routes at the first sampled exact contest; equal weighting across pairs gives \FirstContestPairRetention{} (Table~\ref{tab:first-contestable-choice}, panel A). Across all first-contest routes, the coefficient on a 100 bp stablecoin exact-output advantage is \FirstContestStableOutputEffect{} (panel B, column 1). On the common capital sample, the coefficient on a 100 bp exact-output advantage for the entry family is \FirstContestRetentionOutputOnlyEffect{} in column 2 and \FirstContestRetentionJointOutputEffect{} after prior capital enters in column 3. The capital coefficient is \FirstContestRetentionJointCapitalEffect{} per 10 pp, with a standard error of \FirstContestRetentionJointCapitalSE{}. The initial vehicle therefore remains common when both families become feasible, while current executable output explains which entry vehicles survive the first observed challenge.
+
+\begin{table}[tbp]
+\centering
+\caption{Vehicle choice at the first sampled exact contest}
+\label{tab:first-contestable-choice}
+\scriptsize
+\renewcommand{\arraystretch}{0.94}
+\input{../output/tables/first_contestable_vehicle_choice.tex}
+\exhibitnote{Original pair entry is the first observed activity with at least \FirstContestEntryValueThreshold{} of coherent route value for an ordered endpoint pair. The first sampled exact contest is the first monthly exact-state date after entry on which both a WETH path and a path through DAI, USDC, or USDT are feasible for an observed route under the common quote rules. Panel A describes the resulting lifecycle and retains only pairs with a clear native or stablecoin entry family for the retention rows. Because exact states are sampled monthly and the common quote rules are deliberately strict, the \FirstContestCoverage{} coverage rate describes this sampled opportunity set; it is not an estimate of how many entrants ever acquire both paths. Panel B estimates Equation~\eqref{eq:first-contestable-choice}. Exact output comes from the pre-transaction state and its advantage is capped at 1,000 bp in absolute value. Capital is prior-calendar full-range Uniswap v2 and SushiSwap v2 capital on the weaker route leg; its regressor is the entry family's share of the two families' capital, centred at 50\%. Every model includes log input value and date, source, destination, and observed-route-scope effects. Standard errors are clustered by pair and date. Coefficients and standard errors are in pp. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
+\end{table}
+
+\FloatBarrier
+\subsection{Prices and capital across established pairs}
+\label{sec:executability:established}
+
 We call a family the incumbent when it alone carries the pair on the first observed vehicle day and begin measuring retention 30 days later. For route $r$, pair $p$, and date $t$, the price-and-capital specification is
 \begin{equation}
 \label{eq:contestable-retention}
@@ -24,6 +54,41 @@ Table~\ref{tab:contestable-vehicle-choice} reports the route-choice estimates. C
 \end{table}
 
 % output/exhibits/contestable_vehicle_choice.jsonl; output/exhibits/contestable_vehicle_choice_support.jsonl; output/tables/contestable_vehicle_choice.tex
+
+\FloatBarrier
+\subsection{When the price lead changes hands}
+\label{sec:executability:crossings}
+
+The retention regressions compare routes across many price configurations. We next follow the same pair when its exact-output ranking reverses. A price-rank crossing occurs when a challenger moves from at least one basis point behind in month $t-1$ to at least one basis point ahead in month $t$. The ranking uses the pair-month median exact-output gap across common-support quotes. Event dating uses only months $t-1$ and $t$. The principal comparison requires at least two common-support routes and at least \$1,000 of observed input in each crossing month. It contains \RankCrossingEvents{} crossings across \RankCrossingPairs{} ordered endpoint pairs, split equally between stablecoin and WETH challengers.
+% output/exhibits/price_rank_crossing.jsonl; output/exhibits/price_rank_crossing_support.jsonl
+
+Let $R_{e\tau}$ be the incumbent family's route share in event $e$ and relative month $\tau$, and let $Q_{e,-1}$ be the challenger's share of prior-calendar full-range constant-product weak-leg capital on the eve of the crossing. We estimate
+\begin{equation}
+\label{eq:price-rank-crossing}
+\begin{aligned}
+R_{e0}-R_{e,-1}
+  &=\alpha+\gamma Q_{e,-1}+X_e'\delta+\lambda_{m(e)}+\varepsilon_e,\\
+L_{e,1}
+  &=a+\theta Q_{e,-1}+X_e'c+\lambda_{m(e)}+u_e,
+\end{aligned}
+\end{equation}
+where $L_{e,1}$ equals one when the challenger remains the exact-output leader one month later. The controls $X_e$ contain the challenger family, the exact-output gaps in months $t-1$ and $t$, prior incumbent route share, and log route activity across the two crossing months. Calendar-month effects $\lambda_{m(e)}$ absorb common market conditions.
+
+The incumbent carries \RankCrossingPriorShare{} of routes immediately before a crossing and \RankCrossingCurrentShare{} in the crossing month (Table~\ref{tab:price-rank-crossing}, panel A). Among events observed one month later, its share returns to \RankCrossingNextShare{}. The actual crossing-month change exceeds the same event's change from month $-3$ to month $-2$ by \RankCrossingPlaceboEffect{} (panel B, column 4). Route allocation therefore moves sharply when the public price ranking changes.
+
+The next month separates a temporary quote from a durable challenge. The challenger remains ahead in \RankCrossingStillAhead{} of observed events, and the incumbent retakes the lead in \RankCrossingRetaken{}. Incumbent route share is \RankCrossingStillAheadShare{} in the first group and \RankCrossingRetakenShare{} in the second. A 10 pp larger challenger share of prior weak-leg capital has little association with the immediate route-share change, yet predicts \RankCrossingCapitalPersistence{} greater probability that the challenger remains ahead one month later (Table~\ref{tab:price-rank-crossing}, panel B, columns 1 and 2). Current output governs the immediate allocation; deeper two-leg capital helps the new price ranking endure.
+
+\begin{table}[tbp]
+\centering
+\caption{Price-rank crossings, route reallocation, and weak-leg capital}
+\label{tab:price-rank-crossing}
+\scriptsize
+\renewcommand{\arraystretch}{0.92}
+\input{../output/tables/price_rank_crossing.tex}
+\exhibitnote{A price-rank crossing occurs when the pair-month median exact-output gap moves from at least one basis point in favour of the incumbent in month $t-1$ to at least one basis point in favour of the challenger in month $t$. The principal activity floor requires at least two common-support routes and \$1,000 of observed input in both crossing months. Panel A gives equal-event means for the \RankCrossingBalancedEvents{} crossings observed throughout months $-3$ to $+3$; parentheses contain ordered endpoint-pair-clustered standard errors. In panel B, column 1 estimates the first line of Equation~\eqref{eq:price-rank-crossing}; columns 2 and 3 estimate its second line on the principal and unrestricted crossing samples. These columns control for challenger family, crossing- and prior-month exact-output gaps, prior incumbent route share, and log crossing-month route activity and include crossing-calendar-month effects. Standard errors are clustered by pair and calendar month. Column 4 stacks each event's month $-1$ to month 0 change with its month $-3$ to month $-2$ change and includes event effects; standard errors are clustered by pair. Coefficients and standard errors are in pp. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively. Deposited capital is an equilibrium pool stock, and pair-month prices are medians across observed trade sizes.}
+\end{table}
+
+\FloatBarrier
 
 The same comparison gives the output consequence of vehicle choice. Panel A of Table~\ref{tab:contestable-vehicle-consequences} shows that \ContestLowerOutputFamilyShare{} of routes use the family that returns at least one basis point less. Conditional on that choice, the median shortfall is \ContestForegoneMedianBps{} and the 90th percentile is \ContestForegonePNinetyBps{}; weighting every contestable route by input value gives \ContestForegoneInputValueWeightedBps{}. Among routes that retain a mature exclusive incumbent, \ContestRetainedLowerOutputShare{} leave more than one basis point of exact output, with a \ContestRetainedForegoneMedianBps{} conditional median and \ContestRetainedForegoneInputValueWeightedBps{} across all retained routes (panel B). Panel C reports value-weighted shortfalls of \ContestYoungForegoneInputValueWeightedBps{} for pairs aged 0--89 days, \ContestMiddleForegoneInputValueWeightedBps{} for pairs aged 90--364 days, and \ContestMatureForegoneInputValueWeightedBps{} after one year. The price cost is concentrated earlier in a pair's life. Established routes remain responsive to public prices, while weak-leg capital retains an independent association with vehicle use.
 % output/exhibits/contestable_vehicle_choice_support.jsonl; output/tables/contestable_vehicle_consequences.tex

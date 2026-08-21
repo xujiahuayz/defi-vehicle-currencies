@@ -28,12 +28,12 @@ The revision follows one connected graph and convergence loop:
 ```text
 compact route measurement and exact-chain validation
   -> aggregate rotation and exact pair lifecycle decomposition
-  -> pre-entry price and depth select the first vehicle
   -> first vehicle at pair entry predicts later vehicle use
   -> prior-information bridge formation and relative two-leg depth
   -> stablecoin and WETH paths feasible at the same pretrade state
-  -> price-rank crossings reveal when incumbents yield
+  -> first sampled exact contest: does the entry vehicle survive?
   -> current output and prior weak-leg depth jointly divide route flow
+  -> price-rank crossings reveal when incumbents yield and challengers endure
   -> all-in execution cost and network-risk consequences
   -> rival explanation or unresolved implication
        -> directly observable: test it and rebuild the chain
@@ -99,15 +99,15 @@ after the challenger crosses the exact-output ranking at different depth levels.
 
 | Order | Analysis | Required inputs | Main-text gate | Current disposition |
 |---|---|---|---|---|
-| 1 | Exact-chain route sensitivity | Existing reconciliation ledgers and reconstructed audited dates | Report how chain corrections change pair, vehicle, topology, and headline shares | Running on Studio; technical appendix unless conclusions move |
+| 1 | Exact-chain route sensitivity | Existing reconciliation ledgers and reconstructed audited dates | Report how chain corrections change pair, vehicle, topology, and headline shares | Passed; technical appendix; displayed regressions unchanged |
 | 2 | Pair lifecycle accounting | Existing all-history pair support and 2024/2026 decomposition | Entry, reactivation, role turnover, and exit add exactly to the period-specific term | Passed; gross first-observed entry belongs in the central decomposition |
 | 3 | Correct post-entry persistence | Existing entry and route panels | Entry day excluded; later trading explicit; stable across pair and activity weights | Passed; main text |
 | 4 | Prior-information bridge formation | Existing route-share and capital panels | Event date uses only lagged information; adoption timing and continuous depth reported | Passed; main text |
-| 5 | Exact first-vehicle choice | Exact pretrade prices, prior weak-leg capital, and material entrants | Both paths feasible at entry; price and depth estimated separately and together | Next Studio build; closes the entry-selection gap |
-| 6 | Price-rank crossings and incumbent response | Existing monthly exact-price and capital panels | Event dated without future information; challenger depth stratified; reverse crossings and placebo dates | Next Studio estimate; highest return per unit of compute |
+| 5 | First exact contestability after pair entry | Exact pretrade prices, prior weak-leg capital, and materially active entrants | Both paths feasible; entry vehicle defined earlier; price and depth estimated separately and together | Passed; entry vehicle survives about 84%; current output explains retention; main text with monthly-sampling boundary |
+| 6 | Price-rank crossings and incumbent response | Existing monthly exact-price and capital panels | Event dated without future information; challenger depth stratified; reverse crossings and placebo dates | Passed; 29.0 pp response relative to placebo; depth predicts price-rank durability; main text |
 | 7 | Same-sample price and capital choice | Existing exact-price, bridge-depth, and entry panels | Identical opportunity sample; interpretable magnitudes; pair/date effects | Passed; main text |
 | 8 | Dynamic route-use and bridge-depth relation | Existing route-share and capital panels | No mechanical coupling; initial states, time-reversed benchmarks, and alternative horizons pass | Outside the manuscript because time reversal also predicts outcomes |
-| 9 | Cost of retaining the incumbent | Exact-price panel and a reproducible receipt-gas panel | Same-size rival path; route- and value-weighted magnitude; gas bounds | Gross comparison passed; build the missing gas producer before the final consequence table |
+| 9 | Cost of retaining the incumbent | Exact-price panel and a reproducible receipt-gas panel | Same-size rival path; route- and value-weighted magnitude; gas bounds | Gross comparison passed; Studio receipt fetch and reproducible gas producer running |
 | 10 | LP returns and bridge formation | Prior fees, relative-price risk, capital, and material-token prices | Net-return proxy predicts later capital beyond initial depth and demand | Gated Studio extension; otherwise divergence loss remains an interpretation |
 | 11 | USDC shock exposure | Existing routes, prices, and capital; targeted refetch only if a field is missing | Pair-level exposure, pretrends, comparison group, and flow restrictions | Gated; run only if the comparison design clears the stated bar |
 | 12 | Executable network centrality | Exact-state monthly graph, price/depth/gas edge costs, material tokens | Predicts first vehicle or later route use beyond degree and unweighted betweenness | Gated extension; raw betweenness alone stays supporting evidence |
