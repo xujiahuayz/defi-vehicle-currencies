@@ -45,6 +45,8 @@ CODE_SOURCES = [
     "scripts/process/build_v3_lp_flow_pool_daily.py",
     *CANDIDATE_CODE_SOURCES,
 ]
+MAX_MISSING_REGISTRY_ROWS = 10
+MAX_MISSING_REGISTRY_GROSS_FLOW_USD = 100.0
 
 
 def v3_pool_registry(fee_panel_path: Path) -> pd.DataFrame:
@@ -126,6 +128,68 @@ def validate_v3_lp_flow_pool_daily(frame: pd.DataFrame) -> None:
             raise ValueError(f"V3 pool-day LP-flow panel has invalid {column}")
 
 
+def attach_v3_pool_registry(
+    flows: pd.DataFrame,
+    registry: pd.DataFrame,
+    *,
+    max_missing_rows: int = MAX_MISSING_REGISTRY_ROWS,
+    max_missing_gross_flow_usd: float = MAX_MISSING_REGISTRY_GROSS_FLOW_USD,
+) -> tuple[pd.DataFrame, dict[str, object]]:
+    """Attach immutable pool identity and quarantine immaterial registry gaps.
+
+    A handful of late-sample mint/burn events can precede the first retained
+    pool-day row and therefore have no static fee-tier identity in the daily
+    registry.  They cannot enter the pool-level analysis.  Keep the exclusion
+    explicit and fail if either its row count or its observed candidate-side
+    dollar flow becomes material.
+    """
+
+    if max_missing_rows < 0 or max_missing_gross_flow_usd < 0:
+        raise ValueError("V3 registry-gap bounds must be nonnegative")
+    merged = flows.merge(
+        registry,
+        on="pool",
+        how="left",
+        validate="many_to_one",
+        indicator="_registry_merge",
+    )
+    missing = merged.loc[merged["_registry_merge"].ne("both")].copy()
+    flow_columns = [
+        column
+        for column in (
+            "v3_add_lp_flow_usd_screened",
+            "v3_remove_lp_flow_usd_screened",
+        )
+        if column in missing.columns
+    ]
+    missing_gross_flow = (
+        float(missing[flow_columns].fillna(0.0).to_numpy().sum())
+        if flow_columns
+        else 0.0
+    )
+    if len(missing) > max_missing_rows or missing_gross_flow > max_missing_gross_flow_usd:
+        raise ValueError(
+            "V3 pool-day LP registry gap exceeds the admitted immaterial bound: "
+            f"{len(missing):,} rows and ${missing_gross_flow:,.2f} gross flow"
+        )
+    support = {
+        "missing_registry_rows": int(len(missing)),
+        "missing_registry_pools": int(missing["pool"].nunique()),
+        "missing_registry_gross_flow_usd": missing_gross_flow,
+        "missing_registry_pool_ids": "+".join(
+            sorted(missing["pool"].dropna().astype(str).unique())
+        ),
+        "registry_gap_rule": (
+            f"drop_only_if_rows_le_{max_missing_rows}_and_gross_flow_usd_le_"
+            f"{max_missing_gross_flow_usd:g}"
+        ),
+    }
+    kept = merged.loc[merged["_registry_merge"].eq("both")].drop(
+        columns="_registry_merge"
+    )
+    return kept.reset_index(drop=True), support
+
+
 def run(
     *,
     output_path: Path = OUTPUT,
@@ -150,9 +214,7 @@ def run(
         retain_pool=True,
     )
     registry = v3_pool_registry(fee_panel_path)
-    flows = flows.merge(registry, on="pool", how="left", validate="many_to_one")
-    if flows["token0_address"].isna().any():
-        raise ValueError("V3 pool-day LP flows contain a pool absent from the registry")
+    flows, registry_support = attach_v3_pool_registry(flows, registry)
     candidate_on_token0 = flows["candidate_address"].eq(flows["token0_address"])
     candidate_on_token1 = flows["candidate_address"].eq(flows["token1_address"])
     if not (candidate_on_token0 ^ candidate_on_token1).all():
@@ -169,6 +231,7 @@ def run(
         flows["token0_symbol"],
     )
     validate_v3_lp_flow_pool_daily(flows)
+    support.update(registry_support)
     support.update(
         {
             "record_type": "v3_lp_flow_pool_daily_support",

@@ -7,7 +7,10 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from scripts.process.build_v3_lp_flow_pool_daily import run
+from scripts.process.build_v3_lp_flow_pool_daily import (
+    attach_v3_pool_registry,
+    run,
+)
 from scripts.process.build_v3_lp_flow_candidate_daily import (
     load_raw_uniswap_v3_lp_flows,
 )
@@ -224,3 +227,45 @@ def test_pool_mode_preserves_both_candidate_sides_of_core_pool(
     assert len(flows) == 2
     assert set(flows["candidate_symbol"]) == {"WETH", "USDC"}
     assert set(flows["pool"]) == {"0xpool"}
+
+
+def test_registry_gap_is_reported_and_bounded() -> None:
+    flows = pd.DataFrame(
+        [
+            {
+                "pool": "0xknown",
+                "v3_add_lp_flow_usd_screened": 10.0,
+                "v3_remove_lp_flow_usd_screened": 0.0,
+            },
+            {
+                "pool": "0xlate",
+                "v3_add_lp_flow_usd_screened": 0.5,
+                "v3_remove_lp_flow_usd_screened": 0.25,
+            },
+        ]
+    )
+    registry = pd.DataFrame(
+        [
+            {
+                "pool": "0xknown",
+                "token0_address": WETH,
+                "token0_symbol": "WETH",
+                "token1_address": ENDPOINT,
+                "token1_symbol": "TOKEN",
+                "fee_tier": 3000,
+            }
+        ]
+    )
+
+    kept, support = attach_v3_pool_registry(flows, registry)
+
+    assert kept["pool"].tolist() == ["0xknown"]
+    assert support["missing_registry_rows"] == 1
+    assert support["missing_registry_pools"] == 1
+    assert support["missing_registry_gross_flow_usd"] == pytest.approx(0.75)
+    with pytest.raises(ValueError, match="registry gap exceeds"):
+        attach_v3_pool_registry(
+            flows,
+            registry,
+            max_missing_rows=0,
+        )
