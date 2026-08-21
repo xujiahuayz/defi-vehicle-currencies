@@ -118,11 +118,42 @@ def _alignment_cell(row: pd.Series) -> str:
     return rf"{_pct(row['incumbent_vehicle_share'])} [{_integer(row['observations'])}]"
 
 
+def _validate_price_alignment(results: pd.DataFrame) -> pd.DataFrame:
+    required = {
+        "record_type",
+        "horizon_days",
+        "weighting",
+        "entry_vehicle_type",
+        "price_leader_relation",
+        "observations",
+        "pairs",
+        "incumbent_vehicle_share",
+        "median_vehicle_advantage_bps",
+        "minimum_gain_bps",
+        "estimand",
+    }
+    missing = sorted(required - set(results.columns))
+    if missing:
+        raise ValueError(f"entry-price alignment lacks columns: {missing}")
+    data = results[results["record_type"].eq("entry_price_leader_alignment")].copy()
+    if data.empty:
+        raise ValueError("entry-price alignment is empty")
+    if set(data["estimand"]) != {
+        "incumbent_vehicle_use_conditional_on_exact_pretrade_price_leader"
+    }:
+        raise ValueError("entry-price alignment uses an unexpected estimand")
+    advantage = pd.to_numeric(data["median_vehicle_advantage_bps"], errors="raise")
+    threshold = pd.to_numeric(data["minimum_gain_bps"], errors="raise")
+    if advantage.lt(threshold).any():
+        raise ValueError("entry-price alignment includes a sub-threshold price leader")
+    if pd.to_numeric(data["observations"], errors="raise").le(0).any():
+        raise ValueError("entry-price alignment includes an empty comparison")
+    return data
+
+
 def render_entry_price_alignment(results: pd.DataFrame) -> str:
-    data = results[
-        results["record_type"].eq("entry_price_leader_alignment")
-        & results["horizon_days"].eq(120)
-    ]
+    data = _validate_price_alignment(results)
+    data = data[data["horizon_days"].eq(120)]
     if data.empty:
         raise ValueError("120-day entry-price alignment is empty")
     lines = [
@@ -201,6 +232,7 @@ def render_values(
     endpoint: pd.DataFrame,
     price: pd.DataFrame,
 ) -> str:
+    price = _validate_price_alignment(price)
     challenger = _single(
         price,
         record_type="entry_price_leader_alignment",

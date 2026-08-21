@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pandas as pd
+import pytest
 
 from scripts.tabulate.render_result_resolution_checks import (
     render_adjacent_year_rotation,
@@ -49,6 +50,9 @@ def _price_results() -> pd.DataFrame:
                         "observations": 1_234,
                         "pairs": 321,
                         "incumbent_vehicle_share": share,
+                        "median_vehicle_advantage_bps": 4.0,
+                        "minimum_gain_bps": 1.0,
+                        "estimand": "incumbent_vehicle_use_conditional_on_exact_pretrade_price_leader",
                     }
                 )
     return pd.DataFrame(rows)
@@ -89,3 +93,14 @@ def test_result_resolution_tables_render_direct_checks() -> None:
     assert r"\newcommand{\NonvehicleEndpointValueEnd}{60.0\%}" in values
     assert r"\newcommand{\NonvehicleEndpointValueExclusive}{$+36.0$ pp}" in values
     assert r"\newcommand{\PriceChallengerIncumbentRetention}{40.0\%}" in values
+
+
+def test_entry_price_table_rejects_obsolete_or_subthreshold_results() -> None:
+    obsolete = _price_results().drop(columns="median_vehicle_advantage_bps")
+    with pytest.raises(ValueError, match="lacks columns"):
+        render_entry_price_alignment(obsolete)
+
+    subthreshold = _price_results()
+    subthreshold.loc[0, "median_vehicle_advantage_bps"] = 0.5
+    with pytest.raises(ValueError, match="sub-threshold"):
+        render_entry_price_alignment(subthreshold)
