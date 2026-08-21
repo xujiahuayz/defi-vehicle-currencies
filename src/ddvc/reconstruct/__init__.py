@@ -440,6 +440,7 @@ def load_legs(
     if family == "uniswap_v1":
         registry = _v1_registry(str(v1_registry_paths(data_root=data_root)[0].resolve()))
     legs: list[dict] = []
+    unknown_v1_exchanges: list[str] = []
     with verified_source_day_rows(
         dex,
         DEX_STREAM[dex],
@@ -452,9 +453,8 @@ def load_legs(
             if family == "uniswap_v1":
                 exchange = str(rec.get("exchangeAddress") or "").lower()
                 if exchange not in (registry or {}):
+                    unknown_v1_exchanges.append(exchange)
                     normalised = []
-                    if counters is not None:
-                        counters["missing_identity"] += 1
                 else:
                     # An empty list here is a V1 liquidity transaction with no swap
                     # event, not a missing token identity.
@@ -486,6 +486,11 @@ def load_legs(
                 legs.append(leg)
                 if counters is not None:
                     counters["normalised_rows"] += 1
+    if unknown_v1_exchanges:
+        raise ValueError(
+            "Uniswap v1 exchange is absent from the exact registry: "
+            f"{sorted(set(unknown_v1_exchanges))[0]}"
+        )
     return legs
 
 

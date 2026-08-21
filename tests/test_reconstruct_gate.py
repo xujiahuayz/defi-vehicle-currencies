@@ -186,6 +186,27 @@ class ReconstructGateTests(unittest.TestCase):
             self.assertEqual(frame.route_class.unique().tolist(), ["tricky_independent"])
             self.assertTrue(frame.ambiguous.all())
 
+    def test_v1_unknown_exchange_is_a_hard_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_v1_route(root)
+            registry, _metadata = v1_registry_paths(data_root=root)
+            with gzip.open(registry, "wt", encoding="utf-8") as handle:
+                handle.write(
+                    json.dumps(
+                        {
+                            "id": V1_EXCHANGE_A,
+                            "tokenAddress": TOKEN_A,
+                            "tokenSymbol": "AAA",
+                        }
+                    )
+                    + "\n"
+                )
+            with self.assertRaisesRegex(ValueError, "absent from the exact registry"):
+                reconstruct_day_with_quality(
+                    "2020-05-01", ["uniswap_v1"], data_root=root
+                )
+
     def test_v1_shared_event_prefix_preserves_both_directed_legs(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
