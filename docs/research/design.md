@@ -84,6 +84,14 @@ estimate; it does not require another raw-data fetch.
 | 5 | USDC shock exposure | Existing routes, prices, and capital; targeted refetch only if a field is missing | Pair-level exposure, pre-trends, comparison group, and flow restrictions |
 | 6 | LP risk and supply | Existing prices, volumes, fees, and capital if coverage aligns | Within-opportunity divergence-risk or volatility measure adds information beyond demand and fees |
 
+The first LP-risk pass finds that lower prior endpoint--vehicle relative-price
+risk predicts deeper full-range constant-product bridge capital. It does not
+explain the stablecoin rotation: stablecoin bridges have higher median relative
+volatility than WETH bridges in the comparable pair-month sample. This result
+can bound the divergence-loss interpretation in the appendix; it does not earn
+a main-text mechanism slot unless a later design adds provider returns or
+exogenous supply variation.
+
 Every promoted regression must identify its unit, risk set, variation,
 conditioning set, weighting, fixed effects, clustering, economic magnitude, and
 strongest rival explanation. A conventional table places specifications in

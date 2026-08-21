@@ -18,6 +18,7 @@ belongs in `../plot/` or `../tabulate/`.
 | `run_entry_vehicle_persistence.py` | disjoint days 1--30 and 31--120 post-entry vehicle persistence, retrading-incidence models, and equal-pair/activity-weighted persistence columns |
 | `run_liquidity_provision_behavior_exploration.py` | exploratory V2 capital-allocation and vehicle-use behavior |
 | `run_bridge_liquidity_feedback.py` | conditional future levels and time-reversed benchmarks for continuing positive-depth bridges |
+| `run_bridge_lp_divergence_risk.py` | prior endpoint--vehicle relative-price risk and exact V2/Sushi V2 bridge depth; appendix evidence on LP risk |
 | `run_mechanism_expansion_exploration.py` | provisional JFE-expansion mechanism regressions and formation summaries |
 | `run_route_gas_economics.py` | exploratory receipt-gas hurdle for direct and extra-hop vehicle routes |
 | `run_network_betweenness.py` | all-route intermediary participation and approximate betweenness in annual atomic-pair graphs; paper/deck |
