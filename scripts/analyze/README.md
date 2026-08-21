@@ -12,6 +12,7 @@ belongs in `../plot/` or `../tabulate/`.
 | `run_liquidity_capital_v2_predictability.py` | V2 predictability results, support, and table; paper/deck |
 | `run_bridge_liquidity_dominance.py` | local two-leg bridge depth plus first stable-bridge establishment, adoption, and displacement; paper/deck |
 | `run_bridge_exante.py` | stable-bridge formation dated only from prior-calendar weak-leg capital, followed by adoption, later use, and relative-depth estimates |
+| `run_bridge_lp_flow_before_use.py` | actual Uniswap v2/SushiSwap v2 additions and withdrawals on both supported stablecoin legs before their first observed route use, separating new-pool seeding from additions to active pools |
 | `run_disconnected_component_boundary.py` | connected-component prevalence and component-as-route rotation sensitivity; paper/deck |
 | `run_route_reconstruction_validation.py` | full-day Ethereum-log correction consequences for route assignments, stable shares, and the sampled pair decomposition; technical appendix |
 | `run_exact_vehicle_frontier.py` | monthly exact pre-transaction route frontier across V2, Sushi V2, and V3; route-cost evidence |
