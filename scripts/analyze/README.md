@@ -29,6 +29,7 @@ belongs in `../plot/` or `../tabulate/`.
 | `run_v1_forced_vehicle_tests.py` | aggregate V1 mandate-removal exhibits and research report |
 | `run_v1_forced_vehicle_token_level.py` | token-level V1 checks and findings report |
 | `run_vehicle_rotation_composition_e0.py` | pair panel, contribution ledger, decomposition, support, and fixed effects |
+| `run_pair_turnover_lifecycle.py` | full-history endpoint-pair entry, reactivation, observed exit, and primary vehicle-role turnover split of the one-window contribution |
 | `run_vehicle_rotation_adjacent_years.py` | the same decomposition for every adjacent January--June year pair and for the 2024--2026 sample with neither WETH nor a stablecoin at an endpoint; appendix time-window and economic-unit evidence |
 | `run_vehicle_transition_e0.py` | backing-regime and fixed-opportunity result/support families |
 | `run_vehicle_transition_exploration.py` | umbrella command for the three vehicle-transition analyses above |
