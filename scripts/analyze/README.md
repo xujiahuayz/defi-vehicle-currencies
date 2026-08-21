@@ -16,6 +16,7 @@ belongs in `../plot/` or `../tabulate/`.
 | `run_route_reconstruction_validation.py` | full-day Ethereum-log correction consequences for route assignments, stable shares, and the sampled pair decomposition; technical appendix |
 | `run_exact_vehicle_frontier.py` | monthly exact pre-transaction route frontier across V2, Sushi V2, and V3; route-cost evidence |
 | `run_contestable_vehicle_choice.py` | exact stable-versus-native route choice with prior incumbent identity and lagged V2 bridge depth |
+| `run_price_rank_crossing.py` | event-time incumbent response when the median exact-output ranking reverses, with event-eve weak-leg capital and reverse-crossing checks |
 | `run_entry_vehicle_price_alignment.py` | incumbent vehicle use conditional on the exact pretrade price leader at the observed notional; appendix persistence evidence |
 | `run_entry_vehicle_persistence.py` | disjoint days 1--30 and 31--120 post-entry vehicle persistence, retrading-incidence models, and equal-pair/activity-weighted persistence columns |
 | `run_liquidity_provision_behavior_exploration.py` | exploratory V2 capital-allocation and vehicle-use behavior |
