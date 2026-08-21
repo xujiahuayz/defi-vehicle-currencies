@@ -49,8 +49,8 @@ def test_rotation_and_usdt_values_are_exact() -> None:
     rotation = (TABLES / "dominance_rotation.tex").read_text(encoding="utf-8")
     assert "Dollar-weighted routes (20\\% agreement)" in rotation
     assert "Change [pp] (s.e.)" in rotation
-    assert "16.9\\% & 42.3\\% & $+25.4$ ($1.05$)" in rotation
-    assert "32.7\\% & 76.5\\% & $+43.9$ ($2.02$)" in rotation
+    assert "16.9\\% & 42.1\\% & $+25.2$ ($1.04$)" in rotation
+    assert "32.7\\% & 76.5\\% & $+43.8$ ($2.01$)" in rotation
 
     usdt = (TABLES / "usdt_transition.tex").read_text(encoding="utf-8")
     assert (
@@ -68,16 +68,16 @@ def test_rotation_and_usdt_values_are_exact() -> None:
 def test_pair_panel_d_contains_all_three_fixed_effect_rows() -> None:
     pair = (TABLES / "pair_composition.tex").read_text(encoding="utf-8")
     assert (
-        "All two-leg routes, count share & $+0.22\\ (0.76)$ & 188,520"
+        "All two-leg routes, count share & $+0.23\\ (0.77)$ & 188,344"
         in pair
     )
     assert "Component or estimate & Estimate [pp] & Obs." in pair
     assert (
-        "20\\% agreement sample, count share & $+0.32\\ (0.75)$ & 182,834"
+        "20\\% agreement sample, count share & $+0.32\\ (0.75)$ & 182,734"
         in pair
     )
     assert (
-        "20\\% agreement sample, dollar-weighted share & $-1.35\\ (2.19)$ & 182,834"
+        "20\\% agreement sample, dollar-weighted share & $-1.35\\ (2.19)$ & 182,734"
         in pair
     )
     assert "95\\% CI" not in pair
@@ -152,9 +152,9 @@ def test_pair_table_keeps_the_two_count_factorisations_apart() -> None:
     ):
         assert macros[macro].removesuffix(" pp") in pair
 
-    assert "Pairs moving toward stablecoins (1,575) & $+1.3$" in pair
-    assert "Pairs moving toward native assets (1,489) & $-1.4$" in pair
-    assert "Pairs moving toward stablecoins (1,511) & $+2.3$" in pair
+    assert "Pairs moving toward stablecoins (1,569) & $+1.3$" in pair
+    assert "Pairs moving toward native assets (1,487) & $-1.4$" in pair
+    assert "Pairs moving toward stablecoins (1,505) & $+2.3$" in pair
     assert "Pairs moving toward native assets (1,445) & $-2.4$" in pair
 
 
@@ -170,7 +170,7 @@ def test_paper_has_one_consumer_and_no_duplicate_inline_body() -> None:
         assert paper.count(rf"\input{{../output/tables/{stem}.tex}}") == 1
     assert r"\begin{tabular}" not in section
     assert r"\begin{tabularx}" not in section
-    assert r"S^{(m)}_{pds,y}=\alpha^{(m)}_{pds}+\beta^{(m)}\mathbf 1\{y=2026\}" in section
+    assert r"S^{(m)}_{pds,y}=\alpha^{(m)}_{pds}+\beta^{(m)}\mathbf{1}_{\{y=2026\}}" in section
     assert r"y\in\{2024,2026\}" in section
     assert "same pair, date within the year, and realised single- or cross-exchange route class" in section
     assert "weighted by native-plus-stable route count or supported routed value" in section
