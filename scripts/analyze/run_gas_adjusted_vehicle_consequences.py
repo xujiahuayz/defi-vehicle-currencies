@@ -349,6 +349,7 @@ def run(
     raw_frontier = pd.read_parquet(frontier_path)
     frontier, selection = prepare_frontier(raw_frontier)
     frontier = frontier[frontier["symmetric_common_support"]].copy()
+    frontier["year"] = frontier["date"].dt.year.astype(int)
     prices = output_token_prices(frontier, unified)
     frontier = frontier.merge(prices, on="route_id", how="left", validate="one_to_one")
     frontier = frontier.merge(
@@ -418,4 +419,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
