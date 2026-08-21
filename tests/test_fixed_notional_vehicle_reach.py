@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 
 import pandas as pd
+import pytest
 
 from ddvc.pricing.path_frontier import LegQuote
 from scripts.analyze.run_fixed_notional_vehicle_reach import (
@@ -11,6 +12,7 @@ from scripts.analyze.run_fixed_notional_vehicle_reach import (
     VEHICLES,
     snapshot_frontier,
     summarize_reach,
+    validate_snapshot_support,
     v2_leg_quotes,
     v2_pool_index,
 )
@@ -71,6 +73,15 @@ def test_v2_fixed_notional_quote_obeys_the_frontier_support_bound() -> None:
     assert large == []
 
 
+def test_v2_reach_accepts_the_released_certified_reserve_status() -> None:
+    released = _capital_rows().copy()
+    released["reserve_validation_status"] = (
+        "certified_last_hourly_reserve_snapshot"
+    )
+
+    assert sum(map(len, v2_pool_index(released).values())) == 2
+
+
 def test_snapshot_keeps_fixed_notional_zeros_and_selects_best_exact_quote() -> None:
     def tick_quotes(token_in: str, token_out: str, amount_in: float):
         if token_in == WETH and token_out == ENDPOINT and amount_in == 10_000.0:
@@ -124,3 +135,61 @@ def test_summary_separates_noncandidate_spokes_from_vehicle_core() -> None:
     assert weth_spokes["executable_endpoints"] == 1
     assert weth_core["priced_endpoints"] == 1
     assert weth_core["executable_endpoints"] == 0
+
+
+def test_unsupported_early_snapshot_is_recorded_then_later_support_is_required() -> None:
+    empty, early_support = snapshot_frontier(
+        "20200615",
+        _capital_rows().iloc[0:0],
+        _prices().assign(day="20200615"),
+        notionals_usd=(10_000.0,),
+    )
+    assert empty.empty
+    assert early_support["snapshot_status"] == "unsupported"
+    assert early_support["unsupported_reason"] == "no_priced_candidate_linked_endpoints"
+
+    support = pd.DataFrame(
+        [
+            early_support,
+            {
+                **early_support,
+                "day": "20200715",
+                "snapshot_status": "supported",
+                "unsupported_reason": None,
+                "frontier_rows": 4,
+            },
+        ]
+    )
+    validate_snapshot_support(["20200615", "20200715"], support)
+
+    broken = pd.concat(
+        [
+            support,
+            pd.DataFrame(
+                [
+                    {
+                        **early_support,
+                        "day": "20200815",
+                    }
+                ]
+            ),
+        ],
+        ignore_index=True,
+    )
+    with pytest.raises(ValueError, match="unsupported post-support target"):
+        validate_snapshot_support(
+            ["20200615", "20200715", "20200815"], broken
+        )
+
+
+def test_snapshot_calendar_fails_when_every_target_is_unsupported() -> None:
+    support = pd.DataFrame(
+        [
+            {
+                "day": "20200615",
+                "snapshot_status": "unsupported",
+            }
+        ]
+    )
+    with pytest.raises(ValueError, match="no supported snapshot"):
+        validate_snapshot_support(["20200615"], support)

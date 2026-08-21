@@ -63,8 +63,14 @@ SUPPORT_OUTPUT = OUTPUT_DIR / "exhibits/fixed_notional_vehicle_reach_support.jso
 VEHICLES = tuple((*NATIVE_VEHICLES, *STABLE_VEHICLES))
 VEHICLE_SET = frozenset(VEHICLES)
 NOTIONALS_USD = (10_000.0, 100_000.0)
+MAX_SUPPORTED_SNAPSHOT_GAP_DAYS = 45
 V2_VENUES = frozenset({"uniswap_v2", "sushiswap_v2"})
-VALID_RESERVE_STATUS = "validated_last_hourly_reserve_snapshot"
+VALID_RESERVE_STATUSES = frozenset(
+    {
+        "certified_last_hourly_reserve_snapshot",
+        "validated_last_hourly_reserve_snapshot",
+    }
+)
 VALID_IDENTITY_STATUS = "exact_identity_and_decimals_passed"
 CODE_SOURCES = [
     "scripts/analyze/run_fixed_notional_vehicle_reach.py",
@@ -72,6 +78,27 @@ CODE_SOURCES = [
     "src/ddvc/pricing/tick_frontier.py",
     "src/ddvc/pricing/tick_quote.py",
     "src/ddvc/cpquote.py",
+]
+FRONTIER_COLUMNS = [
+    "day",
+    "candidate_address",
+    "candidate_symbol",
+    "candidate_type",
+    "endpoint_address",
+    "endpoint_symbol",
+    "endpoint_type",
+    "endpoint_scope",
+    "notional_usd",
+    "candidate_price_usd",
+    "endpoint_price_usd",
+    "input_amount",
+    "executable",
+    "best_output_amount",
+    "best_output_usd",
+    "all_in_cost_bps",
+    "best_price_impact_bps",
+    "best_venue",
+    "best_pool",
 ]
 
 
@@ -120,7 +147,7 @@ def _valid_v2_rows(rows: pd.DataFrame) -> pd.DataFrame:
     valid = (
         frame["venue"].isin(V2_VENUES)
         & frame["capital_valid"].fillna(False).astype(bool)
-        & frame["reserve_validation_status"].eq(VALID_RESERVE_STATUS)
+        & frame["reserve_validation_status"].isin(VALID_RESERVE_STATUSES)
         & frame["identity_validation_status"].eq(VALID_IDENTITY_STATUS)
         & frame["token0_address"].str.fullmatch(r"0x[0-9a-f]{40}")
         & frame["token1_address"].str.fullmatch(r"0x[0-9a-f]{40}")
@@ -235,8 +262,6 @@ def snapshot_frontier(
     day = str(day)
     day_prices = _normalise_prices(prices)
     day_prices = day_prices.loc[day_prices["day"].eq(day)].copy()
-    if day_prices.empty:
-        raise ValueError(f"fixed-notional reach has no validated prices on {day}")
     price_lookup = dict(
         zip(day_prices["token"], day_prices["price_usd"], strict=True)
     )
@@ -313,15 +338,27 @@ def snapshot_frontier(
                         "best_pool": best.pool if best is not None else None,
                     }
                 )
-    result = pd.DataFrame(rows)
-    if result.empty:
-        raise ValueError(f"fixed-notional reach has no candidate-endpoint rows on {day}")
+    result = pd.DataFrame(rows, columns=FRONTIER_COLUMNS)
     keys = ["day", "candidate_address", "endpoint_address", "notional_usd"]
-    if result.duplicated(keys).any():
+    if not result.empty and result.duplicated(keys).any():
         raise ValueError("fixed-notional reach duplicates a candidate-endpoint-notional")
+    if not price_lookup:
+        unsupported_reason = "no_validated_token_prices"
+    elif not present_candidates:
+        unsupported_reason = "no_validated_vehicle_prices"
+    elif not endpoints:
+        unsupported_reason = "no_priced_candidate_linked_endpoints"
+    elif result.empty:
+        unsupported_reason = "no_cross_token_candidate_endpoint_pairs"
+    else:
+        unsupported_reason = None
     support = {
         "record_type": "fixed_notional_vehicle_reach_support",
         "day": day,
+        "snapshot_status": (
+            "supported" if unsupported_reason is None else "unsupported"
+        ),
+        "unsupported_reason": unsupported_reason,
         "priced_tokens": int(len(price_lookup)),
         "priced_candidate_linked_endpoints": int(len(endpoints)),
         "priced_vehicle_candidates": int(len(present_candidates)),
@@ -334,13 +371,64 @@ def snapshot_frontier(
         ),
         "frontier_rows": int(len(result)),
         "snapshot_timing": (
-            "target_day_close_v2_last_validated_hourly_snapshot_"
+            "target_day_close_v2_last_audited_hourly_snapshot_"
             "v3_post_final_event"
         ),
         "notionals_usd": "|".join(f"{value:.0f}" for value in notionals_usd),
         "support_bound": "maximum_own_leg_price_impact_5pct",
     }
     return result.sort_values(keys).reset_index(drop=True), support
+
+
+def validate_snapshot_support(
+    selected: list[str],
+    support: pd.DataFrame,
+    *,
+    max_gap_days: int = MAX_SUPPORTED_SNAPSHOT_GAP_DAYS,
+) -> None:
+    """Allow leading unsupported dates, then require continuous monthly support."""
+
+    if max_gap_days < 1:
+        raise ValueError("fixed-notional reach snapshot-gap bound must be positive")
+    targets = sorted(
+        {
+            pd.to_datetime(str(day), format="%Y%m%d", errors="raise").normalize()
+            for day in selected
+        }
+    )
+    required = {"day", "snapshot_status"}
+    missing = sorted(required - set(support.columns))
+    if missing:
+        raise ValueError(f"fixed-notional reach support lacks columns: {missing}")
+    if support["day"].astype(str).duplicated().any():
+        raise ValueError("fixed-notional reach support duplicates a target date")
+    supported_dates = pd.to_datetime(
+        support.loc[support["snapshot_status"].eq("supported"), "day"],
+        format="%Y%m%d",
+        errors="raise",
+    )
+    supported = sorted(supported_dates.dt.normalize().tolist())
+    if not supported:
+        raise ValueError("fixed-notional reach has no supported snapshot in the calendar")
+    first_supported = supported[0]
+    supported_set = set(supported)
+    unsupported_after_start = [
+        day for day in targets if day >= first_supported and day not in supported_set
+    ]
+    if unsupported_after_start:
+        formatted = ",".join(day.strftime("%Y%m%d") for day in unsupported_after_start)
+        raise ValueError(
+            "fixed-notional reach has an unsupported post-support target date: "
+            f"{formatted}"
+        )
+    gaps = [
+        (right - left).days for left, right in zip(supported, supported[1:], strict=False)
+    ]
+    if gaps and max(gaps) > max_gap_days:
+        raise ValueError(
+            "fixed-notional reach supported-snapshot gap exceeds "
+            f"{max_gap_days} days"
+        )
 
 
 def summarize_reach(panel: pd.DataFrame) -> pd.DataFrame:
@@ -500,16 +588,18 @@ def run(
             tick_pool_index=replay.pool_index,
             tick_quote_legs=tick_quotes,
         )
-        panels.append(panel)
+        if not panel.empty:
+            panels.append(panel)
         support_rows.append(support)
         print(
             f"{day}: endpoints={support['priced_candidate_linked_endpoints']:,} "
             f"rows={support['frontier_rows']:,}",
             flush=True,
         )
+    support = pd.DataFrame(support_rows)
+    validate_snapshot_support(selected, support)
     combined = pd.concat(panels, ignore_index=True)
     summary = summarize_reach(combined)
-    support = pd.DataFrame(support_rows)
     return combined, summary, support
 
 
