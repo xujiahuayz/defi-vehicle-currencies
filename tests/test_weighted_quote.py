@@ -200,7 +200,7 @@ class AppendixTierIncidenceTests(unittest.TestCase):
             f"{modes.get('reported', 0)} satisfy the error threshold on reported "
             f"parameters with nothing identified, {modes.get('fee_fitted', 0)} need "
             "the swap fee alone, and "
-            f"{modes.get('weight_fitted', 0)} need per-token-pair weight ratios."
+            f"{modes.get('weight_fitted', 0)} need per-token-combination weight ratios."
         )
         self.assertIn(sentence, body)
         self.assertEqual(len(rows), 12)
