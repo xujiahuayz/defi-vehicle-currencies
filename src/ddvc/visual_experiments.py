@@ -270,14 +270,17 @@ def render_annual_composition_bands(
     )
     display_points = points
     display_tick_labels = tick_labels
-    if deck and halfyear:
-        display_indices = [0]
-        display_indices.extend(
+    if halfyear:
+        # Keep every half-year observation but label one point per year.  Labelling
+        # the opening 2018 H2 point beside 2019 H1 made the two leftmost labels
+        # collide in both the paper and deck versions.
+        display_indices = [
             i for i, label in enumerate(tick_labels) if str(label).endswith("H1")
-        )
-        display_indices = sorted(set(display_indices))
+        ]
         display_points = [points[i] for i in display_indices]
-        display_tick_labels = [tick_labels[i] for i in display_indices]
+        display_tick_labels = [
+            str(tick_labels[i]).replace(" ", "\n") for i in display_indices
+        ]
     panels = (
         ("episode_share", "Intermediary episodes"),
         ("usd_share_within_20pct", "Routed value"),
@@ -363,11 +366,12 @@ def render_annual_composition_bands(
                 axis.set_xticks(
                     display_points,
                     display_tick_labels,
-                    rotation=0 if deck else (45 if halfyear else 0),
-                    ha="center" if deck else ("right" if halfyear else "center"),
+                    rotation=0,
+                    ha="center",
                 )
                 axis.set_xlim(min(points) - 0.25, max(points) + 0.25)
-                axis.set_ylim(0, 0.9)
+                axis.set_ylim(0, 1.02)
+                axis.set_yticks(np.linspace(0, 1.0, 6))
                 axis.yaxis.set_major_formatter(PercentFormatter(1.0, decimals=0))
                 axis.grid(axis="y", color="#D1D5DB", linewidth=0.6, alpha=0.75)
                 axis.spines[["top", "right"]].set_visible(False)
