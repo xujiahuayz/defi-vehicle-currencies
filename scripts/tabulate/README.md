@@ -10,6 +10,7 @@ Captions, labels, placement, and interpretation stay in the paper/deck source.
 | `render_dominance_rotation.py` | `dominance_rotation.tex/.pdf` | `tab:app:rotation` |
 | `render_disconnected_component_boundary.py` | `disconnected_component_boundary.tex/.pdf` and generated values | `tab:app:disconnected` |
 | `render_pair_composition.py` | `pair_composition.tex/.pdf`, `pair_market_accounting.tex/.pdf` | `tab:pair-composition`, `tab:app:pair-market-accounting` |
+| `render_route_reconstruction_validation.py` | `route_reconstruction_exact_chain_validation.tex/.pdf` | `tab:app:route-validation` |
 | `render_entry_vehicle_persistence.py` | `entry_vehicle_persistence.tex/.pdf`, `entry_vehicle_persistence_robustness.tex/.pdf` | `tab:entry-persistence`, `tab:app:entry-persistence-robustness` |
 | `render_contestable_vehicle_choice.py` | `contestable_vehicle_choice.tex/.pdf` | `tab:contestable-vehicle-choice` |
 | `render_contestable_vehicle_consequences.py` | `contestable_vehicle_consequences.tex/.pdf` | `tab:contestable-vehicle-consequences` |

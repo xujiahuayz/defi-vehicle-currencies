@@ -13,6 +13,7 @@ belongs in `../plot/` or `../tabulate/`.
 | `run_bridge_liquidity_dominance.py` | local two-leg bridge depth plus first stable-bridge establishment, adoption, and displacement; paper/deck |
 | `run_bridge_exante.py` | stable-bridge formation dated only from prior-calendar weak-leg capital, followed by adoption, later use, and relative-depth estimates |
 | `run_disconnected_component_boundary.py` | connected-component prevalence and component-as-route rotation sensitivity; paper/deck |
+| `run_route_reconstruction_validation.py` | full-day Ethereum-log correction consequences for route assignments, stable shares, and the sampled pair decomposition; technical appendix |
 | `run_exact_vehicle_frontier.py` | monthly exact pre-transaction route frontier across V2, Sushi V2, and V3; route-cost evidence |
 | `run_contestable_vehicle_choice.py` | exact stable-versus-native route choice with prior incumbent identity and lagged V2 bridge depth |
 | `run_entry_vehicle_price_alignment.py` | incumbent vehicle use conditional on the exact pretrade price leader at the observed notional; appendix persistence evidence |

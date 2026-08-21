@@ -25,6 +25,18 @@ Disconnected event groups become more common late in the sample. They comprise \
 \exhibitnote{Panel A reports the share of reconstructed components belonging to transactions with more than one disconnected token-flow group. Uniswap v4 begins during 2025, so its 2024 cell is empty. Panel B compares the principal connected-transaction rule with an alternative that treats each internally well-formed component as a separate route. Stablecoin shares use native and stable two-leg vehicles as the denominator and equal-weight matched January through June dates in 2024 and 2026. Value estimates require source, intermediary, and destination values to agree within 20\%. Standard errors use a Newey--West covariance with a 30-day Bartlett bandwidth. The alternative assigns no unobserved handoff between components.}
 \end{table}
 % output/exhibits/disconnected_component_boundary.jsonl; scripts/analyze/run_disconnected_component_boundary.py
+
+For the three exchange families with full-day Ethereum-log reconciliations, we compare every provider swap with logs queried independently from the chain. We use only correction generations bound by the current V2 and V3 event releases. The comparison can add a chain event absent from the provider data, remove a provider event absent from the chain, or replace its payload or log position. We then rerun the same route construction on every release-bound date with a swap correction. Table~\ref{tab:app:route-validation} reports both the event match and its consequences for the economic route. Historical auxiliary corrections remain outside this exercise; the table note reports their coverage and the log-order collision that motivates this boundary. Transactions outside the released dates and the boundary between the observed pool sequence and the user's original instruction remain outside it.
+% output/exhibits/route_reconstruction_exact_chain_validation.jsonl
+
+\begin{table}[htbp]
+\centering
+\footnotesize
+\caption{Ethereum-log checks and route-construction consequences}
+\label{tab:app:route-validation}
+\input{../output/tables/route_reconstruction_exact_chain_validation.tex}
+\end{table}
+% output/exhibits/route_reconstruction_exact_chain_validation.jsonl; scripts/analyze/run_route_reconstruction_validation.py
 \clearpage
 
 A complete token sequence is sufficient for the route-count sample. Value weighting additionally requires coherent amounts on every leg and a common dollar valuation. A failed valuation removes the observation from the value calculation while preserving the observed route. Appendix~\ref{app:roundtrip} gives the separate exclusion for self-returning routes.

@@ -1,0 +1,40 @@
+\begin{tabularx}{\linewidth}{@{}Xrrrrrr@{}}
+\toprule
+\multicolumn{7}{@{}l}{\textit{Panel A. Swap events against full-day Ethereum logs}} \\
+Venue & Days & Provider swaps & Provider only & Chain only & Precision [\%] & Recall [\%] \\
+\midrule
+Uniswap v2 & 74 & 8,837,588 & 0 & 48 & 100.0000 & 99.9995 \\
+SushiSwap v2 & 70 & 599,721 & 0 & 0 & 100.0000 & 100.0000 \\
+Uniswap v3 & 62 & 4,444,960 & 7 & 2,957 & 99.9998 & 99.9335 \\
+\addlinespace
+\multicolumn{7}{@{}l}{\textit{Panel B. Assignments in transactions touched by a swap correction}} \\
+Assignment & \multicolumn{2}{r}{Linked transactions} & \multicolumn{2}{r}{Changed} & \multicolumn{2}{r}{Unchanged [\%]} \\
+\midrule
+Ordered endpoint pair & \multicolumn{2}{r}{4,881} & \multicolumn{2}{r}{363} & \multicolumn{2}{r}{92.563} \\
+Intermediary token set & \multicolumn{2}{r}{4,881} & \multicolumn{2}{r}{363} & \multicolumn{2}{r}{92.563} \\
+Intermediary asset-type set & \multicolumn{2}{r}{4,881} & \multicolumn{2}{r}{363} & \multicolumn{2}{r}{92.563} \\
+Leg count & \multicolumn{2}{r}{4,881} & \multicolumn{2}{r}{376} & \multicolumn{2}{r}{92.297} \\
+Exact two-leg inclusion & \multicolumn{2}{r}{4,881} & \multicolumn{2}{r}{206} & \multicolumn{2}{r}{95.780} \\
+\addlinespace
+\multicolumn{7}{@{}l}{\textit{Panel C. Stablecoin shares on corrected route dates}} \\
+Measure & \multicolumn{2}{r}{Provider rows [\%]} & \multicolumn{2}{r}{Corrected rows [\%]} & \multicolumn{2}{r}{Change [pp]} \\
+\midrule
+Route count & \multicolumn{2}{r}{24.446} & \multicolumn{2}{r}{24.438} & \multicolumn{2}{r}{-0.008} \\
+Routed value & \multicolumn{2}{r}{47.836} & \multicolumn{2}{r}{47.820} & \multicolumn{2}{r}{-0.016} \\
+\addlinespace
+\multicolumn{7}{@{}l}{\textit{Panel D. January--June sampled decomposition, 2024 to 2026 [pp]}} \\
+ & \multicolumn{3}{c}{Route count} & \multicolumn{3}{c}{Routed value} \\
+\cmidrule(lr){2-4}\cmidrule(l){5-7}
+Component & Provider & Corrected & Change & Provider & Corrected & Change \\
+\midrule
+Stablecoin-share change & +25.920 & +25.921 & +0.001 & +40.566 & +40.566 & -0.000 \\
+Within continuing pairs & +0.078 & +0.078 & +0.000 & +1.484 & +1.484 & -0.000 \\
+Across continuing pairs & +6.888 & +6.888 & +0.000 & +14.635 & +14.635 & -0.000 \\
+Continuing-pair support mass & +0.895 & +0.895 & +0.000 & -2.717 & -2.717 & -0.000 \\
+Pairs observed in one window & +18.059 & +18.060 & +0.001 & +27.164 & +27.164 & +0.000 \\
+\bottomrule
+\end{tabularx}
+\vspace{2pt}
+\begin{minipage}{\linewidth}
+\footnotesize\textit{Note:} Panel A uses 206 release-bound full-day venue ledgers across 74 dates. Provider-only events are provider rows absent from the corresponding Ethereum logs; chain-only events are Ethereum-log events absent from the provider rows. Panels B and C rerun the route engine on the 50 dates with at least one swap action. Panel D is the same pair decomposition on the six common January--June audit dates in each endpoint year. The current releases omit 35 historical auxiliary venue-days. Auxiliary log-order corrections would collide with another provider-ordered leg in 2 transactions; together they contain 47 legs and 2 reconstructed routes. The exercise validates the release-bound dates; it does not measure transaction-trace recall outside them.
+\end{minipage}
