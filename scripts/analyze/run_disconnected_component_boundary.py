@@ -24,6 +24,7 @@ import pandas as pd
 
 from ddvc.analysis.regression import common_calendar_day_mask, year_endpoint_change
 from ddvc.asset_types import classify
+from ddvc.datasets import route_partitions, validate_before_install
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
 from ddvc.realised import ROUTE_COLUMNS, extract_realised_routes
 from ddvc.runtime import bounded_workers
@@ -93,13 +94,9 @@ def one_day(path: Path) -> dict[str, object]:
     return out
 
 
-def matched_endpoint_paths() -> list[Path]:
-    paths = sorted(
-        [
-            *UNIFIED.glob(f"{BASELINE_YEAR}[0-9][0-9][0-9][0-9].parquet"),
-            *UNIFIED.glob(f"{COMPARISON_YEAR}[0-9][0-9][0-9][0-9].parquet"),
-        ]
-    )
+def matched_endpoint_paths(paths: list[Path] | None = None) -> list[Path]:
+    paths = paths or sorted(UNIFIED.glob("????????.parquet"))
+    paths = [path for path in paths if int(path.stem[:4]) in (BASELINE_YEAR, COMPARISON_YEAR)]
     calendar = pd.DataFrame({"path": paths})
     calendar["date"] = pd.to_datetime(
         calendar["path"].map(lambda path: path.stem), format="%Y%m%d"
@@ -378,7 +375,8 @@ def render_table(results: pd.DataFrame) -> str:
 
 
 def run(*, workers: int = 4) -> pd.DataFrame:
-    paths = matched_endpoint_paths()
+    release = route_partitions(ROUTE_COLUMNS, nonempty=False)
+    paths = matched_endpoint_paths(list(release.paths))
     if not paths:
         raise FileNotFoundError("matched 2024 and 2026 unified route files are absent")
     rows: list[dict[str, object]] = []
@@ -404,6 +402,7 @@ def run(*, workers: int = 4) -> pd.DataFrame:
             "The sensitivity retains only internally well-formed components and does "
             "not infer a broader user instruction or an unobserved handoff."
         ),
+        preinstall_validator=validate_before_install(release),
     )
     return results
 

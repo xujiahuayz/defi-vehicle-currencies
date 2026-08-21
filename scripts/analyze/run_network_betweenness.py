@@ -25,6 +25,7 @@ import networkx as nx
 import pandas as pd
 
 from ddvc.asset_types import NATIVE_ETH, WETH, classify
+from ddvc.datasets import route_partitions, validate_before_install
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.realised import realised_routes
 from ddvc.tables import write_exhibit
@@ -48,8 +49,7 @@ def canonical_series(values: pd.Series) -> pd.Series:
     return out.mask(out.eq(NATIVE_ETH), WETH)
 
 
-def sampled_paths(*, limit: int | None = None) -> list[Path]:
-    paths = sorted(UNIFIED.glob("????????.parquet"))
+def sampled_paths(paths: list[Path], *, limit: int | None = None) -> list[Path]:
     paths = [path for path in paths if path.stem[6:] == "15"]
     return paths[:limit] if limit else paths
 
@@ -185,7 +185,8 @@ def main() -> int:
     if args.source_sample < 2:
         raise ValueError("source sample must be at least two")
 
-    paths = sampled_paths(limit=args.limit)
+    release = route_partitions(READ_COLUMNS, nonempty=False)
+    paths = sampled_paths(list(release.paths), limit=args.limit)
     if not paths:
         raise FileNotFoundError(f"no fifteenth-of-month route files under {UNIFIED}")
     by_year: dict[int, list[Path]] = defaultdict(list)
@@ -225,6 +226,7 @@ def main() -> int:
             "unweighted approximate betweenness in the observed leg graph "
             "on fifteenth-of-month route dates; realised use retains all route lengths"
         ),
+        preinstall_validator=validate_before_install(release),
     )
     print(
         f"wrote {OUT.relative_to(REPO_ROOT)} "

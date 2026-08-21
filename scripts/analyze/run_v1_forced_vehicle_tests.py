@@ -32,7 +32,8 @@ import numpy as np
 import pandas as pd
 
 from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered
-from ddvc.tables import write_exhibit
+from ddvc.datasets import route_partitions, validate_before_install
+from ddvc.tables import write_exhibit, write_panel
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -51,6 +52,15 @@ PR_USD_LO, PR_USD_HI = 100.0, 50_000_000.0
 
 CLASSES = ("eth_to_token", "token_to_eth", "token_to_token",
            "same_exchange_rt", "multi_exchange")
+PAIR_ROUTING_COLUMNS = [
+    "tx_hash",
+    "component_id",
+    "token_in",
+    "token_out",
+    "amount_usd",
+    "log_index",
+    "source",
+]
 
 
 def md(df: pd.DataFrame) -> str:
@@ -232,10 +242,8 @@ def load_crosswalk(out: list[str]) -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 def one_unified_day(path: Path) -> dict | None:
     """Direct and ETH-routed trade per unordered token pair, on uniswap_v2 only."""
-    cols = ["tx_hash", "component_id", "token_in", "token_out", "amount_usd",
-            "log_index", "source"]
     try:
-        df = pd.read_parquet(path, columns=cols)
+        df = pd.read_parquet(path, columns=PAIR_ROUTING_COLUMNS)
     except (OSError, ValueError, KeyError) as exc:
         return {"date": path.stem, "error": f"{type(exc).__name__}: {exc}"[:160]}
     df = df[df.source == "uniswap_v2"]
@@ -288,7 +296,8 @@ def one_unified_day(path: Path) -> dict | None:
 
 def build_pair_routing(workers: int, out: list[str]) -> pd.DataFrame:
     from concurrent.futures import ProcessPoolExecutor, as_completed
-    days = sorted(UNIFIED.glob("*.parquet"))
+    release = route_partitions(PAIR_ROUTING_COLUMNS, nonempty=False)
+    days = list(release.paths)
     print(f"reducing {len(days):,} unified days", flush=True)
     aggs, err, meta = [], [], []
     with ProcessPoolExecutor(max_workers=workers) as pool:
@@ -314,7 +323,13 @@ def build_pair_routing(workers: int, out: list[str]) -> pd.DataFrame:
                f"two-leg {md.n_2leg.sum():,}, three-or-more-leg {md.n_moreleg.sum():,} "
                f"(the last are outside this test, which needs an unambiguous single "
                f"intermediary).\n")
-    pr.to_parquet(PROC / "v2_pair_routing_daily.parquet", index=False)
+    write_panel(
+        pr,
+        PROC / "v2_pair_routing_daily.parquet",
+        code_sources=["scripts/analyze/run_v1_forced_vehicle_tests.py"],
+        inputs=[UNIFIED],
+        preinstall_validator=validate_before_install(release),
+    )
     return pr
 
 

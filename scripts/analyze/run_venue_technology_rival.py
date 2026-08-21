@@ -23,6 +23,7 @@ from pathlib import Path
 import pandas as pd
 
 from ddvc.asset_types import CURRENCY_TYPES
+from ddvc.datasets import route_partitions, validate_before_install
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, SHARED_RUNTIME_DIR
 from ddvc.runtime import bounded_workers, exclusive_job, interruptible_process_pool
 from ddvc.tables import write_exhibit
@@ -98,10 +99,8 @@ def main() -> int:
     args = ap.parse_args()
     workers = bounded_workers(args.workers)
 
-    files = sorted(UNIFIED.glob("[0-9]" * 8 + ".parquet"))
-    if not files:
-        print("no unified route files")
-        return 1
+    release = route_partitions(INPUT_COLUMNS, nonempty=False)
+    files = list(release.paths)
     print(f"measuring {len(files):,} days across four venue scopes", flush=True)
     parts: list[pd.DataFrame] = []
     failures: list[tuple[str, str]] = []
@@ -145,6 +144,7 @@ def main() -> int:
         code_sources=CODE_SOURCES,
         inputs=[UNIFIED],
         notes="complete route components; candidate-currency denominator; unsupported scope-years labelled",
+        preinstall_validator=validate_before_install(release),
     )
 
     for scope in result["scope"].drop_duplicates():

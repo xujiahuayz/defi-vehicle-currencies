@@ -33,6 +33,7 @@ from ddvc.analysis.transaction_frontier import (
     score_frontier,
 )
 from ddvc.asset_types import asset_type, canonical_token
+from ddvc.datasets import route_partitions, validate_before_install
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
 from ddvc.pricing.mixed_frontier import (
     MixedFrontierState,
@@ -677,6 +678,7 @@ def main() -> int:
         if args.pilot_day
         else monthly_days(args.start.replace("-", ""), args.end.replace("-", ""))
     )
+    route_release = route_partitions(LINEAR_ROUTE_COLUMNS, nonempty=False)
     panel, support = run(selected)
     if panel.empty:
         print("no routes cleared exact chosen-path reproduction", flush=True)
@@ -694,6 +696,7 @@ def main() -> int:
         panel.sort_values(["day", "route_id"], kind="stable").reset_index(drop=True),
         PANEL,
         code_sources=CODE_SOURCES,
+        preinstall_validator=validate_before_install(route_release),
     )
     write_exhibit(support, SUPPORT, code_sources=CODE_SOURCES, inputs=[PANEL])
     write_exhibit(
