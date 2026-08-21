@@ -154,12 +154,19 @@ class RouterWindowTests(unittest.TestCase):
             self.assertEqual(days, 60)
             self.assertEqual(set(pre), set(post))
 
-    def test_a_diverging_balanced_perimeter_is_a_hard_failure(self) -> None:
+    def test_balanced_perimeter_supplies_the_displayed_values(self) -> None:
         rows = _window_rows()
         for row in rows:
             if row["scope"] == "balanced" and row["period"] == "post":
                 row["intermediated_share"] = 0.17
-        with self.assertRaisesRegex(ValueError, "balanced perimeter"):
+        windows = routing_window_values(rows)
+        for _event, _date, _days, _pre, post in windows:
+            self.assertEqual(post["intermediated_share"], 0.17)
+
+    def test_scope_windows_must_share_the_same_definition(self) -> None:
+        rows = _window_rows()
+        rows[0]["window_days"] = 59
+        with self.assertRaisesRegex(ValueError, "disagrees across scopes"):
             routing_window_values(rows)
 
     def test_unequal_window_lengths_are_a_hard_failure(self) -> None:

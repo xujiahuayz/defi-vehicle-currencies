@@ -310,12 +310,12 @@ def routing_window_values(
 
     Two structural facts are enforced rather than asserted downstream. The two
     periods of a release must span the same number of observed calendar days, so
-    a change is not a difference in window length. The balanced five-venue
-    perimeter must reproduce the full perimeter exactly in every window, which is
-    what licenses describing the venue set as held fixed by construction; the
-    balanced and full perimeters coincide only until the later venues enter, so a
-    window moved forward in time would break this and must not be presented as an
-    unchanged perimeter.
+    a change is not a difference in window length. Displayed moments come from
+    the balanced five-venue perimeter, which holds the venue set fixed by
+    construction. Full-market rows remain in the machine-readable exhibit as a
+    sensitivity comparison; they need not equal the balanced rows after V1 is
+    admitted to the historical panel, but both scopes must describe the same
+    event date and symmetric windows.
     """
 
     selected: dict[tuple[str, str, str], Mapping[str, object]] = {}
@@ -340,22 +340,27 @@ def routing_window_values(
             balanced = selected.get((event, period, "balanced"))
             if row is None or balanced is None:
                 raise ValueError(f"router window exhibit lacks {event} {period}")
-            moments = {
-                field: _finite_moment(row, field) for field in ROUTER_MOMENT_ORDER
-            }
-            for field, value in moments.items():
-                if _finite_moment(balanced, field) != value:
+            for field in ("calendar_days", "window_days"):
+                if int(row.get(field, 0)) != int(balanced.get(field, 0)):
                     raise ValueError(
-                        f"the balanced perimeter no longer reproduces the full "
-                        f"perimeter at {event} {period} on {field}; these windows "
-                        "can no longer be described as holding the venue set fixed"
+                        f"router window {event} {period} disagrees across scopes on {field}"
                     )
-            days = int(row.get("calendar_days", 0))
+            full_event_date = str(row.get("event_date"))[:10]
+            balanced_event_date = str(balanced.get("event_date"))[:10]
+            if full_event_date != balanced_event_date:
+                raise ValueError(
+                    f"router window {event} {period} disagrees across scopes on event_date"
+                )
+            moments = {
+                field: _finite_moment(balanced, field)
+                for field in ROUTER_MOMENT_ORDER
+            }
+            days = int(balanced.get("calendar_days", 0))
             if days <= 0:
                 raise ValueError(f"router window {event} {period} observes no day")
             calendar_days.add(days)
-            event_dates.add(str(row.get("event_date"))[:10])
-            window_days.add(int(row.get("window_days", 0)))
+            event_dates.add(balanced_event_date)
+            window_days.add(int(balanced.get("window_days", 0)))
             periods.append(moments)
         if len(calendar_days) != 1:
             raise ValueError(
