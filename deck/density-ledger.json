@@ -4,9 +4,15 @@
   "budget_words": 55,
   "hard_ceiling_words": 70,
   "core_frame_limit": 24,
-  "appendix_first_page": 17,
+  "appendix_first_page": 18,
   "appendix_title": "Appendix map",
   "page_allowances": [
+    {
+      "page": 2,
+      "title": "A cross-border payment needs someone to make the FX",
+      "words": 64,
+      "note_words": 42
+    },
     {
       "page": 3,
       "title": "Pool routes reveal the vehicle currency",
@@ -20,94 +26,88 @@
       "note_words": 35
     },
     {
-      "page": 16,
-      "title": "What changes a dominant vehicle?",
-      "words": 64,
-      "note_words": 0
+      "page": 15,
+      "title": "Bridge capital builds before first use",
+      "words": 57,
+      "note_words": 54
     },
     {
-      "page": 17,
+      "page": 16,
+      "title": "Price competition usually changes the venue",
+      "words": 56,
+      "note_words": 64
+    },
+    {
+      "page": 18,
       "title": "Appendix map",
       "words": 94,
       "note_words": 0
     },
     {
-      "page": 20,
+      "page": 21,
       "title": "How we reconstruct a route from one transaction",
       "words": 57,
       "note_words": 0
     },
     {
-      "page": 22,
+      "page": 23,
       "title": "A3. One route universe supports two measurements",
-      "words": 67,
+      "words": 75,
       "note_words": 0
     },
     {
-      "page": 23,
+      "page": 24,
       "title": "A4. State is reconstructed immediately before execution",
       "words": 60,
       "note_words": 0
     },
     {
-      "page": 24,
+      "page": 25,
       "title": "A5. Each AMM family has a different state vector",
       "words": 59,
       "note_words": 0
     },
     {
-      "page": 26,
-      "title": "A5.2. Executable depth comes from active liquidity",
-      "words": 62,
+      "page": 27,
+      "title": "A5.2. Executable depth is path-specific",
+      "words": 60,
       "note_words": 0
     },
     {
-      "page": 27,
+      "page": 28,
       "title": "A5.3. Shared accounting moves route settlement",
       "words": 62,
       "note_words": 0
     },
     {
-      "page": 29,
+      "page": 30,
       "title": "A7. Daily and weekly frequencies answer different questions",
       "words": 62,
       "note_words": 0
     },
     {
-      "page": 32,
+      "page": 33,
       "title": "Vehicle dominance aggregates realised intermediary choices",
       "words": 69,
       "note_words": 0
     },
     {
-      "page": 33,
+      "page": 34,
       "title": "A9. Intermediary and route-endpoint use are separate",
       "words": 69,
       "note_words": 0
     },
     {
-      "page": 34,
+      "page": 35,
       "title": "A10. Capital, inventory, and depth differ",
       "words": 67,
       "note_words": 0
     },
     {
-      "page": 36,
-      "title": "A11b. Venue scope and vehicle type differ in 2026",
-      "words": 56,
-      "note_words": 16
-    },
-    {
-      "page": 38,
-      "title": "A13. References: decentralised exchange design",
-      "words": 59,
+      "page": 39,
+      "title": "A13. References: exchange design",
+      "words": 58,
       "note_words": 0
-    },
-    {
-      "page": 40,
-      "title": "A15. Endpoint demand and intermediary use move together",
-      "words": 56,
-      "note_words": 31
     }
   ]
 }

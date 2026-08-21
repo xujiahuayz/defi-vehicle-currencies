@@ -229,9 +229,9 @@ Why does dominance matter? Because the vehicle sits in the middle of many unrela
 
 What changes dominance? New relationships and trading reallocation. The first vehicle is sticky inside a new pair, so competition inside an established relationship moves less than the aggregate market.
 
-What does a challenger have to do? Be there when the relationship forms. And make both legs deep enough to carry the trade. A slightly better quote inside an old relationship may arrive too late.
+Inside a new pair, the first vehicle predicts later use. Route share also rises sharply with two-leg depth. And the exact-price comparison says most public price competition is across venues using the same vehicle.
 
-That is the implication I would carry back to traditional currency competition. A sovereign currency does not become a vehicle only by undercutting an incumbent in existing markets. It also needs deep two-sided markets and early presence as new trading relationships form.
+That is what I would carry back to traditional currency competition. Aggregate dominance reflects the vehicle used inside established relationships and the one inherited by new relationships. Early presence and deep two-sided markets therefore matter alongside quoted prices.
 
 Thank you.
 
