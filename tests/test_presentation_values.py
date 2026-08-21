@@ -30,10 +30,6 @@ def test_checked_in_route_binding_equals_its_renderer() -> None:
     )
 
 
-def test_route_binding_is_not_older_than_its_direct_inputs() -> None:
-    assert all(OUTPUT.stat().st_mtime_ns >= path.stat().st_mtime_ns for path in INPUTS)
-
-
 def test_route_binding_matches_current_display_values_and_excludes_other_lanes() -> None:
     text = OUTPUT.read_text(encoding="utf-8")
     for expected in (

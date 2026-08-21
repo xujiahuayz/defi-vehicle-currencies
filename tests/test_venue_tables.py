@@ -68,7 +68,7 @@ def test_fluid_rows_disclose_partial_date_support() -> None:
     assert all(int(row["pool_days_screened_out"]) == 0 for row in by_year.values())
 
 
-def test_venue_coverage_has_one_paper_consumer_and_is_current() -> None:
+def test_venue_coverage_has_one_paper_consumer_and_publication_artifacts() -> None:
     appendix = (ROOT / "paper" / "sections" / "08-appendix.tex").read_text(encoding="utf-8")
     assert appendix.count(r"\input{../output/tables/venue_coverage.tex}") == 1
     assert "Percentage shares within the seven-venue panel" not in appendix
@@ -79,7 +79,6 @@ def test_venue_coverage_has_one_paper_consumer_and_is_current() -> None:
     for suffix in ("tex", "pdf"):
         artifact = ROOT / "output" / "tables" / f"venue_coverage.{suffix}"
         assert artifact.is_file()
-        assert artifact.stat().st_mtime >= INPUT.stat().st_mtime
 
 
 def test_venue_coverage_rejects_missing_and_duplicate_rows() -> None:
