@@ -21,7 +21,7 @@ from eth_utils import keccak
 from ddvc.amounts import human_to_raw, raw_to_human
 from ddvc.ethereum_receipts import receipt_is_current
 from ddvc.fetch.raw import write_json, write_jsonl_gz
-from ddvc.paths import REPO_ROOT
+from ddvc.paths import PRIMARY_REPO_ROOT, REPO_ROOT
 from ddvc.source_records import block_value, timestamp_value, transaction_id
 from ddvc.runtime import serialized_read_installs
 from ddvc.v2_event_contract import (
@@ -1867,7 +1867,8 @@ def _load_event_order_corrections_unlocked(
             for value in metadata.get("exact_log_inputs", [])
         ]
         authority_paths = [
-            REPO_ROOT / value for value in metadata.get("authority_inputs", [])
+            PRIMARY_REPO_ROOT / value
+            for value in metadata.get("authority_inputs", [])
         ]
         declared_inputs = [*provider_paths, *exact_paths, *authority_paths]
         if any(not path.is_file() for path in declared_inputs):
@@ -1913,7 +1914,7 @@ def _load_event_order_corrections_unlocked(
             )
         authority_paths = []
         for relative, expected_digest in expected_authorities.items():
-            path = REPO_ROOT / relative
+            path = PRIMARY_REPO_ROOT / relative
             if not path.is_file():
                 if str(relative).endswith(".prov.json"):
                     continue
