@@ -148,6 +148,30 @@ therefore do not support promotion of ETH stress as a driver of stable-vehicle
 liquidity. They leave investor demand as an interpretation that would require a
 direct demand measure and independent supply variation.
 
+The exact-route follow-up separates the accounting and execution sequence on
+one sample of 24,313 routes, 915 ordered endpoint pairs, and 73 dates for which
+both vehicle families are executable and both lagged V2 weak-leg capital
+measures are positive. A 10 percentage point ETH decline predicts a 0.049%
+decrease in stablecoin-minus-WETH log USD depth (p = 0.984), a 0.154 basis point
+increase in the stablecoin path's exact-output advantage (p = 0.884), and a
+0.070 percentage point increase in realised stablecoin route choice (p =
+0.779); all three Holm-adjusted p-values equal one. Conditioning on depth and
+exact output leaves the decline coefficients equally small. The links among
+pool state, execution, and routing are strong: a 10 percentage point increase
+in stablecoin's share of the two vehicle families' V2 weak-leg USD capital
+corresponds to a 19.1 basis point exact-output advantage (p < 0.001); realised
+stablecoin routing rises by 10.3 percentage points per 100 basis points of exact
+output advantage and by 2.87 percentage points per 10 percentage points of
+relative capital, conditional on each other (both p < 0.001). These estimates
+show the expected depth--execution--routing sequence, but ETH declines do not
+shift its upstream USD-depth margin. USD depth remains a mark-to-market pool
+state, not an LP flow. Gross LP turnover and price-neutral supplied units remain
+governed by the separate weekly analysis above. The coefficient and sample
+records are
+[`eth_stress_executability.jsonl`](../../output/exhibits/eth_stress_executability.jsonl)
+and
+[`eth_stress_executability_support.jsonl`](../../output/exhibits/eth_stress_executability_support.jsonl).
+
 Every promoted regression must identify its unit, risk set, variation,
 conditioning set, weighting, fixed effects, clustering, economic magnitude, and
 strongest rival explanation. A conventional table places specifications in
