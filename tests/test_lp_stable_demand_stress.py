@@ -60,6 +60,7 @@ class StableDemandStressTest(unittest.TestCase):
                         "next_log1p_add_flow_ratio": 0.2,
                         "next_log1p_remove_flow_ratio": 0.1,
                         "next_asinh_net_flow_ratio": 0.0,
+                        "next_asinh_net_liquidity_ratio": 0.0,
                     }
                 )
         result = prepare_venue_sample(pd.DataFrame(rows), stress, VENUE_DESIGNS[0])
@@ -130,6 +131,12 @@ class StableDemandStressTest(unittest.TestCase):
                                 - 0.12 * stable_return
                                 + noise_net
                             ),
+                            "next_asinh_net_liquidity_ratio": (
+                                pool_effect
+                                + 0.05 * stable_volatility
+                                - 0.10 * stable_return
+                                + rng.normal(0, 0.03)
+                            ),
                         }
                     )
         return pd.DataFrame(rows)
@@ -154,6 +161,7 @@ class StableDemandStressTest(unittest.TestCase):
                 "primary_additions": 4,
                 "secondary_withdrawals": 4,
                 "secondary_net_supply": 4,
+                "secondary_v2_quantity_net_supply": 2,
             },
         )
         self.assertTrue(focal["holm_p_value"].notna().all())

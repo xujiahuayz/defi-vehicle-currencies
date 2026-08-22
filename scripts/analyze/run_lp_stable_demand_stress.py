@@ -17,8 +17,12 @@ capital, and pool age follow the retained LP-supply designs.
 
 The four additions coefficients (two stress measures by two venues) form the
 primary Holm-adjusted family.  Withdrawals and net supply form separate
-four-test secondary families.  These are predictive associations, not shocks
-to stablecoin demand or provider preferences, and no route-use variable enters.
+four-test secondary families.  V2 also reports a two-test net-liquidity-quantity
+family, scaling net LP-token liquidity by prior square-root reserves so an ETH
+price move cannot mechanically revalue the outcome.  V3 concentrated-liquidity
+units are range-specific and do not provide a comparable cross-pool quantity.
+These are predictive associations, not shocks to stablecoin demand or provider
+preferences, and no route-use variable enters.
 
 Writes
   output/exhibits/lp_stable_demand_stress_models.jsonl
@@ -84,9 +88,30 @@ VENUE_DESIGNS = (
 )
 
 OUTCOMES = (
-    ("additions", "next_log1p_add_flow_ratio", "primary_additions"),
-    ("withdrawals", "next_log1p_remove_flow_ratio", "secondary_withdrawals"),
-    ("net_supply", "next_asinh_net_flow_ratio", "secondary_net_supply"),
+    (
+        "additions",
+        "next_log1p_add_flow_ratio",
+        "primary_additions",
+        ("uniswap_v2", "uniswap_v3"),
+    ),
+    (
+        "withdrawals",
+        "next_log1p_remove_flow_ratio",
+        "secondary_withdrawals",
+        ("uniswap_v2", "uniswap_v3"),
+    ),
+    (
+        "net_supply",
+        "next_asinh_net_flow_ratio",
+        "secondary_net_supply",
+        ("uniswap_v2", "uniswap_v3"),
+    ),
+    (
+        "v2_quantity_net_supply",
+        "next_asinh_net_liquidity_ratio",
+        "secondary_v2_quantity_net_supply",
+        ("uniswap_v2",),
+    ),
 )
 
 FOCAL_VOLATILITY = "stable_x_eth_realized_volatility"
@@ -235,6 +260,8 @@ def prepare_venue_sample(
     }
     if design.maximum_staleness_column is not None:
         required.add(design.maximum_staleness_column)
+    if design.venue == "uniswap_v2":
+        required.add("next_asinh_net_liquidity_ratio")
     missing = sorted(required - set(panel.columns))
     if missing:
         raise ValueError(f"{design.venue} LP panel lacks columns: {missing}")
@@ -445,7 +472,9 @@ def fit_stress_models(
 
     rows: list[dict[str, object]] = []
     for venue, data in venue_samples.items():
-        for outcome_name, outcome, family in OUTCOMES:
+        for outcome_name, outcome, family, applicable_venues in OUTCOMES:
+            if venue not in applicable_venues:
+                continue
             rows.extend(
                 _fit_outcome(
                     data,
@@ -509,7 +538,10 @@ def support_records(
                     data["endpoint_is_stable"].mean()
                 ),
                 "median_pool_capital_usd": float(data["pool_capital_usd"].median()),
-                "outcomes": "next_week_additions_withdrawals_and_net_lp_supply",
+                "outcomes": (
+                    "next_week_additions_withdrawals_and_net_lp_supply_plus_"
+                    "v2_quantity_net_supply"
+                ),
                 "comparison": "stablecoin_leg_minus_weth_leg_for_same_endpoint_week",
                 "route_use_variables": "none",
             }
