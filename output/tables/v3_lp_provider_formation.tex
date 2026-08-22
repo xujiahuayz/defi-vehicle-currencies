@@ -1,0 +1,38 @@
+\textit{Panel A. Stable-facing liquidity supply}
+\par\smallskip
+\begin{tabularx}{\linewidth}{@{}>{\hsize=2.2\hsize\raggedright\arraybackslash}X*{6}{>{\hsize=0.8\hsize\centering\arraybackslash}X}@{}}
+\toprule
+& \multicolumn{2}{c}{Stable-facing share [\%]} & \multicolumn{4}{c}{Change [pp]} \\
+\cmidrule(lr){2-3}\cmidrule(l){4-7}
+Supply measure & 2024 H1 & 2026 H1 & Total & \shortstack{Within\\continuing origins} & Reallocation & \shortstack{Period-specific\\origins} \\
+\midrule
+Liquidity-addition actions & 8.5 & 44.2 & +35.71 & +7.70 & +0.01 & +28.00 \\
+Vehicle-side USD additions & 8.1 & 41.5 & +33.48 & +15.86 & -0.05 & +17.67 \\
+\midrule
+Active transaction origins, stable-facing & 3,841 & 8,721 &  &  &  &  \\
+Active transaction origins, WETH-facing & 27,112 & 8,696 &  &  &  &  \\
+\bottomrule
+\end{tabularx}
+\par\medskip
+\textit{Panel B. Prior vehicle experience and pool formation}
+\par\smallskip
+\begin{tabularx}{\linewidth}{@{}>{\hsize=1.8\hsize\raggedright\arraybackslash}X*{4}{>{\hsize=0.8\hsize\centering\arraybackslash}X}@{}}
+\toprule
+& (1) & (2) & (3) & (4) \\
+Compared vehicles & \multicolumn{2}{c}{WETH, DAI, USDC, USDT} & \multicolumn{2}{c}{DAI, USDC, USDT} \\
+\cmidrule(lr){2-3}\cmidrule(l){4-5}
+\midrule
+Prior same-vehicle supply outside focal endpoint & \begin{tabular}{@{}c@{}}$+7.99^{***}$\\$(0.89)$\end{tabular} &  &  &  \\
+Log prior same-vehicle endpoint breadth, $\ln(1+n)$ &  & \begin{tabular}{@{}c@{}}$+3.07^{***}$\\$(0.92)$\end{tabular} &  &  \\
+Prior same-stablecoin core supply &  &  & \begin{tabular}{@{}c@{}}$+7.74$\\$(5.90)$\end{tabular} &  \\
+Log prior same-stablecoin core-pool breadth, $\ln(1+n)$ &  &  &  & \begin{tabular}{@{}c@{}}$+15.98^{*}$\\$(7.30)$\end{tabular} \\
+\midrule
+Dependent-variable mean [\%] & 25.0 & 25.0 & 33.3 & 33.3 \\
+Observations & 258,048 & 258,048 & 24,396 & 24,396 \\
+Pool clusters & 6,197 & 6,197 & 1,807 & 1,807 \\
+Transaction-origin clusters & 43,473 & 43,473 & 6,312 & 6,312 \\
+Pool formation $\times$ transaction-origin effects & Yes & Yes & Yes & Yes \\
+Vehicle $\times$ calendar-quarter effects & Yes & Yes & Yes & Yes \\
+Two-way clustered standard errors & Pool, origin & Pool, origin & Pool, origin & Pool, origin \\
+\bottomrule
+\end{tabularx}
