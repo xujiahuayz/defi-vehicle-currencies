@@ -110,7 +110,7 @@ It lasts. This table is the persistence result.
 
 Take every entering pair, drop the entry day itself, and look at two later windows: the first month, and days 31 to 120. Among pairs that trade again, a ten-point higher stablecoin share on the entry day predicts about nine points more stablecoin use in the first month, and about eight and a half after that. Near one for one.
 
-The two lower rows are the same regression on pairs with busier entry days, where the initial mix is measured more precisely. If anything the estimates get stronger.
+A fair worry here: many pairs trade only once or twice on day one, so their entry share can only be zero or one hundred percent, a very coarse measure. The two lower rows rerun the identical regression keeping only pairs with at least five, then at least ten, routes on the entry day, where the share is a genuine mix. The estimates edge up toward ten instead of shrinking, exactly what you expect when measurement noise fades. The samples get smaller, so the standard errors widen, but the result holds.
 
 Now, only a fifth of entrants trade again in the first month, so survival itself could drive the result. We measure that too: entry mix barely changes who trades again. The persistence is in how the survivors trade.
 
