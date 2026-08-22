@@ -87,7 +87,7 @@ def _lp_models() -> pd.DataFrame:
                     "effect_unit": (
                         "per_10pp_higher_annualized_weekly_eth_volatility"
                         if predictor == "stable_x_eth_realized_volatility"
-                        else "per_10pp_eth_decline"
+                        else "per_0p10_log_point_eth_price_fall"
                     ),
                     "material_capital_usd": 50_000.0,
                     "observations": 51_086 if v3 else 19_844,
@@ -218,11 +218,13 @@ def test_eth_stress_supply_transmission_renders_two_compact_panels() -> None:
     )
 
     assert "Panel A. Stablecoin-minus-WETH liquidity-supply responses" in rendered
+    assert "ETH price fall [0.10 log point]" in rendered
+    assert "10 pp ETH decline" not in rendered
     assert "v3 additions" in rendered
     assert "v2 net liquidity units" in rendered
     assert "$+0.0027^{*}$" in rendered
     assert "$+0.0045^{" not in rendered
-    assert "Panel B. From ETH prices and relative depth to route use" in rendered
+    assert "Panel B. ETH returns, weak-leg capital, quotes, and route use" in rendered
     assert "$-0.0005$" in rendered
     assert "$+19.10^{***}$" in rendered
     assert "$+2.87^{***}$" in rendered

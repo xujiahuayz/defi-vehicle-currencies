@@ -39,7 +39,7 @@ TABLE_NOTE = (
     "$p=0.067$; its addition and withdrawal components are individually "
     "imprecise. Panel B uses exact two-leg opportunities for which stablecoin "
     "and WETH routes are both feasible and both prior-calendar weak-leg "
-    "full-range capital measures are positive. Dollar depth is deposited "
+    "full-range capital measures are positive. Dollar capital is deposited "
     "Uniswap v2 and SushiSwap v2 capital on the weaker leg. It is a "
     "mark-to-market pool state; Panel A measures provider flows. Exact output holds "
     "the pair, input, pre-transaction state, and public venue set fixed. Panel "
@@ -107,7 +107,11 @@ STRESS_COLUMNS: tuple[tuple[str, str, str], ...] = (
         "10 pp higher ETH volatility",
         "Volatility",
     ),
-    ("stable_x_eth_decline", "10 pp ETH decline", "Decline"),
+    (
+        "stable_x_eth_decline",
+        "ETH price fall [0.10 log point]",
+        "Decline",
+    ),
 )
 
 
@@ -194,8 +198,8 @@ CHAIN_CELLS: tuple[ChainCell, ...] = (
 )
 
 CHAIN_ROW_LABELS = (
-    r"ETH decline, days $-30$ to $-1$ [10 pp]",
-    r"Stable share of joint weak-leg USD depth [10 pp]",
+    r"ETH return, days $-30$ to $-1$ [0.10 log point]",
+    r"Stable share of joint weak-leg USD capital [10 pp]",
     r"Stablecoin exact-output advantage [100 bp]",
 )
 
@@ -319,7 +323,7 @@ def _validate_lp_models(models: pd.DataFrame) -> dict[tuple[str, str], pd.Series
         "stable_x_eth_realized_volatility": (
             "per_10pp_higher_annualized_weekly_eth_volatility"
         ),
-        "stable_x_eth_decline": "per_10pp_eth_decline",
+        "stable_x_eth_decline": "per_0p10_log_point_eth_price_fall",
     }
     for definition in LP_ROWS:
         for predictor, _, _ in STRESS_COLUMNS:
@@ -525,7 +529,7 @@ def render_eth_stress_supply_transmission(
         r"\par\smallskip",
         r"\begin{tabularx}{\linewidth}{@{}>{\hsize=1.55\hsize\raggedright\arraybackslash}X*{2}{>{\hsize=0.725\hsize\centering\arraybackslash}X}@{}}",
         r"\toprule",
-        r"Outcome in week $t+1$ & 10 pp higher ETH volatility & 10 pp ETH decline \\",
+        r"Outcome in week $t+1$ & 10 pp higher ETH volatility & ETH price fall [0.10 log point] \\",
         r"\midrule",
     ]
     for definition in LP_ROWS:
@@ -539,11 +543,11 @@ def render_eth_stress_supply_transmission(
             r"\bottomrule",
             r"\end{tabularx}",
             r"\par\medskip",
-            r"\textit{Panel B. From ETH prices and relative depth to route use}",
+            r"\textit{Panel B. ETH returns, weak-leg capital, quotes, and route use}",
             r"\par\smallskip",
             r"\begin{tabularx}{\linewidth}{@{}>{\hsize=1.65\hsize\raggedright\arraybackslash}X*{3}{>{\hsize=0.78\hsize\centering\arraybackslash}X}@{}}",
             r"\toprule",
-            r"Regressor & Log stable/WETH USD depth & Stablecoin output lead [bp] & Stablecoin chosen [pp] \\",
+            r"Regressor & Log stable/WETH USD capital & Stablecoin output lead [bp] & Stablecoin chosen [pp] \\",
             r"\midrule",
         ]
     )

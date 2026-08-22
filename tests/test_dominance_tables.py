@@ -220,10 +220,11 @@ def test_paper_has_one_consumer_and_no_duplicate_inline_body() -> None:
     paper = section + "\n" + appendix
     for stem in ("dominance_rotation", "pair_composition"):
         assert paper.count(rf"\input{{../output/tables/{stem}.tex}}") == 1
-    # Issuer-level transition estimates remain available as generated output,
-    # but the manuscript uses the endpoint-direction evidence instead of
-    # carrying a second, disconnected transition table.
-    assert r"\input{../output/tables/usdt_transition.tex}" not in paper
+    # The issuer table is consumed once because it separates intermediary use
+    # from ordinary endpoint demand; the endpoint-direction table answers the
+    # distinct question of where the aggregate change occurs.
+    assert paper.count(r"\input{../output/tables/usdt_transition.tex}") == 1
+    assert r"Appendix Table~\ref{tab:app:usdt-excess-use}" in section
     assert r"\begin{tabular}" not in section
     assert r"\begin{tabularx}" not in section
     matched_specification = (

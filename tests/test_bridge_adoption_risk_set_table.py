@@ -124,7 +124,7 @@ def _results() -> pd.DataFrame:
 def test_bridge_adoption_risk_table_labels_the_future_capital_comparison() -> None:
     rendered = render_bridge_adoption_risk_set(_results())
     assert r"(1)\\Any\\support" in rendered
-    assert r"(2)\\Depth given\\support" in rendered
+    assert r"(2)\\Capital\\ratio" in rendered
     assert r"(5)\\Joint\\timing" in rendered
     assert "Any measured V2 stable bridge capital before the week" in rendered
     assert "positive-support weeks" in rendered

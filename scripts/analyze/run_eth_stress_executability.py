@@ -7,7 +7,8 @@ and stablecoin paths.  This runner attaches prior-calendar V2/Sushi V2 weak-leg
 deposited capital and the canonical WETH return over days -30 through -1.
 
 On one common sample with both route families executable and both weak-leg
-capital measures positive, it asks whether a 10 percentage point ETH decline
+capital measures positive, it asks whether a 0.10-log-point fall in ETH's
+dollar price (about 9.5 percent)
 predicts:
 
 1. stablecoin-minus-WETH log weak-leg USD capital;

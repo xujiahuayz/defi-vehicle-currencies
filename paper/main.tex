@@ -10,7 +10,7 @@
 % Section files are separate so they can be written and reviewed independently. Numbers
 % come from output/exhibits/ and are never typed from memory; every one carries a comment
 % naming the exhibit it was read from.
-\documentclass[11pt]{article}
+\documentclass[12pt]{article}
 
 \usepackage[margin=1in]{geometry}
 \usepackage{amsmath,amssymb}
@@ -22,6 +22,7 @@
 \pgfplotsset{compat=1.18}
 \usepackage{natbib}
 \usepackage{setspace}
+\usepackage{etoolbox}
 \usepackage{hyperref}
 \usepackage{acro}
 \usepackage[section]{placeins}
@@ -33,7 +34,9 @@
 \DeclareAcronym{pp}{short=pp,long=percentage point,short-plural=pp,long-plural=percentage points}
 
 \bibliographystyle{chicago}
-\onehalfspacing
+\doublespacing
+\AtBeginEnvironment{table}{\singlespacing}
+\AtBeginEnvironment{figure}{\singlespacing}
 
 % JFE-style exhibit treatment. Captions sit above the exhibit; notes use the full
 % available line width and the surrounding prose alignment, with the journal's
@@ -54,6 +57,7 @@
 \input{../output/exhibits/stable_stable_vehicle_values.tex}
 \input{../output/exhibits/entry_vehicle_persistence_values.tex}
 \input{../output/exhibits/bridge_exante_values.tex}
+\input{../output/exhibits/bridge_adoption_risk_set_values.tex}
 \input{../output/exhibits/contestable_vehicle_choice_values.tex}
 \input{../output/exhibits/first_contestable_vehicle_choice_values.tex}
 \input{../output/exhibits/price_rank_crossing_values.tex}
@@ -70,6 +74,7 @@
 \input{../output/exhibits/v3_lp_provider_formation_values.tex}
 \input{../output/exhibits/v3_lp_launch_supply_values.tex}
 \input{../output/exhibits/eth_stress_supply_transmission_values.tex}
+\input{../output/exhibits/eth_decline_v2_accounting_values.tex}
 
 \title{The Making of Dominant Vehicle Currencies:\\Evidence from DeFi}
 % Author list intentionally withheld until coauthorship is settled.

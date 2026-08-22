@@ -65,18 +65,6 @@ def render_bridge_exante(results: pd.DataFrame) -> str:
         "exante_bridge_retention",
         "stable_route_share_days_30_119",
     )
-    change_30 = _one(
-        results,
-        "exante_bridge_paired_change",
-        "stable_route_share_change",
-        period="post_0_29",
-    )
-    change_120 = _one(
-        results,
-        "exante_bridge_paired_change",
-        "stable_route_share_change",
-        period="post_30_119",
-    )
     depth_30 = _one(
         results,
         "exante_bridge_relative_depth",
@@ -109,18 +97,8 @@ def render_bridge_exante(results: pd.DataFrame) -> str:
         f"{100 * float(retained_share['estimate']):.1f}\\% & {int(retained_share['events']):,} "
         + r"\\",
         r"\addlinespace",
-        r"\multicolumn{3}{@{}l}{\textit{Panel B. Change from the prior 30 calendar days}} \\",
-        "Stablecoin route share, days 0--29 [pp] & "
-        + _regression_cell(change_30, "coefficient_pp", "standard_error_pp")
-        + f" & {int(change_30['events']):,} "
-        + r"\\",
-        "Stablecoin route share, days 30--119 [pp] & "
-        + _regression_cell(change_120, "coefficient_pp", "standard_error_pp")
-        + f" & {int(change_120['events']):,} "
-        + r"\\",
-        r"\addlinespace",
-        r"\multicolumn{3}{@{}l}{\textit{Panel C. Prior-day weak-leg depth and route allocation}} \\",
-        r"10 pp higher stablecoin share of relative depth, days 0--29 [pp] & "
+        r"\multicolumn{3}{@{}l}{\textit{Panel B. Prior-day weak-leg capital and route allocation}} \\",
+        r"10 pp higher stablecoin share of relative capital, days 0--29 [pp] & "
         + _regression_cell(
             depth_30,
             "coefficient_pp_per_10pp_depth_share",
@@ -128,7 +106,7 @@ def render_bridge_exante(results: pd.DataFrame) -> str:
         )
         + f" & {int(depth_30['events']):,} "
         + r"\\",
-        r"10 pp higher stablecoin share of relative depth, days 30--119 [pp] & "
+        r"10 pp higher stablecoin share of relative capital, days 30--119 [pp] & "
         + _regression_cell(
             depth_120,
             "coefficient_pp_per_10pp_depth_share",
@@ -138,7 +116,7 @@ def render_bridge_exante(results: pd.DataFrame) -> str:
         + r"\\",
         r"\bottomrule",
         r"\end{tabularx}",
-        "% Paper note: The event is the first date on which DAI, USDC, or USDT has at least USD 10,000 of prior-calendar deposited capital on both route legs. Every pair used WETH earlier and has no earlier observed stablecoin route. Panel A follows the stablecoin or stablecoins that cross the threshold on the event date. Panels B and C use all native- and stablecoin-mediated routes. Panel B reports activity-weighted paired changes with pair- and event-date-clustered standard errors. Panel C includes bridge-event effects, calendar-month effects, seven-day event-age controls, and pair- and date-clustered standard errors. Asterisks *, **, and *** denote statistical significance at the 10%, 5%, and 1% levels, respectively.",
+        "% Paper note: The event is the first date on which DAI, USDC, or USDT has at least USD 10,000 of prior-calendar deposited capital on both route legs. Every pair used WETH earlier, and eligibility requires the pair's first observed stablecoin route to occur on or after the threshold date. Panel A follows the stablecoin or stablecoins that cross the threshold on the event date. Panel B includes bridge-event effects, calendar-month effects, seven-day event-age controls, and pair- and date-clustered standard errors. Asterisks *, **, and *** denote statistical significance at the 10%, 5%, and 1% levels, respectively.",
         "",
     ]
     return "\n".join(lines)
@@ -223,17 +201,11 @@ def render_bridge_exante_values(results: pd.DataFrame) -> str:
         "\\newcommand{\\BridgeExanteLaterShare}{"
         + _percent(retained_share["estimate"])
         + "}",
-        "\\newcommand{\\BridgeExanteChangeThirty}{"
-        + _signed_pp(change_30["coefficient_pp"])
+        "\\newcommand{\\BridgeExantePostShareThirty}{"
+        + f"{float(change_30['coefficient_pp']):.2f}\\%"
         + "}",
-        "\\newcommand{\\BridgeExanteChangeThirtySE}{"
-        + _unsigned_pp(change_30["standard_error_pp"])
-        + "}",
-        "\\newcommand{\\BridgeExanteChangeOneTwenty}{"
-        + _signed_pp(change_120["coefficient_pp"])
-        + "}",
-        "\\newcommand{\\BridgeExanteChangeOneTwentySE}{"
-        + _unsigned_pp(change_120["standard_error_pp"])
+        "\\newcommand{\\BridgeExantePostShareOneTwenty}{"
+        + f"{float(change_120['coefficient_pp']):.2f}\\%"
         + "}",
         "\\newcommand{\\BridgeExanteDepthThirty}{"
         + _signed_pp(depth_30["coefficient_pp_per_10pp_depth_share"])

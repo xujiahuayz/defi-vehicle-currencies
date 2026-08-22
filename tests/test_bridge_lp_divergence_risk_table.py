@@ -65,13 +65,13 @@ def test_bridge_lp_divergence_risk_table_renders_models_and_risk_comparison() ->
     )
 
     assert r"\begin{tabularx}{\linewidth}" in rendered
-    assert "Depth at $t$" in rendered
-    assert "Depth at $t+30$" in rendered
+    assert "Capital at $t$" in rendered
+    assert "Capital at $t+30$" in rendered
     assert "Relative volatility [10 pp]" in rendered
     assert "Daily divergence loss [1 bp]" in rendered
     assert "$-0.117^{**}$" in rendered
     assert "$-1.159^{**}$" in rendered
-    assert "Log initial bridge depth" in rendered
+    assert "Log initial weak-leg capital" in rendered
     assert "58,447" in rendered
     assert "4,254" in rendered
     assert "Pair $\\times$ date fixed effects & Yes & Yes & Yes & Yes" in rendered

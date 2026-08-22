@@ -10,6 +10,7 @@ from ddvc.paths import OUTPUT_DIR
 
 
 INPUT = OUTPUT_DIR / "exhibits" / "route_reconstruction_exact_chain_validation.jsonl"
+FLUID_INPUT = OUTPUT_DIR / "exhibits" / "fluid_route_label_validation.jsonl"
 
 VENUE_LABELS = {
     "uniswap_v2": "Uniswap v2",
@@ -40,7 +41,7 @@ def _pp(value: float, digits: int = 3) -> str:
     return f"{float(value):+.{digits}f}"
 
 
-def render_table(results: pd.DataFrame) -> str:
+def render_table(results: pd.DataFrame, fluid_results: pd.DataFrame) -> str:
     event = results[results["record_type"].eq("event_reconciliation")]
     assignments = results[results["record_type"].eq("route_assignment")]
     shares = results[results["record_type"].eq("stable_share")]
@@ -49,6 +50,7 @@ def render_table(results: pd.DataFrame) -> str:
     ]
     boundary = results[results["record_type"].eq("release_boundary")].iloc[0]
     support = results[results["record_type"].eq("support")].iloc[0]
+    fluid = fluid_results[fluid_results["record_type"].eq("estimate")]
 
     lines = [
         r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xrrrrrr@{}}",
@@ -126,6 +128,29 @@ def render_table(results: pd.DataFrame) -> str:
         )
     lines.extend(
         [
+            r"\addlinespace",
+            r"\multicolumn{7}{@{}l}{\textit{Panel E. Fluid route labels against receipts and pool constants}} \\",
+            r"Scope & Components & Legs & Receipts [\%] & Pool identity [\%] & Precision [\%] & Wilson lower [\%] \\",
+            r"\midrule",
+        ]
+    )
+    fluid_scopes = (
+        ("overall", "Overall"),
+        ("venue_scope:cross_venue", "Cross-venue routes"),
+        ("venue_scope:fluid_only", "Fluid-only routes"),
+    )
+    for scope, label in fluid_scopes:
+        row = fluid[fluid["scope"].eq(scope)].iloc[0]
+        lines.append(
+            f"{label} & {int(row['sampled_components']):,} & "
+            f"{int(row['sampled_fluid_legs']):,} & "
+            f"{_pct(row['receipt_coverage'], 1)} & "
+            f"{_pct(row['pool_identity_coverage'], 1)} & "
+            f"{_pct(row['testable_label_precision'], 1)} & "
+            f"{_pct(row['precision_wilson_95_lower'], 1)} \\\\"
+        )
+    lines.extend(
+        [
             r"\bottomrule",
             r"\end{tabularx}",
         ]
@@ -135,9 +160,10 @@ def render_table(results: pd.DataFrame) -> str:
 
 def main() -> int:
     results = pd.read_json(INPUT, lines=True)
+    fluid_results = pd.read_json(FLUID_INPUT, lines=True)
     write_table_artifacts(
         "route_reconstruction_exact_chain_validation",
-        render_table(results),
+        render_table(results, fluid_results),
         preview_width="10.5in",
     )
     return 0

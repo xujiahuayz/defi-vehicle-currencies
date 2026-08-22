@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render bridge-depth regressions against prior relative-price risk."""
+"""Render weak-leg-capital regressions against prior relative-price risk."""
 
 from __future__ import annotations
 
@@ -27,25 +27,25 @@ SPECIFICATIONS: tuple[Specification, ...] = (
     Specification(
         model_id="m1_prior_depth_volatility",
         outcome="log_prior_bridge_depth",
-        heading=r"Depth at $t$",
+        heading=r"Capital at $t$",
         risk_regressor="bridge_relative_volatility",
     ),
     Specification(
         model_id="m2_prior_depth_divergence_loss",
         outcome="log_prior_bridge_depth",
-        heading=r"Depth at $t$",
+        heading=r"Capital at $t$",
         risk_regressor="bridge_daily_divergence_loss_bps",
     ),
     Specification(
         model_id="m3_future_depth_volatility",
         outcome="log_future_bridge_depth",
-        heading=r"Depth at $t+30$",
+        heading=r"Capital at $t+30$",
         risk_regressor="bridge_relative_volatility",
     ),
     Specification(
         model_id="m4_future_depth_divergence_loss",
         outcome="log_future_bridge_depth",
-        heading=r"Depth at $t+30$",
+        heading=r"Capital at $t+30$",
         risk_regressor="bridge_daily_divergence_loss_bps",
     ),
 )
@@ -206,11 +206,11 @@ def render_bridge_lp_divergence_risk(
         r"*{4}{>{\hsize=0.855\hsize\centering\arraybackslash}X}@{}}",
         r"\toprule",
         r" & (1) & (2) & (3) & (4) \\",
-        "Log deposited bridge capital & "
+        "Log weak-leg capital & "
         + " & ".join(specification.heading for specification in SPECIFICATIONS)
         + r" \\",
         r"\midrule",
-        r"\multicolumn{5}{@{}l}{\textit{Panel A: Relative-price risk and bridge depth}} \\",
+        r"\multicolumn{5}{@{}l}{\textit{Panel A: Relative-price risk and full-range capital}} \\",
         "Relative volatility [10 pp] & "
         + " & ".join(
             _cell(model, "bridge_relative_volatility", scale=volatility_scale)
@@ -229,7 +229,7 @@ def render_bridge_lp_divergence_risk(
             for model in selected_models
         )
         + r" \\",
-        "Log initial bridge depth & "
+        "Log initial weak-leg capital & "
         + " & ".join(
             _cell(model, "log_prior_bridge_depth")
             for model in selected_models

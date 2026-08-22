@@ -442,7 +442,7 @@ def _fit_outcome(
             reported_predictor = FOCAL_DECLINE
             reported_coefficient = -reported_coefficient
             reported_t = -reported_t
-            effect_unit = "per_10pp_eth_decline"
+            effect_unit = "per_0p10_log_point_eth_price_fall"
         rows.append(
             {
                 **common,

@@ -3,9 +3,11 @@ from __future__ import annotations
 import pandas as pd
 
 from scripts.analyze.run_disconnected_component_boundary import (
+    annual_boundary_summary,
     component_route_sensitivity,
     render_table,
     render_values,
+    v4_boundary_summary,
 )
 
 
@@ -114,3 +116,53 @@ def test_rendered_outputs_state_boundary_and_rotation() -> None:
     assert "Components touching Uniswap v4" in table
     assert "Each valid component, value" in table
     assert "$+44.4$ (1.00)" in table
+
+
+def test_full_glob_summaries_retain_later_string_typed_rows(
+    tmp_path, monkeypatch
+) -> None:
+    early = pd.DataFrame(
+        [
+            {
+                "timestamp_utc": 1_704_067_200,
+                "tx_hash": "0xearly",
+                "component_id": 0,
+                "source": None,
+                "route_class": None,
+            }
+        ]
+    )
+    later = pd.DataFrame(
+        [
+            {
+                "timestamp_utc": 1_767_225_600,
+                "tx_hash": "0xlater",
+                "component_id": 0,
+                "source": "uniswap_v4",
+                "route_class": "tricky_independent",
+            }
+        ]
+    )
+    unified = tmp_path / "unified"
+    unified.mkdir()
+    early.to_parquet(unified / "20240101.parquet", index=False)
+    later.to_parquet(unified / "20260101.parquet", index=False)
+    clean = pd.DataFrame(
+        {"date": pd.to_datetime(["2024-01-01", "2026-01-01"]), "routes": [1, 1]}
+    )
+    clean_path = tmp_path / "clean.parquet"
+    clean.to_parquet(clean_path, index=False)
+
+    import scripts.analyze.run_disconnected_component_boundary as module
+
+    monkeypatch.setattr(module, "UNIFIED", unified)
+    monkeypatch.setattr(module, "CLEAN_DAILY", clean_path)
+    annual = annual_boundary_summary()
+    v4 = v4_boundary_summary()
+
+    end = annual.loc[annual["year"].eq(2026)].iloc[0]
+    assert int(end["disconnected_components"]) == 1
+    touched = v4.loc[
+        v4["year"].eq(2026) & v4["touches_v4"].astype(bool)
+    ].iloc[0]
+    assert int(touched["disconnected_components"]) == 1

@@ -2,7 +2,7 @@
 \par\smallskip
 \begin{tabularx}{\linewidth}{@{}>{\hsize=1.55\hsize\raggedright\arraybackslash}X*{2}{>{\hsize=0.725\hsize\centering\arraybackslash}X}@{}}
 \toprule
-Outcome in week $t+1$ & 10 pp higher ETH volatility & 10 pp ETH decline \\
+Outcome in week $t+1$ & 10 pp higher ETH volatility & ETH price fall [0.10 log point] \\
 \midrule
 v3 additions, $\ln(1+A/K)$ & \begin{tabular}{@{}c@{}}$+0.0045$\\$(0.0024)$\end{tabular} & \begin{tabular}{@{}c@{}}$+0.0041$\\$(0.0065)$\end{tabular} \\
 v3 withdrawals, $\ln(1+W/K)$ & \begin{tabular}{@{}c@{}}$+0.0044$\\$(0.0023)$\end{tabular} & \begin{tabular}{@{}c@{}}$+0.0002$\\$(0.0064)$\end{tabular} \\
@@ -11,14 +11,14 @@ v2 net liquidity units, $\operatorname{asinh}(\Delta L/\sqrt{k})$ & \begin{tabul
 \bottomrule
 \end{tabularx}
 \par\medskip
-\textit{Panel B. From ETH prices and relative depth to route use}
+\textit{Panel B. ETH returns, weak-leg capital, quotes, and route use}
 \par\smallskip
 \begin{tabularx}{\linewidth}{@{}>{\hsize=1.65\hsize\raggedright\arraybackslash}X*{3}{>{\hsize=0.78\hsize\centering\arraybackslash}X}@{}}
 \toprule
-Regressor & Log stable/WETH USD depth & Stablecoin output lead [bp] & Stablecoin chosen [pp] \\
+Regressor & Log stable/WETH USD capital & Stablecoin output lead [bp] & Stablecoin chosen [pp] \\
 \midrule
-ETH decline, days $-30$ to $-1$ [10 pp] & \begin{tabular}{@{}c@{}}$-0.0005$\\$(0.0238)$\end{tabular} & \begin{tabular}{@{}c@{}}$+0.15$\\$(1.05)$\end{tabular} & \begin{tabular}{@{}c@{}}$+0.07$\\$(0.25)$\end{tabular} \\
-Stable share of joint weak-leg USD depth [10 pp] &  & \begin{tabular}{@{}c@{}}$+19.10^{***}$\\$(2.90)$\end{tabular} & \begin{tabular}{@{}c@{}}$+2.87^{***}$\\$(0.50)$\end{tabular} \\
+ETH return, days $-30$ to $-1$ [0.10 log point] & \begin{tabular}{@{}c@{}}$-0.0005$\\$(0.0238)$\end{tabular} & \begin{tabular}{@{}c@{}}$+0.15$\\$(1.05)$\end{tabular} & \begin{tabular}{@{}c@{}}$+0.07$\\$(0.25)$\end{tabular} \\
+Stable share of joint weak-leg USD capital [10 pp] &  & \begin{tabular}{@{}c@{}}$+19.10^{***}$\\$(2.90)$\end{tabular} & \begin{tabular}{@{}c@{}}$+2.87^{***}$\\$(0.50)$\end{tabular} \\
 Stablecoin exact-output advantage [100 bp] &  &  & \begin{tabular}{@{}c@{}}$+10.33^{***}$\\$(0.69)$\end{tabular} \\
 \midrule
 Observations & 24,313 & 24,313 & 24,313 \\

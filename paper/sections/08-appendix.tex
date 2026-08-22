@@ -25,19 +25,20 @@ Disconnected event groups become more common late in the sample. They comprise \
 \exhibitnote{Panel A reports the share of reconstructed components belonging to transactions with more than one disconnected token-flow group. Uniswap v4 begins during 2025, so its 2024 cell is empty. Panel B compares the principal connected-transaction rule with an alternative that treats each internally well-formed component as a separate route. Stablecoin shares use native and stable two-leg vehicles as the denominator and equal-weight matched January through June dates in 2024 and 2026. Value estimates require source, intermediary, and destination values to agree within 20\%. Standard errors use a Newey--West covariance with a 30-day Bartlett bandwidth. The alternative assigns no unobserved handoff between components.}
 \end{table}
 % output/exhibits/disconnected_component_boundary.jsonl; scripts/analyze/run_disconnected_component_boundary.py
+\FloatBarrier
 
-Table~\ref{tab:app:route-validation} validates route construction against Ethereum logs for 206 venue-days on 74 dates.
-% output/exhibits/route_reconstruction_exact_chain_validation.jsonl
+Table~\ref{tab:app:route-validation} validates route construction against Ethereum logs for 206 venue-days on 74 dates and checks Fluid route labels against transaction receipts and historical pool constants.
+% output/exhibits/route_reconstruction_exact_chain_validation.jsonl; output/exhibits/fluid_route_label_validation.jsonl
 
 \begin{table}[htbp]
 \centering
-\small
+\scriptsize
 \caption{Ethereum-log checks and route-construction consequences}
 \label{tab:app:route-validation}
 \input{../output/tables/route_reconstruction_exact_chain_validation.tex}
-\exhibitnote{Panel A uses full-day venue ledgers for 206 venue-days across 74 sampled dates. Provider-only events are provider rows absent from the corresponding Ethereum logs; chain-only events are Ethereum-log events absent from the provider rows. Panels B and C rerun the route construction on the 50 dates with at least one swap correction. Panel D repeats the pair decomposition on the six common January--June sampled dates in each endpoint year. Available indexed records omit 35 historical auxiliary venue-days. Auxiliary log-order corrections would collide with another provider-ordered leg in 2 transactions; together they contain 47 legs and 2 reconstructed routes. The comparison validates the sampled dates; transaction-trace recall beyond them remains unmeasured.}
+\exhibitnote{Panel A uses full-day venue ledgers for 206 venue-days across 74 sampled dates. Provider-only events are provider rows absent from the corresponding Ethereum logs; chain-only events are Ethereum-log events absent from the provider rows. Panels B and C rerun route construction on the 50 dates with at least one swap correction. Panel D repeats the pair decomposition on the six common January--June sampled dates in each endpoint year. Panel E samples coherent Fluid-containing routes within each half-year from 2024 H2 through 2026 H1, with separate high-value and rank-spread draws for cross-venue and Fluid-only routes. We compare each labelled Fluid leg with the exact receipt event and the pool's historical token constants; native ETH and WETH are one economic asset. Precision uses legs with both records available, and the Wilson column reports its 95\% lower bound. Available indexed records omit 35 historical auxiliary venue-days. Auxiliary log-order corrections would collide with another provider-ordered leg in 2 transactions; together they contain 47 legs and 2 reconstructed routes. The checks cover the sampled observations; transaction-trace recall beyond them remains unmeasured.}
 \end{table}
-% output/exhibits/route_reconstruction_exact_chain_validation.jsonl; scripts/analyze/run_route_reconstruction_validation.py
+% output/exhibits/route_reconstruction_exact_chain_validation.jsonl; output/exhibits/fluid_route_label_validation.jsonl; scripts/analyze/run_route_reconstruction_validation.py; scripts/verify/validate_fluid_route_labels.py
 
 We compare every provider swap with the independently queried logs. The comparison can add a chain event absent from the provider data, remove a provider event absent from the chain, or replace its payload or log position. We then rerun route construction on the 50 sampled dates with at least one swap correction. Available indexed records omit 35 historical auxiliary venue-days. The comparison covers the sampled dates and the connected pool sequence observed in each transaction.
 
@@ -190,7 +191,7 @@ Table~\ref{tab:app:curve} reports the held-out fit by validation day.
 \centering
 \caption{StableSwap calibration and held-out quote error, by validation day}
 \label{tab:app:curve}
-\small
+\scriptsize
 \begin{tabular}{lrrrrrr}
 \toprule
 Day & Pools fitted & Pools excluded & Held-out trades & Median $\widehat A_p$ & Median error & Within 1\% \\
@@ -206,7 +207,7 @@ Day & Pools fitted & Pools excluded & Held-out trades & Median $\widehat A_p$ & 
 % output/exhibits/curve_quoter_validation.jsonl, 1,207 held-out Curve trades on 2025-04-13
 \bottomrule
 \end{tabular}
-\exhibitnote{The sample contains four sampled days. $\widehat A_p$ is reported in the module's convention, which carries the on-chain precision factor of 100. Median error is the median absolute deviation of the quote from realised output on trades the calibration never saw.}
+\exhibitnote{The sample contains four sampled days. $\widehat A_p$ includes Curve's on-chain precision factor of 100. Median error is the median absolute deviation of the quote from realised output on trades the calibration never saw.}
 \end{table}
 
 Across four validation days, held-out median errors range from 0.029\% to 0.039\%.
@@ -437,7 +438,11 @@ The vehicle-route shortfall relative to direct execution is
 \begin{equation*}
 \Delta C^{D}_{i,o,k,q,e}=\frac{O^{D}_{i,o,q,e}-O^{I}_{i,o,k,q,e}}{O^{D}_{i,o,q,e}},
 \end{equation*}
-reported in basis points as $10^{4}\Delta C^{D}_{i,o,k,q,e}$. The comparison extends the realised-versus-optimised allocation benchmark of \citet{XiMoallemi2026Routing} from parallel pools connecting the same assets to sequential routes through an intermediary. Swaps and liquidity changes are replayed in on-chain order so every quote uses information available before the trade.
+We report it in basis points as
+\begin{equation*}
+10^{4}\Delta C^{D}_{i,o,k,q,e}.
+\end{equation*}
+\citet{XiMoallemi2026Routing} compare realised and optimised allocation across parallel pools connecting the same assets. We extend that benchmark to sequential routes through an intermediary. Swaps and liquidity changes are replayed in on-chain order so every quote uses information available before the trade.
 
 The opportunity set expands in three stages: alternative paths using the same vehicle and venue families as the observed route, paths using the same vehicle across Uniswap v2, SushiSwap v2, and Uniswap v3, and paths using any named public vehicle or the direct connection across those exchanges. Each observed two-leg route must reproduce realised output within one basis point. Leg values must agree within 20\%, input value must be at least \$100, and every observed or hypothetical leg must satisfy Equation~\eqref{eq:support}.
 % output/exhibits/exact_vehicle_frontier_monthly.jsonl
@@ -644,6 +649,33 @@ where $d$ is the month-day and $s$ indicates whether the two legs use one exchan
 
 \begin{table}[tbp]
 \centering
+\caption{USDT intermediary use relative to endpoint demand}
+\label{tab:app:usdt-excess-use}
+\small
+\input{../output/tables/usdt_transition.tex}
+\exhibitnote{The excess-use ratio divides USDT's share of intermediary activity by its share of route-endpoint activity on the same currency perimeter. Values above one indicate that USDT appears proportionally more often as an intermediary than as a source or destination. Count ratios use all topology-valid routes; value ratios require source, intermediary, and destination values to agree within 20\%. The final row gives equal-day means over matched January--June dates.}
+\end{table}
+
+\begin{table}[tbp]
+\centering
+\caption{Pair-composition decomposition with materiality floors}
+\label{tab:app:pair-materiality}
+\scriptsize
+\input{../output/tables/pair_composition_materiality.tex}
+\exhibitnote{Each floor is applied separately to an ordered endpoint pair in 2024 H1 and 2026 H1, using month-days present in both periods. Continuing pairs clear the floor in both periods; period-only pairs clear it once. Route floors use native- and stablecoin-mediated route counts. Value floors use routed dollars whose source, intermediary, and destination valuations agree within 20\%. Within is the net stablecoin-share change inside continuing pairs; Reweight is activity shifting among them; Support is their changing aggregate weight; Period-only is the net contribution of pairs that clear the floor once. The four components sum to Total. Shares are percent; changes are percentage points.}
+\end{table}
+
+\begin{table}[tbp]
+\centering
+\caption{Pair decomposition after venue exclusions}
+\label{tab:app:venue-exclusion}
+\scriptsize
+\input{../output/tables/vehicle_rotation_venue_exclusion.tex}
+\exhibitnote{Each row repeats the exact midpoint decomposition over matched January--June dates after retaining only routes whose legs use the stated venue set. All venues includes the nine observed venue families. The final row retains Uniswap v2, Uniswap v3, and SushiSwap v2; it is a venue-family restriction, while Appendix Table~\ref{tab:app:route-validation} reports the separate transaction-level checks. Retained activity is the route-count or supported-value mass relative to the unrestricted sample in the same period. Within is net stablecoin-share change inside continuing pairs; Reweight is activity shifting among them; Support is their changing aggregate weight; Period-only is the contribution of pairs present in one period. The four components sum to Total.}
+\end{table}
+
+\begin{table}[tbp]
+\centering
 \caption{Alternative accounting for the route-count rotation}
 \label{tab:app:pair-market-accounting}
 \small
@@ -705,10 +737,10 @@ Table~\ref{tab:network-position}, panel A, shows the same stablecoin rotation un
 Omitting one sampled date preserves the full-graph dollar-weighted ordering in both periods. Omitting one venue gives wider rank ranges: WETH spans ranks three to four in 2026 H1, while USDC and USDT each span ranks one to two (Table~\ref{tab:app:network-centrality-robustness}, panel B). After removing core stablecoin legs, WETH ranks first, USDC second, and USDT third in 2026 H1 (panel C). The dollar-weighted stablecoin lead therefore comes partly from the stablecoin core; WETH remains the leading connector outside those core legs. The issuer split in Appendix Table~\ref{tab:app:endpoint-direction}, panel B, keeps this scope dependence beside the stable-to-stable endpoint composition that generates it.
 % output/exhibits/network_centrality_robustness.jsonl; output/exhibits/network_centrality_robustness_support.jsonl; sampled 2024 H1 and 2026 H1 full-route leg graphs.
 
-\section{Secondary route and liquidity comparisons}
+\section{Additional evidence on liquidity formation and persistence}
 \label{app:secondary-mechanisms}
 
-We use the following estimates to interpret the main results: entry-activity restrictions, the future-persistence version of bridge support, the composition of capital growth before first use, and relative-price risk. Pool states and first-use dates are equilibrium outcomes; the estimates describe how route use and liquidity line up.
+The estimates below describe equilibrium comovement between pool formation and route use. They cover entry-activity restrictions, persistent bridge support, capital changes before first use, relative-price risk, and ETH-price movements. Provider motives require separate evidence.
 
 \subsection{Pool maturity and stable-facing liquidity additions}
 
@@ -725,6 +757,19 @@ The increase in stable-facing liquidity additions is concentrated in mature pool
 \exhibitnote{Pool age counts days from the first retained Uniswap v3 pool-day. The sample contains spoke pools with exactly one WETH, DAI, USDC, or USDT side and an endpoint outside that set; stable-facing combines DAI, USDC, and USDT. Addition actions are positive liquidity additions. Panel A allocates the increase in stable-facing actions across age bins. Panel B reports the stable-facing share among stable-facing and WETH-facing actions. Panel C classifies transaction origins using their full retained v3 history; transaction origin measures participation, while ownership and project affiliation remain outside the data. Panel D forms a separate 2026 H1 pool cohort for each horizon. Active pools have a retained pool-day during the 15-day window beginning at the horizon, weighted by addition actions on days 0--7. Net flow is vehicle-side additions less removals from day 8 through the horizon, divided by vehicle-side additions on days 0--7. Pool age dates observed pool formation and is distinct from token issuance.}
 \end{table}
 
+\subsection{Stablecoin circulation and later pool formation}
+
+Table~\ref{tab:app:stablecoin-supply-lp} relates monthly growth in each stablecoin's asset-wide circulating amount to next-month capital growth and first material links. The four core and spoke coefficients are imprecise after adjustment for their shared family. Circulating supply is an equilibrium quantity and provides a broad demand proxy; issuer support requires separate evidence.
+
+\begin{table}[tbp]
+\centering
+\caption{Stablecoin circulation, capital growth, and first material links}
+\label{tab:app:stablecoin-supply-lp}
+\small
+\input{../output/tables/stablecoin_supply_lp.tex}
+\exhibitnote{Each coefficient relates a 10\% increase in asset-wide circulating supply from month \(t-1\) to \(t\) to liquidity provision in month \(t+1\). Capital-growth models absorb stablecoin--endpoint-pair and endpoint-by-month effects and control for initial capital. Formation models retain endpoint--stablecoin links that never form, absorb stablecoin and endpoint-by-month effects, and control for initial capital. A material link reaches \$50,000 across Uniswap v2, SushiSwap v2, and Uniswap v3. Standard errors use CR1 clustering by undirected link and stablecoin-month. Continuous supply growth and capital growth are winsorised at the first and 99th percentiles. Holm-adjusted \(p\)-values cover the four core/spoke capital-growth and formation coefficients. The supply measure combines issuance, redemption, transaction demand, and portfolio demand.}
+\end{table}
+
 \subsection{Persistence among pairs with greater entry activity}
 
 Table~\ref{tab:app:entry-persistence-robustness} repeats the post-entry stablecoin-share regressions after requiring at least five or ten routes on the entry day. The estimates remain close to one-for-one at both horizons. The main persistence result is also present among entrants with a more precisely measured initial allocation.
@@ -736,10 +781,34 @@ Table~\ref{tab:app:entry-persistence-robustness} repeats the post-entry stableco
 \input{../output/tables/entry_vehicle_persistence_robustness.tex}
 \exhibitnote{Each column regresses the stablecoin share in the stated later window on the stablecoin share observed on the entry day. The sample requires complete follow-up through day 120 and subsequent trading in the stated window; the entry day is excluded from every later outcome. All columns control for cohort year, endpoint class, log entry routes, direct-route share, and longer-route share and use equal-pair weights. Coefficients and entry-date-clustered CR1 standard errors in parentheses report the outcome change in pp for a 10 pp higher entry share. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
 \end{table}
+\FloatBarrier
 
-\subsection{Capital composition and later adjustment}
+\subsection{Capital thresholds, composition, and later adjustment}
 
-The main bridge event uses only prior-calendar capital. Table~\ref{tab:app:bridge-persistent-support} gives the complementary event dated by subsequent persistence: positive prior-calendar capital on both legs during at least 24 of the next 30 days. It reproduces the increase in stablecoin use after support, the relation with continuous relative depth, and the difference in first-month adoption between shallow and more competitive stablecoin bridges. Because the persistence condition uses later capital, this comparison assesses sensitivity to the event-timing definition.
+Table~\ref{tab:app:bridge-establishment} complements the weekly first-use estimates with a threshold dated before adoption. Panel A follows pairs after full-range stablecoin capital first reaches \BridgeExanteThreshold{} on both legs. For event \(e\), let \(B^S_{et}\) and \(B^W_{et}\) denote stablecoin and WETH weak-leg capital, and let \(S^R_{et}\) denote stablecoin route share. Panel B estimates
+\begin{equation}
+\begin{aligned}
+B^S_{et}&=\max_{v\in\mathcal S}\min\{K_{i_ev,t-1},K_{j_ev,t-1}\},\qquad
+B^W_{et}=\min\{K_{i_eW,t-1},K_{j_eW,t-1}\},\\
+Q_{et}&=\frac{B^S_{et}}{B^S_{et}+B^W_{et}},\qquad
+S^R_{et}=\beta Q_{et}+\alpha_e+\lambda_{m(t)}+\eta_{a_e(t)}+\varepsilon_{et}.
+\end{aligned}
+\label{eq:app:bridge-relative-depth}
+\end{equation}
+Here \(m(t)\) is calendar month and \(a_e(t)\) groups elapsed event time into seven-day intervals. A supported stablecoin first carries a route within 30 days for \BridgeExanteAdoptionThirty{} of events and within 120 days for \BridgeExanteAdoptionOneTwenty{} (panel A). A 10 pp larger stablecoin share of weak-leg capital is associated with \BridgeExanteDepthThirty{} more stablecoin route activity during days 0--29 and \BridgeExanteDepthOneTwenty{} during days 30--119 (panel B). The threshold supplies an interpretable event date; the weekly design in Table~\ref{tab:bridge-adoption-risk} also retains pairs with zero measured stablecoin capital.
+
+\begin{table}[tbp]
+\caption{Capital thresholds, stablecoin adoption, and route allocation}
+\label{tab:app:bridge-establishment}
+\centering
+\small
+\renewcommand{\arraystretch}{1.08}
+\input{../output/tables/bridge_exante.tex}
+\exhibitnote{Panel A dates the first time DAI, USDC, or USDT has at least \BridgeExanteThreshold{} of prior-calendar full-range reserve value in Uniswap v2 and SushiSwap v2 on both route legs. Every pair used WETH earlier, and eligibility requires its first stablecoin route to occur on or after the event. Panel B estimates Equation~\eqref{eq:app:bridge-relative-depth} with bridge-event effects, calendar-month effects, seven-day event-age controls, and pair- and date-clustered standard errors. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively. The capital measure covers full-range positions on the two constant-product venues.}
+\end{table}
+\FloatBarrier
+
+The main bridge event uses only prior-calendar capital. Table~\ref{tab:app:bridge-persistent-support} gives the complementary event dated by subsequent persistence: positive prior-calendar capital on both legs during at least 24 of the next 30 days. It reproduces the increase in stablecoin use after support, the relation with continuous relative capital, and the difference in first-month adoption between low-capital and more competitive stablecoin bridges. Because the persistence condition uses later capital, this comparison assesses sensitivity to the event-timing definition.
 
 \begin{table}[htbp]
 \caption{Persistent stable-bridge support and route allocation}
@@ -751,17 +820,17 @@ The main bridge event uses only prior-calendar capital. Table~\ref{tab:app:bridg
 \exhibitnote{The unit is a pair and its realised single- or cross-venue route class, measured around the first persistent DAI, USDC, or USDT bridge. Support requires positive prior-calendar deposited capital on both legs in Uniswap v2 or SushiSwap v2 on at least 24 of the next 30 calendar days. Every pair has earlier WETH-mediated routes, and the event precedes its first observed stablecoin route. Panel A reports changes from the prior 30 days. Panel B compares the best stablecoin weak-leg capital with WETH weak-leg capital. Panel C records use of a stablecoin in the event's support set within 30 or 120 days. Standard errors are two-way clustered by pair and date. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively. Deposited capital is an equilibrium pool stock.}
 \end{table}
 
-Figure~\ref{fig:app:bridge-adoption-capital-path} follows events whose supported stablecoin is first used 7 to 119 days after persistent support. Stablecoin weak-leg capital rises during the week before first use, including relative to the matched WETH bridge. The timing is consistent with providers adding capital in anticipation of route demand, traders waiting for usable depth, reserve revaluation, or these forces operating together.
+Figure~\ref{fig:app:bridge-adoption-capital-path} follows events whose supported stablecoin is first used 7 to 119 days after persistent support. Stablecoin weak-leg capital rises during the week before first use, including relative to the matched WETH bridge. The timing is consistent with providers adding capital in anticipation of route demand, traders waiting for sufficient capital on both legs, reserve revaluation, or these forces operating together.
 
 \begin{figure}[htbp]
 \centering
 \caption{Bridge capital around first use of the supported stablecoin}
 \label{fig:app:bridge-adoption-capital-path}
 \includegraphics[width=0.91\linewidth]{../output/figures/experiments/bridge_adoption_capital_path.pdf}
-\exhibitnote{The sample contains \BridgeAdoptionCapitalEvents{} pair-by-realised-route-class events whose first use of a stablecoin in the event's support set occurs 7 to 119 calendar days after persistent support. Each line is the equal-event mean change from day -7 in \(\log(1+\text{deposited capital in USD})\) on the weaker leg. Stablecoin depth is the largest bottleneck among the supported stablecoins; WETH depth is the matched incumbent bottleneck. Capital is lagged to the prior calendar day. Shading gives 95\% confidence intervals from standard errors two-way clustered by pair and adoption date.}
+\exhibitnote{The sample contains \BridgeAdoptionCapitalEvents{} pair-by-realised-route-class events whose first use of a stablecoin in the event's support set occurs 7 to 119 calendar days after persistent support. Each line is the equal-event mean change from day -7 in \(\log(1+\text{deposited capital in USD})\) on the weaker leg. Stablecoin capital is the largest bottleneck among the supported stablecoins; WETH capital is the matched incumbent bottleneck. Capital is lagged to the prior calendar day. Shading gives 95\% confidence intervals from standard errors two-way clustered by pair and adoption date.}
 \end{figure}
 
-Table~\ref{tab:bridge-pool-margins} separates newly active pools from capital growth in pools already supporting the route. Newly active pools hold \BridgePoolMarginNewCapitalShare{} of stablecoin weak-leg capital on the first-use day; \BridgePoolMarginContinuingCapitalShare{} lies in pools active one week earlier. Most of the increase therefore occurs in pools already active one week earlier, with a smaller pool-activation margin.
+Table~\ref{tab:bridge-pool-margins} separates newly active pools from capital changes in pools already supporting the route. Newly active pools hold \BridgePoolMarginNewCapitalShare{} of stablecoin weak-leg capital on the first-use day; \BridgePoolMarginContinuingCapitalShare{} lies in pools active one week earlier. Continuing-pool capital rises more on the stablecoin side than on the matched WETH side by \BridgePoolMarginContinuingDifference{} log point, alongside the smaller pool-activation margin.
 
 \begin{table}[htbp]
 \caption{Pool activation and capital growth before stablecoin route use}
@@ -775,7 +844,9 @@ Table~\ref{tab:bridge-pool-margins} separates newly active pools from capital gr
 
 \subsection{Relative-price risk and deposited bridge capital}
 
-Lower endpoint--vehicle relative-price risk is associated with deeper constant-product bridges at the measurement date and 30 days later. This relation is consistent with divergence risk influencing where liquidity providers place capital. Panel B of Table~\ref{tab:app:bridge-lp-risk} gives the corresponding vehicle comparison. Stablecoin bridges have higher median risk than WETH bridges and carry the lower relative volatility in fewer than one third of comparable pair-months. Divergence risk helps locate bridge capital but leaves the aggregate rise of stablecoin intermediation unexplained.
+Lower endpoint--vehicle relative-price risk is associated with larger constant-product weak-leg capital at the measurement date and 30 days later. This relation is consistent with divergence risk entering liquidity placement. Panel B of Table~\ref{tab:app:bridge-lp-risk} gives the corresponding vehicle comparison. Stablecoin bridges have higher median risk than WETH bridges and carry the lower relative volatility in fewer than one third of comparable pair-months. The vehicle comparison points to expected fees, hedging, issuer support, and network experience for the aggregate rotation.
+
+\FloatBarrier
 
 \begin{table}[tbp]
 \centering
@@ -785,27 +856,45 @@ Lower endpoint--vehicle relative-price risk is associated with deeper constant-p
 \renewcommand{\arraystretch}{0.94}
 \input{../output/tables/bridge_lp_divergence_risk.tex}
 }
-\exhibitnote{The unit is a pair, monthly date, and vehicle among WETH, DAI, USDC, and USDT. Each row requires at least ten routes for the pair during the preceding calendar month, at least 20 daily return observations during days -30 through -1, and positive deposited capital on both route legs for at least one native and one stablecoin bridge in the pair-month. Bridge depth is the smaller deposited-capital stock across the two legs in full-range Uniswap v2 and SushiSwap v2 pools, measured at the prior-calendar state. Relative volatility is the larger annualised endpoint--vehicle volatility across the two legs. Daily divergence loss applies the exact 50--50 constant-product expression to the same relative returns and takes the larger leg value. Columns 3 and 4 control for initial bridge depth; every column controls for prior vehicle-route activity and absorbs pair-by-date and vehicle effects. Standard errors are two-way clustered by pair and date. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively. The estimates describe equilibrium liquidity allocation; fee income, provider hedges, and provider-level returns are unavailable.}
+\exhibitnote{The unit is a pair, monthly date, and vehicle among WETH, DAI, USDC, and USDT. Each row requires at least ten routes for the pair during the preceding calendar month, at least 20 daily return observations during days -30 through -1, and positive deposited capital on both route legs for at least one native and one stablecoin bridge in the pair-month. Weak-leg capital is the smaller deposited-capital stock across the two legs in full-range Uniswap v2 and SushiSwap v2 pools, measured at the prior-calendar state. Relative volatility is the larger annualised endpoint--vehicle volatility across the two legs. Daily divergence loss applies the exact 50--50 constant-product expression to the same relative returns and takes the larger leg value. Columns 3 and 4 control for initial weak-leg capital; every column controls for prior vehicle-route activity and absorbs pair-by-date and vehicle effects. Standard errors are two-way clustered by pair and date. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively. The estimates describe equilibrium liquidity allocation; fee income, provider hedges, and provider-level returns are unavailable.}
 \end{table}
+\FloatBarrier
 
-\subsection{ETH stress, liquidity supply, and route transmission}
+\subsection{ETH stress, liquidity supply, and route use}
 
-An ETH decline mechanically reduces the dollar value of an isolated endpoint--WETH constant-product pool when the endpoint price is fixed and liquidity units remain in place. Vehicle competition depends on a relative two-leg object: the weaker of two WETH legs compared with the weaker of two stablecoin legs. Table~\ref{tab:app:eth-stress-supply-transmission} follows this distinction from liquidity-supply flows through relative dollar depth, executable output, and route use.
+ETH stress affects three distinct objects: external liquidity flows, the dollar capital in a fixed set of pools, and route-specific weak-leg capital. Table~\ref{tab:app:eth-stress-supply-transmission} relates the first and third objects to executable output and route use. Table~\ref{tab:app:eth-decline-v2-accounting} decomposes the second into the $\sqrt{k}$ and unit-value components.
 
-Panel A compares stablecoin-facing and WETH-facing pools attached to the same endpoint and week. Higher ETH volatility predicts similar coefficients for v3 additions and withdrawals, while the net-supply coefficient is \EthStressVThreeNetSupplyVolatilityEffect{}. The price-neutral v2 net-liquidity-unit coefficient is \EthStressVTwoNetLiquidityVolatilityEffect{}. The v3 net response to a 10 percentage point ETH decline is positive at \EthStressVThreeNetSupplyDeclineEffect{} with Holm-adjusted \EthStressVThreeNetSupplyDeclineHolmP{}; its gross-flow components are individually imprecise.
+Panel A compares stablecoin-facing and WETH-facing pools attached to the same endpoint and week. Higher ETH volatility predicts similar coefficients for v3 additions and withdrawals, while the net-supply coefficient is \EthStressVThreeNetSupplyVolatilityEffect{}. The price-neutral v2 net-liquidity-unit coefficient is \EthStressVTwoNetLiquidityVolatilityEffect{}. The v3 coefficient on a 0.10-log-point fall in ETH's dollar price is \EthStressVThreeNetSupplyDeclineEffect{} with Holm-adjusted \EthStressVThreeNetSupplyDeclineHolmP{}; its gross-flow components are individually imprecise. These are differential stable-minus-WETH external-flow responses. Total provider activity and within-pool range management are separate margins.
+% output/exhibits/lp_stable_demand_stress_models.jsonl; output/exhibits/eth_stress_executability.jsonl
 
-Panel B holds the pair, trade size, pre-transaction state, and public venue set fixed. A 10 percentage point larger stablecoin share of joint weak-leg dollar depth predicts a \EthStressDepthOutputEffect{} exact-output advantage and \EthStressDepthChoiceEffect{} higher probability of stablecoin use (second row). A 100 basis point stablecoin output advantage predicts \EthStressOutputChoiceEffect{} higher stablecoin use (third row). The ETH-decline estimates in the first row are small for relative dollar depth, output, and route choice. Relative depth transmits strongly through prices into routing; ETH declines provide little variation in that relative depth measure.
+Panel B holds the pair, trade size, pre-transaction state, and public venue set fixed. A 10 percentage point larger stablecoin share of joint weak-leg dollar capital predicts a \EthStressDepthOutputEffect{} exact-output advantage and \EthStressDepthChoiceEffect{} higher probability of stablecoin use (second row). A 100 basis point stablecoin output advantage predicts \EthStressOutputChoiceEffect{} higher stablecoin use (third row). In this monthly route-opportunity sample, trailing ETH returns have small coefficients for route-specific weak-leg capital, output, and route choice (first row). A larger stablecoin share of measured V2 and SushiSwap v2 weak-leg capital is associated with better stablecoin quotes and more stablecoin use in this common-support sample.
 
 \begin{table}[tbp]
 \centering
-\caption{ETH stress, liquidity supply, and route transmission}
+\caption{ETH stress, liquidity supply, and route use}
 \label{tab:app:eth-stress-supply-transmission}
 {\scriptsize
 \renewcommand{\arraystretch}{1.02}
 \input{../output/tables/eth_stress_supply_transmission.tex}
 }
-\exhibitnote{Panel A compares stablecoin-facing and WETH-facing pools for the same endpoint and week. ETH volatility and returns are measured during week \(t\); liquidity outcomes occur during week \(t+1\). Additions and withdrawals are log one plus dollar flow divided by initial pool capital. Net supply is the inverse hyperbolic sine of net dollar flow divided by initial capital. The v2 liquidity-unit outcome divides net liquidity units by initial square-root reserves and is price-neutral. Pools have at least \$50,000 of capital. Models absorb endpoint-by-week and pool effects, control for prior fee yield, endpoint--vehicle relative-price volatility, prior additions and withdrawals, capital, and pool age, and cluster standard errors by pool and week. Panel B uses exact two-leg opportunities for which stablecoin and WETH routes are feasible and both prior-calendar weak-leg full-range capital measures are positive. Dollar depth is deposited Uniswap v2 and SushiSwap v2 capital on the weaker leg and records a mark-to-market pool state. Exact output holds the pair, input, pre-transaction state, and public venue set fixed. Panel B models absorb pair and month-of-year effects, control for log input value, ETH volatility, and linear calendar time, and cluster standard errors by pair and exact date. Because ETH return is common within each date, Panel B uses month-of-year effects in place of date effects. Stars in panel A and the first row of panel B use Holm-adjusted p-values within their declared outcome families. The three capital--price--choice links form a separate Holm family. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively. The estimates are predictive associations.}
+\exhibitnote{Panel A compares stablecoin-facing and WETH-facing pools for the same endpoint and week. ETH volatility and returns are measured during week \(t\); liquidity outcomes occur during week \(t+1\). Additions and withdrawals are log one plus dollar flow divided by initial pool capital. Net supply is the inverse hyperbolic sine of net dollar flow divided by initial capital. The v2 liquidity-unit outcome divides net liquidity units by initial square-root reserves and is price-neutral. Pools have at least \$50,000 of capital. Models absorb endpoint-by-week and pool effects, control for prior fee yield, endpoint--vehicle relative-price volatility, prior additions and withdrawals, capital, and pool age, and cluster standard errors by pool and week. Panel B uses exact two-leg opportunities for which stablecoin and WETH routes are feasible and both prior-calendar weak-leg full-range capital measures are positive. Dollar capital is deposited Uniswap v2 and SushiSwap v2 capital on the weaker leg and records a mark-to-market pool state. Exact output holds the pair, input, pre-transaction state, and public venue set fixed. Panel B models absorb pair and month-of-year effects, control for log input value, ETH volatility, and linear calendar time, and cluster standard errors by pair and exact date. Because ETH return is common within each date, Panel B uses month-of-year effects in place of date effects. Stars in panel A and the first row of panel B use Holm-adjusted p-values within their declared outcome families. The three capital--price--choice links form a separate Holm family. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively. The estimates are predictive associations.}
 \end{table}
+\FloatBarrier
+
+For each endpoint, date, and exchange in Table~\ref{tab:app:eth-decline-v2-accounting}, both vehicle families have at least \EthVTwoAccountingMaterialPoolCapital{} in anchor-date pools. We hold those pools fixed and require every one to retain a positive state at the horizon. The resulting sample contains \EthVTwoAccountingIntervalRange{} endpoint intervals per horizon; complete follow-up ranges from \EthVTwoAccountingCompleteFollowupCellRange{} across venue--horizon cells. A 0.10-log-point fall in ETH's dollar price corresponds to more stablecoin-relative dollar capital at every horizon (column 1). The $\sqrt{k}$ contribution is negative and imprecise after Holm adjustment (column 2), while the three- and seven-day unit-value estimates are economically close to the conditional \EthVTwoAccountingUnitValueBenchmarkLogPoints{} constant-product reference (column 3). The same WETH price series enters the predictor and WETH-side dollar capital. This stock decomposition is therefore an accounting comparison; $\sqrt{k}$ also includes retained fees and token transfers, while decoded provider additions and withdrawals remain the separate flow outcomes in Table~\ref{tab:app:eth-stress-supply-transmission}, panel A. Measuring cross-price convergence requires transaction-level pool-price deviations and remains outside this table.
+% output/exhibits/eth_decline_v2_accounting.jsonl; output/exhibits/eth_decline_v2_accounting_support.jsonl
+
+\begin{table}[tbp]
+\centering
+\caption{ETH declines and stablecoin-relative constant-product capital}
+\label{tab:app:eth-decline-v2-accounting}
+{\scriptsize
+\renewcommand{\arraystretch}{1.02}
+\input{../output/tables/eth_decline_v2_accounting.tex}
+}
+\exhibitnote{Each entry is the coefficient on a 0.10-log-point fall in ETH's dollar price, about 9.5\%, in a regression of the indicated stablecoin-minus-WETH log change. The pooled sample combines Uniswap v2 and SushiSwap v2 and contains nonstable endpoints with at least \EthVTwoAccountingMaterialPoolCapital{} in both vehicle families at the anchor. Anchor-date pools are held fixed, and every selected pool must retain a positive validated future state; complete intervals span \EthVTwoAccountingCompleteFollowupCellRange{} across venue--horizon cells. Models absorb venue-by-endpoint and anchor-month effects and use anchor-date HAC standard errors with seven lags. Capital obeys \(V=\sqrt{k}(V/\sqrt{k})\). Changes in \(\sqrt{k}\) include liquidity-provider actions, retained swap fees, and token transfers. Unit value reflects token prices and reserve adjustment. The WETH price series also enters WETH-side dollar capital; \EthVTwoAccountingSinglePricedEndpointShare{} of primary intervals lack a validated endpoint price, so capital there equals twice the vehicle-side reserve value. Stars on total capital and the invariant-unit component use Holm-adjusted \(p\)-values across the 27 venue--horizon--outcome estimates. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively. The conditional constant-product unit-value reference is \EthVTwoAccountingUnitValueBenchmarkLogPoints{}.}
+\end{table}
+\FloatBarrier
 
 \section{Additional exact-price and route-choice results}
 \label{app:additional-price-results}
@@ -834,7 +923,7 @@ In panel B, $C_{rpt}$ indicates stablecoin use or retention of the entry family,
 
 \subsection{Complete established-pair and crossing specifications}
 
-Table~\ref{tab:app:contestable-vehicle-choice} reports the complete set of established-pair route-choice specifications underlying Table~\ref{tab:capital-price-transmission}, panel A. Table~\ref{tab:app:price-rank-crossing} reports event-time route shares and the complete crossing regressions underlying panel B.
+Table~\ref{tab:app:contestable-vehicle-choice} reports established-pair vehicle choice as a function of exact-output and prior-capital advantages. Table~\ref{tab:app:price-rank-crossing} reports route-share movements and challenger-capital estimates around changes in exact-price leadership.
 
 \begin{table}[tbp]
 \centering

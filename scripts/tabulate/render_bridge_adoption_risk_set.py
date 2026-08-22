@@ -170,9 +170,9 @@ def render_bridge_adoption_risk_set(results: pd.DataFrame) -> str:
     _one_support(results, PRIMARY_SAMPLE)
     _one_support(results, STRICT_SAMPLE)
     lines = [
-        r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}X*{5}{>{\centering\arraybackslash}p{1.35cm}}@{}}",
+        r"\begin{tabularx}{\linewidth}{@{}>{\hsize=2.4\hsize\raggedright\arraybackslash}X*{5}{>{\hsize=0.72\hsize\centering\arraybackslash}X}@{}}",
         r"\toprule",
-        r" & \shortstack{(1)\\Any\\support} & \shortstack{(2)\\Depth given\\support} & \shortstack{(3)\\Preweek\\share} & \shortstack{(4)\\Next-week\\share} & \shortstack{(5)\\Joint\\timing} \\",
+        r" & \shortstack{(1)\\Any\\support} & \shortstack{(2)\\Capital\\ratio} & \shortstack{(3)\\Preweek\\share} & \shortstack{(4)\\Next-week\\share} & \shortstack{(5)\\Joint\\timing} \\",
         r"\midrule",
         r"\multicolumn{6}{@{}l}{\textit{Panel A. Prior 28 days: at least 10 WETH routes on three days}} \\",
         *_sample_rows(results, PRIMARY_SAMPLE),
@@ -182,9 +182,9 @@ def render_bridge_adoption_risk_set(results: pd.DataFrame) -> str:
         r"\bottomrule",
         r"\end{tabularx}",
         (
-            r"% Suggested paper note: The unit is an ordered endpoint-pair week before the pair's first observed DAI-, USDC-, or USDT-mediated route. Neither endpoint is WETH or one of those stablecoins. Every risk week has recent WETH-mediated activity, and stablecoin weak-leg capital may equal zero. Capital is prior-calendar full-range reserve value in Uniswap v2 and SushiSwap v2 at the start of the week; each vehicle's two-leg measure is its weaker leg, and stablecoin capital is the largest value across DAI, USDC, and USDT. The outcome is first stablecoin-mediated route use during the week. "
-            r"Column 1 compares positive measured V2 stablecoin support with zero measured V2 support. Column 2 is limited to pairs observed for at least two positive-support weeks and reports a $\ln(10)$ increase in the stablecoin-to-WETH log-depth advantage; conditional on WETH depth, this is approximately a tenfold rise in stablecoin weak-leg capital. Columns 3--5 use stablecoin's share of joint stablecoin and WETH weak-leg capital. "
-            r"Linear probability models absorb pair and calendar-week fixed effects, include pair-age bins, log WETH depth, and prior WETH-route activity, weight pair-weeks equally, and cluster standard errors by pair and week. Columns 4 and 5 measure next-week association, which may include capital adjustments following adoption. "
+            r"% Suggested paper note: The unit is an ordered endpoint-pair week before the pair's first observed DAI-, USDC-, or USDT-mediated route. Neither endpoint is WETH or one of those stablecoins. Every pair-week has recent WETH-mediated activity, and stablecoin weak-leg capital may equal zero. Capital is prior-calendar full-range reserve value in Uniswap v2 and SushiSwap v2 at the start of the week; each vehicle's two-leg measure is its weaker leg, and stablecoin capital is the largest value across DAI, USDC, and USDT. The outcome is first stablecoin-mediated route use during the week. "
+            r"Column 1 compares positive measured V2 stablecoin support with zero measured V2 support. Column 2 is limited to pairs observed for at least two positive-support weeks and reports a $\ln(10)$ increase in the stablecoin-to-WETH log-capital advantage; conditional on WETH weak-leg capital, this is approximately a tenfold rise in stablecoin weak-leg capital. Columns 3--5 use stablecoin's share of joint stablecoin and WETH weak-leg capital. "
+            r"Linear probability models absorb pair and calendar-week fixed effects, include pair-age bins, log WETH weak-leg capital, and prior WETH-route activity, weight pair-weeks equally, and cluster standard errors by pair and week. Columns 4 and 5 measure next-week association, which may include capital adjustments following adoption. "
             r"Asterisks *, **, and *** denote two-sided significance at the 10%, 5%, and 1% levels, respectively. The estimates describe equilibrium timing and cover full-range V2 capital; concentrated-liquidity venues remain outside this capital measure."
         ),
         "",

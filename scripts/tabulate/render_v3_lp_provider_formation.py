@@ -351,7 +351,7 @@ def render_v3_lp_provider_formation(
         r"\toprule",
         r"& \multicolumn{2}{c}{Stable-facing share [\%]} & \multicolumn{4}{c}{Change [pp]} \\",
         r"\cmidrule(lr){2-3}\cmidrule(l){4-7}",
-        r"Supply measure & 2024 H1 & 2026 H1 & Total & \shortstack{Within\\continuing\\origins} & Reallocation & \shortstack{Period-\\specific\\origins} \\",
+        r"Supply measure & 2024 H1 & 2026 H1 & Total & \shortstack{Within\\continuing\\origins} & \shortstack{Across\\continuing\\origins} & \shortstack{Period-\\specific\\origins} \\",
         r"\midrule",
     ]
     for definition, row in zip(DECOMPOSITION_ROWS, decomposition_rows, strict=True):

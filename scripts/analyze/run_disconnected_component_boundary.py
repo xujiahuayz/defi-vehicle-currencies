@@ -125,8 +125,8 @@ def annual_boundary_summary() -> pd.DataFrame:
                count(DISTINCT tx_hash) AS disconnected_transactions,
                count(DISTINCT tx_hash || ':' || cast(component_id AS varchar))
                    AS disconnected_components
-        FROM read_parquet('{pattern}')
-        WHERE route_class LIKE 'tricky_%'
+        FROM read_parquet('{pattern}', union_by_name = true)
+        WHERE CAST(route_class AS VARCHAR) LIKE 'tricky_%'
         GROUP BY 1
         ORDER BY 1
         """
@@ -151,10 +151,10 @@ def v4_boundary_summary() -> pd.DataFrame:
             SELECT year(to_timestamp(timestamp_utc)) AS year,
                    tx_hash,
                    component_id,
-                   max(CASE WHEN source = 'uniswap_v4' THEN 1 ELSE 0 END) AS touches_v4,
-                   max(CASE WHEN route_class LIKE 'tricky_%' THEN 1 ELSE 0 END)
+                   max(CASE WHEN CAST(source AS VARCHAR) = 'uniswap_v4' THEN 1 ELSE 0 END) AS touches_v4,
+                   max(CASE WHEN CAST(route_class AS VARCHAR) LIKE 'tricky_%' THEN 1 ELSE 0 END)
                        AS disconnected
-            FROM read_parquet('{pattern}')
+            FROM read_parquet('{pattern}', union_by_name = true)
             WHERE year(to_timestamp(timestamp_utc)) IN (2025, 2026)
             GROUP BY 1, 2, 3
         )

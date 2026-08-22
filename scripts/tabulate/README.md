@@ -10,6 +10,8 @@ Captions, labels, placement, and interpretation stay in the paper/deck source.
 | `render_dominance_rotation.py` | `dominance_rotation.tex/.pdf` | `tab:app:rotation` |
 | `render_disconnected_component_boundary.py` | `disconnected_component_boundary.tex/.pdf` and generated values | `tab:app:disconnected` |
 | `render_pair_composition.py` | `pair_composition.tex/.pdf`, `pair_market_accounting.tex/.pdf` | `tab:pair-composition`, `tab:app:pair-market-accounting` |
+| `render_pair_composition_materiality.py` | `pair_composition_materiality.tex/.pdf` | `tab:app:pair-materiality` |
+| `render_vehicle_rotation_venue_exclusion.py` | `vehicle_rotation_venue_exclusion.tex/.pdf` | `tab:app:venue-exclusion` |
 | `render_route_reconstruction_validation.py` | `route_reconstruction_exact_chain_validation.tex/.pdf` | `tab:app:route-validation` |
 | `render_entry_vehicle_persistence.py` | `entry_vehicle_persistence.tex/.pdf`, `entry_vehicle_persistence_robustness.tex/.pdf` | `tab:entry-persistence`, `tab:app:entry-persistence-robustness` |
 | `render_contestable_vehicle_choice.py` | `contestable_vehicle_choice.tex/.pdf` | `tab:contestable-vehicle-choice`, `tab:app:contestable-vehicle-choice` |
@@ -18,16 +20,19 @@ Captions, labels, placement, and interpretation stay in the paper/deck source.
 | `render_price_rank_crossing.py` | `price_rank_crossing.tex/.pdf` and generated values | `tab:price-rank-crossing`, `tab:app:price-rank-crossing` |
 | `render_contestable_vehicle_consequences.py` | `contestable_vehicle_consequences.tex/.pdf` | `tab:contestable-vehicle-consequences`, `tab:app:contestable-vehicle-consequences` |
 | `render_gas_adjusted_vehicle_consequences.py` | `gas_adjusted_vehicle_consequences.tex`, `gas_adjusted_vehicle_consequences_appendix.tex`, and generated values | panel D of `tab:contestable-vehicle-consequences`; appendix validation and bounds in `tab:app:gas-adjusted-validation` |
-| `render_usdt_transition.py` | `usdt_transition.tex/.pdf` | `tab:usdt-transition` |
+| `render_usdt_transition.py` | `usdt_transition.tex/.pdf` | `tab:usdt-transition`, `tab:app:usdt-excess-use` |
 | `render_within_day_ladder.py` | `within_day_ladder.tex/.pdf` | `tab:within-day-ladder` |
 | `render_vehicle_mechanism_regressions.py` | `vehicle_mechanism_regressions.tex/.pdf` | `tab:vehicle-mechanism-regressions` |
 | `render_network_position.py` | `network_position.tex/.pdf` and generated deck values | `tab:network-position` |
 | `render_network_centrality_robustness.py` | `network_centrality_robustness.tex/.pdf` | `tab:app:network-centrality-robustness` |
 | `render_endpoint_direction.py` | `endpoint_direction.tex/.pdf` | `tab:app:endpoint-direction` |
 | `build_bridge_liquidity_deck_values.py` | `bridge_establishment_regressions.tex`, `bridge_adoption_pool_margins.tex` | `tab:app:bridge-persistent-support`, `tab:bridge-pool-margins` |
-| `render_bridge_exante.py` | `bridge_exante.tex/.pdf` | `tab:bridge-establishment` |
+| `render_bridge_adoption_risk_set.py` | `bridge_adoption_risk_set.tex/.pdf` and generated values | `tab:bridge-adoption-risk` |
+| `render_bridge_exante.py` | `bridge_exante.tex/.pdf` | `tab:app:bridge-establishment` |
+| `render_stablecoin_supply_lp.py` | `stablecoin_supply_lp.tex/.pdf` | `tab:app:stablecoin-supply-lp` |
 | `render_bridge_lp_divergence_risk.py` | `bridge_lp_divergence_risk.tex/.pdf` | `tab:app:bridge-lp-risk` |
 | `render_eth_stress_supply_transmission.py` | `eth_stress_supply_transmission.tex/.pdf` and generated values | `tab:app:eth-stress-supply-transmission` |
+| `render_eth_decline_v2_accounting.py` | `eth_decline_v2_accounting.tex/.pdf` and generated values | `tab:app:eth-decline-v2-accounting` |
 | `render_v3_lp_provider_formation.py` | `v3_lp_provider_formation.tex/.pdf` and generated values | `tab:v3-provider-formation` |
 | `render_v3_lp_launch_supply.py` | `v3_lp_launch_supply.tex/.pdf` and generated values | `tab:app:v3-lp-launch-supply` |
 | `render_exact_vehicle_frontier.py` | `exact_vehicle_frontier.tex/.pdf` and generated values | `tab:app:exact-vehicle-frontier` |

@@ -111,7 +111,7 @@ def test_relative_depth_uses_within_event_changes() -> None:
     )
 
 
-def test_bridge_exante_table_contains_all_three_economic_margins() -> None:
+def test_bridge_exante_table_contains_threshold_uptake_and_post_formation_depth() -> None:
     results = pd.DataFrame(
         [
             {"record_type": "exante_bridge_support", "model_id": "lagged_capital_threshold", "min_stable_weak_leg_usd": 10_000.0, "events": 100},
@@ -127,14 +127,15 @@ def test_bridge_exante_table_contains_all_three_economic_margins() -> None:
     )
     rendered = render_bridge_exante(results)
     assert "Route use after the lagged-capital threshold" in rendered
-    assert "Change from the prior 30 calendar days" in rendered
-    assert "Prior-day weak-leg depth and route allocation" in rendered
+    assert "Prior-day weak-leg capital and route allocation" in rendered
+    assert "Prior capital and first stablecoin use" not in rendered
     values = render_bridge_exante_values(results)
     assert r"\newcommand{\BridgeExanteThreshold}{\$10{,}000}" in values
     assert r"\newcommand{\BridgeExanteThresholdShort}{\$10k}" in values
     assert r"\newcommand{\BridgeExanteEvents}{100}" in values
     assert r"\newcommand{\BridgeExanteAdoptionThirty}{60.0\%}" in values
     assert (
-        r"\newcommand{\BridgeExanteChangeThirty}"
-        r"{$\mathord{+8.00}$ pp}"
+        r"\newcommand{\BridgeExantePostShareThirty}"
+        r"{8.00\%}"
     ) in values
+    assert r"\BridgeExanteChangeThirty" not in values

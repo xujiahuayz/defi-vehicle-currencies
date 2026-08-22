@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 
 from scripts.analyze.run_eth_decline_v2_accounting import (
+    PREDICTOR,
     fit_accounting_models,
     load_fixed_pool_matches,
     prepare_accounting_panel,
@@ -120,6 +121,8 @@ class EthDeclineV2AccountingTest(unittest.TestCase):
             expected_quantity + expected_value,
         )
         self.assertLess(float(row["relative_identity_error"]), 1e-12)
+        self.assertAlmostEqual(float(row[PREDICTOR]), -np.log(0.9) / 0.10)
+        self.assertFalse(bool(row["endpoint_has_anchored_price"]))
         self.assertEqual(support["candidate_endpoint_intervals"], 1)
 
     def test_incomplete_future_pool_set_is_removed(self) -> None:
@@ -176,6 +179,13 @@ class EthDeclineV2AccountingTest(unittest.TestCase):
         self.assertEqual(panel["endpoint"].tolist(), [complete_endpoint])
         self.assertEqual(support["candidate_endpoint_intervals"], 2)
         self.assertEqual(support["complete_endpoint_intervals_before_price_match"], 1)
+        self.assertEqual(support["incomplete_endpoint_intervals"], 1)
+        self.assertAlmostEqual(
+            support["minimum_venue_horizon_complete_followup_share"], 0.5
+        )
+        self.assertAlmostEqual(
+            support["maximum_venue_horizon_complete_followup_share"], 0.5
+        )
 
     def test_regressions_recover_accounting_slopes(self) -> None:
         rng = np.random.default_rng(412)
@@ -206,7 +216,7 @@ class EthDeclineV2AccountingTest(unittest.TestCase):
                         "endpoint_is_stable": False,
                         "endpoint_fixed_effect": f"uniswap_v2|{endpoint}",
                         "anchor_month": date.to_period("M").strftime("%Y-%m"),
-                        "eth_decline_per_10pp": decline[date_index],
+                        PREDICTOR: decline[date_index],
                         "stable_minus_weth_log_quantity_component": quantity,
                         "stable_minus_weth_log_unit_value_component": unit_value,
                         "stable_minus_weth_log_capital_change": quantity + unit_value,
@@ -247,6 +257,21 @@ class EthDeclineV2AccountingTest(unittest.TestCase):
             0.02,
             delta=0.004,
         )
+        self.assertEqual(
+            set(result["predictor"]),
+            {"eth_price_decline_per_0_10_log_point"},
+        )
+        self.assertEqual(
+            set(result["coefficient_unit"]),
+            {
+                "stable_minus_weth_log_point_change_per_0.10_log_point_eth_price_fall"
+            },
+        )
+        unit_value = result["outcome"].eq(
+            "stable_minus_weth_log_unit_value_component"
+        )
+        self.assertTrue(result.loc[unit_value, "benchmark_holm_p_value"].notna().all())
+        self.assertTrue(result.loc[~unit_value, "benchmark_holm_p_value"].isna().all())
 
 
 if __name__ == "__main__":

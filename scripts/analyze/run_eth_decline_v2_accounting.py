@@ -5,7 +5,9 @@ For each calendar date, the analysis selects material constant-product pools
 that face DAI, USDC, USDT, or WETH and retains endpoints with both a stable and
 a WETH family.  That pre-move pool set is held fixed over one-, three-, and
 seven-day horizons.  Pools formed after the anchor date therefore cannot enter
-the comparison.
+the comparison.  Every selected pool must retain a positive validated future
+state, so full exits and missing follow-ups leave the estimating sample; the
+support output reports overall and venue-by-horizon completeness.
 
 Pool dollar capital obeys the identity ``V = Q * U``, where ``Q = sqrt(k)``
 and ``U = V / Q``.  A symmetric Shapley decomposition attributes each family-
@@ -15,11 +17,14 @@ induces; the former is a supply-side state but is not pure provider supply,
 because swap fees and token donations can also change ``sqrt(k)``.
 
 The reported regressions compare stable-family changes with WETH-family
-changes for the same endpoint.  Endpoint and anchor-month effects are absorbed,
-and inference uses date-level Newey--West score covariance to accommodate the
-marketwide price regressor and overlapping horizons.  These are accounting and
-predictive results, not causal estimates of provider behaviour or market
-efficiency.
+changes for the same endpoint.  The regressor is one 0.10-log-point fall in
+ETH's dollar price, about 9.5 percent.  Endpoint and anchor-month effects are
+absorbed, and inference uses date-level Newey--West score covariance to
+accommodate the marketwide price regressor and overlapping horizons.  The
++0.05 unit-value reference additionally requires constant-product equilibrium,
+a stable peg, a common endpoint price, and synchronized reserve states.  These
+are accounting and predictive results, not causal estimates of provider
+behaviour or market efficiency.
 
 Writes
   output/exhibits/eth_decline_v2_accounting.jsonl
@@ -43,6 +48,7 @@ from ddvc.analysis.regression import (
     ols_clustered,
 )
 from ddvc.asset_types import STABLE
+from ddvc.capital_validation import ANCHORED_CAPITAL_TOKENS
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
 from ddvc.tables import write_exhibit
 
@@ -64,7 +70,19 @@ KNOWN_STABLES = frozenset(address.casefold() for address in STABLE)
 HORIZONS = (1, 3, 7)
 MATERIAL_CAPITAL_USD = 50_000.0
 HAC_LAG_DAYS = 7
-VALUATION_BENCHMARK_PER_10PP = 0.05
+ETH_DECLINE_LOG_POINT_SCALE = 0.10
+UNIT_VALUE_EQUILIBRIUM_BENCHMARK = 0.05
+PREDICTOR = "eth_price_decline_per_0_10_log_point"
+PREDICTOR_UNIT = (
+    "0.10_log_point_fall_in_weth_usd_price_approximately_9.5_percent"
+)
+COEFFICIENT_UNIT = (
+    "stable_minus_weth_log_point_change_per_0.10_log_point_eth_price_fall"
+)
+BENCHMARK_ASSUMPTIONS = (
+    "constant_product_equilibrium+stable_peg+common_endpoint_price+"
+    "synchronized_reserve_states"
+)
 
 CODE_SOURCES = ["scripts/analyze/run_eth_decline_v2_accounting.py"]
 INPUTS = [
@@ -354,8 +372,16 @@ def prepare_accounting_panel(
         raise ValueError("fixed-pool matches contain an unknown vehicle family")
     group_keys = ["venue", "endpoint", "anchor_date", "horizon_days"]
     complete = data.groupby(group_keys)["future_observed"].transform("all")
-    candidate_intervals = int(data[group_keys].drop_duplicates().shape[0])
-    complete_intervals = int(data.loc[complete, group_keys].drop_duplicates().shape[0])
+    interval_status = (
+        data.groupby(group_keys, as_index=False, sort=True)
+        .agg(complete_followup=("future_observed", "all"))
+        .reset_index(drop=True)
+    )
+    candidate_intervals = int(len(interval_status))
+    complete_intervals = int(interval_status["complete_followup"].sum())
+    cell_followup = interval_status.groupby(
+        ["venue", "horizon_days"], sort=True
+    )["complete_followup"].mean()
     data = data.loc[complete].copy()
     numeric = ["capital_usd_0", "capital_usd_1", "sqrt_k_0", "sqrt_k_1"]
     data[numeric] = data[numeric].apply(pd.to_numeric, errors="coerce")
@@ -418,12 +444,15 @@ def prepare_accounting_panel(
     panel = panel.merge(anchor_price, on="anchor_date", how="inner", validate="many_to_one")
     panel = panel.merge(future_price, on="future_date", how="inner", validate="many_to_one")
     panel["eth_log_return"] = np.log(panel["weth_price_1"] / panel["weth_price_0"])
-    panel["eth_decline_per_10pp"] = -panel["eth_log_return"] / 0.10
+    panel[PREDICTOR] = -panel["eth_log_return"] / ETH_DECLINE_LOG_POINT_SCALE
     panel["endpoint_is_stable"] = panel["endpoint"].isin(known_stables)
+    panel["endpoint_has_anchored_price"] = panel["endpoint"].isin(
+        ANCHORED_CAPITAL_TOKENS
+    )
     panel["endpoint_fixed_effect"] = panel["venue"] + "|" + panel["endpoint"]
     panel["anchor_month"] = panel["anchor_date"].dt.to_period("M").astype(str)
     panel = panel.replace([np.inf, -np.inf], np.nan).dropna(
-        subset=["eth_decline_per_10pp", *OUTCOMES]
+        subset=[PREDICTOR, *OUTCOMES]
     )
     if panel.empty or panel.duplicated(group_keys).any():
         raise ValueError("accounting panel is empty or duplicated")
@@ -431,6 +460,13 @@ def prepare_accounting_panel(
         "candidate_endpoint_intervals": candidate_intervals,
         "complete_endpoint_intervals_before_price_match": complete_intervals,
         "complete_followup_share": complete_intervals / candidate_intervals,
+        "incomplete_endpoint_intervals": candidate_intervals - complete_intervals,
+        "minimum_venue_horizon_complete_followup_share": float(
+            cell_followup.min()
+        ),
+        "maximum_venue_horizon_complete_followup_share": float(
+            cell_followup.max()
+        ),
         "price_matched_endpoint_intervals": int(len(panel)),
         "maximum_relative_identity_error": float(
             panel["relative_identity_error"].abs().max()
@@ -459,7 +495,7 @@ def fit_accounting_models(
             for outcome in OUTCOMES:
                 columns = [
                     outcome,
-                    "eth_decline_per_10pp",
+                    PREDICTOR,
                     "endpoint_fixed_effect",
                     "anchor_month",
                     "anchor_date",
@@ -475,11 +511,11 @@ def fit_accounting_models(
                     continue
                 fixed_effects = (data["endpoint_fixed_effect"], data["anchor_month"])
                 residual = absorb_fixed_effects(
-                    data[[outcome, "eth_decline_per_10pp"]], *fixed_effects
+                    data[[outcome, PREDICTOR]], *fixed_effects
                 )
                 fit = ols_clustered(
                     residual[outcome],
-                    residual[["eth_decline_per_10pp"]],
+                    residual[[PREDICTOR]],
                     data["anchor_date"],
                     add_constant=False,
                     absorbed_groups=fixed_effects,
@@ -492,7 +528,7 @@ def fit_accounting_models(
                 if not np.isfinite(coefficient) or not np.isfinite(standard_error):
                     raise ValueError(f"nonfinite accounting estimate: {venue}, {horizon}, {outcome}")
                 benchmark = (
-                    VALUATION_BENCHMARK_PER_10PP
+                    UNIT_VALUE_EQUILIBRIUM_BENCHMARK
                     if outcome.endswith("unit_value_component")
                     else 0.0
                 )
@@ -515,7 +551,8 @@ def fit_accounting_models(
                         "horizon_days": int(horizon),
                         "sample": "nonstable_endpoints_with_material_stable_and_weth_pools_at_anchor",
                         "outcome": outcome,
-                        "predictor": "eth_decline_per_10pp",
+                        "predictor": PREDICTOR,
+                        "predictor_unit": PREDICTOR_UNIT,
                         "coefficient": coefficient,
                         "standard_error": standard_error,
                         "t_statistic": float(fit.t_statistics[0]),
@@ -523,21 +560,31 @@ def fit_accounting_models(
                         "holm_p_value": np.nan,
                         "benchmark": benchmark,
                         "benchmark_interpretation": (
-                            "constant_product_arbitrage_valuation_slope"
+                            "constant_product_equilibrium_unit_value_slope"
                             if benchmark
                             else "zero"
+                        ),
+                        "benchmark_assumptions": (
+                            BENCHMARK_ASSUMPTIONS if benchmark else "not_applicable"
                         ),
                         "difference_from_benchmark": coefficient - benchmark,
                         "benchmark_t_statistic": benchmark_t,
                         "benchmark_p_value": benchmark_p,
-                        "coefficient_log_points_per_10pp_eth_decline": coefficient,
-                        "coefficient_approx_percentage_points": 100.0 * coefficient,
+                        "coefficient_unit": COEFFICIENT_UNIT,
+                        "coefficient_log_points_per_0_10_log_point_eth_decline": coefficient,
+                        "coefficient_approx_percent": 100.0 * coefficient,
                         "observations": int(fit.n_observations),
                         "endpoints": endpoints,
                         "dates": dates,
                         "fixed_effects": "venue_x_endpoint+anchor_year_month",
                         "covariance": f"anchor_date_score_hac_bartlett_lag_{hac_lag_days}_days",
-                        "pool_set": "material_anchor_pools_held_fixed_complete_followup",
+                        "pool_set": (
+                            "material_anchor_pools_held_fixed_surviving_complete_followup"
+                        ),
+                        "followup_selection": (
+                            "all_selected_anchor_pools_require_positive_valid_future_state;"
+                            "full_exits_and_missing_states_are_excluded"
+                        ),
                         "quantity_interpretation": "sqrt_k_invariant_lp_actions_plus_fee_accumulation",
                         "unit_value_interpretation": "token_price_revaluation_plus_arbitrage_reserve_adjustment",
                         "causal_interpretation": False,
@@ -548,6 +595,13 @@ def fit_accounting_models(
     if result.empty:
         raise ValueError("no V2 accounting model meets the declared support thresholds")
     result["holm_p_value"] = holm_adjusted_pvalues(result["p_value"])
+    result["benchmark_holm_p_value"] = np.nan
+    unit_value = result["outcome"].eq(
+        "stable_minus_weth_log_unit_value_component"
+    )
+    result.loc[unit_value, "benchmark_holm_p_value"] = holm_adjusted_pvalues(
+        result.loc[unit_value, "benchmark_p_value"]
+    )
     return result
 
 
@@ -567,11 +621,32 @@ def support_records(
             "horizons_days": "+".join(str(value) for value in HORIZONS),
             "candidate_vehicles": "WETH_vs_DAI_USDC_USDT",
             "fixed_pool_rule": "pool_must_exist_and_be_material_at_anchor_new_entries_excluded",
-            "followup_rule": "all_selected_anchor_pools_require_positive_valid_future_state",
+            "followup_rule": (
+                "all_selected_anchor_pools_require_positive_valid_future_state;"
+                "full_exits_and_missing_states_are_excluded"
+            ),
             "capital_identity": "V_equals_sqrt_k_times_V_over_sqrt_k",
             "decomposition": "symmetric_shapley_log_change",
-            "mechanical_valuation_benchmark_per_10pp_eth_decline": VALUATION_BENCHMARK_PER_10PP,
-            "quantity_caveat": "sqrt_k_changes_with_lp_actions_swap_fees_and_donations",
+            "constant_product_unit_value_benchmark_per_0_10_log_point_eth_decline": UNIT_VALUE_EQUILIBRIUM_BENCHMARK,
+            "benchmark_assumptions": BENCHMARK_ASSUMPTIONS,
+            "predictor_unit": PREDICTOR_UNIT,
+            "coefficient_unit": COEFFICIENT_UNIT,
+            "quantity_caveat": (
+                "dollar_weighted_within_pool_sqrt_k_contribution;"
+                "sqrt_k_changes_with_lp_actions_swap_fees_and_donations;"
+                "raw_sqrt_k_units_are_not_additive_across_pools"
+            ),
+            "capital_measure_caveat": (
+                "when_only_the_vehicle_leg_has_a_validated_price_capital_equals_"
+                "twice_vehicle_side_reserve_value_and_the_weth_price_series_also_"
+                "enters_the_predictor"
+            ),
+            "single_priced_endpoint_interval_share_in_primary": float(
+                (~panel.loc[
+                    ~panel["endpoint_is_stable"].astype(bool),
+                    "endpoint_has_anchored_price",
+                ]).mean()
+            ),
             "stable_core_in_primary_models": False,
         }
     ]

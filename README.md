@@ -29,6 +29,7 @@ question and literature                         done
   → route reconstruction and chain checks       done
   → dominance and endpoint-pair decomposition   main text
   → provider additions and specialisation       main text
+  → provider units versus price revaluation     main text + appendix accounting
   → two-leg capital before route adoption       main text
   → exact prices and capital divide route use   main text
   → interpretation and competing explanations
@@ -49,9 +50,11 @@ reproducible baseline. The paper now organizes the evidence into four layers:
 - **Promoted and connected:** v3 additions and supplier specialisation locate
   the formation margin; prior two-leg capital precedes adoption; exact output
   and lagged weak-leg capital then predict which vehicle carries the route.
-- **Bounded in the appendix:** divergence risk helps locate bridge capital;
-  stable-relative additions, withdrawals, and net supply show no precise ETH-stress
-  response; and centrality rankings depend on edge weights and the stablecoin core.
+- **Bounded in the appendix:** divergence risk is associated with local bridge
+  depth; decoded additions, withdrawals, and net supply give imprecise
+  stable-relative ETH-stress coefficients; fixed-pool accounting shows that ETH
+  declines revalue stablecoin-facing capital relative to WETH-facing capital;
+  and centrality rankings depend on edge weights and the stablecoin core.
 - **Reserved for later work:** v4 provider behaviour, flash accounting, and
   issuer shocks enter only with a design that sharpens the paper's connected
   economic sequence.
