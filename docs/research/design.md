@@ -109,7 +109,7 @@ after the challenger crosses the exact-output ranking at different depth levels.
 | 8 | Dynamic route-use and bridge-depth relation | Existing route-share and capital panels | No mechanical coupling; initial states, time-reversed benchmarks, and alternative horizons pass | Outside the manuscript because time reversal also predicts outcomes |
 | 9 | Cost of retaining the incumbent | Exact-price panel and a reproducible receipt-gas panel | Same-size rival path; route- and value-weighted magnitude; gas bounds | Gross comparison passed; Studio receipt fetch and reproducible gas producer running |
 | 10 | LP returns and bridge formation | Prior fees, relative-price risk, capital, and material-token prices | Net-return proxy predicts later capital beyond initial depth and demand | Completed for V2/V3; fee and pair-risk slopes do not supply a stable-vehicle formation result |
-| 11 | ETH stress and stable-leg LP supply | Existing V2/V3 weekly LP panels and canonical daily WETH prices | ETH stress predicts next-week additions toward stablecoin legs relative to WETH for the same endpoint-week | Completed; no primary coefficient survives Holm adjustment; outside the paper |
+| 11 | ETH stress and stable-leg LP supply | Existing V2/V3 weekly LP panels and canonical daily WETH prices | ETH stress predicts next-week additions, withdrawals, or net supply toward stablecoin legs relative to WETH for the same endpoint-week | Completed; no additions, withdrawals, or price-neutral V2 quantity result survives Holm adjustment; outside the paper |
 | 12 | USDC shock exposure | Existing routes, prices, and capital; targeted refetch only if a field is missing | Pair-level exposure, pretrends, comparison group, and flow restrictions | Gated; run only if the comparison design clears the stated bar |
 | 13 | Executable network centrality | Exact-state monthly graph, price/depth/gas edge costs, material tokens | Predicts first vehicle or later route use beyond degree and unweighted betweenness | Gated extension; raw betweenness alone stays supporting evidence |
 
@@ -124,14 +124,23 @@ exogenous supply variation.
 The direct ETH-stress test also leaves the stablecoin-demand account without
 support at the stable-leg supply margin. It compares stablecoin and WETH pools
 for the same endpoint-week, using week-t ETH realised volatility and return to
-predict week-(t+1) additions and net supply. The sample contains 19,844 V2 and
-51,086 V3 pool-weeks. None of the four primary additions slopes survives Holm
-adjustment: the closest is the V3 volatility slope (raw p = 0.056; adjusted p =
-0.226). A V3 net-supply response to a 10 percentage point ETH decline has raw p
-= 0.017 and adjusted p = 0.067 in the separate secondary family; V2 has no
-matching decline response. Known stablecoin endpoints account for only 1.5%
-of the V2 and 3.8% of the V3 observations, so this is already mainly a
-stablecoin-spoke comparison. The estimates and sample record in
+predict week-(t+1) additions, withdrawals, and net supply. The sample contains
+19,844 V2 and 51,086 V3 pool-weeks. None of the four primary additions slopes
+survives Holm adjustment. Under higher ETH volatility, the V3 addition and
+withdrawal slopes are almost identical (0.00453 and 0.00443; raw p = 0.056 for
+each; adjusted p = 0.226 for each), while net supply is flat (p = 0.509). That
+pattern is weak evidence of gross LP turnover, not stable-facing capital
+accumulation. A V3 net-supply response to a 10 percentage point ETH decline has
+raw p = 0.017 and adjusted p = 0.067 in the separate secondary family, while
+neither its addition nor withdrawal component is distinguishable from zero and
+V2 has no matching response. The V2 net-liquidity-quantity outcome, scaled by
+prior square-root reserves so ETH-price revaluation cannot move it
+mechanically, is also flat for volatility (adjusted p = 0.597) and declines
+(adjusted p = 0.834). V3 liquidity units depend on each position's range and
+therefore have no honest cross-pool analogue to this quantity check. Known
+stablecoin endpoints account for only 1.5% of the V2 and 3.8% of the V3
+observations, so this is already mainly a stablecoin-spoke comparison. The
+estimates and sample record in
 [`lp_stable_demand_stress_models.jsonl`](../../output/exhibits/lp_stable_demand_stress_models.jsonl)
 and
 [`lp_stable_demand_stress_support.jsonl`](../../output/exhibits/lp_stable_demand_stress_support.jsonl)
