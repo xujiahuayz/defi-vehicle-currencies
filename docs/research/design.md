@@ -108,9 +108,10 @@ after the challenger crosses the exact-output ranking at different depth levels.
 | 7 | Same-sample price and capital choice | Existing exact-price, bridge-depth, and entry panels | Identical opportunity sample; interpretable magnitudes; pair/date effects | Passed; main text |
 | 8 | Dynamic route-use and bridge-depth relation | Existing route-share and capital panels | No mechanical coupling; initial states, time-reversed benchmarks, and alternative horizons pass | Outside the manuscript because time reversal also predicts outcomes |
 | 9 | Cost of retaining the incumbent | Exact-price panel and a reproducible receipt-gas panel | Same-size rival path; route- and value-weighted magnitude; gas bounds | Gross comparison passed; Studio receipt fetch and reproducible gas producer running |
-| 10 | LP returns and bridge formation | Prior fees, relative-price risk, capital, and material-token prices | Net-return proxy predicts later capital beyond initial depth and demand | Gated Studio extension; otherwise divergence loss remains an interpretation |
-| 11 | USDC shock exposure | Existing routes, prices, and capital; targeted refetch only if a field is missing | Pair-level exposure, pretrends, comparison group, and flow restrictions | Gated; run only if the comparison design clears the stated bar |
-| 12 | Executable network centrality | Exact-state monthly graph, price/depth/gas edge costs, material tokens | Predicts first vehicle or later route use beyond degree and unweighted betweenness | Gated extension; raw betweenness alone stays supporting evidence |
+| 10 | LP returns and bridge formation | Prior fees, relative-price risk, capital, and material-token prices | Net-return proxy predicts later capital beyond initial depth and demand | Completed for V2/V3; fee and pair-risk slopes do not supply a stable-vehicle formation result |
+| 11 | ETH stress and stable-leg LP supply | Existing V2/V3 weekly LP panels and canonical daily WETH prices | ETH stress predicts next-week additions toward stablecoin legs relative to WETH for the same endpoint-week | Completed; no primary coefficient survives Holm adjustment; outside the paper |
+| 12 | USDC shock exposure | Existing routes, prices, and capital; targeted refetch only if a field is missing | Pair-level exposure, pretrends, comparison group, and flow restrictions | Gated; run only if the comparison design clears the stated bar |
+| 13 | Executable network centrality | Exact-state monthly graph, price/depth/gas edge costs, material tokens | Predicts first vehicle or later route use beyond degree and unweighted betweenness | Gated extension; raw betweenness alone stays supporting evidence |
 
 The first LP-risk pass finds that lower prior endpoint--vehicle relative-price
 risk predicts deeper full-range constant-product bridge capital. It does not
@@ -119,6 +120,24 @@ volatility than WETH bridges in the comparable pair-month sample. This result
 can bound the divergence-loss interpretation in the appendix; it does not earn
 a main-text mechanism slot unless a later design adds provider returns or
 exogenous supply variation.
+
+The direct ETH-stress test also leaves the stablecoin-demand account without
+support at the stable-leg supply margin. It compares stablecoin and WETH pools
+for the same endpoint-week, using week-t ETH realised volatility and return to
+predict week-(t+1) additions and net supply. The sample contains 19,844 V2 and
+51,086 V3 pool-weeks. None of the four primary additions slopes survives Holm
+adjustment: the closest is the V3 volatility slope (raw p = 0.056; adjusted p =
+0.226). A V3 net-supply response to a 10 percentage point ETH decline has raw p
+= 0.017 and adjusted p = 0.067 in the separate secondary family; V2 has no
+matching decline response. Known stablecoin endpoints account for only 1.5%
+of the V2 and 3.8% of the V3 observations, so this is already mainly a
+stablecoin-spoke comparison. The estimates and sample record in
+[`lp_stable_demand_stress_models.jsonl`](../../output/exhibits/lp_stable_demand_stress_models.jsonl)
+and
+[`lp_stable_demand_stress_support.jsonl`](../../output/exhibits/lp_stable_demand_stress_support.jsonl)
+therefore do not support promotion of ETH stress as a driver of stable-vehicle
+liquidity. They leave investor demand as an interpretation that would require a
+direct demand measure and independent supply variation.
 
 Every promoted regression must identify its unit, risk set, variation,
 conditioning set, weighting, fixed effects, clustering, economic magnitude, and
