@@ -31,19 +31,20 @@ def _bytes32(value: object, *, label: str) -> str:
 
 
 def decode_v4_state_event_identity(record: dict[str, object], kind: str) -> dict[str, object]:
-    """Independently decode exact PoolManager Swap/ModifyLiquidity identities."""
+    """Independently decode exact PoolManager state-event identities."""
 
     topics = [str(topic).lower() for topic in record.get("topics") or []]
     expected = {
         "swap": (UNISWAP_V4_SWAP_TOPIC, ["int128", "int128", "uint160", "uint128", "int24", "uint24"]),
         "modify_liquidity": (UNISWAP_V4_MODIFY_LIQUIDITY_TOPIC, ["int24", "int24", "int256", "bytes32"]),
+        "initialize": (UNISWAP_V4_INITIALIZE_TOPIC, ["uint24", "int24", "address", "uint160", "int24"]),
     }
     if kind not in expected:
         raise ValueError(f"unsupported V4 state event kind: {kind}")
     topic, types = expected[kind]
     if (
         str(record.get("address") or "").lower() != UNISWAP_V4_POOL_MANAGER_ADDRESS
-        or len(topics) != 3
+        or len(topics) != (4 if kind == "initialize" else 3)
         or topics[0] != topic
     ):
         raise ValueError(f"canonical V4 {kind} event has the wrong PoolManager or topic shape")
@@ -51,16 +52,37 @@ def decode_v4_state_event_identity(record: dict[str, object], kind: str) -> dict
     if len(data) != 32 * len(types):
         raise ValueError(f"canonical V4 {kind} event has the wrong ABI data length")
     values = abi_decode(types, data)
-    decoded = {
+    decoded: dict[str, object] = {
         "kind": kind,
         "pool": _bytes32(topics[1], label="PoolId"),
-        "sender": _topic_address(topics[2]),
         "block_number": int(record["block_number"]),
         "block_hash": str(record["block_hash"]).lower(),
         "transaction_hash": str(record["transaction_hash"]).lower(),
         "transaction_index": int(record["transaction_index"]),
         "log_index": int(record["log_index"]),
     }
+    if kind == "initialize":
+        fee, tick_spacing, hooks, sqrt_price_x96, tick = values
+        decoded.update(
+            {
+                "currency0": _topic_address(topics[2]),
+                "currency1": _topic_address(topics[3]),
+                "fee": int(fee),
+                "tick_spacing": int(tick_spacing),
+                "hooks": str(hooks).lower(),
+                "sqrt_price_x96": int(sqrt_price_x96),
+                "tick": int(tick),
+            }
+        )
+        if (
+            decoded["currency0"] >= decoded["currency1"]
+            or int(decoded["tick_spacing"]) <= 0
+            or int(decoded["sqrt_price_x96"]) <= 0
+        ):
+            raise ValueError("canonical V4 Initialize has invalid PoolKey or price state")
+        return decoded
+
+    decoded["sender"] = _topic_address(topics[2])
     if kind == "swap":
         decoded.update(zip(("amount0", "amount1", "sqrt_price_x96", "liquidity", "tick", "fee"), map(int, values), strict=True))
         if int(decoded["amount0"]) * int(decoded["amount1"]) >= 0 or int(decoded["sqrt_price_x96"]) <= 0:
@@ -101,6 +123,8 @@ def validate_v4_provider_event_identity(
     )
     if identity != expected:
         raise ValueError("provider V4 row disagrees with exact PoolManager event identity")
+    if exact["kind"] not in {"swap", "modify_liquidity"}:
+        raise ValueError("provider V4 payload validation does not accept Initialize")
     if exact["kind"] == "swap":
         payload = (
             int(provider["amount0Raw"]),

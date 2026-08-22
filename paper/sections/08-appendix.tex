@@ -39,6 +39,21 @@ Table~\ref{tab:app:route-validation} validates route construction against Ethere
 \exhibitnote{Panel A uses full-day venue ledgers for 206 venue-days across 74 sampled dates. Provider-only events are provider rows absent from the corresponding Ethereum logs; chain-only events are Ethereum-log events absent from the provider rows. Panels B and C rerun route construction on the 50 dates with at least one swap correction. Panel D repeats the pair decomposition on the six common January--June sampled dates in each endpoint year. Panel E samples coherent Fluid-containing routes within each half-year from 2024 H2 through 2026 H1, with separate high-value and rank-spread draws for cross-venue and Fluid-only routes. We compare each labelled Fluid leg with the exact receipt event and the pool's historical token constants; native ETH and WETH are one economic asset. Precision uses legs with both records available, and the Wilson column reports its 95\% lower bound. Available indexed records omit 35 historical auxiliary venue-days. Auxiliary log-order corrections would collide with another provider-ordered leg in 2 transactions; together they contain 47 legs and 2 reconstructed routes. The checks cover the sampled observations; transaction-trace recall beyond them remains unmeasured.}
 \end{table}
 % output/exhibits/route_reconstruction_exact_chain_validation.jsonl; output/exhibits/fluid_route_label_validation.jsonl; scripts/analyze/run_route_reconstruction_validation.py; scripts/verify/validate_fluid_route_labels.py
+\FloatBarrier
+
+Uniswap v4 permits every pool to share one PoolManager contract \citep{AdamsEtAl2024UniswapV4}, so contract-level venue labels alone do not identify the pool or its currencies. We therefore query the PoolManager's \texttt{Initialize} and \texttt{Swap} logs independently. Across all 181 days of 2026 H1, the exact logs contain 17,402,963 directional swaps; the provider data omit 65 and contain no provider-only events (Table~\ref{tab:app:v4-route-label-validation}, panel A). Among 8,352,524 observed v4-only transactions, 99.9602\% have exact endpoint-and-intermediary labels and 99.9625\% have exact ordered-leg labels (panel B).
+% output/exhibits/v4_route_label_validation.jsonl, pooled_event_label and pooled_route_label records
+
+\begin{table}[htbp]
+\centering
+\scriptsize
+\caption{Independent validation of Uniswap v4 route labels}
+\label{tab:app:v4-route-label-validation}
+\input{../output/tables/v4_route_label_validation.tex}
+\exhibitnote{Exact labels come from PoolManager \texttt{Initialize} and \texttt{Swap} logs. Zero-amount swaps are excluded because they do not identify an economic direction. Raw-amount precision is conditional on an exact decimal conversion; raw-amount recall also reflects decimal coverage. Full route labels are reported only for transactions present in the unified panel whose legs all use Uniswap v4, so exact-only events enter panel A. For cross-venue transactions, the comparison certifies the Uniswap v4 leg only.}
+\end{table}
+% output/exhibits/v4_route_label_validation.jsonl; scripts/fetch/fetch_v4_route_label_logs.py; scripts/analyze/run_v4_route_label_validation.py; scripts/tabulate/render_v4_route_label_validation.py
+\FloatBarrier
 
 We compare every provider swap with the independently queried logs. The comparison can add a chain event absent from the provider data, remove a provider event absent from the chain, or replace its payload or log position. We then rerun route construction on the 50 sampled dates with at least one swap correction. Available indexed records omit 35 historical auxiliary venue-days. The comparison covers the sampled dates and the connected pool sequence observed in each transaction.
 

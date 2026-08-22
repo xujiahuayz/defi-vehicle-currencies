@@ -13,6 +13,7 @@ Captions, labels, placement, and interpretation stay in the paper/deck source.
 | `render_pair_composition_materiality.py` | `pair_composition_materiality.tex/.pdf` | `tab:app:pair-materiality` |
 | `render_vehicle_rotation_venue_exclusion.py` | `vehicle_rotation_venue_exclusion.tex/.pdf` | `tab:app:venue-exclusion` |
 | `render_route_reconstruction_validation.py` | `route_reconstruction_exact_chain_validation.tex/.pdf` | `tab:app:route-validation` |
+| `render_v4_route_label_validation.py` | `v4_route_label_validation.tex/.pdf` | `tab:app:v4-route-label-validation` |
 | `render_entry_vehicle_persistence.py` | `entry_vehicle_persistence.tex/.pdf`, `entry_vehicle_persistence_robustness.tex/.pdf` | `tab:entry-persistence`, `tab:app:entry-persistence-robustness` |
 | `render_contestable_vehicle_choice.py` | `contestable_vehicle_choice.tex/.pdf` | `tab:contestable-vehicle-choice`, `tab:app:contestable-vehicle-choice` |
 | `render_capital_price_transmission.py` | `capital_price_transmission.tex/.pdf` | `tab:capital-price-transmission`; common-support capital-to-exact-output, established-pair retention, and price-crossing evidence |

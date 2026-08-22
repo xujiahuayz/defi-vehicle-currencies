@@ -4,7 +4,7 @@ All source data owned by this project lives here as regular files. New fetches w
 
 - `thegraph/`: indexed venue records.
 - `dune/`: indexed Fluid records.
-- `ethereum/`: direct-chain logs, receipts, headers, registries, and state inputs.
+- `ethereum/`: direct-chain logs, receipts, headers, registries, and state inputs. Its `v4_route_label_validation/` child retains the gap-only canonical PoolManager `Initialize` and `Swap` logs used to certify V4 event and route labels.
 - `external/`: named off-chain sources.
 - `archive/defi-dominant-currency/`: exact raw records recovered from the retired project on 2026-08-17. These are retained because raw data is never pruned. They are not current processed inputs unless a process script names them explicitly.
 

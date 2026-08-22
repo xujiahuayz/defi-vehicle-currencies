@@ -15,6 +15,7 @@ belongs in `../plot/` or `../tabulate/`.
 | `run_bridge_lp_flow_before_use.py` | actual Uniswap v2/SushiSwap v2 additions and withdrawals on both supported stablecoin legs before their first observed route use, separating new-pool seeding from additions to active pools |
 | `run_disconnected_component_boundary.py` | connected-component prevalence and component-as-route rotation sensitivity; paper/deck |
 | `run_route_reconstruction_validation.py` | full-day Ethereum-log correction consequences for route assignments, stable shares, and the sampled pair decomposition; technical appendix |
+| `run_v4_route_label_validation.py` | exact PoolManager-event precision and recall against provider labels, plus endpoint, intermediary, and ordered-leg agreement for observed V4-only transactions in the unified panel; cross-venue routes certify only their V4 leg |
 | `run_exact_vehicle_frontier.py` | monthly exact pre-transaction route frontier across V2, Sushi V2, and V3; route-cost evidence |
 | `run_contestable_vehicle_choice.py` | exact stable-versus-native route choice with prior incumbent identity and lagged V2 bridge depth |
 | `run_price_rank_crossing.py` | event-time incumbent response when the median exact-output ranking reverses, with event-eve weak-leg capital and reverse-crossing checks |

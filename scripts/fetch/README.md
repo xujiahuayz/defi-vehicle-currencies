@@ -9,6 +9,7 @@ literature source payloads. They do not clean panels or estimate results.
 | `supervise_raw_fetch.py` | resume gap-only market-data fetches and narrow failed batches |
 | `fetch_pool_identity_registry.py` | fetch the V3 pool-identity snapshot needed by current processors |
 | `fetch_v1_exchange_registry.py` | fetch the immutable V1 exchange-to-token registry omitted from the original daily pull |
+| `fetch_v4_route_label_logs.py` | fetch gap-only canonical PoolManager `Initialize` and `Swap` logs for the V4 route-label validation, without rewriting the retained exact census |
 | `fetch_defillama_ethereum_dex_volume.py` | fetch the external daily Ethereum DEX-volume breakdown used to assess market representativeness |
 | `fetch_defillama_stablecoin_supply.py` | retain the DeFiLlama stablecoin catalog, exact fetched-ID manifest, and same-symbol detail histories used for canonical Ethereum-address supply matching |
 | `fetch_route_gas_receipts.py` | fetch transaction receipts for the deterministic route-gas sample and exact contestable routes |
