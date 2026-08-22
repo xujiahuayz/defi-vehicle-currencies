@@ -4,8 +4,8 @@
 The unit is an endpoint--candidate pool week.  The analysis reuses the balanced
 Uniswap V2 and V3 LP-supply panels and compares stablecoin pools with WETH pools
 for the same noncandidate endpoint and week.  Week-t ETH realised volatility
-and return are measured from the canonical daily WETH price; LP additions and
-net supply occur in week t+1.
+and return are measured from the canonical daily WETH price; LP additions,
+withdrawals, and net supply occur in week t+1.
 
 Endpoint-by-week effects absorb every endpoint-wide demand condition in week t,
 while pool effects absorb persistent pool differences.  The focal coefficients
@@ -16,9 +16,9 @@ endpoint--candidate relative-price risk, earlier additions and withdrawals,
 capital, and pool age follow the retained LP-supply designs.
 
 The four additions coefficients (two stress measures by two venues) form the
-primary Holm-adjusted family.  The corresponding net-supply coefficients form
-a separate secondary family.  These are predictive associations, not shocks to
-stablecoin demand or provider preferences, and no route-use variable enters.
+primary Holm-adjusted family.  Withdrawals and net supply form separate
+four-test secondary families.  These are predictive associations, not shocks
+to stablecoin demand or provider preferences, and no route-use variable enters.
 
 Writes
   output/exhibits/lp_stable_demand_stress_models.jsonl
@@ -85,6 +85,7 @@ VENUE_DESIGNS = (
 
 OUTCOMES = (
     ("additions", "next_log1p_add_flow_ratio", "primary_additions"),
+    ("withdrawals", "next_log1p_remove_flow_ratio", "secondary_withdrawals"),
     ("net_supply", "next_asinh_net_flow_ratio", "secondary_net_supply"),
 )
 
@@ -229,6 +230,7 @@ def prepare_venue_sample(
         "trailing_log1p_add_flow_ratio",
         "trailing_log1p_remove_flow_ratio",
         "next_log1p_add_flow_ratio",
+        "next_log1p_remove_flow_ratio",
         "next_asinh_net_flow_ratio",
     }
     if design.maximum_staleness_column is not None:
@@ -507,7 +509,7 @@ def support_records(
                     data["endpoint_is_stable"].mean()
                 ),
                 "median_pool_capital_usd": float(data["pool_capital_usd"].median()),
-                "outcomes": "next_week_additions_and_net_lp_supply",
+                "outcomes": "next_week_additions_withdrawals_and_net_lp_supply",
                 "comparison": "stablecoin_leg_minus_weth_leg_for_same_endpoint_week",
                 "route_use_variables": "none",
             }

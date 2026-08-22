@@ -58,6 +58,7 @@ class StableDemandStressTest(unittest.TestCase):
                         "trailing_log1p_add_flow_ratio": 0.1,
                         "trailing_log1p_remove_flow_ratio": 0.1,
                         "next_log1p_add_flow_ratio": 0.2,
+                        "next_log1p_remove_flow_ratio": 0.1,
                         "next_asinh_net_flow_ratio": 0.0,
                     }
                 )
@@ -116,6 +117,13 @@ class StableDemandStressTest(unittest.TestCase):
                                 - 0.18 * stable_return
                                 + noise_add
                             ),
+                            "next_log1p_remove_flow_ratio": (
+                                0.8
+                                + pool_effect
+                                + 0.03 * stable_volatility
+                                - 0.08 * stable_return
+                                + rng.normal(0, 0.03)
+                            ),
                             "next_asinh_net_flow_ratio": (
                                 pool_effect
                                 + 0.06 * stable_volatility
@@ -142,7 +150,11 @@ class StableDemandStressTest(unittest.TestCase):
         )
         self.assertEqual(
             focal.groupby("multiplicity_family").size().to_dict(),
-            {"primary_additions": 4, "secondary_net_supply": 4},
+            {
+                "primary_additions": 4,
+                "secondary_withdrawals": 4,
+                "secondary_net_supply": 4,
+            },
         )
         self.assertTrue(focal["holm_p_value"].notna().all())
         additions = focal[focal["outcome_name"].eq("additions")]
