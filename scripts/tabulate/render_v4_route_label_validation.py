@@ -24,6 +24,7 @@ ROUTE_LABELS = {
     "endpoint_pair": "Endpoint pair",
     "intermediary_identity": "Intermediary currencies",
     "leg_order": "Ordered legs",
+    "exact_two_leg_inclusion": "Exact two-leg inclusion",
 }
 
 
@@ -51,9 +52,13 @@ def render_table(results: pd.DataFrame) -> str:
         )
     lines.extend(
         [
-            r"\addlinespace",
-            rf"\multicolumn{{6}}{{@{{}}l}}{{\textit{{Panel B. Route labels in {int(support['v4_only_observed_transactions']):,} observed v4-only transactions}}}} \\",
-            r"Label & Provider & Exact & Precision [\%] & Recall [\%] & Exact tx [\%] \\",
+            r"\bottomrule",
+            r"\end{tabularx}",
+            r"\vspace{0.6em}",
+            r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xrrrrr@{}}",
+            r"\toprule",
+            r"\multicolumn{6}{@{}l}{\textit{Panel B. Route-label assignment agreement}} \\",
+            r"Label & Provider & Exact & Precision [\%] & Recall [\%] & \multicolumn{1}{c}{Days} \\",
             r"\midrule",
         ]
     )
@@ -62,7 +67,28 @@ def render_table(results: pd.DataFrame) -> str:
         lines.append(
             f"{label} & {int(row['provider_assignments']):,} & "
             f"{int(row['exact_assignments']):,} & {_pct(row['precision'])} & "
-            f"{_pct(row['recall'])} & {_pct(row['exact_match_share'])} \\\\"
+            f"{_pct(row['recall'])} & {int(support['covered_days'])} \\\\"
+        )
+    lines.extend(
+        [
+            r"\bottomrule",
+            r"\end{tabularx}",
+            r"\vspace{0.6em}",
+            r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xrrrrr@{}}",
+            r"\toprule",
+            rf"\multicolumn{{6}}{{@{{}}l}}{{\textit{{Panel C. Transaction coverage in {int(support['v4_only_observed_transactions']):,} observed v4-only transactions}}}} \\",
+            r"Label & Scope $N$ & Label-bearing $U$ & Matches $M$ & $M/N$ [\%] & $M/U$ [\%] \\",
+            r"\midrule",
+        ]
+    )
+    for dimension, label in ROUTE_LABELS.items():
+        row = route[route["dimension"].eq(dimension)].iloc[0]
+        lines.append(
+            f"{label} & {int(row['scope_transactions']):,} & "
+            f"{int(row['union_label_transactions']):,} & "
+            f"{int(row['exact_match_transactions']):,} & "
+            f"{_pct(row['unconditional_exact_match_share'])} & "
+            f"{_pct(row['conditional_exact_match_share'])} \\\\"
         )
     lines.extend(
         [

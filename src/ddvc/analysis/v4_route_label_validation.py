@@ -30,6 +30,14 @@ from ddvc.source_records import (
 from ddvc.v4_contract import decode_v4_state_event_identity
 
 
+ROUTE_SIGNATURE_DIMENSIONS = (
+    "endpoint_pair",
+    "intermediary_identity",
+    "leg_order",
+    "exact_two_leg_inclusion",
+)
+
+
 def decimal_to_raw(value: object, decimals: object) -> int:
     """Convert a provider decimal amount to its exact signed integer amount."""
 
@@ -505,7 +513,7 @@ def route_validation_counts(
     )
     rows: list[dict[str, object]] = []
     examples: list[dict[str, object]] = []
-    for dimension in ("endpoint_pair", "intermediary_identity", "leg_order"):
+    for dimension in ROUTE_SIGNATURE_DIMENSIONS:
         provider_labels = Counter(
             (tx, label)
             for tx in transactions
@@ -519,17 +527,25 @@ def route_validation_counts(
         true_positive = sum((provider_labels & exact_labels).values())
         provider_total = sum(provider_labels.values())
         exact_total = sum(exact_labels.values())
-        labeled_transactions = {
+        provider_label_transactions = {
             tx
             for tx in transactions
             if left.get(tx, {}).get(dimension, ())
-            or right.get(tx, {}).get(dimension, ())
         }
-        exact_transactions = sum(
+        exact_label_transactions = {
+            tx
+            for tx in transactions
+            if right.get(tx, {}).get(dimension, ())
+        }
+        union_label_transactions = (
+            provider_label_transactions | exact_label_transactions
+        )
+        exact_match_transactions = sum(
             left.get(tx, {}).get(dimension, ())
             == right.get(tx, {}).get(dimension, ())
-            for tx in labeled_transactions
+            for tx in union_label_transactions
         )
+        scope_transactions = len(transactions)
         rows.append(
             {
                 "dimension": dimension,
@@ -538,11 +554,19 @@ def route_validation_counts(
                 "exact_assignments": exact_total,
                 "precision": true_positive / provider_total if provider_total else None,
                 "recall": true_positive / exact_total if exact_total else None,
-                "transactions": len(labeled_transactions),
-                "exact_match_transactions": exact_transactions,
-                "exact_match_share": (
-                    exact_transactions / len(labeled_transactions)
-                    if labeled_transactions
+                "scope_transactions": scope_transactions,
+                "provider_label_transactions": len(provider_label_transactions),
+                "exact_label_transactions": len(exact_label_transactions),
+                "union_label_transactions": len(union_label_transactions),
+                "exact_match_transactions": exact_match_transactions,
+                "unconditional_exact_match_share": (
+                    exact_match_transactions / scope_transactions
+                    if scope_transactions
+                    else None
+                ),
+                "conditional_exact_match_share": (
+                    exact_match_transactions / len(union_label_transactions)
+                    if union_label_transactions
                     else None
                 ),
             }
@@ -567,30 +591,45 @@ def pooled_metric_rows(rows: Sequence[Mapping[str, object]]) -> list[dict[str, o
     """Pool count rows into precision/recall without averaging daily rates."""
 
     totals: dict[tuple[str, str], Counter] = defaultdict(Counter)
+    count_columns = (
+        "true_positive",
+        "provider_assignments",
+        "exact_assignments",
+        "scope_transactions",
+        "provider_label_transactions",
+        "exact_label_transactions",
+        "union_label_transactions",
+        "exact_match_transactions",
+    )
     for row in rows:
         key = str(row["record_type"]), str(row["dimension"])
-        for column in (
-            "true_positive",
-            "provider_assignments",
-            "exact_assignments",
-            "transactions",
-            "exact_match_transactions",
-        ):
+        for column in count_columns:
             if row.get(column) is not None:
                 totals[key][column] += int(row[column])
     result = []
     for (record_type, dimension), count in sorted(totals.items()):
         provider_total = count["provider_assignments"]
         exact_total = count["exact_assignments"]
-        transactions = count["transactions"]
+        scope_transactions = count["scope_transactions"]
+        union_label_transactions = count["union_label_transactions"]
+        exact_match_transactions = count["exact_match_transactions"]
         result.append(
             {
                 "record_type": f"pooled_{record_type}",
                 "dimension": dimension,
-                **dict(count),
+                **{column: int(count[column]) for column in count_columns},
                 "precision": count["true_positive"] / provider_total if provider_total else None,
                 "recall": count["true_positive"] / exact_total if exact_total else None,
-                "exact_match_share": count["exact_match_transactions"] / transactions if transactions else None,
+                "unconditional_exact_match_share": (
+                    exact_match_transactions / scope_transactions
+                    if scope_transactions
+                    else None
+                ),
+                "conditional_exact_match_share": (
+                    exact_match_transactions / union_label_transactions
+                    if union_label_transactions
+                    else None
+                ),
             }
         )
     return result

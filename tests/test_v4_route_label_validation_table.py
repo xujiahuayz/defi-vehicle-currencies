@@ -31,7 +31,13 @@ def test_renderer_uses_pooled_counts() -> None:
                 "exact_assignments": 50,
                 "precision": 1.0,
                 "recall": 1.0,
-                "exact_match_share": 0.98,
+                "scope_transactions": 100,
+                "provider_label_transactions": 80,
+                "exact_label_transactions": 81,
+                "union_label_transactions": 82,
+                "exact_match_transactions": 79,
+                "unconditional_exact_match_share": 0.79,
+                "conditional_exact_match_share": 79 / 82,
             }
         )
     rows.append(
@@ -43,9 +49,20 @@ def test_renderer_uses_pooled_counts() -> None:
     )
     rendered = render_table(pd.DataFrame(rows))
     assert "PoolManager Swap labels" in rendered
+    assert "Route-label assignment agreement" in rendered
+    assert "Transaction coverage" in rendered
     assert "observed v4-only transactions" in rendered
     assert "8,352,524 observed v4-only transactions" in rendered
     assert "Signed raw amounts (covered)" in rendered
     assert "Ordered legs" in rendered
+    assert "Exact two-leg inclusion" in rendered
+    assert "Scope $N$" in rendered
+    assert "$M/N$" in rendered
+    assert "$M/U$" in rendered
+    assert "79.0000" in rendered
+    assert "96.3415" in rendered
     assert "181" in rendered
+    assert rendered.count(r"Xrrrrr@{}}") == 3
+    assert "Xrrrrrrr" not in rendered
     assert "\\parbox" not in rendered
+    assert "\\exhibitnote" not in rendered
