@@ -233,7 +233,11 @@ def test_paper_has_one_consumer_and_no_duplicate_inline_body() -> None:
     assert matched_specification not in section
     assert matched_specification in appendix
     assert r"y\in\{2024,2026\}" in section
-    assert "same pair, month-day, and realised single- or cross-exchange route class" in section
+    assert (
+        "same pair and month-day, separately for routes whose legs use one exchange "
+        "or several"
+        in section
+    )
     assert "weighted by native-plus-stable route count or supported routed value" in appendix
     assert "standard errors cluster by pair and date" in appendix
     assert "pair-by-calendar-cell effects" in section

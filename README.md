@@ -17,66 +17,49 @@ Econometric units use compact forms such as **pair-day** and **pair-date-route
 class**. Code may retain legacy field names for compatibility. Reserve
 “corridor” for a bilateral real-economy trade or payment relationship.
 
-## Iterative workflow graph and current position
+## Evidence graph and current position
 
 The compact workflow graph lives here. The durable claim-state graph is in
 [`docs/findings/README.md`](docs/findings/README.md). The retired autonomous
 grind/watchdog machinery no longer owns workflow state; these repo files do.
 
 ```text
-question and literature                    done
-  → definitions and estimands              done
-  → retained raw data                      Studio owner; M3 delta coverage verified
-  → cleaned and analysis-ready data        ready for the two active claim families
-  → registered baseline analysis           done; findings check green
-  → repository cleanup and host sync        done; one checkout per host
-  → presentable paper/deck trunk            current PDFs tracked; blocking checks green
-        source status metadata             provisional / registered / confirmed
-        review snapshots                   versioned and shareable while work continues
-
-        ╔══════════════ JFE depth revision ═══════════════════════╗
-        ║ compact route validation and aggregate decomposition    ║
-        ║       ↓                                                 ║
-        ║ contestable stablecoin-versus-WETH choice               ║
-        ║       ↓ price advantage × weak-leg depth × incumbency   ║
-        ║ post-entry persistence and liquidity formation          ║
-        ║       ↓                                                 ║
-        ║ execution-cost and risk consequences                    ║
-        ║       ↓                                                 ║
-        ║ rival implication observable?                           ║
-        ║   yes → test on Studio → rebuild all three deliverables ║
-        ║   no  → state the remaining boundary precisely          ║
-        ║       ↺ paper → deck → speaking notes → paper           ║
-        ╚══════════════════════════════════════════════════════════╝
-
-  → convergence candidate                  when paper/deck and comments stabilize
-  → submission freeze                      after final conformance and rewrite
+question and literature                         done
+  → retained raw data                           Studio owner; M3 coverage verified
+  → route reconstruction and chain checks       done
+  → dominance and endpoint-pair decomposition   main text
+  → provider additions and specialisation       main text
+  → two-leg capital before route adoption       main text
+  → exact prices and capital divide route use   main text
+  → interpretation and competing explanations
+       ├─ divergence risk                       appendix boundary
+       ├─ ETH stress and provider flows         appendix boundary
+       └─ network centrality                    appendix scope check
+  → rebuild, reread, and reconcile the paper    current
+  → submission freeze                           after final review
 ```
 
 The detailed evidence state is in [`docs/findings/`](docs/findings/README.md).
-The vehicle-role transition and V2 deposited-capital families anchor the
-reproducible baseline. The JFE-depth revision now organizes the evidence into
-four states:
+The vehicle-role transition and v2 deposited-capital families anchor the
+reproducible baseline. The paper now organizes the evidence into four layers:
 
 - **Retained and compressed:** route validation, the all-route rotation, and
   the endpoint-pair decomposition establish the empirical object and central
   fact without occupying the paper's empirical middle.
-- **Promoted and connected:** corrected post-entry persistence and the
-  stablecoin-versus-WETH choice regression now link vehicle use to exact output,
-  lagged weak-leg capital, and incumbency. The same comparison quantifies the
-  output associated with retaining the incumbent.
-- **Bounded in the appendix:** corrected route-use/depth forecasts establish
-  persistent comovement but leave provider response unresolved; the
-  divergence-risk test helps locate bridge capital but does not account for the
-  stablecoin rotation.
-- **Gated future extensions:** a stablecoin stress design or provider-return
-  analysis enters only if its variation and coverage strengthen this connected
-  sequence. Statistical significance alone is insufficient.
+- **Promoted and connected:** v3 additions and supplier specialisation locate
+  the formation margin; prior two-leg capital precedes adoption; exact output
+  and lagged weak-leg capital then predict which vehicle carries the route.
+- **Bounded in the appendix:** divergence risk helps locate bridge capital;
+  stable-relative additions, withdrawals, and net supply show no precise ETH-stress
+  response; and centrality rankings depend on edge weights and the stablecoin core.
+- **Reserved for later work:** v4 provider behaviour, flash accounting, and
+  issuer shocks enter only with a design that sharpens the paper's connected
+  economic sequence.
 
-The V3/V4 participation, flash-accounting, and broad provider-result inventory
-is preserved in code and output for a possible separate study. It does not
-belong in this manuscript merely because some estimates are significant. The
-full evidence chain and appendix admission rule are in
+The broader v3/v4 provider inventory is preserved in code and output. The main
+paper uses the v3 evidence that identifies formation and specialisation; v4
+flash-accounting results remain outside the paper. The full evidence chain and
+appendix admission rule are in
 [`docs/research/design.md`](docs/research/design.md).
 
 Parallel work uses named branches or small focused commits without creating

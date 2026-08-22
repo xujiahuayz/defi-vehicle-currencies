@@ -9,6 +9,7 @@ from scripts.analyze.run_network_centrality_robustness import (
     period_label,
     rank_stability,
     route_metrics,
+    without_stable_stable_edges,
     weighted_graph,
 )
 
@@ -63,6 +64,27 @@ def test_weighted_graph_aggregates_directed_edges() -> None:
 
     assert graph["a"]["b"]["weight"] == 5
     assert graph["b"]["a"]["weight"] == 4
+
+
+def test_stable_core_scope_removes_only_stable_to_stable_edges() -> None:
+    usdc = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+    usdt = "0xdac17f958d2ee523a2206206994597c13d831ec7"
+    weth = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+    edges = pd.DataFrame(
+        {
+            "left": [usdc, usdc, weth],
+            "right": [usdt, weth, usdt],
+            "leg_count": [1, 2, 3],
+            "leg_value_usd": [10.0, 20.0, 30.0],
+        }
+    )
+
+    selected = without_stable_stable_edges(edges)
+
+    assert list(zip(selected["left"], selected["right"], strict=True)) == [
+        (usdc, weth),
+        (weth, usdt),
+    ]
 
 
 def test_eigenvector_scores_are_normalized_and_keep_direction() -> None:

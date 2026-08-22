@@ -11,7 +11,8 @@ the paper's existing unweighted betweenness concept are retained as comparisons.
 Coverage sensitivity removes one sampled date or one observed venue at a time.
 It is intentionally concentrated on 2024 H1 and 2026 H1, the two periods in the
 headline rotation.  The full half-year series is still estimated for every
-available period.
+available period.  A separate scope check removes stablecoin-to-stablecoin legs
+to show how much of value-weighted centrality comes from the stablecoin core.
 
 Reads   data/unified/YYYYMM15.parquet
 Writes  output/exhibits/network_centrality_robustness.jsonl
@@ -141,6 +142,12 @@ def select_edges(
     if omitted_venue is not None:
         selected = selected.loc[selected["source"].ne(omitted_venue)]
     return selected
+
+
+def without_stable_stable_edges(edges: pd.DataFrame) -> pd.DataFrame:
+    left_stable = edges["left"].map(lambda token: classify(token)[1]).eq("stable")
+    right_stable = edges["right"].map(lambda token: classify(token)[1]).eq("stable")
+    return edges.loc[~(left_stable & right_stable)]
 
 
 def weighted_graph(edges: pd.DataFrame, weight: str) -> nx.DiGraph:
@@ -424,6 +431,14 @@ def scenario_specs(data: PeriodData) -> list[tuple[str, str, str | None, pd.Data
                 select_edges(data.edges, omitted_venue=venue),
             )
         )
+    specs.append(
+        (
+            "exclude_stable_stable",
+            "economic_scope",
+            "stable_stable_legs",
+            without_stable_stable_edges(data.edges),
+        )
+    )
     return specs
 
 

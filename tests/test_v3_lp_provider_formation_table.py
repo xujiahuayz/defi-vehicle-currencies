@@ -116,9 +116,9 @@ def test_v3_lp_provider_formation_renders_both_panels() -> None:
         _decomposition(), _support(), _models()
     )
 
-    assert "Panel A. Stable-facing liquidity supply" in rendered
+    assert "Panel A. Stable-facing liquidity additions" in rendered
     assert "Panel B. Prior vehicle experience and pool formation" in rendered
-    assert "Period-specific" in rendered
+    assert r"Period-\\specific" in rendered
     assert "Origin entry/exit" not in rendered
     assert "Liquidity-addition actions & 8.5 & 44.2 & +35.71" in rendered
     assert "Vehicle-side USD additions & 8.1 & 41.5 & +33.48" in rendered

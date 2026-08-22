@@ -29,6 +29,7 @@ The revision follows one connected graph and convergence loop:
 compact route measurement and exact-chain validation
   -> aggregate rotation and exact pair lifecycle decomposition
   -> first vehicle at pair entry predicts later vehicle use
+  -> stable-facing additions and experienced suppliers form new links
   -> prior-information bridge formation and relative two-leg depth
   -> stablecoin and WETH paths feasible at the same pretrade state
   -> first sampled exact contest: does the entry vehicle survive?
@@ -38,7 +39,7 @@ compact route measurement and exact-chain validation
   -> rival explanation or unresolved implication
        -> directly observable: test it and rebuild the chain
        -> unobservable or disproportionate: state the remaining boundary
-  -> rebuild paper -> deck -> speaking notes -> paper until they agree
+  -> rebuild -> reread -> revise the paper until the evidence and prose agree
 ```
 
 This is focus by hierarchy. A result belongs in the main text when it advances
@@ -65,35 +66,40 @@ available for a later paper.
    the entry day from every outcome, report later trading explicitly, and show
    pair- and activity-weighted estimates. Entry identity is descriptive state
    dependence until prices and challenger depth enter the comparison.
-4. **Liquidity formation.** Date usable bridge formation only with information
+4. **Liquidity-provider formation.** Show whether stable-facing additions move
+   with the trading network and whether suppliers with prior same-vehicle
+   experience appear when a new endpoint--vehicle pool becomes material.
+   Separate mature pools and repeated participation from short-lived launches.
+5. **Two-leg capital formation.** Date usable bridge formation only with information
    available before the event. Retain adoption at 30 and 120 days, continuous
    relative weak-leg depth, and later route allocation. The capital path around
    first use and future-persistence definitions belong in the appendix as timing
    and robustness evidence.
-5. **Contestable vehicle choice.** On routes for which stablecoin and WETH paths
+6. **Contestable vehicle choice.** On routes for which stablecoin and WETH paths
    are both feasible at the same input, state, and public venue set, estimate
    retention first as a function of current exact-output advantage and then add
    prior weak-leg capital on the identical sample. Use a conventional column
    ladder with pair and date effects and pair/date clustered inference. Add
    price-rank crossings to show how retention changes when a challenger becomes
    both cheaper and deep enough to carry the observed trade.
-6. **Financial consequence.** For each contestable route, measure gross output
+7. **Financial consequence.** For each contestable route, measure gross output
    relative to the feasible rival family. Report route and input-value weights,
    pair age, conditional shortfall quantiles, and transparent gas and venue
    bounds. This converts persistence into an economically scaled outcome.
-7. **Risk transmission, conditional on evidence.** Promote an issuer shock only
+8. **Risk transmission, conditional on evidence.** Promote an issuer shock only
    if a pair-level exposure design has credible pretrends, comparison support,
    and restrictions for dust, round trips, and automated flow. The existing
    aggregate USDC episode does not clear that bar by itself.
 
-The current bridge-choice estimates and exact-price comparison already warrant
-the fifth step. The prior-information event contains 1,618 bridges; adoption
+The provider, bridge-choice, and exact-price estimates form one connected
+sequence. The prior-information event contains 1,618 bridges; adoption
 reaches 38.3% within 30 days and 47.0% within 120 days, and relative depth
 predicts subsequent allocation. On the same 17,778 contestable routes, the
 price coefficient changes from 10.56 pp to 10.13 pp when capital enters, while
 a 10 pp lagged capital-share advantage adds 2.77 pp. These are central
-estimates. The missing economic link is dynamic: how quickly an incumbent yields
-after the challenger crosses the exact-output ranking at different depth levels.
+estimates. When exact-price leadership crosses, incumbent route share falls
+29.0 pp relative to the same pair's earlier movement, while prior challenger
+capital predicts whether the new lead lasts another month.
 
 ### Experiment order and promotion gates
 
@@ -108,10 +114,10 @@ after the challenger crosses the exact-output ranking at different depth levels.
 | 7 | Same-sample price and capital choice | Existing exact-price, bridge-depth, and entry panels | Identical opportunity sample; interpretable magnitudes; pair/date effects | Passed; main text |
 | 8 | Dynamic route-use and bridge-depth relation | Existing route-share and capital panels | No mechanical coupling; initial states, time-reversed benchmarks, and alternative horizons pass | Outside the manuscript because time reversal also predicts outcomes |
 | 9 | Cost of retaining the incumbent | Exact-price panel and a reproducible receipt-gas panel | Same-size rival path; route- and value-weighted magnitude; gas bounds | Gross comparison passed; Studio receipt fetch and reproducible gas producer running |
-| 10 | LP returns and bridge formation | Prior fees, relative-price risk, capital, and material-token prices | Net-return proxy predicts later capital beyond initial depth and demand | Completed for V2/V3; fee and pair-risk slopes do not supply a stable-vehicle formation result |
-| 11 | ETH stress and stable-leg LP supply | Existing V2/V3 weekly LP panels and canonical daily WETH prices | ETH stress predicts next-week additions, withdrawals, or net supply toward stablecoin legs relative to WETH for the same endpoint-week | Completed; no additions, withdrawals, or price-neutral V2 quantity result survives Holm adjustment; outside the paper |
+| 10 | LP returns and bridge formation | Prior fees, relative-price risk, capital, and material-token prices | Net-return proxy predicts later capital beyond initial depth and demand | Completed for v2/v3; divergence risk is an appendix boundary, not the aggregate formation explanation |
+| 11 | ETH stress and stable-leg LP supply | Existing v2/v3 weekly LP panels and canonical daily WETH prices | ETH stress predicts next-week additions, withdrawals, or net supply toward stablecoin legs relative to WETH for the same endpoint-week | Completed; gross v3 additions and withdrawals have similar, imprecise slopes, while stable-relative net supply and price-neutral v2 quantity remain flat; appendix boundary |
 | 12 | USDC shock exposure | Existing routes, prices, and capital; targeted refetch only if a field is missing | Pair-level exposure, pretrends, comparison group, and flow restrictions | Gated; run only if the comparison design clears the stated bar |
-| 13 | Executable network centrality | Exact-state monthly graph, price/depth/gas edge costs, material tokens | Predicts first vehicle or later route use beyond degree and unweighted betweenness | Gated extension; raw betweenness alone stays supporting evidence |
+| 13 | Network centrality | Existing leg graph with count and dollar weights | Rankings survive date and venue omissions and disclose dependence on the stablecoin core | Completed; appendix scope check; WETH leads the 2026 dollar graph once stablecoin-core legs are removed |
 
 The first LP-risk pass finds that lower prior endpoint--vehicle relative-price
 risk predicts deeper full-range constant-product bridge capital. It does not
@@ -121,36 +127,36 @@ can bound the divergence-loss interpretation in the appendix; it does not earn
 a main-text mechanism slot unless a later design adds provider returns or
 exogenous supply variation.
 
-The direct ETH-stress test also leaves the stablecoin-demand account without
-support at the stable-leg supply margin. It compares stablecoin and WETH pools
+The direct ETH-stress test leaves the stablecoin-demand account without support
+at the stable-leg net-supply margin. It compares stablecoin and WETH pools
 for the same endpoint-week, using week-t ETH realised volatility and return to
 predict week-(t+1) additions, withdrawals, and net supply. The sample contains
-19,844 V2 and 51,086 V3 pool-weeks. None of the four primary additions slopes
-survives Holm adjustment. Under higher ETH volatility, the V3 addition and
+19,844 v2 and 51,086 v3 pool-weeks. None of the four primary additions slopes
+survives Holm adjustment. Under higher ETH volatility, the v3 addition and
 withdrawal slopes are almost identical (0.00453 and 0.00443; raw p = 0.056 for
 each; adjusted p = 0.226 for each), while net supply is flat (p = 0.509). That
-pattern is weak evidence of gross LP turnover, not stable-facing capital
-accumulation. A V3 net-supply response to a 10 percentage point ETH decline has
+pattern does not distinguish gross LP turnover from zero and provides no evidence
+of stable-facing capital accumulation. A v3 net-supply response to a 10 percentage point ETH decline has
 raw p = 0.017 and adjusted p = 0.067 in the separate secondary family, while
 neither its addition nor withdrawal component is distinguishable from zero and
-V2 has no matching response. The V2 net-liquidity-quantity outcome, scaled by
+v2 has no matching response. The v2 net-liquidity-quantity outcome, scaled by
 prior square-root reserves so ETH-price revaluation cannot move it
 mechanically, is also flat for volatility (adjusted p = 0.597) and declines
-(adjusted p = 0.834). V3 liquidity units depend on each position's range and
+(adjusted p = 0.834). v3 liquidity units depend on each position's range and
 therefore have no honest cross-pool analogue to this quantity check. Known
-stablecoin endpoints account for only 1.5% of the V2 and 3.8% of the V3
+stablecoin endpoints account for only 1.5% of the v2 and 3.8% of the v3
 observations, so this is already mainly a stablecoin-spoke comparison. The
 estimates and sample record in
 [`lp_stable_demand_stress_models.jsonl`](../../output/exhibits/lp_stable_demand_stress_models.jsonl)
 and
 [`lp_stable_demand_stress_support.jsonl`](../../output/exhibits/lp_stable_demand_stress_support.jsonl)
-therefore do not support promotion of ETH stress as a driver of stable-vehicle
-liquidity. They leave investor demand as an interpretation that would require a
-direct demand measure and independent supply variation.
+therefore place ETH stress in the appendix as a boundary on the supply account.
+They leave investor demand as an interpretation that would require a direct
+demand measure and independent supply variation.
 
 The exact-route follow-up separates the accounting and execution sequence on
 one sample of 24,313 routes, 915 ordered endpoint pairs, and 73 dates for which
-both vehicle families are executable and both lagged V2 weak-leg capital
+both vehicle families are executable and both lagged v2 weak-leg capital
 measures are positive. A 10 percentage point ETH decline predicts a 0.049%
 decrease in stablecoin-minus-WETH log USD depth (p = 0.984), a 0.154 basis point
 increase in the stablecoin path's exact-output advantage (p = 0.884), and a
@@ -158,15 +164,17 @@ increase in the stablecoin path's exact-output advantage (p = 0.884), and a
 0.779); all three Holm-adjusted p-values equal one. Conditioning on depth and
 exact output leaves the decline coefficients equally small. The links among
 pool state, execution, and routing are strong: a 10 percentage point increase
-in stablecoin's share of the two vehicle families' V2 weak-leg USD capital
+in stablecoin's share of the two vehicle families' v2 weak-leg USD capital
 corresponds to a 19.1 basis point exact-output advantage (p < 0.001); realised
 stablecoin routing rises by 10.3 percentage points per 100 basis points of exact
 output advantage and by 2.87 percentage points per 10 percentage points of
 relative capital, conditional on each other (both p < 0.001). These estimates
 show the expected depth--execution--routing sequence, but ETH declines do not
-shift its upstream USD-depth margin. USD depth remains a mark-to-market pool
-state, not an LP flow. Gross LP turnover and price-neutral supplied units remain
-governed by the separate weekly analysis above. The coefficient and sample
+shift its upstream USD-depth margin. That monthly coefficient concerns relative
+route capacity; evidence on price efficiency requires a high-frequency
+cross-rate convergence test. USD depth remains a mark-to-market pool state, not
+an LP flow. Gross LP turnover and price-neutral supplied units remain governed
+by the separate weekly analysis above. The coefficient and sample
 records are
 [`eth_stress_executability.jsonl`](../../output/exhibits/eth_stress_executability.jsonl)
 and

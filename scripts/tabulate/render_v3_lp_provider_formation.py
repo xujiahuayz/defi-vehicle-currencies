@@ -46,8 +46,8 @@ TABLE_NOTE = (
     "transaction-origin and vehicle by calendar-quarter fixed effects. Standard "
     "errors are two-way clustered by pool and transaction origin. Stars use "
     "Holm-adjusted p-values across the four columns: * $p<0.10$, ** $p<0.05$, and "
-    "*** $p<0.01$. Transaction origin is a participation proxy, not beneficial "
-    "ownership. "
+    "*** $p<0.01$. Transaction origin measures participation; beneficial "
+    "ownership remains unobserved. "
     "The observed pool set supports an associational interpretation because each "
     "market participant's full opportunity set is unobserved."
 )
@@ -345,13 +345,13 @@ def render_v3_lp_provider_formation(
     model_rows = _validate_models(models)
 
     lines = [
-        r"\textit{Panel A. Stable-facing liquidity supply}",
+        r"\textit{Panel A. Stable-facing liquidity additions}",
         r"\par\smallskip",
         r"\begin{tabularx}{\linewidth}{@{}>{\hsize=2.2\hsize\raggedright\arraybackslash}X*{6}{>{\hsize=0.8\hsize\centering\arraybackslash}X}@{}}",
         r"\toprule",
-        r"& \multicolumn{2}{c}{Stable-facing share [\%]} & \multicolumn{4}{c}{Change [pp]} \\ ",
+        r"& \multicolumn{2}{c}{Stable-facing share [\%]} & \multicolumn{4}{c}{Change [pp]} \\",
         r"\cmidrule(lr){2-3}\cmidrule(l){4-7}",
-        r"Supply measure & 2024 H1 & 2026 H1 & Total & \shortstack{Within\\continuing origins} & Reallocation & \shortstack{Period-specific\\origins} \\ ",
+        r"Supply measure & 2024 H1 & 2026 H1 & Total & \shortstack{Within\\continuing\\origins} & Reallocation & \shortstack{Period-\\specific\\origins} \\",
         r"\midrule",
     ]
     for definition, row in zip(DECOMPOSITION_ROWS, decomposition_rows, strict=True):
@@ -384,8 +384,8 @@ def render_v3_lp_provider_formation(
             r"\par\smallskip",
             r"\begin{tabularx}{\linewidth}{@{}>{\hsize=1.8\hsize\raggedright\arraybackslash}X*{4}{>{\hsize=0.8\hsize\centering\arraybackslash}X}@{}}",
             r"\toprule",
-            r"& (1) & (2) & (3) & (4) \\ ",
-            r"Compared vehicles & \multicolumn{2}{c}{WETH, DAI, USDC, USDT} & \multicolumn{2}{c}{DAI, USDC, USDT} \\ ",
+            r"& (1) & (2) & (3) & (4) \\",
+            r"Compared vehicles & \multicolumn{2}{c}{WETH, DAI, USDC, USDT} & \multicolumn{2}{c}{DAI, USDC, USDT} \\",
             r"\cmidrule(lr){2-3}\cmidrule(l){4-5}",
             r"\midrule",
         ]

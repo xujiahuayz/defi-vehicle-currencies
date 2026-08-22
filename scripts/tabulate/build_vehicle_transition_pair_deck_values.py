@@ -237,6 +237,13 @@ def _signed_pp(value: float) -> str:
     return f"${points:+.1f}$ pp"
 
 
+def _signed_percentage_points(value: float) -> str:
+    points = 100 * value
+    if abs(points) < 0.05:
+        return "$0.0$ percentage points (pp)"
+    return f"${points:+.1f}$ percentage points (pp)"
+
+
 def _share(value: float) -> str:
     return f"{100 * value:.1f}\\%"
 
@@ -1957,6 +1964,7 @@ def render_pair_decomposition_deck_values(
         f"\\newcommand{{\\PairPooledBase}}{{{_share(float(pooled['baseline_stable_share']))}}}",
         f"\\newcommand{{\\PairPooledEnd}}{{{_share(float(pooled['comparison_stable_share']))}}}",
         f"\\newcommand{{\\PairPooledTotal}}{{{_signed_pp(float(pooled['total_change']))}}}",
+        f"\\newcommand{{\\PairPooledTotalLong}}{{{_signed_percentage_points(float(pooled['total_change']))}}}",
         f"\\newcommand{{\\PairPooledReweight}}{{{_signed_pp(float(pooled['common_pair_reweighting']))}}}",
         f"\\newcommand{{\\PairPooledSupportMass}}{{{_signed_pp(float(pooled['common_support_mass']))}}}",
         f"\\newcommand{{\\PairPooledExclusive}}{{{_signed_pp(float(pooled['exclusive_pair_contribution']))}}}",

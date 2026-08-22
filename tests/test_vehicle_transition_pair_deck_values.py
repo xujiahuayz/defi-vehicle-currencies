@@ -761,6 +761,7 @@ def test_renderer_emits_complete_display_and_coordinate_macros() -> None:
         "PairPooledBase",
         "PairPooledEnd",
         "PairPooledTotal",
+        "PairPooledTotalLong",
         "PairPooledReweight",
         "PairPooledSupportMass",
         "PairPooledExclusive",
@@ -823,6 +824,7 @@ def test_renderer_emits_complete_display_and_coordinate_macros() -> None:
     ):
         assert f"\\newcommand{{\\{macro}}}" in rendered
     assert "\\newcommand{\\PairPooledWithin}{$-0.1$ pp}" in rendered
+    assert "\\newcommand{\\PairPooledTotalLong}{$+25.0$ percentage points (pp)}" in rendered
     assert "\\newcommand{\\PairPooledExclusive}{$+17.6$ pp}" in rendered
     assert "\\newcommand{\\PairActivityTotal}{$+19.0$ pp}" in rendered
     assert "\\newcommand{\\VehicleUseNet}{$+4.6$ pp}" in rendered

@@ -17,18 +17,18 @@ VENUE_LABELS = {
     "uniswap_v3": "Uniswap v3",
 }
 DIMENSION_LABELS = {
-    "endpoint_pair": "Ordered endpoint pair",
-    "intermediary_identity": "Intermediary token set",
-    "vehicle_class": "Intermediary asset-type set",
+    "endpoint_pair": "Endpoint pair",
+    "intermediary_identity": "Intermediary tokens",
+    "vehicle_class": "Intermediary asset types",
     "leg_count": "Leg count",
-    "exact_two_leg_inclusion": "Exact two-leg inclusion",
+    "exact_two_leg_inclusion": "Two-leg inclusion",
 }
 COMPONENT_LABELS = {
     "total_change": "Stablecoin-share change",
     "within_common": "Within continuing pairs",
-    "common_pair_reweighting": "Across continuing pairs",
-    "common_support_mass": "Continuing-pair support mass",
-    "exclusive_pair_contribution": "Pairs observed in one window",
+    "common_pair_reweighting": "Reallocation across continuing pairs",
+    "common_support_mass": "Weight on continuing pairs",
+    "exclusive_pair_contribution": "Pairs present in one window",
 }
 
 
@@ -51,7 +51,7 @@ def render_table(results: pd.DataFrame) -> str:
     support = results[results["record_type"].eq("support")].iloc[0]
 
     lines = [
-        r"\begin{tabularx}{\linewidth}{@{}Xrrrrrr@{}}",
+        r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xrrrrrr@{}}",
         r"\toprule",
         r"\multicolumn{7}{@{}l}{\textit{Panel A. Swap events against full-day Ethereum logs}} \\",
         r"Venue & Days & Provider swaps & Provider only & Chain only & Precision [\%] & Recall [\%] \\",

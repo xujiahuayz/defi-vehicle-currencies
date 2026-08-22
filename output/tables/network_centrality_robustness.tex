@@ -1,0 +1,44 @@
+\textit{Panel A. Two-sided eigenvector centrality in the full graph}
+\par\smallskip
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xl*{4}{>{\centering\arraybackslash}X}@{}}
+\toprule
+Edge weight & Currency & \multicolumn{2}{c}{2024 H1} & \multicolumn{2}{c}{2026 H1} \\
+\cmidrule(lr){3-4}\cmidrule(l){5-6}
+& & Score (\%) & Rank & Score (\%) & Rank \\
+\midrule
+Count & WETH & 8.3 & 1 & 17.4 & 1 \\
+Count & USDC & 5.2 & 3 & 14.0 & 2 \\
+Count & USDT & 6.0 & 2 & 12.6 & 3 \\
+\addlinespace[0.25em]
+USD value & WETH & 24.0 & 1 & 15.5 & 3 \\
+USD value & USDC & 22.1 & 2 & 31.0 & 1 \\
+USD value & USDT & 15.7 & 3 & 30.3 & 2 \\
+\bottomrule
+\end{tabularx}
+\par\medskip
+\textit{Panel B. USD-value ranks when one sampled unit is omitted}
+\par\smallskip
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xl*{4}{>{\centering\arraybackslash}X}@{}}
+\toprule
+Omitted unit & Period & WETH & USDC & USDT & Minimum Kendall $\tau$ \\
+\midrule
+Sampled date & 2024 H1 & 1 & 2 & 3 & 0.929 \\
+Sampled date & 2026 H1 & 3 & 1 & 2 & 0.938 \\
+\addlinespace[0.25em]
+Venue & 2024 H1 & 1--4 & 1--2 & 2--3 & 0.762 \\
+Venue & 2026 H1 & 3--4 & 1--2 & 1--2 & 0.857 \\
+\bottomrule
+\end{tabularx}
+\par\medskip
+\textit{Panel C. 2026 H1 USD-value graph without stablecoin-to-stablecoin legs}
+\par\smallskip
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}X*{2}{>{\centering\arraybackslash}X}@{}}
+\toprule
+Currency & Score (\%) & Rank \\
+\midrule
+WETH & 25.2 & 1 \\
+USDC & 20.4 & 2 \\
+USDT & 13.3 & 3 \\
+\bottomrule
+\end{tabularx}
+% Suggested manuscript note: The graph contains unambiguous direct trades and every leg in a coherent multi-leg route. Count gives each observed leg equal weight; USD value uses repriced leg value. Two-sided eigenvector centrality is the normalized geometric mean of incoming and outgoing eigenvector centrality on the largest strongly connected component. Panel B reports named-currency rank ranges and the minimum Kendall rank correlation with the full graph when one sampled date or one venue is omitted. Panel C removes stablecoin-to-stablecoin legs from the 2026 H1 USD-value graph. Centrality depends on the edge weight and on whether the stablecoin core is included.

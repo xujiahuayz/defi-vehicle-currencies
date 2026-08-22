@@ -254,6 +254,16 @@ def render_annual_composition_bands(
 ) -> None:
     """Render the annual or half-year native-versus-stable path."""
 
+    # The paper scales this wide, two-panel canvas down to text width.  Use
+    # larger source type there so ticks and annotations remain comfortably
+    # readable after embedding; the deck has its own scale and stays unchanged.
+    paper_title_size = 14.0
+    paper_tick_size = 12.5
+    paper_axis_label_size = 12.5
+    paper_summary_size = 11.0
+    paper_regime_size = 9.6
+    paper_legend_size = 11.5
+
     halfyear = "period" in frame.columns
     data = halfyear_vehicle_composition(frame) if halfyear else annual_vehicle_composition(frame)
     data = data.loc[data["integration_scope"].eq("all")]
@@ -362,7 +372,12 @@ def render_annual_composition_bands(
                     interpolate=True,
                     zorder=1,
                 )
-                axis.set_title(title, loc="left", fontsize=12, fontweight="bold")
+                axis.set_title(
+                    title,
+                    loc="left",
+                    fontsize=12 if deck else paper_title_size,
+                    fontweight="bold",
+                )
                 axis.set_xticks(
                     display_points,
                     display_tick_labels,
@@ -373,6 +388,8 @@ def render_annual_composition_bands(
                 axis.set_ylim(0, 1.0)
                 axis.set_yticks(np.linspace(0, 1.0, 6))
                 axis.yaxis.set_major_formatter(PercentFormatter(1.0, decimals=0))
+                if not deck:
+                    axis.tick_params(axis="both", labelsize=paper_tick_size)
                 axis.grid(axis="y", color="#D1D5DB", linewidth=0.6, alpha=0.75)
                 axis.spines[["top", "right"]].set_visible(False)
 
@@ -403,7 +420,7 @@ def render_annual_composition_bands(
                         transform=axis.transAxes,
                         ha="right",
                         va="top",
-                        fontsize=8.5,
+                        fontsize=8.5 if deck else paper_summary_size,
                         color="#374151",
                     )
                 else:
@@ -438,11 +455,14 @@ def render_annual_composition_bands(
                                 label,
                                 ha="center",
                                 va="top",
-                                fontsize=7.2,
+                                fontsize=7.2 if deck else paper_regime_size,
                                 fontweight="bold",
                                 color=colour,
                             )
-            axes[0].set_ylabel("Share of intermediation")
+            axes[0].set_ylabel(
+                "Share of intermediation",
+                fontsize=None if deck else paper_axis_label_size,
+            )
             axes[1].tick_params(axis="y", labelleft=False, labelright=True, right=True)
             if deck:
                 figure.tight_layout(rect=(0, 0.02, 1, 0.99))
@@ -455,6 +475,7 @@ def render_annual_composition_bands(
                     ncol=3,
                     loc="lower center",
                     bbox_to_anchor=(0.5, 0.02),
+                    fontsize=paper_legend_size,
                 )
                 figure.tight_layout(rect=(0, 0.10, 1, 0.99))
             _save(figure, output)

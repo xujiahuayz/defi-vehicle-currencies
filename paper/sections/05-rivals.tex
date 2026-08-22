@@ -1,69 +1,61 @@
-\section{How vehicle use becomes established}
-\label{sec:rivals}
+\section{Liquidity provision and network formation}
+\label{sec:liquidity}
 
-The pair decomposition locates the aggregate rotation in pairs that become active and attract trading. We first ask whether the vehicle used when a pair enters persists. We then study how two-leg capital makes a competing vehicle available and how exact prices allocate trading once stablecoin and WETH paths coexist.
+Liquidity providers fund the pools before routers choose a route. Every indirect exchange requires capital on both legs; providers choose which links to fund, and automated routers translate the resulting prices into route use. Liquidity supply is voluntary and responds to expected trading conditions \citep{LiWangYe2021WhoProvides}. We first study the participation and prior experience of transaction origins that add liquidity to stablecoin- and WETH-facing pools. We then date the appearance of two-leg stablecoin capital before the first observed stablecoin route.
 
-\subsection{Vehicle persistence after pair entry}
-\label{sec:rivals:entry-persistence}
+\subsection{Stable-facing liquidity additions}
+\label{sec:liquidity:providers}
 
-The vehicle used when a pair enters strongly predicts its subsequent use. For pair $p$, let $E_p$ be the stablecoin share on its entry day. For each of the disjoint windows $h\in\{1\text{--}30,31\text{--}120\}$, let $R_{p,h}$ indicate that the pair carries another native- or stablecoin-intermediated route, and let $S_{p,h}$ be the stablecoin share when $R_{p,h}=1$. We estimate
+Uniswap v3 records each addition to a liquidity position and the transaction origin that initiates it. We call a pool a \emph{spoke} when it pairs exactly one of WETH, DAI, USDC, or USDT with an asset outside that set; a \emph{stablecoin core} pool pairs two of DAI, USDC, and USDT. The stable-facing share of spoke-pool addition actions rises from \VThreeLPAddActionBaselineStableShare{} in 2024 H1 to \VThreeLPAddActionComparisonStableShare{} in 2026 H1. The share of vehicle-side dollar additions follows a similar rotation, from \VThreeLPUSDFlowBaselineStableShare{} to \VThreeLPUSDFlowComparisonStableShare{} (Table~\ref{tab:v3-provider-formation}, panel A). Thus the change in routed activity coincides with a large upstream shift in gross liquidity additions.
+% output/exhibits/v3_lp_origin_supply_decomposition.jsonl
+
+We decompose this change across transaction origins using the same midpoint identity as the pair decomposition. Period-specific origins contribute \VThreeLPAddActionPeriodSpecificOrigins{} of the \VThreeLPAddActionStableShareChange{} increase in the stable-facing action share, while changes within continuing origins contribute \VThreeLPAddActionWithinContinuingOrigins{}. The corresponding contributions for dollar additions are \VThreeLPUSDFlowPeriodSpecificOrigins{} and \VThreeLPUSDFlowWithinContinuingOrigins{} (Table~\ref{tab:v3-provider-formation}, panel A). A transaction origin measures participation in the liquidity addition; beneficial ownership and coordinated control remain unobserved.
+
+Pool maturity separates this rotation from short-lived launches. Pools older than 90 days supply \VThreeLPMaturePoolIncreaseShare{} of the increase in stable-facing addition actions (Appendix Table~\ref{tab:app:v3-lp-launch-supply}, panel A). After excluding each pool's first seven observed days, the stable-facing action share rises from \VThreeLPExLaunchStableShareBaseline{} to \VThreeLPExLaunchStableShareComparison{} (panel B). Among origins present only in 2026 H1, one-day, one-pool participation supplies \VThreeLPOneDayOnePoolActionShare{} of stable-facing actions and \VThreeLPOneDayOnePoolFlowShare{} of vehicle-side dollar additions (panel C). Mature pools and repeated participation therefore carry most of the rotation in addition activity.
+
+The formation of a material spoke pool also draws disproportionately on origins with experience supplying the same vehicle elsewhere. For every endpoint--vehicle pool, we date the first week in which reported total value locked reaches \VThreeLPFormationTVLThreshold{}. We then compare the vehicles supplied by each transaction origin during that week and measure its supply during the preceding \VThreeLPFormationLookback{}, excluding the focal pool and all pools attached to the focal endpoint. For formation event $e$, origin $o$, and vehicle $v$, let $Y_{eov}$ equal one when $v$ is the vehicle in the newly material pool. Let $H_{ov,e-1}$ denote the origin's prior same-vehicle supply elsewhere in the network, measured either as an indicator or as log endpoint breadth. We estimate
 \begin{equation}
-\label{eq:entry-persistence}
-\begin{aligned}
-S_{p,h}&=\alpha_h+\beta_h E_p+X_p'\delta_h+\varepsilon_{p,h},
-&& R_{p,h}=1,\\
-R_{p,h}&=a_h+b_h E_p+X_p'c_h+u_{p,h},
-&& \text{all entrant pairs}.
-\end{aligned}
+Y_{eov}=\beta H_{ov,e-1}+\alpha_{eo}+\lambda_{v,q(e)}+\varepsilon_{eov},
+\label{eq:provider-specialization}
 \end{equation}
-The second line is a linear probability model. The controls $X_p$ contain the cohort year, a stablecoin-endpoint indicator, log entry-day route count, direct-route share, and complex-route share. The sample uses pairs entering by March 2 in 2024 or 2026, giving every pair 120 complete calendar days of follow-up, and keeps pairs whose endpoints lie outside the native group.
+where $\alpha_{eo}$ are formation-event-by-origin effects and $\lambda_{v,q(e)}$ are vehicle-by-calendar-quarter effects. Prior supply of the same vehicle predicts a \VThreeLPSameVehicleSupplyEffect{} higher probability that the origin supplies that vehicle in the new pool (Table~\ref{tab:v3-provider-formation}, panel B, column 1). A one-unit increase in log prior endpoint breadth predicts \VThreeLPSameVehicleBreadthEffect{} higher probability (column 2). Both estimates remain statistically significant after Holm adjustment across the four reported models. This specialisation is consistent with existing vehicle networks supplying new spokes. Common market makers can similarly link liquidity conditions across securities \citep{CoughenourSaad2004CommonMarketMakers}.
 
-\FloatBarrier
-\begin{table}[tbp]
+Within stablecoins, prior supply to a same-token core pool has a \VThreeLPSameStablecoinCoreSupplyEffect{} coefficient (Table~\ref{tab:v3-provider-formation}, panel B, column 3), and prior same-token core-pool breadth has a \VThreeLPSameStablecoinCoreBreadthEffect{} coefficient (column 4). The first estimate is imprecise after multiplicity adjustment, while the breadth estimate is significant at the 10\% level. We treat cross-vehicle specialization as the primary result and stablecoin-core experience as suggestive evidence on how core dollar-token liquidity can extend into spokes. We observe the pools that receive liquidity; a provider choice model would additionally require each participant's full opportunity set.
+% output/exhibits/v3_lp_provider_specialization_models.jsonl; output/exhibits/v3_lp_origin_supply_support.jsonl; stable-facing formation events at the stated material-pool threshold and lookback.
+
+\begin{table}[htbp]
+\caption{Liquidity additions and vehicle-specific pool formation}
+\label{tab:v3-provider-formation}
 \centering
-\caption{Vehicle persistence after pair entry}
-\label{tab:entry-persistence}
-{\tiny
-\renewcommand{\arraystretch}{0.90}
-\input{../output/tables/entry_vehicle_persistence.tex}
-}
-\exhibitnote{Panel A estimates the first line of Equation~\eqref{eq:entry-persistence} among pairs that carry another native- or stablecoin-intermediated route in the stated window. Panel B estimates the second line on all entrant pairs. The entry day is excluded from both follow-up windows. Controls are the cohort year, a stablecoin-endpoint indicator, log entry-day route count, direct-route share, and complex-route share. Columns 3 and 6 weight pairs by route activity in the respective follow-up window; all other columns give each pair equal weight. Coefficients report the outcome change in percentage points (pp) associated with a 10 pp higher entry-day stablecoin share. Standard errors in parentheses use CR1 clustering by entry date. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
+\tiny
+\renewcommand{\arraystretch}{1.05}
+\input{../output/tables/v3_lp_provider_formation.tex}
+\exhibitnote{Panel A decomposes the 2024 H1--2026 H1 change in the stable-facing share of positive Uniswap v3 liquidity additions on spoke pools with exactly one of WETH, DAI, USDC, or USDT. Stable-facing combines DAI, USDC, and USDT. Vehicle-side dollar additions value the amount of the vehicle token; observations with missing prices or implausibly large values comprise less than 1\% of additions in every period--vehicle cell. Panel B estimates Equation~\eqref{eq:provider-specialization} in the first week a pool reaches \VThreeLPFormationTVLThreshold{} of reported total value locked. For each transaction origin supplying that pool, the dependent variable equals one for the pool's observed vehicle and zero for the other vehicles. Prior supply occurs during the preceding \VThreeLPFormationLookback{} and excludes the focal pool and every pool paired with the focal endpoint. Columns 1--2 compare WETH, DAI, USDC, and USDT; columns 3--4 compare DAI, USDC, and USDT during stable-facing pool formation. A stablecoin core pool pairs two of DAI, USDC, and USDT. Coefficients and standard errors are in percentage points. Models absorb pool-formation-by-transaction-origin and vehicle-by-calendar-quarter fixed effects. Standard errors are two-way clustered by pool and transaction origin. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively. The stars use Holm-adjusted p-values across the four models. Transaction origin measures participation; beneficial ownership remains unobserved.}
 \end{table}
 
-We separate later vehicle use from pair survival. Of the \EntryPersistenceEntrants{} entrants, \EntryPersistenceEarlyRetradeRate{} trade again during days 1--30 and \EntryPersistenceLateRetradeRate{} do so during days 31--120 (Table~\ref{tab:entry-persistence}, panel B). Among pairs that trade again, a 10 pp higher entry-day stablecoin share predicts \EntryPersistenceEarlyPairEffectPerTen{} higher stablecoin share during days 1--30 and \EntryPersistenceLatePairEffectPerTen{} during days 31--120 (panel A, columns 2 and 5). The route-activity-weighted estimates are \EntryPersistenceEarlyActivityEffectPerTen{} and \EntryPersistenceLateActivityEffectPerTen{}, respectively (columns 3 and 6). Every follow-up outcome begins after the entry day, so these estimates capture continued vehicle use across subsequent routes.
-
-Entry-day stablecoin share also predicts a modestly higher probability of subsequent trading: a 10 pp increase corresponds to \EntryPersistenceEarlyRetradeEffectPerTen{} during days 1--30 and \EntryPersistenceLateRetradeEffectPerTen{} during days 31--120 (Table~\ref{tab:entry-persistence}, panel B). Vehicle identity therefore persists strongly among pairs active in each window, alongside a smaller survival margin. We interpret both as descriptive equilibrium relationships: relative prices, depth, and venue access can shape the vehicle at entry and remain relevant for later trading.
-% output/exhibits/entry_vehicle_persistence_models.jsonl; output/exhibits/entry_vehicle_persistence_support.jsonl; output/tables/entry_vehicle_persistence.tex
-
-The wider route panel places this persistence result in its network and protocol setting.
-
-Figure~\ref{fig:vehicle-composition} includes every complete route, with one observation for each intermediary position. Stablecoins gain across both short and long routes and within single- and cross-exchange routes. Their all-route participation rises from \NetworkStableParticipationTwentyFour{} in 2024 to \NetworkStableParticipationTwentySix{} in 2026 H1, while WETH remains the highest-betweenness node in every annual trading graph (Appendix Table~\ref{tab:network-position}). Connectivity therefore moves less than realised intermediary use; local depth and execution cost determine how useful a connection is for a particular route.
-% output/exhibits/intermediation_complexity_rival.jsonl; output/exhibits/presentation_values.tex; output/tables/network_position.tex
-
-Protocol history gives a benchmark for inherited vehicle use. Uniswap v1 required each token-to-token trade to cross ETH; v2 allowed any two ERC-20 tokens to form a pool.\footnote{See Adams, Zinsmeister, and Robinson, \href{https://docs.uniswap.org/whitepaper.pdf}{\emph{Uniswap v2 Core}}, pp.~1--2.} We reconstruct \VOneForcedRoutes{} connected v1 token-to-token routes. In 2026, after six years of open pair formation, \VTwoWethTradeShare{} of single-leg v2 trades still execute in WETH pools and \VTwoWethNewPairShare{} of newly traded token combinations include WETH (Appendix Table~\ref{tab:app:v1-architecture}, panels A and B). Venue migration changed the available token set, so this chronology serves as descriptive context. The bridge and price estimates below compare pairs in which stablecoin and WETH routes coexist.
-% docs/findings/v1-forced-vehicle.md; output/exhibits/v1_forced_vehicle_report.md; output/exhibits/v1_architecture_deck_values.tex
-
-\subsection{Full-range constant-product capital and route allocation}
-\label{sec:rivals:capital}
+\subsection{Full-range constant-product capital before route use}
+\label{sec:liquidity:capital}
 
 The classical vehicle-currency mechanism links trading volume to lower transaction costs \citep{Krugman1980VehicleCurrencies}. Here an indirect route needs two legs: one connecting the source to the vehicle and another connecting the vehicle to the destination. We measure deposited capital as validated full-range reserve value in Uniswap v2 and SushiSwap v2 pools. The weaker leg determines this two-leg capital measure. It is an equilibrium stock on those constant-product venues; size-specific pretrade quotes provide the closer measure of executable liquidity across the broader venue set. Concentrated-liquidity providers can also change executable depth by moving capital along the price curve \citep{AdamsZinsmeisterRobinson2021UniswapV3,LeharParlour2024Uniswap}.
 
 We date bridge formation using only information available before route choice. The event is the first date on which DAI, USDC, or USDT has at least \BridgeExanteThreshold{} of prior-calendar full-range capital in Uniswap v2 and SushiSwap v2 pools on each of the two legs required by the pair. Every pair routed through WETH earlier, and the event predates any observed stablecoin route in the pair. This definition yields \BridgeExanteEvents{} bridge events. Table~\ref{tab:bridge-establishment}, panel A, shows that \BridgeExanteAdoptionThirty{} carry a supported stablecoin route within 30 days and \BridgeExanteAdoptionOneTwenty{} do so within 120 days. Among the first-month adopters, \BridgeExanteLaterUse{} use a supported stablecoin again during days 30--119, although stablecoins account for only \BridgeExanteLaterShare{} of their route activity in that later window. The two-leg capital threshold therefore precedes adoption, while initial use often leaves WETH as the principal vehicle.
 % output/exhibits/bridge_exante.jsonl; output/tables/bridge_exante.tex
 
-The capital comparison follows each bridge after support appears. Let $K_{av,t-1}$ denote prior-calendar full-range capital in Uniswap v2 and SushiSwap v2 pools on the leg joining endpoint $a$ to vehicle $v$. The stablecoin set is $\mathcal S=\{\mathrm{DAI},\mathrm{USDC},\mathrm{USDT}\}$. For pair \((i,j)\), define
+The capital comparison follows each bridge after support appears. Let $K_{av,t-1}=K_{va,t-1}$ denote prior-calendar full-range capital in Uniswap v2 and SushiSwap v2 pools on the leg joining endpoint $a$ to vehicle $v$. The stablecoin set is $\mathcal S=\{\mathrm{DAI},\mathrm{USDC},\mathrm{USDT}\}$. For bridge event $e$ associated with pair \((i_e,j_e)\), define
 \begin{equation}
 \begin{aligned}
-D^S_{et}=\max_{v\in\mathcal S}\min\{K_{iv,t-1},K_{vj,t-1}\},\qquad
-&D^W_{et}=\min\{K_{iW,t-1},K_{Wj,t-1}\},\\
+D^S_{et}=\max_{v\in\mathcal S}\min\{K_{i_ev,t-1},K_{j_ev,t-1}\},\qquad
+&D^W_{et}=\min\{K_{i_eW,t-1},K_{j_eW,t-1}\},\\
 Q_{et}=\frac{D^S_{et}}{D^S_{et}+D^W_{et}},\qquad
-&S^R_{et}=\beta Q_{et}+\alpha_e+\lambda_{m(t)}+\eta_{a(t)}+\varepsilon_{et}.
+&S^R_{et}=\beta Q_{et}+\alpha_e+\lambda_{m(t)}+\eta_{a_e(t)}+\varepsilon_{et}.
 \end{aligned}
 \label{eq:bridge-relative-depth}
 \end{equation}
-Here $W$ denotes WETH, $S^R_{et}$ is stablecoin route share, $m(t)$ is calendar month, and $a(t)$ groups days since support into seven-day intervals. Event effects compare changes in relative full-range constant-product capital within the same pair and route scope.
+Here $W$ denotes WETH, $S^R_{et}$ is stablecoin route share, $m(t)$ is calendar month, and $a_e(t)$ groups elapsed days since event $e$ into seven-day intervals. Event effects compare changes in relative full-range constant-product capital within the same pair, separately for realised single- and cross-venue route classes.
 
-Panel B compares route allocation after that prior-information event with the preceding 30 days. Stablecoin route share rises by \BridgeExanteChangeThirty{} during days 0--29 and by \BridgeExanteChangeOneTwenty{} during days 30--119. Panel C uses the continuous relative-capital share within the same event. A 10 pp increase in the stablecoin share of prior-day weak-leg full-range capital is associated with \BridgeExanteDepthThirty{} more stablecoin route activity during days 0--29 and \BridgeExanteDepthOneTwenty{} during days 30--119. The later coefficient is larger even though adoption remains incomplete. The threshold marks full-range support on both legs; relative capital continues to divide trading after the bridge appears.
+Table~\ref{tab:bridge-establishment}, panel B, compares route allocation after that prior-information event with the preceding 30 days. Stablecoin route share rises by \BridgeExanteChangeThirty{} during days 0--29 and by \BridgeExanteChangeOneTwenty{} during days 30--119. Panel C estimates Equation~\eqref{eq:bridge-relative-depth} using the continuous relative-capital share within the same event. A 10 pp increase in the stablecoin share of prior-day weak-leg full-range capital is associated with \BridgeExanteDepthThirty{} more stablecoin route activity during days 0--29 and \BridgeExanteDepthOneTwenty{} during days 30--119. The later coefficient is larger even though adoption remains incomplete. The threshold marks full-range support on both legs; relative capital remains associated with route shares after bridge support appears.
+
+Appendix Table~\ref{tab:app:bridge-persistent-support} and Figure~\ref{fig:app:bridge-adoption-capital-path} use persistent-support and first-use timing definitions. Most pre-use capital growth occurs in pools already active one week earlier (Appendix Table~\ref{tab:bridge-pool-margins}). This timing is consistent with providers adding capital in anticipation of route demand, traders waiting for usable depth, reserve revaluation, or these forces operating together. Liquidity supply is voluntary and can respond to expected trading conditions \citep{LiWangYe2021WhoProvides}.
 
 \begin{table}[htbp]
 \caption{Prior full-range constant-product capital, stablecoin adoption, and route allocation}
@@ -74,5 +66,3 @@ Panel B compares route allocation after that prior-information event with the pr
 \input{../output/tables/bridge_exante.tex}
 \exhibitnote{The event is the first date on which DAI, USDC, or USDT has at least \BridgeExanteThreshold{} of prior-calendar full-range reserve value in Uniswap v2 and SushiSwap v2 pools on both route legs. Every pair used WETH earlier, and the event predates any observed stablecoin route in the pair. Panel A follows the stablecoin or stablecoins that cross the threshold on the event date. Panel B reports activity-weighted changes from the prior 30 calendar days with pair- and event-date-clustered standard errors. Panel C estimates Equation~\eqref{eq:bridge-relative-depth} with bridge-event effects, calendar-month effects, seven-day event-age controls, and pair- and date-clustered standard errors. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively. This capital measure is an equilibrium stock on the two constant-product venues; the exact-price comparisons use the broader supported venue set.}
 \end{table}
-
-The threshold event and subsequent relative-capital estimates connect pair formation to full-range liquidity on Uniswap v2 and SushiSwap v2 using information available at the event date. Appendix Table~\ref{tab:app:bridge-persistent-support} and Figure~\ref{fig:app:bridge-adoption-capital-path} follow the alternative persistent-support and first-use timing definitions. They show that most pre-use capital growth occurs in pools already active one week earlier (Appendix Table~\ref{tab:bridge-pool-margins}). This pattern is suggestive of providers deepening a bridge in anticipation of route demand, traders waiting for usable depth, or both forces operating together. Liquidity supply is voluntary and can respond to expected trading conditions \citep{LiWangYe2021WhoProvides}. The post-entry persistence estimates remain similar among pairs with more entry-day trades (Appendix Table~\ref{tab:app:entry-persistence-robustness}). When both vehicles become executable, current exact prices and lagged full-range capital jointly predict the selected vehicle.
