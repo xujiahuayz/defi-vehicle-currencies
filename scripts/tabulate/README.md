@@ -25,6 +25,7 @@ Captions, labels, placement, and interpretation stay in the paper/deck source.
 | `build_bridge_liquidity_deck_values.py` | `bridge_establishment_regressions.tex`, `bridge_adoption_pool_margins.tex` | `tab:app:bridge-persistent-support`, `tab:bridge-pool-margins` |
 | `render_bridge_exante.py` | `bridge_exante.tex/.pdf` | `tab:bridge-establishment` |
 | `render_bridge_lp_divergence_risk.py` | `bridge_lp_divergence_risk.tex/.pdf` | `tab:app:bridge-lp-risk` |
+| `render_v3_lp_provider_formation.py` | `v3_lp_provider_formation.tex/.pdf` | provider-side rotation and pool-formation table; manuscript placement pending |
 | `render_exact_vehicle_frontier.py` | `exact_vehicle_frontier.tex/.pdf` and generated values | `tab:app:exact-vehicle-frontier` |
 | `render_result_resolution_checks.py` | adjacent-year and nonvehicle-endpoint tables plus generated values | `tab:app:rotation-boundaries` |
 | `build_endpoint_direction_deck_values.py` | `endpoint_direction_deck_values.tex` | endpoint-direction paper/deck values |
