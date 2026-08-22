@@ -34,17 +34,6 @@ Within stablecoins, prior supply to a same-token core pool has a \VThreeLPSameSt
 \end{table}
 \FloatBarrier
 
-\subsection{ETH prices and deposited capital}
-\label{sec:liquidity:eth-accounting}
-
-Provider choices establish the pools and their liquidity units. Market prices and reserve adjustment can then change dollar capital before another provider action. We separate these margins in Uniswap v2 and SushiSwap v2 by selecting, for each nonstable endpoint and date, material stablecoin-facing and WETH-facing pools and holding that pool set fixed for one, three, or seven days. For each vehicle family, a symmetric decomposition assigns the log change in dollar capital, $V$, to changes in square-root reserves, $\sqrt{k}$, and unit value, $V/\sqrt{k}$. Square-root reserves can change through provider actions, retained swap fees, and token transfers. Unit value combines token-price revaluation with reserve adjustment. Cross-rate arbitrage changes reserve ratios; it need not equalise capital across pools \citep{DaianEtAl2020FlashBoys}.
-
-A 0.10-log-point fall in ETH's dollar price, about 9.5\%, corresponds to \EthVTwoAccountingCapitalApproxPercentRange{} more stablecoin-relative dollar capital over the three horizons (Appendix Table~\ref{tab:app:eth-decline-v2-accounting}, column 1). The $\sqrt{k}$ component ranges from \EthVTwoAccountingQuantityApproxPercentRange{} and is imprecise after Holm adjustment (column 2). Unit value contributes \EthVTwoAccountingUnitValueOneDayEffectApproxPercent{}, \EthVTwoAccountingUnitValueThreeDayEffectApproxPercent{}, and \EthVTwoAccountingUnitValueSevenDayEffectApproxPercent{} after one, three, and seven days (column 3). The three- and seven-day estimates are numerically close to the conditional \EthVTwoAccountingUnitValueBenchmarkApproxPercent{} constant-product reference. That reference is an accounting implication under its stated price and reserve assumptions; cross-price convergence is a separate transaction-level object. For \EthVTwoAccountingSinglePricedEndpointShare{} of primary intervals, WETH-side capital equals twice the WETH reserve value because the endpoint lacks an anchored price; the WETH price therefore enters both predictor and outcome. This is an accounting decomposition. Decoded external flows appear in Appendix Table~\ref{tab:app:eth-stress-supply-transmission}, panel A. Daily closing states supply the comparison, and only pools with a surviving validated state enter each horizon.
-% output/exhibits/eth_decline_v2_accounting.jsonl; output/exhibits/eth_decline_v2_accounting_support.jsonl
-
-The monthly route sample separately relates trailing ETH-price declines to prior-day V2 and SushiSwap v2 weak-leg capital, exact output for the observed trade size, and realised vehicle choice. Its stable-relative capital coefficient is \EthStressDeclineRelativeDepthEffect{}, and the exact-output and route-use coefficients are \EthStressDeclineOutputEffect{} and \EthStressDeclineChoiceEffect{} (Appendix Table~\ref{tab:app:eth-stress-supply-transmission}, panel B, first row). Pool membership and the binding leg can change between monthly observations; all three coefficients are near zero.
-\FloatBarrier
-
 \subsection{Full-range constant-product capital before route use}
 \label{sec:liquidity:capital}
 

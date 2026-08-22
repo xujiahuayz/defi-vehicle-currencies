@@ -384,6 +384,7 @@ def render_v3_lp_provider_formation(
             r"\par\smallskip",
             r"\begin{tabularx}{\linewidth}{@{}>{\hsize=1.8\hsize\raggedright\arraybackslash}X*{4}{>{\hsize=0.8\hsize\centering\arraybackslash}X}@{}}",
             r"\toprule",
+            r"Outcome & \multicolumn{4}{c}{Supplied vehicle is the pool's actual vehicle [0/1]} \\",
             r"& (1) & (2) & (3) & (4) \\",
             r"Compared vehicles & \multicolumn{2}{c}{WETH, DAI, USDC, USDT} & \multicolumn{2}{c}{DAI, USDC, USDT} \\",
             r"\cmidrule(lr){2-3}\cmidrule(l){4-5}",
@@ -398,7 +399,7 @@ def render_v3_lp_provider_formation(
         [
             r"\midrule",
             _stat_row(
-                r"Dependent-variable mean [\%]",
+                r"Outcome mean [\%]",
                 [_pct(row["outcome_mean"]) for row in model_rows],
             ),
             _stat_row(

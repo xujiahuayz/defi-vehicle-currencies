@@ -1,8 +1,45 @@
-\section{Capital, exact prices, and route use}
+\section{Persistence and contestable vehicle use}
 \label{sec:executability}
 
-Once both vehicle families are executable, current exact prices and lagged full-range capital jointly predict vehicle use. Full-range capital captures one part of pool state; size-specific pretrade quotes determine what routers can execute. For each observed two-leg route on the fifteenth day of every month from June 2020 through June 2026, we quote the best WETH path and the best stablecoin path through DAI, USDC, or USDT at the same input amount and pre-transaction state. The comparison covers Uniswap v2, SushiSwap v2, and Uniswap v3, which carry \ExactFrontierVenueCoverage{} of linear routes on the sampled dates. Among routes for which all required states are observed, \ExactFrontierReproduction{} reproduce realised output within one basis point (Appendix Table~\ref{tab:app:exact-vehicle-frontier}, panel A). Both vehicle families must be feasible, each observed and hypothetical leg remains below 5\% own-price impact, leg values agree within 20\%, and input value is at least \$100. Exact price is central to automated routing, while gas, venue access, and support can still separate an available quote from an executable path \citep{XiMoallemi2026Routing}. Appendix~\ref{app:quoters} gives the pricing equations, Appendix~\ref{app:support} defines the common-support rule, and Appendix Table~\ref{tab:app:exact-vehicle-frontier} reports results for additional venues, vehicles, and direct paths.
+\subsection{Persistence in observed use after pair entry}
+\label{sec:dominance:entry-persistence}
+
+The vehicle used when a pair enters strongly predicts its subsequent use. For pair $p$, let $E_p$ be the stablecoin share on its entry day. For each of the disjoint windows $h\in\{1\text{--}30,31\text{--}120\}$, let $R_{p,h}$ indicate that the pair carries another native- or stablecoin-intermediated route, and let $S_{p,h}$ be the stablecoin share when $R_{p,h}=1$. We estimate
+\begin{equation}
+\label{eq:entry-persistence}
+\begin{aligned}
+S_{p,h}&=\alpha_h+\beta_h E_p+X_p'\delta_h+\varepsilon_{p,h},
+&& R_{p,h}=1,\\
+R_{p,h}&=a_h+b_h E_p+X_p'c_h+u_{p,h},
+&& \text{all entrant pairs}.
+\end{aligned}
+\end{equation}
+The second line is a linear probability model. The controls $X_p$ contain the cohort year, a stablecoin-endpoint indicator, log entry-day route count, direct-route share, and complex-route share. The sample uses pairs entering by March 2 in 2024 or 2026, giving every pair 120 complete calendar days of follow-up, and keeps pairs whose endpoints lie outside the native group.
+
+\FloatBarrier
+\begin{table}[tbp]
+\centering
+\caption{Persistence in observed vehicle use after pair entry}
+\label{tab:entry-persistence}
+{\scriptsize
+\renewcommand{\arraystretch}{0.94}
+\input{../output/tables/entry_vehicle_persistence.tex}
+}
+\exhibitnote{Panel A estimates the first line of Equation~\eqref{eq:entry-persistence} among pairs that carry another native- or stablecoin-intermediated route in the stated window. Panel B estimates the second line on all entrant pairs. The entry day is excluded from both follow-up windows. Controls are the cohort year, a stablecoin-endpoint indicator, log entry-day route count, direct-route share, and complex-route share. Columns 3 and 6 weight pairs by route activity in the respective follow-up window; all other columns give each pair equal weight. Coefficients report the outcome change in percentage points (pp) associated with a 10 pp higher entry-day stablecoin share. Standard errors in parentheses use CR1 clustering by entry date. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
+\end{table}
+\FloatBarrier
+
+We separate later vehicle use from pair survival. Of the \EntryPersistenceEntrants{} entrants, \EntryPersistenceEarlyRetradeRate{} trade again during days 1--30 and \EntryPersistenceLateRetradeRate{} do so during days 31--120 (Table~\ref{tab:entry-persistence}, panel B). Among pairs that trade again, a 10 pp higher entry-day stablecoin share predicts \EntryPersistenceEarlyPairEffectPerTen{} higher stablecoin share during days 1--30 and \EntryPersistenceLatePairEffectPerTen{} during days 31--120 (panel A, columns 2 and 5). The route-activity-weighted estimates are \EntryPersistenceEarlyActivityEffectPerTen{} and \EntryPersistenceLateActivityEffectPerTen{}, respectively (columns 3 and 6). Every follow-up outcome begins after the entry day, so these estimates capture continued vehicle use across subsequent routes.
+
+Entry-day stablecoin share also predicts a modestly higher probability of subsequent trading: a 10 pp increase corresponds to \EntryPersistenceEarlyRetradeEffectPerTen{} during days 1--30 and \EntryPersistenceLateRetradeEffectPerTen{} during days 31--120 (Table~\ref{tab:entry-persistence}, panel B). Vehicle identity therefore persists strongly among pairs active in each window, alongside a smaller survival margin. This is persistence in realised use, including pairs for which the rival vehicle may remain unavailable. The estimates remain similar among pairs with more entry-day trades (Appendix Table~\ref{tab:app:entry-persistence-robustness}). Full-range capital, size-specific quotes, and venue access can shape the vehicle at entry and remain relevant for later trading, as in models of currency competition with network effects \citep{DowdGreenaway1993CurrencyCompetition}.
+% output/exhibits/entry_vehicle_persistence_models.jsonl; output/exhibits/entry_vehicle_persistence_support.jsonl; output/tables/entry_vehicle_persistence.tex
+
+\subsection{Use when both vehicle families are feasible}
+
+Once both vehicle families are executable, current exact prices and lagged full-range capital jointly predict vehicle use. Full-range capital captures one part of pool state; size-specific pretrade quotes determine what routers can execute. For each observed two-leg route on the fifteenth day of every month from June 2020 through June 2026, we quote the best WETH path and the best stablecoin path through DAI, USDC, or USDT at the same input amount and pre-transaction state. The comparison covers Uniswap v2, SushiSwap v2, and Uniswap v3, which carry \ExactFrontierVenueCoverage{} of linear routes on the sampled dates. Among routes for which all required states are observed, \ExactFrontierReproduction{} reproduce realised output within one basis point. In 2026 H1, those shares fall to \ExactFrontierVenueCoverageEnd{} and \ExactFrontierReproductionEnd{}, respectively (Appendix Table~\ref{tab:app:exact-vehicle-frontier}, panel A). Both vehicle families must be feasible, each observed and hypothetical leg remains below 5\% own-price impact, leg values agree within 20\%, and input value is at least \$100. Exact price is central to automated routing, while gas, venue access, and support can still separate an available quote from an executable path \citep{XiMoallemi2026Routing}. Appendix~\ref{app:quoters} gives the pricing equations, Appendix~\ref{app:support} defines the common-support rule, and Appendix Table~\ref{tab:app:exact-vehicle-frontier} reports results for additional venues, vehicles, and direct paths.
 % output/exhibits/exact_vehicle_frontier_monthly.jsonl; output/exhibits/contestable_vehicle_choice_support.jsonl
+
+The first sampled contest arrives slowly for most entering pairs that reach one. Only \FirstContestCoverage{} of material entrants enter the monthly common-support sample, after a median of \FirstContestMedianLagDays{} days; the entry family carries \FirstContestRouteRetention{} of routes at that first contest (Appendix Table~\ref{tab:app:first-contestable-choice}, panel A). Much of the persistence documented above therefore accumulates before a sampled rival becomes feasible. At the first contest and in the mature sample below, current exact prices strongly predict the chosen family.
 
 We call a vehicle family the incumbent when it alone carries a pair on the first observed vehicle day and begin measuring retention 30 days later. For route $r$, pair $p$, and date $t$, we estimate
 \begin{equation}
@@ -50,8 +87,6 @@ L_{e,1}&=a+\theta Q_{e,-1}+X_e'c+\lambda_{m(e)}+u_e,\\
 where the second line stacks the crossing-month change from $t-1$ to $t$ with the same event's earlier change from $t-3$ to $t-2$. Event effects $\mu_e$ compare the two changes within a crossing. The first line controls for challenger family, the price gaps in months $t-1$ and $t$, prior incumbent route share, log route activity, and crossing-calendar-month effects. In the second line, $Z_{e\tau}$ contains interactions of the crossing-month indicator with prior challenger capital share and an indicator for a stablecoin challenger.
 
 Incumbent route share falls \RankCrossingPlaceboDrop{} more at the crossing than during the same event's earlier movement (Table~\ref{tab:capital-price-transmission}, panel C, column 2). A 10 pp larger challenger share of prior weak-leg capital predicts \RankCrossingCapitalPersistence{} greater probability that the new price lead lasts one month (panel C, column 1). Route share moves with the exact-output ranking; prior two-leg capital predicts whether the challenger keeps the lead.
-
-The first sampled contest arrives slowly for most entering pairs that reach one. Only \FirstContestCoverage{} of material entrants enter the monthly common-support sample, after a median of \FirstContestMedianLagDays{} days; the entry family carries \FirstContestRouteRetention{} of routes at that first contest (Appendix Table~\ref{tab:app:first-contestable-choice}, panel A). Much of the persistence documented in Section~\ref{sec:dominance:entry-persistence} therefore accumulates before a sampled rival becomes feasible. At the first contest and in the mature sample above, current exact prices strongly predict the chosen family.
 
 Persistence has a modest average execution cost in the common-support sample. The observed vehicle family offers at least one basis point less output on \ContestLowerOutputFamilyShare{} of contestable routes, with an input-value-weighted shortfall of \ContestForegoneInputValueWeightedBps{} (Appendix Table~\ref{tab:app:contestable-vehicle-consequences}, panel A). Among routes that retain a mature exclusive incumbent, the corresponding incidence is \ContestRetainedLowerOutputShare{} and the weighted shortfall is \ContestRetainedForegoneInputValueWeightedBps{} (panel B). Incorporating predicted path-specific gas changes the overall weighted shortfall from \GasConsequenceOverallGrossShortfallBp{} to \GasConsequenceOverallNetShortfallBp{} basis points (panel D). The same table shows that the shortfall is concentrated in younger and smaller pairs.
 

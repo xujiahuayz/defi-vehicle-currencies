@@ -165,10 +165,10 @@ def _sample_rows(results: pd.DataFrame, sample_id: str) -> list[str]:
         "Ordered endpoint pairs & "
         + " & ".join(f"{int(row['pairs']):,}" for row in model_rows)
         + r" \\",
-        "First stable-route adoptions & "
+        "First-use events & "
         + " & ".join(f"{int(row['adoptions']):,}" for row in model_rows)
         + r" \\",
-        "Weekly adoption mean [\\%] & "
+        "Outcome mean [\\%] & "
         + " & ".join(_outcome_mean(row) for row in model_rows)
         + r" \\",
     ]
@@ -182,6 +182,7 @@ def render_bridge_adoption_risk_set(results: pd.DataFrame) -> str:
     lines = [
         r"\begin{tabularx}{\linewidth}{@{}>{\hsize=2.4\hsize\raggedright\arraybackslash}X*{5}{>{\hsize=0.72\hsize\centering\arraybackslash}X}@{}}",
         r"\toprule",
+        r"Outcome & \multicolumn{5}{c}{First stablecoin route use during the week [0/1]} \\",
         r" & \shortstack{(1)\\Any\\support} & \shortstack{(2)\\Capital\\ratio} & \shortstack{(3)\\Preweek\\share} & \shortstack{(4)\\Next-week\\share} & \shortstack{(5)\\Joint\\timing} \\",
         r"\midrule",
         r"\multicolumn{6}{@{}l}{\textit{Panel A. Prior 28 days: at least 10 WETH routes on three days}} \\",

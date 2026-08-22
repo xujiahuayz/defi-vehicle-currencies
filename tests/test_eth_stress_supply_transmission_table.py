@@ -273,6 +273,10 @@ def test_generated_values_cover_supply_and_transmission_results() -> None:
         in values
     )
     assert (
+        r"\newcommand{\EthStressVThreeNetSupplyDeclineHolmValue}{$0.067$}"
+        in values
+    )
+    assert (
         r"\newcommand{\EthStressDeclineRelativeDepthEffect}{$-0.0005$}"
         in values
     )

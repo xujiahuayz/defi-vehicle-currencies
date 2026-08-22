@@ -52,6 +52,29 @@ def _estimate_cell(row: pd.Series) -> str:
     )
 
 
+def _period_support_rows(results: pd.DataFrame) -> list[pd.Series]:
+    selected = results[
+        results["record_type"].eq("frontier_support")
+        & results["scope"].eq("period")
+    ].copy()
+    labels = ["pooled", *[str(year) for year in range(2020, 2027)]]
+    rows = [_single(selected, label=label) for label in labels]
+    if [int(row["dates"]) for row in rows[1:]] != [7, 12, 12, 12, 12, 12, 6]:
+        raise ValueError("exact-frontier annual date coverage changed")
+    return rows
+
+
+def _period_label(value: object) -> str:
+    label = str(value)
+    if label == "pooled":
+        return "Pooled"
+    if label == "2020":
+        return "2020 H2"
+    if label == "2026":
+        return "2026 H1"
+    return label
+
+
 def _selected_rows(results: pd.DataFrame) -> dict[str, pd.Series]:
     required = {
         "record_type",
@@ -142,6 +165,7 @@ def _selected_rows(results: pd.DataFrame) -> dict[str, pd.Series]:
 
 def render_exact_vehicle_frontier(results: pd.DataFrame) -> str:
     rows = _selected_rows(results)
+    support_rows = _period_support_rows(results)
     main, route, value = rows["main"], rows["route"], rows["value"]
     within = float(main["within_reach_regret_over_1bp_share"])
     same = float(main["same_vehicle_public_regret_over_1bp_share"])
@@ -152,10 +176,14 @@ def render_exact_vehicle_frontier(results: pd.DataFrame) -> str:
         r"\begin{tabularx}{\linewidth}{@{}>{\hsize=1.6\hsize\raggedright\arraybackslash}X*{4}{>{\hsize=.85\hsize\centering\arraybackslash}X}@{}}",
         r"\toprule",
         r"\multicolumn{5}{l}{\textit{Panel A. Coverage and quote validation}} \\",
-        "Linear routes in the exact venue set [\\%] & "
-        + rf"\multicolumn{{4}}{{r}}{{{_pct(float(rows['support']['exact_venue_share']))}}} \\",
-        "Mapped observed routes reproduced within 1 bp [\\%] & "
-        + rf"\multicolumn{{4}}{{r}}{{{_pct(float(rows['support']['chosen_reproduction_share']))}}} \\",
+        r"Period & Dates & Linear routes & Exact venue set [\%] & Reproduced within 1 bp [\%] \\",
+        *[
+            f"{_period_label(row['label'])} & {int(row['dates'])} & "
+            f"{_integer(float(row['linear_routes']))} & "
+            f"{_pct(float(row['exact_venue_share']))} & "
+            f"{_pct(float(row['chosen_reproduction_share']))} " + r"\\"
+            for row in support_rows
+        ],
         r"\midrule",
         r"\multicolumn{5}{l}{\textit{Panel B. Nested opportunity set}} \\",
         r" & Realised route & Same vehicle, used venues & Same vehicle, all exact venues & Any named vehicle or direct \\",
@@ -186,6 +214,9 @@ def render_exact_vehicle_frontier(results: pd.DataFrame) -> str:
 
 def render_values(results: pd.DataFrame) -> str:
     rows = _selected_rows(results)
+    support_by_period = {
+        str(row["label"]): row for row in _period_support_rows(results)
+    }
     main, high, route, value, support = (
         rows["main"],
         rows["high"],
@@ -218,6 +249,8 @@ def render_values(results: pd.DataFrame) -> str:
         f"\\newcommand{{\\ExactFrontierHighNotionalRoutes}}{{{_integer(float(high['routes']))}}}",
         f"\\newcommand{{\\ExactFrontierVenueCoverage}}{{{_pct(float(support['exact_venue_share']))}\\%}}",
         f"\\newcommand{{\\ExactFrontierReproduction}}{{{_pct(float(support['chosen_reproduction_share']))}\\%}}",
+        f"\\newcommand{{\\ExactFrontierVenueCoverageEnd}}{{{_pct(float(support_by_period['2026']['exact_venue_share']))}\\%}}",
+        f"\\newcommand{{\\ExactFrontierReproductionEnd}}{{{_pct(float(support_by_period['2026']['chosen_reproduction_share']))}\\%}}",
         f"\\newcommand{{\\ExactFrontierExtremeRoutes}}{{{_integer(float(main['gain_over_100pct_routes']))}}}",
     ]
     return "\n".join(lines) + "\n"

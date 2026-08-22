@@ -137,7 +137,9 @@ def test_bridge_adoption_risk_table_labels_the_future_capital_comparison() -> No
     assert "$+5.01^{***}$" in rendered
     assert "325,448" in rendered
     assert "318,448" in rendered
-    assert r"Weekly adoption mean [\%]" in rendered
+    assert "First stablecoin route use during the week [0/1]" in rendered
+    assert "First-use events" in rendered
+    assert r"Outcome mean [\%]" in rendered
     assert "measure next-week association" in rendered
     assert "capital adjustments following adoption" in rendered
     assert "at least two positive-support weeks" in rendered

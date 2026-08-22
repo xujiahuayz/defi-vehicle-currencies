@@ -118,6 +118,8 @@ def test_v3_lp_provider_formation_renders_both_panels() -> None:
 
     assert "Panel A. Stable-facing liquidity additions" in rendered
     assert "Panel B. Prior vehicle experience and pool formation" in rendered
+    assert "Supplied vehicle is the pool's actual vehicle [0/1]" in rendered
+    assert r"Outcome mean [\%]" in rendered
     assert r"Period-\\specific" in rendered
     assert "Origin entry/exit" not in rendered
     assert "Liquidity-addition actions & 8.5 & 44.2 & +35.71" in rendered

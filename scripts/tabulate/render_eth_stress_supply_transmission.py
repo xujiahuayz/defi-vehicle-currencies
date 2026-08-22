@@ -266,6 +266,15 @@ def _tex_p(value: object) -> str:
     return f"$p={numeric:.3f}$"
 
 
+def _tex_p_value(value: object) -> str:
+    """Return a bare value for prose that supplies its own punctuation."""
+
+    numeric = float(value)
+    if numeric < 0.001:
+        return "$<0.001$"
+    return f"${numeric:.3f}$"
+
+
 def _tex_effect(
     row: pd.Series,
     *,
@@ -617,6 +626,16 @@ def render_eth_stress_supply_transmission_values(
                 _macro(prefix + "Weeks", _tex_integer(row["weeks"])),
             ]
         )
+
+    v3_net_decline = lp_rows[
+        ("EthStressVThreeNetSupply", "stable_x_eth_decline")
+    ]
+    lines.append(
+        _macro(
+            "EthStressVThreeNetSupplyDeclineHolmValue",
+            _tex_p_value(v3_net_decline["holm_p_value"]),
+        )
+    )
 
     units = {
         "EthStressDeclineRelativeDepth": "",

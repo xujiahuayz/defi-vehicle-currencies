@@ -21,10 +21,15 @@ def test_exact_frontier_table_and_values_are_bound_to_the_result() -> None:
     assert "Same vehicle, all exact venues" in table
     assert "Full-set minus realised stablecoin share" in table
     assert "Panel A. Coverage and quote validation" in table
-    assert "Mapped observed routes reproduced within 1 bp" in table
+    assert "Reproduced within 1 bp" in table
+    assert "2024 & 12 & 241{,}127 & 98.2 & 83.8" in table
+    assert "2025 & 12 & 200{,}465 & 84.6 & 81.1" in table
+    assert "2026 H1 & 6 & 77{,}056 & 58.7 & 77.6" in table
     assert "\\ExactFrontierSameVehicleShare" in values
     assert "\\ExactFrontierStableChange" in values
     assert "\\ExactFrontierExtremeRoutes" in values
     assert "\\ExactFrontierMinimumInput}{\\$100}" in values
     assert "\\ExactFrontierGainThreshold}{1 bp}" in values
     assert "\\ExactFrontierImpactLimit}{5\\%}" in values
+    assert "\\ExactFrontierVenueCoverageEnd}{58.7\\%}" in values
+    assert "\\ExactFrontierReproductionEnd}{77.6\\%}" in values
