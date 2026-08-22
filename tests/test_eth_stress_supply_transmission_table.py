@@ -350,6 +350,7 @@ def test_eth_stress_supply_transmission_renders_three_compact_panels() -> None:
     assert "$+19.10^{***}$" in rendered
     assert "$+2.87^{***}$" in rendered
     assert "$+10.33^{***}$" in rendered
+    assert "Stablecoin use [pp]" in rendered
     assert "24,313 & 24,313 & 24,313" in rendered
     assert (
         "Panel C. Six-hour ETH-price declines, exact quotes, and route use"

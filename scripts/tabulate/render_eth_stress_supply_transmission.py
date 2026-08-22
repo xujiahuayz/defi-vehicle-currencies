@@ -765,7 +765,7 @@ def render_eth_stress_supply_transmission(
             r"\par\smallskip",
             r"\begin{tabularx}{\linewidth}{@{}>{\hsize=1.65\hsize\raggedright\arraybackslash}X*{3}{>{\hsize=0.78\hsize\centering\arraybackslash}X}@{}}",
             r"\toprule",
-            r"Regressor & Log stable/WETH USD capital & Stablecoin output lead [bp] & Stablecoin chosen [pp] \\",
+            r"Regressor & Log stable/WETH USD capital & Stablecoin output lead [bp] & Stablecoin use [pp] \\",
             r"\midrule",
         ]
     )
@@ -793,7 +793,7 @@ def render_eth_stress_supply_transmission(
             r"\par\smallskip",
             r"\begin{tabularx}{\linewidth}{@{}>{\hsize=1.55\hsize\raggedright\arraybackslash}X*{2}{>{\hsize=0.725\hsize\centering\arraybackslash}X}@{}}",
             r"\toprule",
-            r"Regressor & Stablecoin output lead [bp] & Stablecoin chosen [pp] \\",
+            r"Regressor & Stablecoin output lead [bp] & Stablecoin use [pp] \\",
             r"\midrule",
         ]
     )
