@@ -32,7 +32,7 @@ Captions, labels, placement, and interpretation stay in the paper/deck source.
 | `render_bridge_exante.py` | `bridge_exante.tex/.pdf` | `tab:app:bridge-establishment` |
 | `render_stablecoin_supply_lp.py` | `stablecoin_supply_lp.tex/.pdf` | `tab:app:stablecoin-supply-lp` |
 | `render_bridge_lp_divergence_risk.py` | `bridge_lp_divergence_risk.tex/.pdf` | `tab:app:bridge-lp-risk` |
-| `render_eth_stress_supply_transmission.py` | `eth_stress_supply_transmission.tex/.pdf` and generated values | `tab:app:eth-stress-supply-transmission` |
+| `render_eth_stress_supply_transmission.py` | `eth_stress_supply_transmission.tex/.pdf` and generated values | `tab:app:eth-stress-supply-transmission`; weekly LP flows, monthly capital--price--choice links, and six-hour ETH-decline exact-route estimates |
 | `render_eth_decline_v2_accounting.py` | `eth_decline_v2_accounting.tex/.pdf` and generated values | `tab:app:eth-decline-v2-accounting` |
 | `render_v3_lp_provider_formation.py` | `v3_lp_provider_formation.tex/.pdf` and generated values | `tab:v3-provider-formation` |
 | `render_v3_lp_launch_supply.py` | `v3_lp_launch_supply.tex/.pdf` and generated values | `tab:app:v3-lp-launch-supply` |

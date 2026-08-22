@@ -5,6 +5,7 @@ import pytest
 
 from scripts.tabulate.render_eth_stress_supply_transmission import (
     CHAIN_CELLS,
+    INTRADAY_CELLS,
     LP_ROWS,
     STRESS_COLUMNS,
     TABLE_NOTE,
@@ -212,9 +213,128 @@ def _chain_support() -> pd.DataFrame:
     )
 
 
-def test_eth_stress_supply_transmission_renders_two_compact_panels() -> None:
+def _intraday_models() -> pd.DataFrame:
+    values = {
+        "EthIntradayDeclineOutput": (
+            -0.073955,
+            0.261289,
+            0.779091,
+            1.0,
+        ),
+        "EthIntradayDeclineChoice": (
+            -0.034827,
+            0.112958,
+            0.759969,
+            1.0,
+        ),
+        "EthIntradayOutputChoice": (
+            0.037464,
+            0.015196,
+            0.019629,
+            float("nan"),
+        ),
+    }
+    rows: list[dict[str, object]] = []
+    for definition in INTRADAY_CELLS:
+        coefficient, standard_error, p_value, holm_p_value = values[
+            definition.macro_prefix
+        ]
+        rows.append(
+            {
+                "record_type": (
+                    "eth_intraday_executable_route_chain_regression"
+                ),
+                "model_id": definition.model_id,
+                "outcome": definition.outcome,
+                "predictor": definition.predictor,
+                "coefficient": coefficient,
+                "standard_error": standard_error,
+                "p_value": p_value,
+                "holm_p_value": holm_p_value,
+                "observations": 317,
+                "events": 31,
+                "ordered_pairs": 84,
+                "fixed_effects": "event_pair+relative_hour_bin",
+                "covariance": (
+                    "stress_event_and_ordered_pair_cluster_cr1"
+                ),
+                "eth_timing": (
+                    "strictly_available_coinbase_close_t_minus_6h_to_t"
+                ),
+                "sample": (
+                    "v2_sushiv2_nonvehicle_endpoints_both_families_executable"
+                ),
+                "venue_scope": "uniswap_v2+sushiswap_v2",
+                "quote_interpretation": (
+                    "exact_pretransaction_output_at_observed_notional"
+                ),
+                "depth_interpretation": (
+                    "not_dollar_tvl_and_not_a_complete_depth_curve"
+                ),
+                "causal_interpretation": False,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def _intraday_support() -> pd.DataFrame:
+    rows: list[dict[str, object]] = [
+        {
+            "record_type": (
+                "eth_intraday_executable_route_chain_support"
+            ),
+            "events": 55,
+            "days_replayed": 126,
+            "window_targets": 874_761,
+            "exactly_reproduced_routes": 810_549,
+            "chosen_reproduction_share": 0.926595,
+            "contestable_clean_routes": 918,
+            "ordered_pairs": 475,
+            "event_definition": (
+                "first_strictly_available_6h_eth_decline_crossing_10_percent"
+            ),
+            "event_window_hours": "-6_to_+24",
+            "event_cooldown_hours": 48,
+            "price_source": "coinbase_exchange_eth_usd_spot_1m_close",
+            "price_timing": (
+                "latest_available_close_strictly_before_transaction"
+            ),
+            "endpoint_scope": (
+                "neither_endpoint_is_weth_dai_usdc_or_usdt"
+            ),
+            "venue_scope": "uniswap_v2+sushiswap_v2",
+            "quote_interpretation": (
+                "exact_pretransaction_output_at_observed_notional"
+            ),
+            "depth_interpretation": (
+                "not_dollar_tvl_and_not_a_complete_depth_curve"
+            ),
+            "causal_interpretation": False,
+        }
+    ]
+    for day in range(4):
+        rows.append(
+            {
+                "record_type": (
+                    "eth_intraday_executable_route_chain_day_support"
+                ),
+                "day": f"202503{day + 1:02d}",
+                "state_status": (
+                    "excluded_exact_event_contract_failure"
+                ),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def test_eth_stress_supply_transmission_renders_three_compact_panels() -> None:
     rendered = render_eth_stress_supply_transmission(
-        _lp_models(), _lp_support(), _chain_models(), _chain_support()
+        _lp_models(),
+        _lp_support(),
+        _chain_models(),
+        _chain_support(),
+        _intraday_models(),
+        _intraday_support(),
     )
 
     assert "Panel A. Stablecoin-minus-WETH liquidity-supply responses" in rendered
@@ -231,6 +351,16 @@ def test_eth_stress_supply_transmission_renders_two_compact_panels() -> None:
     assert "$+2.87^{***}$" in rendered
     assert "$+10.33^{***}$" in rendered
     assert "24,313 & 24,313 & 24,313" in rendered
+    assert (
+        "Panel C. Six-hour ETH-price declines, exact quotes, and route use"
+        in rendered
+    )
+    assert "$-7.40$" in rendered
+    assert "$-3.48$" in rendered
+    assert "$+3.75^{**}$" in rendered
+    assert "Observations & 317 & 317" in rendered
+    assert "Stress events & 31 & 31" in rendered
+    assert "Endpoint pairs & 84 & 84" in rendered
 
 
 def test_primary_chain_and_capital_price_choice_links_use_separate_holm_families() -> None:
@@ -246,7 +376,12 @@ def test_primary_chain_and_capital_price_choice_links_use_separate_holm_families
     )
     chain.loc[conditional, "p_value"] = 0.04
     rendered = render_eth_stress_supply_transmission(
-        _lp_models(), _lp_support(), chain, _chain_support()
+        _lp_models(),
+        _lp_support(),
+        chain,
+        _chain_support(),
+        _intraday_models(),
+        _intraday_support(),
     )
 
     assert "$-0.0005^{" not in rendered
@@ -257,7 +392,12 @@ def test_primary_chain_and_capital_price_choice_links_use_separate_holm_families
 
 def test_generated_values_cover_supply_and_transmission_results() -> None:
     values = render_eth_stress_supply_transmission_values(
-        _lp_models(), _lp_support(), _chain_models(), _chain_support()
+        _lp_models(),
+        _lp_support(),
+        _chain_models(),
+        _chain_support(),
+        _intraday_models(),
+        _intraday_support(),
     )
 
     assert (
@@ -288,11 +428,33 @@ def test_generated_values_cover_supply_and_transmission_results() -> None:
     )
     assert r"\newcommand{\EthStressExecutionN}{24{,}313}" in values
     assert r"\newcommand{\EthStressPositiveDepthCoverage}{47.5\%}" in values
+    assert (
+        r"\newcommand{\EthIntradayDeclineOutputEffect}{$-7.40$ bp}"
+        in values
+    )
+    assert (
+        r"\newcommand{\EthIntradayDeclineChoiceEffect}{$-3.48$ pp}"
+        in values
+    )
+    assert (
+        r"\newcommand{\EthIntradayOutputChoiceEffect}{$+3.75$ pp}"
+        in values
+    )
+    assert r"\newcommand{\EthIntradayOutputChoiceP}{$0.020$}" in values
+    assert r"\newcommand{\EthIntradayN}{317}" in values
+    assert r"\newcommand{\EthIntradayAllEvents}{55}" in values
+    assert r"\newcommand{\EthIntradayCleanRoutes}{918}" in values
+    assert r"\newcommand{\EthIntradayExcludedDays}{4}" in values
 
 
 def test_generated_values_have_unique_macro_names() -> None:
     values = render_eth_stress_supply_transmission_values(
-        _lp_models(), _lp_support(), _chain_models(), _chain_support()
+        _lp_models(),
+        _lp_support(),
+        _chain_models(),
+        _chain_support(),
+        _intraday_models(),
+        _intraday_support(),
     )
     commands = [line for line in values.splitlines() if line.startswith(r"\newcommand")]
     names = [line.split("{")[1].removeprefix("\\") for line in commands]
@@ -311,6 +473,9 @@ def test_note_states_inference_and_accounting_boundary() -> None:
     assert "raw $p=0.017$ and holm $p=0.067$" in lowered
     assert "addition and withdrawal components are individually imprecise" in lowered
     assert "separate holm family" in lowered
+    assert "event-by-pair and relative-hour effects" in lowered
+    assert "four dates are excluded" in lowered
+    assert "depth beyond that notional lies outside the comparison" in lowered
 
 
 def test_renderer_rejects_changed_v3_decline_net_inference() -> None:
@@ -324,5 +489,10 @@ def test_renderer_rejects_changed_v3_decline_net_inference() -> None:
 
     with pytest.raises(ValueError, match="Holm p-value changed"):
         render_eth_stress_supply_transmission(
-            models, _lp_support(), _chain_models(), _chain_support()
+            models,
+            _lp_support(),
+            _chain_models(),
+            _chain_support(),
+            _intraday_models(),
+            _intraday_support(),
         )
