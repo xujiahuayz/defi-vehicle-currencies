@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from pathlib import Path
 
 import pandas as pd
 
@@ -9,6 +10,13 @@ from ddvc.analysis.bridge_adoption_risk_set import (
     estimate_adoption_models,
     prepare_adoption_risk_panel,
 )
+from scripts.analyze.run_bridge_adoption_risk_set import load_risk_panel
+
+
+WETH = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+SRC = "0x0000000000000000000000000000000000000001"
+TGT = "0x0000000000000000000000000000000000000002"
 
 
 def _risk_rows() -> pd.DataFrame:
@@ -115,6 +123,96 @@ def test_risk_models_include_preweek_and_time_reversal_estimands() -> None:
         "m4_preweek_and_future_depth",
         "lead_stable_depth_share_10pp",
     ) in observed
+    assert (
+        "m5_any_preweek_stable_support",
+        "positive_stable_support",
+    ) in observed
+    assert (
+        "m6_positive_support_log_depth_advantage",
+        "log_depth_advantage",
+    ) in observed
     assert results["pair_weeks"].min() >= 100
     assert results["pairs"].eq(40).all()
     assert results["coefficient"].map(math.isfinite).all()
+    extensive = results[
+        results["model_id"].eq("m5_any_preweek_stable_support")
+    ]
+    intensive = results[
+        results["model_id"].eq("m6_positive_support_log_depth_advantage")
+    ]
+    assert not extensive["positive_depth_only"].any()
+    assert extensive["capital_margin"].eq("extensive").all()
+    assert intensive["positive_depth_only"].all()
+    assert intensive["capital_margin"].eq(
+        "intensive among positive-support pair-weeks"
+    ).all()
+    assert intensive["pair_weeks"].iloc[0] < extensive["pair_weeks"].iloc[0]
+    assert intensive["coefficient_pp_per_10x"].map(math.isfinite).all()
+    assert math.isclose(
+        intensive["coefficient_pp_per_10x"].iloc[0],
+        intensive["coefficient_pp"].iloc[0] * math.log(10.0),
+    )
+
+
+def test_sql_risk_set_uses_preweek_capital_and_stops_at_first_use(
+    tmp_path: Path,
+) -> None:
+    choices = pd.DataFrame(
+        [
+            {
+                "date": pd.Timestamp(day),
+                "src": SRC,
+                "tgt": TGT,
+                "candidate_type": vehicle,
+                "route_count": routes,
+            }
+            for day, vehicle, routes in (
+                ("2025-01-07", "native", 1),
+                ("2025-01-15", "stable", 1),
+                ("2025-01-27", "native", 1),
+            )
+        ]
+    )
+    choices_path = tmp_path / "choices.parquet"
+    choices.to_parquet(choices_path, index=False)
+
+    capital_rows: list[dict[str, object]] = []
+    for day, stable_capital, weth_capital in (
+        ("20250113", 15_000.0, 40_000.0),
+        ("20250114", 999_000.0, 999_000.0),
+        ("20250120", 25_000.0, 50_000.0),
+    ):
+        for vehicle, endpoint, capital in (
+            (WETH, SRC, weth_capital + 10_000.0),
+            (WETH, TGT, weth_capital),
+            (USDC, SRC, stable_capital + 5_000.0),
+            (USDC, TGT, stable_capital),
+        ):
+            capital_rows.append(
+                {
+                    "day": day,
+                    "token0_address": vehicle,
+                    "token1_address": endpoint,
+                    "capital_usd_lagged": capital,
+                    "quantity_kind": "deposited_capital",
+                    "capital_validation_status": "exact_state_prior_calendar",
+                }
+            )
+    capital_path = tmp_path / "capital.parquet"
+    pd.DataFrame(capital_rows).to_parquet(capital_path, index=False)
+
+    panel = load_risk_panel(
+        choices_path=choices_path,
+        pool_capital_path=capital_path,
+        min_prior_native_routes=1,
+        min_prior_native_active_days=1,
+        prior_activity_weeks=1,
+    )
+    assert panel["week_start"].tolist() == [pd.Timestamp("2025-01-13")]
+    assert panel["adopted_this_week"].tolist() == [1.0]
+    assert panel["prior_native_routes"].tolist() == [1.0]
+    assert panel["prior_native_active_days"].tolist() == [1]
+    assert panel["stable_weak_leg_usd"].tolist() == [15_000.0]
+    assert panel["weth_weak_leg_usd"].tolist() == [40_000.0]
+    assert panel["lead_stable_weak_leg_usd"].tolist() == [25_000.0]
+    assert panel["lead_weth_weak_leg_usd"].tolist() == [50_000.0]

@@ -7,10 +7,11 @@ USDT.  It retains zero-stable-depth weeks and pairs that never adopt.  Capital
 is the full-range Uniswap v2 plus SushiSwap v2 reserve value available before
 the week begins.  No capital crossing or future adoption defines eligibility.
 
-The primary linear probability model absorbs ordered-pair and calendar-week
-effects, controls for pair age and prior WETH activity, and clusters by pair
-and week.  A future-depth specification is a timing diagnostic: future capital
-can respond to adoption and therefore cannot identify a forward effect.
+The linear probability models separate any positive stable bridge from the
+depth gradient among positive-support weeks.  They absorb ordered-pair and
+calendar-week effects, control for pair age and prior WETH activity, and
+cluster by pair and week.  Next-week capital is reverse-association evidence:
+it can respond to adoption and therefore cannot identify a forward effect.
 """
 
 from __future__ import annotations

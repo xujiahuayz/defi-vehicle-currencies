@@ -90,6 +90,7 @@ def prepare_adoption_risk_panel(frame: pd.DataFrame) -> pd.DataFrame:
     total_depth = data["stable_weak_leg_usd"] + data["weth_weak_leg_usd"]
     data["stable_depth_share"] = data["stable_weak_leg_usd"] / total_depth
     data["stable_depth_share_10pp"] = data["stable_depth_share"] / 0.10
+    data["positive_stable_support"] = data["stable_weak_leg_usd"].gt(0).astype(float)
     data["log_depth_advantage"] = np.log1p(data["stable_weak_leg_usd"]) - np.log1p(
         data["weth_weak_leg_usd"]
     )
@@ -204,6 +205,7 @@ def _fit_within_pair_week_model(
     focal_predictors: tuple[str, ...],
     min_observations: int,
     min_clusters: int,
+    positive_depth_only: bool = False,
 ) -> list[dict[str, object]]:
     """Fit one equal-pair-week LPM with pair and calendar-week effects."""
 
@@ -211,6 +213,8 @@ def _fit_within_pair_week_model(
         panel["age_bin"], prefix="age", drop_first=True, dtype=float
     )
     data = pd.concat([panel, age_controls], axis=1)
+    if positive_depth_only:
+        data = data[data["stable_weak_leg_usd"].gt(0)].copy()
     candidate_columns = [*focal_predictors, *MODEL_CONTROLS, *age_controls.columns]
     data = data.replace([np.inf, -np.inf], np.nan).dropna(
         subset=["adopted_this_week", "pair_id", "week_start", *candidate_columns]
@@ -246,8 +250,16 @@ def _fit_within_pair_week_model(
             "lead_stable_depth_share_10pp",
         }:
             magnitude = "percentage points of weekly adoption per 10 pp depth share"
+            coefficient_pp_per_10x = np.nan
+            standard_error_pp_per_10x = np.nan
+        elif predictor == "positive_stable_support":
+            magnitude = "percentage points of weekly adoption for any positive stable depth"
+            coefficient_pp_per_10x = np.nan
+            standard_error_pp_per_10x = np.nan
         else:
             magnitude = "percentage points of weekly adoption per log-depth advantage"
+            coefficient_pp_per_10x = scale * coefficient * np.log(10.0)
+            standard_error_pp_per_10x = scale * standard_error * np.log(10.0)
         rows.append(
             {
                 "record_type": "bridge_adoption_risk_model",
@@ -258,6 +270,10 @@ def _fit_within_pair_week_model(
                 "p_value": float(fit.p_values[position]),
                 "coefficient_pp": scale * coefficient,
                 "standard_error_pp": scale * standard_error,
+                "coefficient_pp_per_10x": float(coefficient_pp_per_10x),
+                "standard_error_pp_per_10x": float(
+                    standard_error_pp_per_10x
+                ),
                 "magnitude": magnitude,
                 "pair_weeks": int(fit.n_observations),
                 "pairs": int(data["pair_id"].nunique()),
@@ -268,6 +284,14 @@ def _fit_within_pair_week_model(
                 "fixed_effects": "ordered endpoint pair and calendar week",
                 "baseline_hazard": "pair age bins",
                 "controls": "log WETH weak-leg depth, prior-28-day WETH routes and active days",
+                "positive_depth_only": bool(positive_depth_only),
+                "capital_margin": (
+                    "extensive"
+                    if predictor == "positive_stable_support"
+                    else "intensive among positive-support pair-weeks"
+                    if positive_depth_only
+                    else "relative share or depth"
+                ),
                 "weight": "equal pair-week",
             }
         )
@@ -280,28 +304,42 @@ def estimate_adoption_models(
     min_observations: int = 200,
     min_clusters: int = 30,
 ) -> pd.DataFrame:
-    """Estimate the preweek relation and future-depth timing diagnostics."""
+    """Estimate support, conditional depth, and future-depth comparisons."""
 
     specifications = (
         (
             "m1_preweek_relative_depth",
             ("stable_depth_share_10pp",),
+            False,
         ),
         (
             "m2_preweek_log_depth_advantage",
             ("log_depth_advantage",),
+            False,
         ),
         (
             "m3_future_depth_time_reversal",
             ("lead_stable_depth_share_10pp",),
+            False,
         ),
         (
             "m4_preweek_and_future_depth",
             ("stable_depth_share_10pp", "lead_stable_depth_share_10pp"),
+            False,
+        ),
+        (
+            "m5_any_preweek_stable_support",
+            ("positive_stable_support",),
+            False,
+        ),
+        (
+            "m6_positive_support_log_depth_advantage",
+            ("log_depth_advantage",),
+            True,
         ),
     )
     rows: list[dict[str, object]] = []
-    for model_id, predictors in specifications:
+    for model_id, predictors, positive_depth_only in specifications:
         rows.extend(
             _fit_within_pair_week_model(
                 panel,
@@ -309,6 +347,7 @@ def estimate_adoption_models(
                 focal_predictors=predictors,
                 min_observations=min_observations,
                 min_clusters=min_clusters,
+                positive_depth_only=positive_depth_only,
             )
         )
     return pd.DataFrame(rows)

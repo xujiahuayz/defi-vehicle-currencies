@@ -1,20 +1,24 @@
-\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xccc@{}}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}X*{5}{>{\centering\arraybackslash}p{1.35cm}}@{}}
 \toprule
- & (1) Preweek & (2) Next week & (3) Joint timing \\
+ & \shortstack{(1)\\Any\\support} & \shortstack{(2)\\Depth given\\support} & \shortstack{(3)\\Preweek\\share} & \shortstack{(4)\\Next-week\\share} & \shortstack{(5)\\Joint\\timing} \\
 \midrule
-\multicolumn{4}{@{}l}{\textit{Panel A. At least 10 WETH routes on three days during the prior 28 days}} \\
-Preweek stable share of joint weak-leg capital [10 pp] & \begin{tabular}{@{}c@{}}$+3.60^{***}$\\$(1.30)$\end{tabular} &  & \begin{tabular}{@{}c@{}}$+2.94^{**}$\\$(1.21)$\end{tabular} \\
-Next-week stable share of joint weak-leg capital [10 pp] &  & \begin{tabular}{@{}c@{}}$+5.01^{***}$\\$(1.39)$\end{tabular} & \begin{tabular}{@{}c@{}}$+4.58^{***}$\\$(1.32)$\end{tabular} \\
-Pair-weeks & 325,448 & 318,522 & 318,522 \\
-Ordered endpoint pairs & 57,344 & 56,074 & 56,074 \\
-First stable-route adoptions & 697 & 692 & 692 \\
+\multicolumn{6}{@{}l}{\textit{Panel A. Prior 28 days: at least 10 WETH routes on three days}} \\
+Any measured V2 stable bridge capital before the week [0/1] & \begin{tabular}{@{}c@{}}$+1.84^{***}$\\$(0.32)$\end{tabular} &  &  &  &  \\
+Stable/WETH weak-leg capital ratio, positive-support weeks [10$\times$] &  & \begin{tabular}{@{}c@{}}$+1.84^{***}$\\$(0.51)$\end{tabular} &  &  &  \\
+Preweek stable share of joint weak-leg capital [10 pp] &  &  & \begin{tabular}{@{}c@{}}$+3.60^{***}$\\$(1.30)$\end{tabular} &  & \begin{tabular}{@{}c@{}}$+2.94^{**}$\\$(1.21)$\end{tabular} \\
+Next-week stable share of joint weak-leg capital [10 pp] &  &  &  & \begin{tabular}{@{}c@{}}$+5.01^{***}$\\$(1.39)$\end{tabular} & \begin{tabular}{@{}c@{}}$+4.58^{***}$\\$(1.32)$\end{tabular} \\
+Pair-weeks & 325,448 & 8,990 & 325,448 & 318,522 & 318,522 \\
+Ordered endpoint pairs & 57,344 & 1,949 & 57,344 & 56,074 & 56,074 \\
+First stable-route adoptions & 697 & 270 & 697 & 692 & 692 \\
 \addlinespace
-\multicolumn{4}{@{}l}{\textit{Panel B. At least 50 WETH routes on five days during the prior 28 days}} \\
-Preweek stable share of joint weak-leg capital [10 pp] & \begin{tabular}{@{}c@{}}$+8.26$\\$(5.30)$\end{tabular} &  & \begin{tabular}{@{}c@{}}$+7.92$\\$(5.12)$\end{tabular} \\
-Next-week stable share of joint weak-leg capital [10 pp] &  & \begin{tabular}{@{}c@{}}$+3.45$\\$(3.27)$\end{tabular} & \begin{tabular}{@{}c@{}}$+1.82$\\$(3.19)$\end{tabular} \\
-Pair-weeks & 25,777 & 25,302 & 25,302 \\
-Ordered endpoint pairs & 5,020 & 4,931 & 4,931 \\
-First stable-route adoptions & 140 & 137 & 137 \\
+\multicolumn{6}{@{}l}{\textit{Panel B. Prior 28 days: at least 50 WETH routes on five days}} \\
+Any measured V2 stable bridge capital before the week [0/1] & \begin{tabular}{@{}c@{}}$+3.20^{***}$\\$(0.92)$\end{tabular} &  &  &  &  \\
+Stable/WETH weak-leg capital ratio, positive-support weeks [10$\times$] &  & \begin{tabular}{@{}c@{}}$+3.55^{***}$\\$(1.25)$\end{tabular} &  &  &  \\
+Preweek stable share of joint weak-leg capital [10 pp] &  &  & \begin{tabular}{@{}c@{}}$+8.26$\\$(5.30)$\end{tabular} &  & \begin{tabular}{@{}c@{}}$+7.92$\\$(5.12)$\end{tabular} \\
+Next-week stable share of joint weak-leg capital [10 pp] &  &  &  & \begin{tabular}{@{}c@{}}$+3.45$\\$(3.27)$\end{tabular} & \begin{tabular}{@{}c@{}}$+1.82$\\$(3.19)$\end{tabular} \\
+Pair-weeks & 25,777 & 1,370 & 25,777 & 25,302 & 25,302 \\
+Ordered endpoint pairs & 5,020 & 319 & 5,020 & 4,931 & 4,931 \\
+First stable-route adoptions & 140 & 70 & 140 & 137 & 137 \\
 \bottomrule
 \end{tabularx}
-% Suggested paper note: The unit is an ordered endpoint-pair week before the pair's first observed DAI-, USDC-, or USDT-mediated route. Neither endpoint is WETH or one of those stablecoins. Every risk week has recent WETH-mediated activity, and stablecoin weak-leg capital may equal zero. Capital is prior-calendar full-range reserve value in Uniswap v2 and SushiSwap v2 at the start of the week; each vehicle's two-leg measure is its weaker leg, and stablecoin capital is the largest value across DAI, USDC, and USDT. The outcome is first stablecoin-mediated route use during the week. Linear probability models absorb pair and calendar-week fixed effects, include pair-age bins, log WETH depth, and prior WETH-route activity, weight pair-weeks equally, and cluster standard errors by pair and week. Column 2 uses next week's capital. In column 3, its coefficient measures future capital conditional on preweek capital; it can reflect capital adjustments following adoption and therefore does not establish that capital precedes use. Asterisks *, **, and *** denote two-sided significance at the 10%, 5%, and 1% levels, respectively. The estimates describe equilibrium timing; the capital measure omits concentrated-liquidity venues.
+% Suggested paper note: The unit is an ordered endpoint-pair week before the pair's first observed DAI-, USDC-, or USDT-mediated route. Neither endpoint is WETH or one of those stablecoins. Every risk week has recent WETH-mediated activity, and stablecoin weak-leg capital may equal zero. Capital is prior-calendar full-range reserve value in Uniswap v2 and SushiSwap v2 at the start of the week; each vehicle's two-leg measure is its weaker leg, and stablecoin capital is the largest value across DAI, USDC, and USDT. The outcome is first stablecoin-mediated route use during the week. Column 1 compares positive measured V2 stablecoin support with zero measured V2 support. Column 2 is limited to pairs observed for at least two positive-support weeks and reports a $\ln(10)$ increase in the stablecoin-to-WETH log-depth advantage; conditional on WETH depth, this is approximately a tenfold rise in stablecoin weak-leg capital. Columns 3--5 use stablecoin's share of joint stablecoin and WETH weak-leg capital. Linear probability models absorb pair and calendar-week fixed effects, include pair-age bins, log WETH depth, and prior WETH-route activity, weight pair-weeks equally, and cluster standard errors by pair and week. Columns 4 and 5 measure next-week association, which may include capital adjustments following adoption. Asterisks *, **, and *** denote two-sided significance at the 10%, 5%, and 1% levels, respectively. The estimates describe equilibrium timing and cover full-range V2 capital; concentrated-liquidity venues remain outside this capital measure.
