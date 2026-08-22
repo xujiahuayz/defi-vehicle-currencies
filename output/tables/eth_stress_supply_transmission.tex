@@ -25,17 +25,15 @@ Observations & 24,313 & 24,313 & 24,313 \\
 \bottomrule
 \end{tabularx}
 \par\medskip
-\textit{Panel C. Six-hour ETH-price declines, exact quotes, and route use}
+\textit{Panel C. Intraday ETH declines, exact quotes, and route use}
 \par\smallskip
 \begin{tabularx}{\linewidth}{@{}>{\hsize=1.55\hsize\raggedright\arraybackslash}X*{2}{>{\hsize=0.725\hsize\centering\arraybackslash}X}@{}}
 \toprule
 Regressor & Stablecoin output lead [bp] & Stablecoin use [pp] \\
 \midrule
-ETH price fall, trailing six hours [0.10 log point] & \begin{tabular}{@{}c@{}}$-7.40$\\$(26.13)$\end{tabular} & \begin{tabular}{@{}c@{}}$-3.48$\\$(11.30)$\end{tabular} \\
-Stablecoin exact-output advantage [100 bp] &  & \begin{tabular}{@{}c@{}}$+3.75^{**}$\\$(1.52)$\end{tabular} \\
+ETH price fall over prior 6 hours [0.10 log point] & \begin{tabular}{@{}c@{}}$-7.40$\\$(26.13)$\end{tabular} & \begin{tabular}{@{}c@{}}$-3.48$\\$(11.30)$\end{tabular} \\
+Holm-adjusted $p$-value & $1.000$ & $1.000$ \\
 \midrule
-Observations & 317 & 317 \\
-Stress events & 31 & 31 \\
-Endpoint pairs & 84 & 84 \\
+Support & \multicolumn{2}{c}{317 routes; 31 events; 84 endpoint pairs} \\
 \bottomrule
 \end{tabularx}

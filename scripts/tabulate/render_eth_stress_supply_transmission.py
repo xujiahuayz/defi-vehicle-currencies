@@ -30,37 +30,34 @@ VALUES_OUTPUT = (
 
 
 TABLE_NOTE = (
-    "Panel A compares stablecoin-facing and WETH-facing pools for the same "
-    "endpoint-week. ETH measures are dated $t$ and liquidity outcomes $t+1$. "
-    "Additions and withdrawals use log one plus dollar flow divided by initial "
-    "capital; net supply uses the inverse hyperbolic sine of the corresponding "
-    "net flow. The v2 quantity divides net LP-token liquidity by initial "
-    "square-root reserves. Pools have at least $50,000 of capital. Models include "
-    "endpoint-by-week and pool fixed effects, prior fee yield, relative-price "
-    "volatility, prior flows, capital, and pool age, and cluster standard errors "
-    "by pool and week. The "
+    "Panel A compares stablecoin-facing and WETH-facing pools within endpoint-week. "
+    "ETH measures are dated $t$ and liquidity outcomes $t+1$. Flow outcomes scale "
+    "by initial capital; the v2 quantity divides net liquidity units by initial "
+    "square-root reserves. Pools have at least $50,000 of capital. Models absorb "
+    "endpoint-by-week and pool fixed effects, control for prior fee yield, relative-"
+    "price volatility, past flows, capital, and pool age, and cluster standard "
+    "errors by pool and week. The "
     "v3 net-supply response to an ETH decline has raw $p=0.017$ and Holm "
     "$p=0.067$; its addition and withdrawal components are individually "
-    "imprecise. Panel B retains exact two-leg opportunities with both vehicle "
-    "families feasible and positive prior-calendar weak-leg full-range capital. "
-    "Capital is deposited Uniswap v2 and SushiSwap v2 capital on the weaker leg "
-    "and records a mark-to-market pool state; Panel A measures provider flows. "
-    "Output holds the pair, input, pre-transaction state, and venue set fixed. "
-    "Models include pair and month-of-year fixed effects, log input value, ETH "
-    "volatility, and calendar time, and cluster standard errors by pair and exact date. "
-    "Panel C begins at the first strictly available Coinbase minute close at "
-    "which ETH's trailing six-hour decline crosses 10%; events are at least "
-    "48 hours apart. It quotes exact pre-transaction Uniswap v2 and SushiSwap "
-    "v2 output at the observed notional from six hours before through 24 hours "
-    "after each event. Models include event-by-pair and relative-hour effects and "
-    "log input value; standard errors are clustered by event and pair. Four dates "
-    "are excluded because conflicting event records prevent an unambiguous "
-    "pre-transaction state. Stars in Panel A and the first rows of Panels B and C "
-    "use Holm-adjusted p-values within their outcome families. Panel B's three "
-    "capital--price--choice links form a separate Holm family; Panel C's "
-    "output-to-choice row uses its raw p-value. Exact output measures the amount "
-    "quoted at the observed trade size; depth beyond that notional lies outside "
-    "the comparison. "
+    "imprecise. Panel B retains exact two-leg routes for which both vehicle families "
+    "are feasible and prior-calendar weak-leg capital is positive for each. Capital "
+    "is a mark-to-market pool state; Panel A measures provider flows. It uses "
+    "Uniswap v2 and SushiSwap v2 capital on the weaker leg. Output holds the pair, "
+    "input, pre-transaction state, and venue set fixed. "
+    "Models absorb pair and month-of-year fixed effects, control for log input, ETH "
+    "volatility, and linear time, and cluster standard errors by pair and exact "
+    "date. Stars in Panel A and the first row of "
+    "Panel B use Holm-adjusted p-values within their declared outcome families. "
+    "The three capital--price--choice links in Panel B form a separate Holm family. "
+    "Panel C uses exact Uniswap v2 and SushiSwap v2 two-leg routes with "
+    "nonvehicle endpoints around the first strictly available observation of a "
+    "0.10-log-point six-hour ETH-price decline; retained events are at least "
+    "48 hours apart. Four dates with conflicting state records are excluded. "
+    "Both vehicle families are executable at the observed input and pre-transaction "
+    "state. Models absorb event-by-pair and relative-hour effects, control for log "
+    "input, and cluster standard errors by stress event and "
+    "pair. The two focal coefficients form one Holm family. The event sample is "
+    "narrow, and its estimates are imprecise. "
     r"Asterisks \(*\), \(**\), and \(***\) denote statistical significance "
     r"at the 10\%, 5\%, and 1\% levels, respectively. The estimates are predictive "
     "associations."
@@ -219,12 +216,9 @@ CHAIN_ROW_LABELS = (
 class IntradayCell:
     model_id: str
     outcome: str
-    predictor: str
-    row: int
-    column: int
+    stage: str
     scale: float
     digits: int
-    p_field: str
     macro_prefix: str
 
 
@@ -232,41 +226,19 @@ INTRADAY_CELLS: tuple[IntradayCell, ...] = (
     IntradayCell(
         "m2_quote_pair_event_and_relative_hour",
         "stable_output_advantage_100bp",
-        "eth_decline_6h_per_10pp",
-        0,
-        0,
+        "exact_executable_quote",
         100.0,
         2,
-        "holm_p_value",
-        "EthIntradayDeclineOutput",
+        "EthStressIntradayOutput",
     ),
     IntradayCell(
         "m3_choice_pair_event_and_relative_hour",
         "chosen_stable",
-        "eth_decline_6h_per_10pp",
-        0,
-        1,
+        "realised_vehicle_choice",
         100.0,
         2,
-        "holm_p_value",
-        "EthIntradayDeclineChoice",
+        "EthStressIntradayChoice",
     ),
-    IntradayCell(
-        "m4_choice_conditioned_on_exact_quote",
-        "chosen_stable",
-        "stable_output_advantage_100bp",
-        1,
-        1,
-        100.0,
-        2,
-        "p_value",
-        "EthIntradayOutputChoice",
-    ),
-)
-
-INTRADAY_ROW_LABELS = (
-    r"ETH price fall, trailing six hours [0.10 log point]",
-    r"Stablecoin exact-output advantage [100 bp]",
 )
 
 
@@ -597,20 +569,22 @@ def _validate_intraday_models(models: pd.DataFrame) -> dict[str, pd.Series]:
         "p_value",
         "holm_p_value",
         "observations",
-        "events",
         "ordered_pairs",
+        "events",
         "fixed_effects",
         "covariance",
         "eth_timing",
+        "quote_interpretation",
         "sample",
         "venue_scope",
-        "quote_interpretation",
-        "depth_interpretation",
+        "chain_stage",
+        "focal_decline_coefficient",
+        "multiplicity_family",
         "causal_interpretation",
     }
     missing = sorted(required - set(models.columns))
     if missing:
-        raise ValueError(f"intraday ETH-route models lack fields: {missing}")
+        raise ValueError(f"intraday ETH-stress models lack fields: {missing}")
 
     rows: dict[str, pd.Series] = {}
     anchors: list[pd.Series] = []
@@ -618,111 +592,110 @@ def _validate_intraday_models(models: pd.DataFrame) -> dict[str, pd.Series]:
         row = _one(
             models,
             {
-                "record_type": (
-                    "eth_intraday_executable_route_chain_regression"
-                ),
+                "record_type": "eth_intraday_executable_route_chain_regression",
                 "model_id": definition.model_id,
                 "outcome": definition.outcome,
-                "predictor": definition.predictor,
+                "predictor": "eth_decline_6h_per_10pp",
             },
-            description="intraday ETH-route model",
+            description="intraday ETH-stress model",
         )
-        numeric_fields = [
-            "coefficient",
-            "standard_error",
-            "p_value",
-            "observations",
-            "events",
-            "ordered_pairs",
-        ]
-        if definition.p_field == "holm_p_value":
-            numeric_fields.append("holm_p_value")
-        numeric = row[numeric_fields].astype(float)
+        numeric = row[
+            [
+                "coefficient",
+                "standard_error",
+                "p_value",
+                "holm_p_value",
+                "observations",
+                "ordered_pairs",
+                "events",
+            ]
+        ].astype(float)
         if not np.isfinite(numeric.to_numpy()).all():
-            raise ValueError("intraday ETH-route model contains nonfinite values")
+            raise ValueError("intraday ETH-stress model contains nonfinite values")
         expected = {
             "fixed_effects": "event_pair+relative_hour_bin",
             "covariance": "stress_event_and_ordered_pair_cluster_cr1",
             "eth_timing": "strictly_available_coinbase_close_t_minus_6h_to_t",
+            "quote_interpretation": "exact_pretransaction_output_at_observed_notional",
             "sample": "v2_sushiv2_nonvehicle_endpoints_both_families_executable",
             "venue_scope": "uniswap_v2+sushiswap_v2",
-            "quote_interpretation": (
-                "exact_pretransaction_output_at_observed_notional"
-            ),
-            "depth_interpretation": (
-                "not_dollar_tvl_and_not_a_complete_depth_curve"
-            ),
+            "chain_stage": definition.stage,
+            "multiplicity_family": "primary_event_time_chain",
         }
         for field, value in expected.items():
             if row[field] != value:
                 raise ValueError(
-                    f"intraday ETH-route model has unexpected {field}"
+                    f"intraday ETH-stress model has unexpected {field}"
                 )
+        if not bool(row["focal_decline_coefficient"]):
+            raise ValueError("intraday ETH-stress table requires focal coefficients")
         if bool(row["causal_interpretation"]):
-            raise ValueError("intraday ETH-route model cannot carry a causal label")
+            raise ValueError("intraday ETH-stress model cannot carry a causal label")
         rows[definition.macro_prefix] = row
         anchors.append(row)
 
-    for field in ("observations", "events", "ordered_pairs"):
+    for field in ("observations", "ordered_pairs", "events"):
         if len({int(round(float(row[field]))) for row in anchors}) != 1:
-            raise ValueError(f"intraday ETH-route models differ in {field}")
+            raise ValueError(f"intraday ETH-stress models differ in {field}")
     return rows
 
 
-def _validate_intraday_support(support: pd.DataFrame) -> tuple[pd.Series, int]:
+def _validate_intraday_support(support: pd.DataFrame) -> pd.Series:
     row = _one(
         support,
         {"record_type": "eth_intraday_executable_route_chain_support"},
-        description="intraday ETH-route support",
+        description="intraday ETH-stress support",
     )
     expected = {
         "event_definition": (
             "first_strictly_available_6h_eth_decline_crossing_10_percent"
         ),
         "event_window_hours": "-6_to_+24",
-        "event_cooldown_hours": 48,
+        "endpoint_scope": "neither_endpoint_is_weth_dai_usdc_or_usdt",
         "price_source": "coinbase_exchange_eth_usd_spot_1m_close",
         "price_timing": "latest_available_close_strictly_before_transaction",
-        "endpoint_scope": "neither_endpoint_is_weth_dai_usdc_or_usdt",
+        "quote_interpretation": "exact_pretransaction_output_at_observed_notional",
+        "depth_interpretation": "not_dollar_tvl_and_not_a_complete_depth_curve",
         "venue_scope": "uniswap_v2+sushiswap_v2",
-        "quote_interpretation": (
-            "exact_pretransaction_output_at_observed_notional"
-        ),
-        "depth_interpretation": (
-            "not_dollar_tvl_and_not_a_complete_depth_curve"
-        ),
     }
     for field, value in expected.items():
         if row[field] != value:
-            raise ValueError(
-                f"intraday ETH-route support has unexpected {field}"
-            )
-    if bool(row["causal_interpretation"]):
-        raise ValueError("intraday ETH-route support cannot carry a causal label")
-    numeric = row[
-        [
-            "events",
-            "days_replayed",
-            "window_targets",
-            "exactly_reproduced_routes",
-            "chosen_reproduction_share",
-            "contestable_clean_routes",
-            "ordered_pairs",
-        ]
-    ].astype(float)
-    if not np.isfinite(numeric.to_numpy()).all() or (numeric <= 0).any():
-        raise ValueError("intraday ETH-route support contains invalid counts")
+            raise ValueError(f"intraday ETH-stress support has unexpected {field}")
+    if int(round(float(row["event_cooldown_hours"]))) != 48:
+        raise ValueError("intraday ETH-stress support has unexpected event cooldown")
+    count_fields = (
+        "events",
+        "days_replayed",
+        "window_targets",
+        "exactly_reproduced_routes",
+        "contestable_clean_routes",
+        "ordered_pairs",
+    )
+    counts = row[list(count_fields)].astype(float)
+    if not np.isfinite(counts.to_numpy()).all() or (counts <= 0).any():
+        raise ValueError("intraday ETH-stress support contains invalid counts")
+    if float(row["exactly_reproduced_routes"]) > float(row["window_targets"]):
+        raise ValueError("intraday ETH-stress reproduced routes exceed targets")
+    reproduction_share = float(row["chosen_reproduction_share"])
+    if not np.isfinite(reproduction_share) or not 0 < reproduction_share <= 1:
+        raise ValueError("intraday ETH-stress support has invalid reproduction share")
     excluded = support.loc[
         support["record_type"].eq(
             "eth_intraday_executable_route_chain_day_support"
         )
-        & support["state_status"].eq(
-            "excluded_exact_event_contract_failure"
-        )
+        & support["state_status"].eq("excluded_exact_event_contract_failure")
     ]
     if len(excluded) != 4:
-        raise ValueError("intraday ETH-route support expects four excluded days")
-    return row, len(excluded)
+        raise ValueError("intraday ETH-stress support expects four excluded dates")
+    errors = excluded["state_error"].fillna("").astype(str)
+    if not errors.str.contains("missing_streams=0; conflicts=1", regex=False).all():
+        raise ValueError("intraday ETH-stress exclusions have unexpected state errors")
+    excluded_days = excluded["day"].dropna().astype(str)
+    if len(excluded_days) != 4 or excluded_days.nunique() != 4:
+        raise ValueError("intraday ETH-stress exclusions require four distinct dates")
+    if bool(row["causal_interpretation"]):
+        raise ValueError("intraday ETH-stress support cannot carry a causal label")
+    return row
 
 
 def render_eth_stress_supply_transmission(
@@ -789,40 +762,35 @@ def render_eth_stress_supply_transmission(
             r"\bottomrule",
             r"\end{tabularx}",
             r"\par\medskip",
-            r"\textit{Panel C. Six-hour ETH-price declines, exact quotes, and route use}",
+            r"\textit{Panel C. Intraday ETH declines, exact quotes, and route use}",
             r"\par\smallskip",
             r"\begin{tabularx}{\linewidth}{@{}>{\hsize=1.55\hsize\raggedright\arraybackslash}X*{2}{>{\hsize=0.725\hsize\centering\arraybackslash}X}@{}}",
             r"\toprule",
             r"Regressor & Stablecoin output lead [bp] & Stablecoin use [pp] \\",
             r"\midrule",
-        ]
-    )
-    intraday_matrix: list[list[str]] = [
-        ["", ""] for _ in INTRADAY_ROW_LABELS
-    ]
-    for definition in INTRADAY_CELLS:
-        intraday_matrix[definition.row][definition.column] = _cell(
-            intraday_rows[definition.macro_prefix],
-            scale=definition.scale,
-            digits=definition.digits,
-            p_field=definition.p_field,
-        )
-    for label, cells in zip(
-        INTRADAY_ROW_LABELS, intraday_matrix, strict=True
-    ):
-        lines.append(label + " & " + " & ".join(cells) + r" \\")
-    intraday_anchor = intraday_rows[INTRADAY_CELLS[0].macro_prefix]
-    intraday_counts = (
-        ("Observations", "observations"),
-        ("Stress events", "events"),
-        ("Endpoint pairs", "ordered_pairs"),
-    )
-    lines.append(r"\midrule")
-    for label, field in intraday_counts:
-        value = f"{int(intraday_anchor[field]):,}"
-        lines.append(f"{label} & {value} & {value}" + r" \\")
-    lines.extend(
-        [
+            "ETH price fall over prior six hours [0.10 log point] & "
+            + " & ".join(
+                _cell(
+                    intraday_rows[definition.macro_prefix],
+                    scale=definition.scale,
+                    digits=definition.digits,
+                )
+                for definition in INTRADAY_CELLS
+            )
+            + r" \\",
+            r"Holm-adjusted $p$-value & "
+            + " & ".join(
+                f"${float(intraday_rows[definition.macro_prefix]['holm_p_value']):.3f}$"
+                for definition in INTRADAY_CELLS
+            )
+            + r" \\",
+            r"\midrule",
+            "Support & "
+            + r"\multicolumn{2}{c}{"
+            + f"{int(intraday_rows[INTRADAY_CELLS[0].macro_prefix]['observations']):,} routes; "
+            + f"{int(intraday_rows[INTRADAY_CELLS[0].macro_prefix]['events']):,} events; "
+            + f"{int(intraday_rows[INTRADAY_CELLS[0].macro_prefix]['ordered_pairs']):,} endpoint pairs"
+            + r"} \\",
             r"\bottomrule",
             r"\end{tabularx}",
             "",
@@ -846,9 +814,7 @@ def render_eth_stress_supply_transmission_values(
     chain_rows = _validate_chain_models(chain_models)
     support = _validate_chain_support(chain_support)
     intraday_rows = _validate_intraday_models(intraday_models)
-    intraday_sample, intraday_excluded_days = _validate_intraday_support(
-        intraday_support
-    )
+    _validate_intraday_support(intraday_support)
 
     lines = [
         "% Generated by scripts/tabulate/render_eth_stress_supply_transmission.py; do not edit.",
@@ -945,12 +911,12 @@ def render_eth_stress_supply_transmission_values(
                 "EthStressMedianInput",
                 rf"\${_tex_integer(support['median_input_usd'])}",
             ),
+            "",
         ]
     )
     intraday_units = {
-        "EthIntradayDeclineOutput": "bp",
-        "EthIntradayDeclineChoice": "pp",
-        "EthIntradayOutputChoice": "pp",
+        "EthStressIntradayOutput": "bp",
+        "EthStressIntradayChoice": "pp",
     }
     for definition in INTRADAY_CELLS:
         row = intraday_rows[definition.macro_prefix]
@@ -977,7 +943,7 @@ def render_eth_stress_supply_transmission_values(
                 ),
                 _macro(
                     definition.macro_prefix + "P",
-                    _tex_p_value(row[definition.p_field]),
+                    _tex_p(row["holm_p_value"]),
                 ),
             ]
         )
@@ -985,38 +951,17 @@ def render_eth_stress_supply_transmission_values(
     lines.extend(
         [
             _macro(
-                "EthIntradayN",
+                "EthStressIntradayN",
                 _tex_integer(intraday_anchor["observations"]),
             ),
             _macro(
-                "EthIntradayEstimationEvents",
+                "EthStressIntradayEvents",
                 _tex_integer(intraday_anchor["events"]),
             ),
             _macro(
-                "EthIntradayEstimationPairs",
+                "EthStressIntradayPairs",
                 _tex_integer(intraday_anchor["ordered_pairs"]),
             ),
-            _macro(
-                "EthIntradayAllEvents",
-                _tex_integer(intraday_sample["events"]),
-            ),
-            _macro(
-                "EthIntradayCleanRoutes",
-                _tex_integer(intraday_sample["contestable_clean_routes"]),
-            ),
-            _macro(
-                "EthIntradayExactRoutes",
-                _tex_integer(intraday_sample["exactly_reproduced_routes"]),
-            ),
-            _macro(
-                "EthIntradayReproductionShare",
-                f"{100.0 * float(intraday_sample['chosen_reproduction_share']):.2f}\\%",
-            ),
-            _macro(
-                "EthIntradayExcludedDays",
-                _tex_integer(intraday_excluded_days),
-            ),
-            "",
         ]
     )
     return "\n".join(lines)
