@@ -25,7 +25,7 @@ VALUES_OUTPUT = (
 
 TABLE_NOTE = (
     "Panel A compares stablecoin-facing and WETH-facing pools for the same "
-    "endpoint and week. ETH volatility and returns are measured during week "
+    "endpoint and week. ETH volatility and price declines are measured during week "
     "$t$; liquidity outcomes occur during week $t+1$. Additions and "
     "withdrawals are log one plus the dollar flow divided by initial pool "
     "capital. Net supply is the inverse hyperbolic sine of net dollar flow "
@@ -45,7 +45,7 @@ TABLE_NOTE = (
     "the pair, input, pre-transaction state, and public venue set fixed. Panel "
     "B models absorb pair and month-of-year fixed effects, control for log "
     "input value, ETH volatility, and linear calendar time, and cluster "
-    "standard errors by pair and exact date. The market-wide ETH return exhausts "
+    "standard errors by pair and exact date. The market-wide ETH-price decline exhausts "
     "exact-date variation, so the models use month-of-year effects and linear "
     "calendar time. Stars in Panel A and the first row of "
     "Panel B use Holm-adjusted p-values within their declared outcome families. "
@@ -198,7 +198,7 @@ CHAIN_CELLS: tuple[ChainCell, ...] = (
 )
 
 CHAIN_ROW_LABELS = (
-    r"ETH return, days $-30$ to $-1$ [0.10 log point]",
+    r"ETH price fall, days $-30$ to $-1$ [0.10 log point]",
     r"Stable share of joint weak-leg USD capital [10 pp]",
     r"Stablecoin exact-output advantage [100 bp]",
 )
@@ -543,7 +543,7 @@ def render_eth_stress_supply_transmission(
             r"\bottomrule",
             r"\end{tabularx}",
             r"\par\medskip",
-            r"\textit{Panel B. ETH returns, weak-leg capital, quotes, and route use}",
+            r"\textit{Panel B. ETH-price declines, weak-leg capital, quotes, and route use}",
             r"\par\smallskip",
             r"\begin{tabularx}{\linewidth}{@{}>{\hsize=1.65\hsize\raggedright\arraybackslash}X*{3}{>{\hsize=0.78\hsize\centering\arraybackslash}X}@{}}",
             r"\toprule",

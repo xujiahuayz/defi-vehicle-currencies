@@ -224,7 +224,8 @@ def test_eth_stress_supply_transmission_renders_two_compact_panels() -> None:
     assert "v2 net liquidity units" in rendered
     assert "$+0.0027^{*}$" in rendered
     assert "$+0.0045^{" not in rendered
-    assert "Panel B. ETH returns, weak-leg capital, quotes, and route use" in rendered
+    assert "Panel B. ETH-price declines, weak-leg capital, quotes, and route use" in rendered
+    assert r"ETH price fall, days $-30$ to $-1$ [0.10 log point]" in rendered
     assert "$-0.0005$" in rendered
     assert "$+19.10^{***}$" in rendered
     assert "$+2.87^{***}$" in rendered
