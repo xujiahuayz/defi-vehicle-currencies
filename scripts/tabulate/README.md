@@ -15,7 +15,7 @@ Captions, labels, placement, and interpretation stay in the paper/deck source.
 | `render_route_reconstruction_validation.py` | `route_reconstruction_exact_chain_validation.tex/.pdf` | `tab:app:route-validation` |
 | `render_entry_vehicle_persistence.py` | `entry_vehicle_persistence.tex/.pdf`, `entry_vehicle_persistence_robustness.tex/.pdf` | `tab:entry-persistence`, `tab:app:entry-persistence-robustness` |
 | `render_contestable_vehicle_choice.py` | `contestable_vehicle_choice.tex/.pdf` | `tab:contestable-vehicle-choice`, `tab:app:contestable-vehicle-choice` |
-| `render_capital_price_transmission.py` | `capital_price_transmission.tex/.pdf` | compact main-text capital, exact-price, and route-allocation evidence |
+| `render_capital_price_transmission.py` | `capital_price_transmission.tex/.pdf` | `tab:capital-price-transmission`; common-support capital-to-exact-output, established-pair retention, and price-crossing evidence |
 | `render_first_contestable_vehicle_choice.py` | `first_contestable_vehicle_choice.tex/.pdf` and generated values | `tab:first-contestable-choice`, `tab:app:first-contestable-choice` |
 | `render_price_rank_crossing.py` | `price_rank_crossing.tex/.pdf` and generated values | `tab:price-rank-crossing`, `tab:app:price-rank-crossing` |
 | `render_contestable_vehicle_consequences.py` | `contestable_vehicle_consequences.tex/.pdf` | `tab:contestable-vehicle-consequences`, `tab:app:contestable-vehicle-consequences` |

@@ -80,6 +80,13 @@ def _integer(value: object) -> str:
     return f"{int(round(float(value))):,}".replace(",", "{,}")
 
 
+def _outcome_mean(row: pd.Series) -> str:
+    value = row.get("risk_set_adoption_rate")
+    if value is None or pd.isna(value):
+        value = float(row["adoptions"]) / float(row["pair_weeks"])
+    return f"{100.0 * float(value):.2f}"
+
+
 def _p_value(value: object) -> str:
     number = float(value)
     if number < 0.001:
@@ -160,6 +167,9 @@ def _sample_rows(results: pd.DataFrame, sample_id: str) -> list[str]:
         + r" \\",
         "First stable-route adoptions & "
         + " & ".join(f"{int(row['adoptions']):,}" for row in model_rows)
+        + r" \\",
+        "Weekly adoption mean [\\%] & "
+        + " & ".join(_outcome_mean(row) for row in model_rows)
         + r" \\",
     ]
 

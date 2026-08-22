@@ -11,6 +11,7 @@ from ddvc.paths import OUTPUT_DIR
 
 CHOICE_RESULTS = OUTPUT_DIR / "exhibits/contestable_vehicle_choice.jsonl"
 CROSSING_RESULTS = OUTPUT_DIR / "exhibits/price_rank_crossing.jsonl"
+EXECUTABILITY_RESULTS = OUTPUT_DIR / "exhibits/eth_stress_executability.jsonl"
 
 
 def _one(frame: pd.DataFrame, selector: dict[str, object], name: str) -> pd.Series:
@@ -44,6 +45,16 @@ def _cell(row: pd.Series) -> str:
     )
 
 
+def _bp_cell(row: pd.Series) -> str:
+    return (
+        r"\begin{tabular}{@{}c@{}}"
+        f"${100.0 * float(row['coefficient']):+.2f}{_stars(float(row['p_value']))}$"
+        r"\\"
+        f"$({100.0 * float(row['standard_error']):.2f})$"
+        r"\end{tabular}"
+    )
+
+
 def _integer(value: object) -> str:
     return f"{int(round(float(value))):,}"
 
@@ -51,8 +62,36 @@ def _integer(value: object) -> str:
 def render_capital_price_transmission(
     choice: pd.DataFrame,
     crossing: pd.DataFrame,
+    executability: pd.DataFrame,
 ) -> str:
-    """Return two short regression panels linking capital, prices, and routes."""
+    """Return three short regression panels linking capital, prices, and routes."""
+
+    capital_to_output = _one(
+        executability,
+        {
+            "record_type": "eth_stress_executability_regression",
+            "model_id": "m4_output_advantage_conditioned_on_depth",
+            "sample": "common_exact_routes_positive_both_v2_weak_legs",
+            "outcome": "stable_output_advantage_100bp",
+            "predictor": "stable_v2_capital_advantage_10pp",
+        },
+        "capital-to-exact-output",
+    )
+    if capital_to_output["fixed_effects"] != "ordered_pair+calendar_month":
+        raise ValueError(
+            "capital-to-exact-output model requires pair and calendar-month effects"
+        )
+    if capital_to_output["covariance"] != "ordered_pair_and_exact_date_cluster_cr1":
+        raise ValueError(
+            "capital-to-exact-output model requires pair/exact-date clustering"
+        )
+    if (
+        capital_to_output["exact_route_state"]
+        != "same_pair_notional_pretrade_state_and_public_venue_set"
+    ):
+        raise ValueError(
+            "capital-to-exact-output model requires a common exact-route state"
+        )
 
     choice_base = {
         "record_type": "contestable_vehicle_choice_regression",
@@ -128,7 +167,23 @@ def render_capital_price_transmission(
     lines = [
         r"\begin{tabularx}{\linewidth}{@{}>{\hsize=1.55\hsize\raggedright\arraybackslash}X*{2}{>{\hsize=.725\hsize\centering\arraybackslash}X}@{}}",
         r"\toprule",
-        r"\multicolumn{3}{@{}l}{\textit{Panel A. Route retention inside established endpoint pairs}} \\",
+        r"\multicolumn{3}{@{}l}{\textit{Panel A. Full-range capital and size-specific exact output}} \\",
+        r"Outcome; estimate [bp] & \multicolumn{2}{c}{Stablecoin exact-output advantage} \\",
+        r"\midrule",
+        "Stablecoin prior full-range capital-share advantage [10 pp] & "
+        + r"\multicolumn{2}{c}{"
+        + _bp_cell(capital_to_output)
+        + r"} \\",
+        r"\addlinespace",
+        r"Observations & \multicolumn{2}{c}{"
+        + _integer(capital_to_output["observations"])
+        + r"} \\",
+        r"Ordered endpoint pairs & \multicolumn{2}{c}{"
+        + _integer(capital_to_output["ordered_pairs"])
+        + r"} \\",
+        r"Pair and calendar-month fixed effects & \multicolumn{2}{c}{Yes} \\",
+        r"\midrule",
+        r"\multicolumn{3}{@{}l}{\textit{Panel B. Route retention inside established endpoint pairs}} \\",
         r" & (1) & (2) \\",
         r"Outcome; estimates [pp] & Incumbent retained & Incumbent retained \\",
         r"\midrule",
@@ -161,7 +216,7 @@ def render_capital_price_transmission(
         + r" \\",
         r"Pair and date fixed effects & Yes & Yes \\",
         r"\midrule",
-        r"\multicolumn{3}{@{}l}{\textit{Panel B. Route allocation when exact-price leadership changes}} \\",
+        r"\multicolumn{3}{@{}l}{\textit{Panel C. Route allocation when exact-price leadership changes}} \\",
         r" & (1) & (2) \\",
         r"Outcome; estimates [pp] & Challenger leads next month & Incumbent-share change \\",
         r"\midrule",
@@ -194,9 +249,10 @@ def render_capital_price_transmission(
 def main() -> int:
     choice = pd.read_json(CHOICE_RESULTS, lines=True)
     crossing = pd.read_json(CROSSING_RESULTS, lines=True)
+    executability = pd.read_json(EXECUTABILITY_RESULTS, lines=True)
     write_table_artifacts(
         "capital_price_transmission",
-        render_capital_price_transmission(choice, crossing),
+        render_capital_price_transmission(choice, crossing, executability),
         preview_width="8.0in",
     )
     return 0

@@ -6,7 +6,7 @@ Routers can choose only among paths whose two legs have already received capital
 \subsection{Stable-facing liquidity additions}
 \label{sec:liquidity:providers}
 
-Uniswap v3 records each addition to a liquidity position and the transaction origin that initiates it. We call a pool a \emph{spoke} when it pairs exactly one of WETH, DAI, USDC, or USDT with an asset outside that set; a \emph{stablecoin core} pool pairs two of DAI, USDC, and USDT. The stable-facing share of spoke-pool addition actions rises from \VThreeLPAddActionBaselineStableShare{} in 2024 H1 to \VThreeLPAddActionComparisonStableShare{} in 2026 H1. The share of vehicle-side dollar additions follows a similar rotation, from \VThreeLPUSDFlowBaselineStableShare{} to \VThreeLPUSDFlowComparisonStableShare{} (Table~\ref{tab:v3-provider-formation}, panel A). Thus the change in routed activity coincides with a large upstream shift in gross liquidity additions.
+Uniswap v3 records each addition to a liquidity position and the transaction origin that initiates it. We call a pool a \emph{spoke} when it pairs exactly one of WETH, DAI, USDC, or USDT with an asset outside that set; a \emph{stablecoin core} pool pairs two of DAI, USDC, and USDT. The stable-facing share of spoke-pool addition actions rises from \VThreeLPAddActionBaselineStableShare{} in 2024 H1 to \VThreeLPAddActionComparisonStableShare{} in 2026 H1. The share of vehicle-side dollar additions follows a similar rotation, from \VThreeLPUSDFlowBaselineStableShare{} to \VThreeLPUSDFlowComparisonStableShare{} (Table~\ref{tab:v3-provider-formation}, panel A). Thus gross additions shift sharply toward stable-facing pools as routed activity rotates.
 % output/exhibits/v3_lp_origin_supply_decomposition.jsonl
 
 We decompose this change across transaction origins using the same midpoint identity as the pair decomposition. Period-specific origins contribute \VThreeLPAddActionPeriodSpecificOrigins{} of the \VThreeLPAddActionStableShareChange{} increase in the stable-facing action share, while changes within continuing origins contribute \VThreeLPAddActionWithinContinuingOrigins{}. The corresponding contributions for dollar additions are \VThreeLPUSDFlowPeriodSpecificOrigins{} and \VThreeLPUSDFlowWithinContinuingOrigins{} (Table~\ref{tab:v3-provider-formation}, panel A). A transaction origin measures participation in the liquidity addition; beneficial ownership and coordinated control remain unobserved.
@@ -68,7 +68,7 @@ A 10 pp larger preweek stablecoin capital share predicts \BridgeAdoptionRiskPrew
 % output/exhibits/bridge_adoption_risk_set.jsonl; preweek, next-week, and joint timing models.
 
 \begin{table}[htbp]
-\caption{Two-leg constant-product capital before first stablecoin route use}
+\caption{Two-leg constant-product capital before and around first stablecoin route use}
 \label{tab:bridge-adoption-risk}
 \centering
 \scriptsize
