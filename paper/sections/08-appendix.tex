@@ -857,6 +857,22 @@ Table~\ref{tab:bridge-pool-margins} separates newly active pools from capital ch
 \exhibitnote{The sample contains the bridge events in Figure~\ref{fig:app:bridge-adoption-capital-path}. Stablecoin and WETH outcomes use each vehicle's weaker leg. A newly active pool has positive prior-calendar deposited capital on day zero and none on day -7; a continuing pool has positive capital on both dates. Each cell is an equal-event mean. Parentheses contain standard errors two-way clustered by pair and adoption date. Asterisks \(*\), \(**\), and \(***\) denote statistical significance at the 10\%, 5\%, and 1\% levels, respectively.}
 \end{table}
 
+\subsection{Decoded provider flows before first route use}
+
+Reserve-valued capital can change through prices, provider flows, retained fees, and token transfers. We therefore use decoded mint and burn events to date external liquidity flows in the two constant-product stablecoin legs before a delayed stablecoin route first appears. For events with several supported stablecoins, we follow the one with the most routes on the first-use date. During days -14 to -8, log additions are 0.953 above days -28 to -22, log first-active-day additions are 2.135 higher, and asinh net additions are 3.604 higher (Table~\ref{tab:app:bridge-lp-flow-before-use}, row 1). In days -7 to -1, the three outcomes fall relative to their mean over days -28 to -8 (row 2). Provider activity therefore precedes the focal route and peaks before its first observed use. Both V2-family legs are active strictly before first use, and later capital meets the persistence condition. The route ledger retains the venue and token legs; executed pool addresses lie outside it. We aggregate all eligible Uniswap v2 and SushiSwap v2 pools on the exact legs, making the outcomes leg-level flow measures.
+% output/exhibits/bridge_lp_flow_before_use.jsonl; output/exhibits/bridge_lp_flow_before_use_support.jsonl; decoded provider flows around delayed first use.
+
+\begin{table}[htbp]
+\centering
+\caption{Liquidity additions before first stablecoin route use}
+\label{tab:app:bridge-lp-flow-before-use}
+{\scriptsize
+\renewcommand{\arraystretch}{1.02}
+\input{../output/tables/bridge_lp_flow_before_use.tex}
+}
+\exhibitnote{The event is first observed stablecoin route use among pairs whose persistent bridge appeared 7 to 119 days earlier. The estimation sample requires both exact endpoint--stablecoin legs to have an active Uniswap v2 or SushiSwap v2 pool strictly before first use and complete dollar histories for the displayed outcome. For events with several supported stablecoins, the tracked token is the one with the most routes on the first-use date. Week -4 spans days -28 to -22, week -2 spans days -14 to -8, and week -1 spans days -7 to -1. For each event-week, we sum flows across all eligible constant-product pools on both legs and take the daily average. Row 1 reports the equal-event mean difference between the transformed week -2 and week -4 averages. Row 2 transforms the week -1 average and the raw mean of the week -4 through week -2 averages before taking their equal-event mean difference. Additions and withdrawals are decoded mint and burn flows. First-active-day additions record mint flow on a pool's first active day in the retained panel; contract deployment dates lie outside this measure. Net additions equal additions less withdrawals. Standard errors are clustered by ordered endpoint pair. Raw p-values are unadjusted across the six displayed comparisons. Event selection requires positive prior-calendar capital on both legs during at least 24 of the next 30 days, so the estimates describe timing within later-persistent bridges. The route ledger retains venue and token legs; executed pool addresses lie outside it. Pool attribution aggregates all eligible constant-product pools on each leg.}
+\end{table}
+
 \subsection{Relative-price risk and deposited bridge capital}
 
 Lower endpoint--vehicle relative-price risk is associated with larger constant-product weak-leg capital at the measurement date and 30 days later. This relation is consistent with divergence risk entering liquidity placement. Panel B of Table~\ref{tab:app:bridge-lp-risk} gives the corresponding vehicle comparison. Stablecoin bridges have higher median risk than WETH bridges and carry the lower relative volatility in fewer than one third of comparable pair-months. The vehicle comparison points to expected fees, hedging, issuer support, and network experience for the aggregate rotation.

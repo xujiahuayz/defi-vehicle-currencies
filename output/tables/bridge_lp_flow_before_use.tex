@@ -1,0 +1,21 @@
+\begin{tabularx}{\linewidth}{@{}>{\hsize=1.45\hsize\raggedright\arraybackslash}X*{3}{>{\hsize=0.85\hsize\centering\arraybackslash}X}@{}}
+\toprule
+Pre-use difference & LP additions & First-active-day additions & Net LP additions \\
+Transformation & $\ln(1+\mathrm{USD})$ & $\ln(1+\mathrm{USD})$ & $\operatorname{asinh}(\mathrm{USD})$ \\
+\midrule
+Week $-2$ minus week $-4$ & $+0.953$ & $+2.135$ & $+3.604$ \\
+Clustered s.e. & $(0.236)$ & $(0.378)$ & $(1.286)$ \\
+Raw $p$-value & $8.33\times 10^{-5}$ & $7.15\times 10^{-8}$ & 0.0057 \\
+\addlinespace
+Week $-1$ minus mean of weeks $-4$ to $-2$ & $-0.603$ & $-3.671$ & $-2.708$ \\
+Clustered s.e. & $(0.216)$ & $(0.305)$ & $(1.141)$ \\
+Raw $p$-value & 0.0058 & $3.62\times 10^{-24}$ & 0.0188 \\
+\midrule
+Estimation events & 163 & 163 & 162 \\
+Ordered-pair clusters & 162 & 162 & 161 \\
+\addlinespace
+Eligible delayed events & \multicolumn{3}{r}{260} \\
+Both legs active by first use & \multicolumn{3}{r}{259} \\
+Both legs active before first use & \multicolumn{3}{r}{254} \\
+\bottomrule
+\end{tabularx}
