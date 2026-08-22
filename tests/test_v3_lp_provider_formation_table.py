@@ -8,6 +8,7 @@ from scripts.tabulate.render_v3_lp_provider_formation import (
     PRIMARY_FAMILY_ID,
     TABLE_NOTE,
     render_v3_lp_provider_formation,
+    render_v3_lp_provider_formation_values,
 )
 
 
@@ -143,6 +144,62 @@ def test_stars_follow_holm_adjustment_not_raw_p_values() -> None:
     assert "$+7.74^{" not in rendered
     # Column (4) has an adjusted p-value between 5 and 10 percent.
     assert "$+15.98^{*}$" in rendered
+
+
+def test_v3_lp_provider_formation_values_cover_prose_inputs() -> None:
+    values = render_v3_lp_provider_formation_values(
+        _decomposition(), _support(), _models()
+    )
+
+    assert r"\newcommand{\VThreeLPBaselinePeriod}{2024 H1}" in values
+    assert (
+        r"\newcommand{\VThreeLPAddActionBaselineStableShare}{8.5\%}" in values
+    )
+    assert (
+        r"\newcommand{\VThreeLPAddActionStableShareChange}{$+35.71$ pp}"
+        in values
+    )
+    assert (
+        r"\newcommand{\VThreeLPAddActionPeriodSpecificOrigins}{$+28.00$ pp}"
+        in values
+    )
+    assert (
+        r"\newcommand{\VThreeLPUSDFlowContinuingOriginReallocation}{$-0.05$ pp}"
+        in values
+    )
+    assert (
+        r"\newcommand{\VThreeLPStableFacingOriginsComparison}{8{,}721}"
+        in values
+    )
+    assert (
+        r"\newcommand{\VThreeLPSameVehicleSupplyEffect}{$+7.99$ pp}" in values
+    )
+    assert r"\newcommand{\VThreeLPSameVehicleSupplySE}{$0.89$ pp}" in values
+    assert (
+        r"\newcommand{\VThreeLPSameVehicleSupplyHolmP}{$p<0.001$}" in values
+    )
+    assert (
+        r"\newcommand{\VThreeLPSameVehicleSupplyN}{258{,}048}" in values
+    )
+    assert (
+        r"\newcommand{\VThreeLPSameStablecoinCoreSupplyHolmP}{$p=0.190$}"
+        in values
+    )
+    assert (
+        r"\newcommand{\VThreeLPSameStablecoinCoreBreadthHolmP}{$p=0.057$}"
+        in values
+    )
+
+
+def test_v3_lp_provider_formation_values_have_unique_macro_names() -> None:
+    values = render_v3_lp_provider_formation_values(
+        _decomposition(), _support(), _models()
+    )
+    commands = [line for line in values.splitlines() if line.startswith(r"\newcommand")]
+    names = [line.split("{")[1].removeprefix("\\") for line in commands]
+
+    assert len(commands) == 48
+    assert len(names) == len(set(names))
 
 
 def test_v3_lp_provider_formation_rejects_incomplete_primary_family() -> None:
