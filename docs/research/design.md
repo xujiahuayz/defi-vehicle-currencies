@@ -154,6 +154,16 @@ therefore place ETH stress in the appendix as a boundary on the supply account.
 They leave investor demand as an interpretation that would require a direct
 demand measure and independent supply variation.
 
+The broader return comparison also separates active turnover from net supply.
+In v3, a 10 bp increase in trailing fee yield predicts both stable-facing
+additions (0.00761 log point, p = 0.000009) and withdrawals (0.00718 log point,
+p = 0.000020), while the corresponding net-flow coefficient is -0.00251
+(p = 0.254). These pool-week estimates are consistent with active repositioning
+and do not measure the inactivity of individual ranges. Lagged stablecoin supply
+growth also fails the declared Holm family for core capital, spoke capital, and
+new-link formation. Neither result supplies the stablecoin-relative formation
+mechanism; both remain interpretation boundaries.
+
 The exact-route follow-up separates the accounting and execution sequence on
 one sample of 24,313 routes, 915 ordered endpoint pairs, and 73 dates for which
 both vehicle families are executable and both lagged v2 weak-leg capital
