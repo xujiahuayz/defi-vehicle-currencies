@@ -113,12 +113,15 @@ def test_persistence_table_separates_outcomes_and_reports_design() -> None:
     )
 
     assert main.count(r"\begin{tabularx}{\linewidth}") == 2
-    assert "Panel A. Stablecoin route share among pairs that trade again" in main
-    assert "Panel B. Subsequent-trading incidence among all entrants" in main
+    assert r"Panel A. Stablecoin route share among pairs that trade again [\%]" in main
+    assert r"Panel B. Subsequent-trading incidence among all entrants [\%]" in main
     assert "greater first-day activity" not in main
     assert "Days 1--30" in main
     assert "Days 31--120" in main
-    assert "effect pp per 10 pp" in main
+    assert "Entry stablecoin share [10 pp]" in main
+    assert r"Mean stablecoin share [\%]" in main
+    assert r"Mean retrading rate [\%]" in main
+    assert "effect pp per 10 pp" not in main
     assert "$+8.90^{***}$" in main
     assert "$(0.14)$" in main
     assert "$+8.91^{**}$" in main
@@ -127,7 +130,10 @@ def test_persistence_table_separates_outcomes_and_reports_design() -> None:
     assert "Entry-date clusters" in main
 
     assert robustness.count(r"\begin{tabularx}{\linewidth}") == 1
-    assert "Stablecoin route share among entrants with greater first-day activity" in robustness
+    assert (
+        r"Stablecoin route share among entrants with greater first-day activity [\%]"
+        in robustness
+    )
     assert "Panel A." not in robustness
     assert "Panel B." not in robustness
     assert "Minimum first-day routes & 5 & 10 & 5 & 10" in robustness

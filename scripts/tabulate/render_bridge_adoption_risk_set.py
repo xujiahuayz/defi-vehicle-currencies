@@ -139,10 +139,10 @@ def _sample_rows(results: pd.DataFrame, sample_id: str) -> list[str]:
         joint_preweek,
     )
     return [
-        r"Any measured V2 stable bridge capital before the week [0/1] & "
+        r"Any two-leg stablecoin capital before week [0/1] & "
         + _cell(any_support)
         + r" &  &  &  &  \\",
-        r"Stable/WETH weak-leg capital ratio, positive-support weeks [10$\times$] &  & "
+        r"Stablecoin/WETH weak-leg capital ratio [10$\times$] &  & "
         + _cell(
             positive_depth,
             coefficient_column="coefficient_pp_per_10x",

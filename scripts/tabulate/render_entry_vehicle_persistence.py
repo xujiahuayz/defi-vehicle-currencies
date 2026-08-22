@@ -235,12 +235,12 @@ def _main_panel(models: pd.DataFrame) -> str:
     lines = [
         r"\begin{tabularx}{\linewidth}{@{}>{\hsize=1.6\hsize\raggedright\arraybackslash}X*{6}{>{\hsize=.9\hsize\centering\arraybackslash}X}@{}}",
         r"\toprule",
-        r"\multicolumn{7}{@{}l}{\textit{Panel A. Stablecoin route share among pairs that trade again}} \\",
+        r"\multicolumn{7}{@{}l}{\textit{Panel A. Stablecoin route share among pairs that trade again [\%]}} \\",
         r" & \multicolumn{3}{c}{Days 1--30} & \multicolumn{3}{c}{Days 31--120} \\",
         r"\cmidrule(lr){2-4}\cmidrule(l){5-7}",
         r" & (1) & (2) & (3) & (4) & (5) & (6) \\",
         r"\midrule",
-        "Entry stablecoin share [effect pp per 10 pp] & "
+        "Entry stablecoin share [10 pp] & "
         + _cells(selected, _estimate_cell)
         + r" \\",
         r"\addlinespace",
@@ -261,7 +261,7 @@ def _main_panel(models: pd.DataFrame) -> str:
         "Entry-date clusters & "
         + _cells(selected, lambda row: _integer(row["entry_date_clusters"]))
         + r" \\",
-        "Mean stablecoin share [pp] & "
+        r"Mean stablecoin share [\%] & "
         + _cells(selected, lambda row: f"{100.0 * float(row['dependent_mean']):.2f}")
         + r" \\",
         r"$R^2$ & "
@@ -278,10 +278,10 @@ def _retrade_panel(models: pd.DataFrame) -> str:
     lines = [
         r"\begin{tabularx}{\linewidth}{@{}>{\hsize=1.8\hsize\raggedright\arraybackslash}X*{2}{>{\hsize=.6\hsize\centering\arraybackslash}X}@{}}",
         r"\toprule",
-        r"\multicolumn{3}{@{}l}{\textit{Panel B. Subsequent-trading incidence among all entrants}} \\",
+        r"\multicolumn{3}{@{}l}{\textit{Panel B. Subsequent-trading incidence among all entrants [\%]}} \\",
         r" & Days 1--30 & Days 31--120 \\",
         r"\midrule",
-        "Entry stablecoin share [effect pp per 10 pp] & "
+        "Entry stablecoin share [10 pp] & "
         + _cells(selected, _estimate_cell)
         + r" \\",
         "Controls & "
@@ -293,7 +293,7 @@ def _retrade_panel(models: pd.DataFrame) -> str:
         "Entry-date clusters & "
         + _cells(selected, lambda row: _integer(row["entry_date_clusters"]))
         + r" \\",
-        "Mean retrading rate [pp] & "
+        r"Mean retrading rate [\%] & "
         + _cells(selected, lambda row: f"{100.0 * float(row['dependent_mean']):.2f}")
         + r" \\",
         r"$R^2$ & "
@@ -310,12 +310,12 @@ def _robustness_panel(models: pd.DataFrame) -> str:
     lines = [
         r"\begin{tabularx}{\linewidth}{@{}>{\hsize=1.6\hsize\raggedright\arraybackslash}X*{4}{>{\hsize=.85\hsize\centering\arraybackslash}X}@{}}",
         r"\toprule",
-        r"\multicolumn{5}{@{}l}{\textit{Stablecoin route share among entrants with greater first-day activity}} \\",
+        r"\multicolumn{5}{@{}l}{\textit{Stablecoin route share among entrants with greater first-day activity [\%]}} \\",
         r" & \multicolumn{2}{c}{Days 1--30} & \multicolumn{2}{c}{Days 31--120} \\",
         r"\cmidrule(lr){2-3}\cmidrule(l){4-5}",
         r"Minimum first-day routes & 5 & 10 & 5 & 10 \\",
         r"\midrule",
-        "Entry stablecoin share [effect pp per 10 pp] & "
+        "Entry stablecoin share [10 pp] & "
         + _cells(selected, _estimate_cell)
         + r" \\",
         "Observations (retrading pairs) & "

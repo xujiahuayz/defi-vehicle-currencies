@@ -126,8 +126,8 @@ def test_bridge_adoption_risk_table_labels_the_future_capital_comparison() -> No
     assert r"(1)\\Any\\support" in rendered
     assert r"(2)\\Capital\\ratio" in rendered
     assert r"(5)\\Joint\\timing" in rendered
-    assert "Any measured V2 stable bridge capital before the week" in rendered
-    assert "positive-support weeks" in rendered
+    assert "Any two-leg stablecoin capital before week [0/1]" in rendered
+    assert r"Stablecoin/WETH weak-leg capital ratio [10$\times$]" in rendered
     assert "Next-week stable share of joint weak-leg capital" in rendered
     assert "Panel A. Prior 28 days: at least 10 WETH routes on three days" in rendered
     assert "Panel B. Prior 28 days: at least 50 WETH routes on five days" in rendered
@@ -143,6 +143,7 @@ def test_bridge_adoption_risk_table_labels_the_future_capital_comparison() -> No
     assert "measure next-week association" in rendered
     assert "capital adjustments following adoption" in rendered
     assert "at least two positive-support weeks" in rendered
+    assert "Stable/WETH weak-leg capital ratio, positive-support weeks" not in rendered
     assert "time reversal" not in rendered
     assert "diagnostic" not in rendered
 
